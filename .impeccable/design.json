@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-14T00:00:00Z",
+  "title": "Design System: OptiTech",
+  "extensions": {
+    "colorMeta": {
+      "teal-anchor": {
+        "role": "primary",
+        "displayName": "Oxidized Teal",
+        "canonical": "oklch(55% 0.18 195)",
+        "tonalRamp": [
+          "oklch(12% 0.06 195)",
+          "oklch(22% 0.10 195)",
+          "oklch(32% 0.14 195)",
+          "oklch(42% 0.17 195)",
+          "oklch(55% 0.18 195)",
+          "oklch(65% 0.14 195)",
+          "oklch(75% 0.09 195)",
+          "oklch(87% 0.04 195)"
+        ]
+      },
+      "teal-deep": {
+        "role": "primary",
+        "displayName": "Verdigris Deep",
+        "canonical": "oklch(38% 0.16 195)",
+        "tonalRamp": null
+      },
+      "editorial-black": {
+        "role": "neutral",
+        "displayName": "Editorial Black",
+        "canonical": "oklch(12% 0.012 195)",
+        "tonalRamp": [
+          "oklch(8% 0.006 195)",
+          "oklch(12% 0.012 195)",
+          "oklch(20% 0.022 195)",
+          "oklch(30% 0.025 195)",
+          "oklch(45% 0.015 195)",
+          "oklch(60% 0.010 195)",
+          "oklch(78% 0.006 195)",
+          "oklch(92% 0.003 195)"
+        ]
+      },
+      "press-room": {
+        "role": "neutral",
+        "displayName": "Press Room",
+        "canonical": "oklch(20% 0.022 195)",
+        "tonalRamp": null
+      },
+      "press-white": {
+        "role": "neutral",
+        "displayName": "Press White",
+        "canonical": "oklch(97% 0.005 195)",
+        "tonalRamp": null
+      },
+      "blueprint": {
+        "role": "neutral",
+        "displayName": "Blueprint",
+        "canonical": "oklch(68% 0.06 195)",
+        "tonalRamp": null
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero and section-opener headlines. Poppins 800, tight tracking. Never more than 14 characters per line."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Sub-section openers, feature callouts. Poppins 700."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card headers, nav labels, strong UI text. Poppins 600."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prose and content. Poppins 400. Hard cap at 70ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Section tags, metadata, uppercase utility text. Poppins 600, tracked."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hover-lift",
+        "value": "0 8px 32px oklch(55% 0.18 195 / 0.25)",
+        "purpose": "Teal-tinted ambient glow on hover for primary buttons. Appears on hover only — never at rest."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-kinetic",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Expo ease-out. Default easing for all choreographed entrances and layout transitions."
+      },
+      {
+        "name": "ease-quick",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Quart ease-out. Fast micro-interactions: hover color changes, focus rings."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA. Teal-anchor fill, sharp corners, uppercase tracked label. Hover: deeper teal + slight lift.",
+      "html": "<button class=\"ds-btn-primary\">GET STARTED</button>",
+      "css": ".ds-btn-primary { background: oklch(55% 0.18 195); color: oklch(97% 0.005 195); padding: 16px 48px; font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; border-radius: 0; cursor: pointer; transition: background 0.18s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1); display: inline-flex; align-items: center; gap: 8px; } .ds-btn-primary:hover { background: oklch(38% 0.16 195); transform: translateY(-2px); box-shadow: 0 8px 32px oklch(55% 0.18 195 / 0.25); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(55% 0.18 195); outline-offset: 3px; } .ds-btn-primary:active { transform: translateY(0); box-shadow: none; transition-duration: 0.1s; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action on dark or teal surfaces. Transparent background with tinted border. Sharp corners.",
+      "html": "<div style=\"background: oklch(20% 0.022 195); padding: 32px; display: inline-block;\"><button class=\"ds-btn-ghost\">LEARN MORE</button></div>",
+      "css": ".ds-btn-ghost { background: transparent; color: oklch(97% 0.005 195); padding: 15px 47px; font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid oklch(97% 0.005 195 / 0.40); border-radius: 0; cursor: pointer; transition: border-color 0.18s cubic-bezier(0.25, 1, 0.5, 1), background 0.18s cubic-bezier(0.25, 1, 0.5, 1); display: inline-flex; align-items: center; gap: 8px; } .ds-btn-ghost:hover { background: oklch(97% 0.005 195 / 0.08); border-color: oklch(97% 0.005 195 / 0.70); } .ds-btn-ghost:focus-visible { outline: 2px solid oklch(97% 0.005 195 / 0.60); outline-offset: 3px; }"
+    },
+    {
+      "name": "Hero Panel",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Full-bleed Oxidized Teal section. The committed color in its primary role. Poppins 800 display headline.",
+      "html": "<section class=\"ds-panel-hero\"><span class=\"ds-label\">WHAT WE BUILD</span><h1 class=\"ds-panel-hero__headline\">Make Momentum Visible</h1><p class=\"ds-panel-hero__body\">OptiTech moves with conviction. Precise where it counts, bold everywhere else.</p><div class=\"ds-panel-hero__actions\"><button class=\"ds-panel-hero__btn-primary\">Get started</button><button class=\"ds-panel-hero__btn-ghost\">Learn more</button></div></section>",
+      "css": ".ds-panel-hero { background: oklch(55% 0.18 195); padding: 128px 64px; display: flex; flex-direction: column; gap: 32px; } .ds-label { font-family: 'Poppins', system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.10em; color: oklch(75% 0.09 195); text-transform: uppercase; } .ds-panel-hero__headline { font-family: 'Poppins', system-ui, sans-serif; font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.03em; color: oklch(97% 0.005 195); margin: 0; max-width: 12ch; } .ds-panel-hero__body { font-family: 'Poppins', system-ui, sans-serif; font-size: 1.125rem; font-weight: 400; line-height: 1.65; color: oklch(97% 0.005 195 / 0.75); margin: 0; max-width: 50ch; } .ds-panel-hero__actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; } .ds-panel-hero__btn-primary { background: oklch(12% 0.012 195); color: oklch(97% 0.005 195); padding: 16px 48px; font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; border-radius: 0; cursor: pointer; transition: background 0.18s; } .ds-panel-hero__btn-primary:hover { background: oklch(20% 0.022 195); } .ds-panel-hero__btn-ghost { background: transparent; color: oklch(12% 0.012 195); padding: 15px 47px; font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid oklch(12% 0.012 195 / 0.40); border-radius: 0; cursor: pointer; transition: background 0.18s, border-color 0.18s; } .ds-panel-hero__btn-ghost:hover { background: oklch(12% 0.012 195 / 0.08); border-color: oklch(12% 0.012 195 / 0.70); }"
+    },
+    {
+      "name": "Dark Content Section",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Press Room dark surface. Feature copy, credentials, serious content. Shows Poppins 700 headline + body.",
+      "html": "<section class=\"ds-section-dark\"><span class=\"ds-section-label\">HOW IT WORKS</span><h2 class=\"ds-section-headline\">Precision built for what comes next.</h2><p class=\"ds-section-body\">A paragraph demonstrating the reading experience on a dark editorial ground. Press White at 75% opacity keeps the teal tint unified without veering into harsh contrast.</p></section>",
+      "css": ".ds-section-dark { background: oklch(20% 0.022 195); padding: 96px 64px; display: flex; flex-direction: column; gap: 24px; } .ds-section-label { font-family: 'Poppins', system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.10em; color: oklch(68% 0.06 195); text-transform: uppercase; } .ds-section-headline { font-family: 'Poppins', system-ui, sans-serif; font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; color: oklch(97% 0.005 195); margin: 0; max-width: 22ch; } .ds-section-body { font-family: 'Poppins', system-ui, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.65; color: oklch(97% 0.005 195 / 0.75); margin: 0; max-width: 65ch; }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Sticky top nav on Editorial Black. Wordmark as logo, typographic links at Blueprint, teal CTA button.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav__logo\" href=\"#\">OPTITECH</a><ul class=\"ds-nav__links\"><li><a class=\"ds-nav__link\" href=\"#\">Product</a></li><li><a class=\"ds-nav__link\" href=\"#\">About</a></li><li><a class=\"ds-nav__link\" href=\"#\">Contact</a></li></ul><button class=\"ds-nav__cta\">Get started</button></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 48px; padding: 20px 64px; background: oklch(12% 0.012 195); } .ds-nav__logo { font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 800; letter-spacing: 0.12em; color: oklch(97% 0.005 195); text-decoration: none; text-transform: uppercase; flex-shrink: 0; } .ds-nav__links { display: flex; align-items: center; gap: 40px; list-style: none; margin: 0; padding: 0; flex: 1; } .ds-nav__link { font-family: 'Poppins', system-ui, sans-serif; font-size: 0.875rem; font-weight: 400; color: oklch(68% 0.06 195); text-decoration: none; transition: color 0.15s cubic-bezier(0.25, 1, 0.5, 1); } .ds-nav__link:hover { color: oklch(97% 0.005 195); } .ds-nav__cta { margin-left: auto; background: oklch(55% 0.18 195); color: oklch(97% 0.005 195); padding: 12px 28px; font-family: 'Poppins', system-ui, sans-serif; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; border-radius: 0; cursor: pointer; transition: background 0.15s cubic-bezier(0.25, 1, 0.5, 1); flex-shrink: 0; } .ds-nav__cta:hover { background: oklch(38% 0.16 195); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Kinetic Signal",
+    "overview": "OptiTech is designed to feel purpose-built by people with a strong point of view. The visual language draws from design-tool precision (Figma, Framer, Arc) — not their fame, but their shared quality of self-referential craft.\n\nColor commits rather than accents. Oxidized Teal fills 30-60% of primary surfaces — a presence, not punctuation. Poppins carries the entire type system: hierarchy through weight and scale, not through serif/sans switching. At display sizes (weight 800, tight tracking), the geometric forms read as impactful and forward-moving.\n\nThis system explicitly rejects: generic startup-cream (off-white cards, pastel blobs), corporate navy, and the neon-on-black crypto aesthetic.",
+    "keyCharacteristics": [
+      "Committed teal anchor — a surface color, not an accent",
+      "Single geometric sans (Poppins) with weight/scale hierarchy (800 to 400)",
+      "Sharp corners everywhere — no pill shapes, no softened cards",
+      "Choreographed entrances as brand expression; flat and still at rest",
+      "Every neutral tinted toward the teal hue; nothing truly neutral"
+    ],
+    "rules": [
+      {
+        "name": "The Committed Rule",
+        "body": "The teal anchor fills 30-60% of any given view. It is not used sparingly; it is used boldly. Restraint is expressed in the neutrals.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tint Rule",
+        "body": "No neutral is ever truly neutral. Every near-white and near-black is tinted toward the primary teal hue at low chroma (0.005-0.022). The palette is unified, not collaged.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Resting Rule",
+        "body": "No component carries a drop shadow in its default state. Shadows appear only on hover (interactive feedback) and during entrance animations. A resting shadow signals the surface doesn't belong.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Weight Ladder Rule",
+        "body": "Adjacent hierarchy levels differ by at least 100 in font weight. Display 800, Headline 700, Title 600, Body 400. Never two adjacent levels at the same weight.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do let Oxidized Teal fill large surface areas: hero panels, full-bleed sections, entire backgrounds.",
+      "Do use Poppins at display sizes (3rem+) with tight letter-spacing (-0.025em to -0.035em).",
+      "Do use weight contrast of 200+ between adjacent type levels.",
+      "Do tint every neutral toward the teal hue (chroma 0.005-0.022).",
+      "Do use asymmetry and forward tension in layout.",
+      "Do choreograph entrances with cubic-bezier(0.16, 1, 0.3, 1). Elements arrive with vertical offset or opacity transition, then rest.",
+      "Do respect prefers-reduced-motion on all choreographed sequences.",
+      "Do meet WCAG 2.1 AA contrast on all text, including body over Press Room."
+    ],
+    "donts": [
+      "Don't use the SaaS cream aesthetic: off-white backgrounds, rounded pill buttons, pastel gradient blobs.",
+      "Don't use the corporate enterprise blue playbook: navy/grey palettes, stock photos, bullet-list features.",
+      "Don't let the design read as crypto/Web3: no neon, no floating orbs, no speculative urgency.",
+      "Don't use gradient text (background-clip: text). Single solid color only.",
+      "Don't use side-stripe borders (border-left or border-right > 1px as accent on cards or callouts).",
+      "Don't animate CSS layout properties. Use transform and opacity only.",
+      "Don't round buttons or cards beyond input's 4px. The sharp-corner geometry is a deliberate identity choice.",
+      "Don't use Poppins below 0.75rem. Drop to system-ui below that threshold."
+    ]
+  }
+}
