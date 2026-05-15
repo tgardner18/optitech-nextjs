@@ -26,7 +26,7 @@ export default function Footer() {
               alt="OptiTech"
               width={160}
               height={40}
-              className="h-7 w-auto"
+              className="h-9 w-auto"
             />
           </Link>
 
