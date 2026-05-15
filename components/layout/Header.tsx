@@ -5,9 +5,10 @@ import Link from "next/link";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const NAV_LINKS = [
-  { label: "Product", href: "#" },
-  { label: "Pricing", href: "#" },
-  { label: "About",   href: "#" },
+  { label: "Product",  href: "#" },
+  { label: "Pricing",  href: "#" },
+  { label: "About",    href: "#" },
+  { label: "Showcase", href: "/showcase" },
 ];
 
 export default function Header() {
