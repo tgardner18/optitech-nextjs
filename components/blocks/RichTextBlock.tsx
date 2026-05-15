@@ -44,10 +44,14 @@ const innerCva = cva("", {
       center: "mx-auto",
     },
     size: {
-      editorial: "max-w-[72ch]",
-      compact:   "max-w-[60ch]",
+      editorial: "",
+      compact:   "",
     },
   },
+  compoundVariants: [
+    { alignment: "center", size: "editorial", class: "max-w-[72ch]" },
+    { alignment: "center", size: "compact",   class: "max-w-[60ch]" },
+  ],
   defaultVariants: { alignment: "left", size: "editorial" },
 });
 

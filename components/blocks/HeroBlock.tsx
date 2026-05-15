@@ -36,7 +36,7 @@ const sectionCva = cva("flex flex-col", {
 });
 
 const textPanelCva = cva(
-  "px-md py-xl lg:px-lg lg:py-2xl flex flex-col lg:w-[55%]",
+  "px-md py-xl lg:px-lg lg:py-2xl flex flex-col",
   {
     variants: {
       color: {
@@ -44,8 +44,12 @@ const textPanelCva = cva(
         canvas:  "bg-canvas",
         surface: "bg-surface",
       },
+      mode: {
+        split: "lg:w-[55%]",
+        full:  "w-full",
+      },
     },
-    defaultVariants: { color: "brand" },
+    defaultVariants: { color: "brand", mode: "split" },
   }
 );
 
@@ -161,12 +165,13 @@ export default function HeroBlock({
   styleOptions = {},
 }: HeroBlockProps) {
   const { layout = "imageRight", color = "brand", animation = "none" } = styleOptions;
+  const hasVisual = !!(visual || visualSrc);
 
   return (
     <section className={sectionCva({ layout, animation })} aria-label="Hero">
 
       {/* ── Text panel ── */}
-      <div className={textPanelCva({ color })}>
+      <div className={textPanelCva({ color, mode: hasVisual ? "split" : "full" })}>
         <div className="flex flex-col gap-lg">
           {eyebrow && (
             <p className={eyebrowCva({ color })}>{eyebrow}</p>
@@ -193,21 +198,23 @@ export default function HeroBlock({
         )}
       </div>
 
-      {/* ── Visual panel ── */}
-      <div className={visualPanelCva({ color })}>
-        {visual ?? (
-          visualSrc ? (
-            <Image
-              src={visualSrc}
-              alt={visualAlt}
-              fill
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="object-cover"
-              priority
-            />
-          ) : null
-        )}
-      </div>
+      {/* ── Visual panel — only rendered when a visual is provided ── */}
+      {hasVisual && (
+        <div className={visualPanelCva({ color })}>
+          {visual ?? (
+            visualSrc ? (
+              <Image
+                src={visualSrc}
+                alt={visualAlt}
+                fill
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                className="object-cover"
+                priority
+              />
+            ) : null
+          )}
+        </div>
+      )}
 
     </section>
   );

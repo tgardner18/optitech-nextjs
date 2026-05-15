@@ -81,6 +81,40 @@ const HERO_COLORS: Array<{ label: string; props: HeroBlockProps }> = [
   },
 ];
 
+const HERO_NO_IMAGE: Array<{ label: string; props: HeroBlockProps }> = [
+  {
+    label: "Brand · No image",
+    props: {
+      eyebrow: "Introducing OptiTech",
+      headline: "Move at the speed of certainty.",
+      body: "OptiTech gives your teams the infrastructure to experiment continuously, ship confidently, and know whether it worked.",
+      primaryCta:   { label: "Get started",  href: "#" },
+      secondaryCta: { label: "Learn more",   href: "#" },
+      styleOptions: { color: "brand" },
+    },
+  },
+  {
+    label: "Canvas · No image",
+    props: {
+      eyebrow: "The platform",
+      headline: "Built for teams who ship daily.",
+      body: "Feature flags, experiment data, and deployment telemetry in one platform. OptiTech closes the gap between shipping and knowing.",
+      primaryCta: { label: "View the platform", href: "#" },
+      styleOptions: { color: "canvas" },
+    },
+  },
+  {
+    label: "Surface · No image",
+    props: {
+      eyebrow: "The method",
+      headline: "Precision at every layer.",
+      body: "From the first feature flag to the thousandth experiment, OptiTech tracks what matters and surfaces it when you need it.",
+      primaryCta: { label: "See how it works", href: "#" },
+      styleOptions: { color: "surface" },
+    },
+  },
+];
+
 const HERO_ANIMATIONS: Array<{ label: string; note: string; props: HeroBlockProps }> = [
   {
     label: "Fade",
@@ -394,9 +428,10 @@ export default function ShowcaseBlocksPage() {
         <div className="px-md pt-xl pb-lg lg:px-lg">
           <SectionLabel index="01 · Hero" title="HeroBlock" />
           <p className="text-body leading-body text-fg-muted max-w-[65ch]">
-            Full-bleed split layout with a text panel and a visual panel. Text panel width
-            is fixed at 55%. Layout, color, and entrance animation are style options.
-            CTAs are optional. Visual accepts <code className="font-mono text-fg text-label">visualSrc</code> (next/image)
+            Full-bleed split layout with a text panel and an optional visual panel. When no visual
+            is provided the text panel expands to full width. Layout, color, and entrance animation
+            are style options. CTAs are optional. Visual accepts{" "}
+            <code className="font-mono text-fg text-label">visualSrc</code> (next/image)
             or a <code className="font-mono text-fg text-label">visual</code> ReactNode override.
           </p>
         </div>
@@ -408,6 +443,24 @@ export default function ShowcaseBlocksPage() {
           </p>
         </div>
         {HERO_COLORS.map((item) => (
+          <div key={item.label} className="border-t border-fg/5">
+            <div className="px-md pt-sm pb-xs lg:px-lg">
+              <span className="font-mono text-label text-fg-muted/50">{item.label}</span>
+            </div>
+            <HeroBlock {...item.props} />
+          </div>
+        ))}
+
+        {/* No image */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            No Image · full-width text panel
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            When no visual is provided the text panel expands to full width and the visual panel is omitted.
+          </p>
+        </div>
+        {HERO_NO_IMAGE.map((item) => (
           <div key={item.label} className="border-t border-fg/5">
             <div className="px-md pt-sm pb-xs lg:px-lg">
               <span className="font-mono text-label text-fg-muted/50">{item.label}</span>
