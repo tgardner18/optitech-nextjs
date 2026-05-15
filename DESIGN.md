@@ -110,6 +110,7 @@ One color commits. Everything else defers to it.
 ## 3. Typography: One Face, Full Commitment
 
 **Primary Font:** Poppins (Google Fonts — add via `next/font/google`)
+**Accent Display Font:** Syne (Google Fonts, variable — for accent headers and pull moments only)
 **Mono Font:** Geist Mono (already installed — for code samples and technical labels)
 
 **Character:** Poppins is the entire voice. A geometric sans-serif with an unusually high x-height and consistent stroke width — extremely legible at body sizes, and at display sizes (weight 800, negative tracking) it becomes dense and impactful. The system expresses hierarchy entirely through scale and weight contrast, never through typeface switching.
@@ -122,6 +123,15 @@ One color commits. Everything else defers to it.
 - **Title** (Poppins 600, `1.25rem`, line-height 1.3, tracking -0.01em): Card headers, navigation labels, strong UI text.
 - **Body** (Poppins 400, `1rem`, line-height 1.65): Prose. Hard cap at 70ch. The comfortable reading size the design is optimized for.
 - **Label** (Poppins 600, `0.8125rem`, tracking +0.06em, uppercase): Metadata, section tags, timestamps. Uppercase with generous tracking.
+
+### Syne (Accent Display)
+
+Geometric variable font used sparingly as an accent layer above the Poppins system. Never replaces Poppins for headlines or body — it punctuates rather than narrates.
+
+- **Weight:** 450 only (`style={{ fontWeight: 450 }}`). Above 525 the geometry bloats. Token: `--ot-weight-syne`.
+- **Usage:** Accent headers, section openers, pull quotes. At most once per viewport.
+- **Variants:** Clean (`text-fg`), Brand (`text-brand`), Accent (`text-accent`), Hollow (`.syne-hollow` — wire letterforms via `-webkit-text-stroke`).
+- **Color note:** Accent (amber) at 68% lightness against the light canvas fails WCAG 3:1. Prefer Clean, Brand, or Hollow on light backgrounds.
 
 **The Weight Ladder Rule.** Adjacent hierarchy levels must differ by at least 100 in font weight. Display (800) to Headline (700) to Title (600) to Body (400). Never two adjacent levels at the same weight; the jump from 600 to 400 between Title and Body is intentional and creates the clearest separation in the scale.
 
@@ -184,7 +194,7 @@ Typographic, minimal, sticky.
 - **Don't** use the SaaS cream aesthetic: off-white backgrounds, rounded pill buttons, pastel gradient blobs, floating icon-feature grids. It is the category's first training-data reflex.
 - **Don't** use the corporate enterprise blue playbook: navy/grey palettes, stock-photo hero images, feature bullet lists, formal copywriting.
 - **Don't** let the design read as a crypto or Web3 launch site: no neon, no floating orbs or particle effects, no speculative urgency.
-- **Don't** use gradient text (`background-clip: text` + gradient). Use a single solid color. Emphasis through weight or size, never gradient fill.
+- **Don't** use gradient text (`background-clip: text` + gradient) decoratively or on sub-display type. **Permitted exception:** the four `.display-gradient-*` utility classes in `globals.css` (`display-gradient-brand`, `display-gradient-warm`, `display-gradient-luminous`, `display-gradient-ember`) may be used on `text-display`-scale type only. Rules: dark canvas only, once per composition, never on body or headline copy.
 - **Don't** use side-stripe borders (a colored `border-left` or `border-right` greater than 1px as an accent on cards, callouts, or list items). Rewrite with background tints, full borders, or nothing.
 - **Don't** animate CSS layout properties (`width`, `height`, `top`, `left`). Use `transform` and `opacity` only.
 - **Don't** round buttons or cards beyond `input: 4px`. The sharp-corner geometry is a deliberate system choice. Introducing `rounded-lg` or `rounded-full` anywhere breaks the system's identity.

@@ -163,31 +163,62 @@ const POPPINS_WEIGHTS = [
 const SYNE_VARIANTS = [
   {
     label: "Clean",
-    colorClass: "text-fg",
+    darkColor:  "oklch(97% 0.005 195)",
+    lightColor: "oklch(12% 0.012 195)",
     hollow: false,
+    lightContrastWarning: false,
     token: "font-syne text-fg",
     usage: "Default state. Near-white on dark, dark on light. Lets the geometry carry the moment without competing with content color.",
   },
   {
     label: "Brand",
-    colorClass: "text-brand",
+    darkColor:  "oklch(55% 0.18 195)",
+    lightColor: "oklch(55% 0.18 195)",
     hollow: false,
+    lightContrastWarning: false,
     token: "font-syne text-brand",
     usage: "Brand teal. Signature OptiTech color for section openers, pull quotes, and accent callouts within dark panels.",
   },
   {
     label: "Accent",
-    colorClass: "text-accent",
+    darkColor:  "oklch(68% 0.20 68)",
+    lightColor: "oklch(68% 0.20 68)",
     hollow: false,
+    lightContrastWarning: true,
     token: "font-syne text-accent",
     usage: "Amber accent. Warm contrast against teal. Use when you need heat and visual separation from brand-dominant surfaces.",
   },
   {
     label: "Hollow",
-    colorClass: "",
+    darkColor:  "transparent",
+    lightColor: "transparent",
     hollow: true,
+    lightContrastWarning: false,
     token: "font-syne syne-hollow",
     usage: "Wire letterforms: transparent fill, brand stroke. Pure geometry — high tension at any scale. Best at headline size and above.",
+  },
+] as const;
+
+const DISPLAY_GRADIENTS = [
+  {
+    label: "Brand Sweep",
+    cssClass: "display-gradient-brand",
+    usage: "Teal-family depth. Light-leading edge deepens to brand-hover at the tail. Rich, directional.",
+  },
+  {
+    label: "Warm to Cool",
+    cssClass: "display-gradient-warm",
+    usage: "Amber to teal — thermally charged. Heat at the start, cool authority at the close.",
+  },
+  {
+    label: "Luminous",
+    cssClass: "display-gradient-luminous",
+    usage: "Near-white bleeding into brand teal. Gives type a lit-from-above quality. Best on the darkest canvas.",
+  },
+  {
+    label: "Ember",
+    cssClass: "display-gradient-ember",
+    usage: "Amber monochromatic — warm, high tension within the accent family. Best for urgency moments.",
   },
 ] as const;
 
@@ -458,32 +489,108 @@ export default function ShowcasePage() {
                 locked to 450 — above 525 the geometry starts to bloat. Use at most
                 once per viewport. Pairs with Poppins body and headline copy.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
+              <div className="flex flex-col gap-md">
                 {SYNE_VARIANTS.map((v) => (
+                  <div key={v.label}>
+                    <div className="flex flex-wrap items-baseline gap-x-sm gap-y-xs mb-sm">
+                      <span className="text-label tracking-label uppercase text-brand font-semibold">
+                        {v.label}
+                      </span>
+                      <span className="text-label text-fg-muted/60 flex-1 min-w-0">
+                        {v.usage}
+                      </span>
+                      <Token name={v.token} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-sm">
+                      <div
+                        className="p-lg flex flex-col gap-xs"
+                        style={{ background: "oklch(12% 0.012 195)" }}
+                      >
+                        <p
+                          className="text-label tracking-label uppercase font-semibold"
+                          style={{ color: "oklch(68% 0.06 195)" }}
+                        >
+                          Dark
+                        </p>
+                        <p
+                          className={`font-syne text-headline leading-none tracking-headline${v.hollow ? " syne-hollow" : ""}`}
+                          style={{ fontWeight: 450, color: v.darkColor }}
+                        >
+                          Forward.
+                        </p>
+                      </div>
+                      <div
+                        className="p-lg flex flex-col gap-xs"
+                        style={{ background: "oklch(97% 0.005 195)" }}
+                      >
+                        <p
+                          className="text-label tracking-label uppercase font-semibold"
+                          style={{ color: "oklch(38% 0.05 195)" }}
+                        >
+                          Light{v.lightContrastWarning ? " · low contrast" : ""}
+                        </p>
+                        <p
+                          className={`font-syne text-headline leading-none tracking-headline${v.hollow ? " syne-hollow" : ""}`}
+                          style={{ fontWeight: 450, color: v.lightColor }}
+                        >
+                          Forward.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Display text gradients */}
+            <div className="mt-xl border-t border-fg/10 pt-lg">
+              <div className="flex items-baseline gap-md mb-xs">
+                <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+                  Display Gradients
+                </p>
+                <span className="font-mono text-label text-fg-muted/50">
+                  text-display · 4 palette variants · dark canvas only
+                </span>
+              </div>
+              <p className="text-label text-fg-muted leading-body mb-lg max-w-[60ch]">
+                Gradient fills for display-sized type. Best at large scale where
+                the sweep is visible. Use once per composition.
+              </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
+                {DISPLAY_GRADIENTS.map((g) => (
                   <div
-                    key={v.label}
+                    key={g.label}
                     className="p-lg flex flex-col gap-md"
                     style={{ background: "oklch(12% 0.012 195)" }}
                   >
                     <p
-                      className="text-label tracking-label uppercase font-semibold"
-                      style={{ color: "oklch(68% 0.06 195)" }}
+                      className={`text-display font-extrabold leading-display tracking-display ${g.cssClass}`}
                     >
-                      {v.label}
+                      OptiTech.
                     </p>
-                    <p
-                      className={`font-syne text-headline leading-none tracking-headline ${v.colorClass}${v.hollow ? " syne-hollow" : ""}`}
-                      style={{ fontWeight: 450 }}
-                    >
-                      Forward.
-                    </p>
-                    <p
-                      className="text-label leading-body"
-                      style={{ color: "oklch(68% 0.06 195)" }}
-                    >
-                      {v.usage}
-                    </p>
-                    <Token name={v.token} />
+                    <div>
+                      <p
+                        className="text-label tracking-label uppercase font-semibold mb-xs"
+                        style={{ color: "oklch(68% 0.06 195)" }}
+                      >
+                        {g.label}
+                      </p>
+                      <p
+                        className="text-label leading-body"
+                        style={{ color: "oklch(68% 0.06 195)" }}
+                      >
+                        {g.usage}
+                      </p>
+                      <code
+                        className="inline-block font-mono text-label mt-sm px-sm py-xs"
+                        style={{
+                          background: "oklch(20% 0.022 195)",
+                          color: "oklch(68% 0.06 195)",
+                        }}
+                      >
+                        .{g.cssClass}
+                      </code>
+                    </div>
                   </div>
                 ))}
               </div>

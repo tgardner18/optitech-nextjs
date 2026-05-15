@@ -72,3 +72,32 @@ body {
   -webkit-text-stroke: 2px var(--ot-brand);
   color: transparent;
 }
+
+/* Display gradient fills — use once per composition, dark canvas only */
+.display-gradient-brand {
+  background: linear-gradient(135deg, oklch(72% 0.20 195) 0%, oklch(38% 0.14 195) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.display-gradient-warm {
+  background: linear-gradient(135deg, oklch(74% 0.20 68) 0%, oklch(55% 0.18 195) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.display-gradient-luminous {
+  background: linear-gradient(135deg, oklch(96% 0.004 195) 0%, oklch(55% 0.18 195) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.display-gradient-ember {
+  background: linear-gradient(135deg, oklch(80% 0.18 68) 0%, oklch(42% 0.16 68) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
