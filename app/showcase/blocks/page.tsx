@@ -343,9 +343,14 @@ const IMAGE_TREATMENTS: Array<{ label: string; note: string; props: ImageBlockPr
     props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9" } },
   },
   {
-    label: "Frame",
-    note: "1px teal border, 6px inset gap",
-    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: true } },
+    label: "Frame: offset",
+    note: "Bold teal backing block — 12px mounting-board strip on right and bottom",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: "offset" } },
+  },
+  {
+    label: "Frame: glow",
+    note: "Inset teal ring + outer ambient bloom — image appears backlit",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: "glow" } },
   },
   {
     label: "Overlay",
@@ -353,9 +358,14 @@ const IMAGE_TREATMENTS: Array<{ label: string; note: string; props: ImageBlockPr
     props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", overlay: true } },
   },
   {
-    label: "Frame + Overlay",
-    note: "Combined — frame holds, teal washes",
-    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: true, overlay: true } },
+    label: "Glow + Overlay",
+    note: "Atmospheric — teal wash unifies tone, glow defines the edge",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: "glow", overlay: true } },
+  },
+  {
+    label: "Offset + Overlay",
+    note: "Bold — teal backing anchors the image; wash pulls the palette through",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", frame: "offset", overlay: true } },
   },
 ];
 
@@ -396,9 +406,9 @@ const IMAGE_SHADOWS: Array<{ label: string; note: string; props: ImageBlockProps
     props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true } },
   },
   {
-    label: "Shadow + Frame",
-    note: "Hairline border holds the image, bloom escapes below",
-    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true, frame: true } },
+    label: "Shadow + Glow",
+    note: "Inset glow defines the image boundary; shadow bloom radiates below — two depths, one surface",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true, frame: "glow" } },
   },
   {
     label: "Shadow + Overlay",
@@ -406,9 +416,9 @@ const IMAGE_SHADOWS: Array<{ label: string; note: string; props: ImageBlockProps
     props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true, overlay: true } },
   },
   {
-    label: "Shadow + Frame + Overlay",
-    note: "Full treatment stack",
-    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true, frame: true, overlay: true } },
+    label: "Shadow + Glow + Overlay",
+    note: "Full atmospheric stack — wash, edge glow, and bloom all in the same teal register",
+    props: { src: IMAGE_SRC, alt: IMAGE_ALT, styleOptions: { ratio: "16:9", shadow: true, frame: "glow", overlay: true } },
   },
 ];
 
@@ -864,8 +874,8 @@ export default function ShowcaseBlocksPage() {
         <div className="px-md pt-xl pb-lg lg:px-lg">
           <SectionLabel index="05 · Media" title="ImageBlock" />
           <p className="text-body leading-body text-fg-muted max-w-[65ch]">
-            Flexible image block with teal brand overlay, hairline frame, inset or below caption,
-            chromatic shadow bloom, and a scroll-triggered wipe reveal. All options map 1:1 to CMS
+            Flexible image block with two frame modes (bold offset backing, atmospheric glow), teal brand overlay,
+            inset or below caption, chromatic shadow bloom, and a scroll-triggered wipe reveal. All options map 1:1 to CMS
             content properties.
           </p>
         </div>
@@ -960,7 +970,7 @@ export default function ShowcaseBlocksPage() {
             src={IMAGE_SRC}
             alt={IMAGE_ALT}
             caption="OptiTech. Precision at every layer."
-            styleOptions={{ ratio: "16:9", animate: true, frame: true, captionPosition: "inset" }}
+            styleOptions={{ ratio: "16:9", animate: true, frame: "offset", captionPosition: "inset" }}
           />
         </div>
 

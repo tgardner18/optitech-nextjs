@@ -10,8 +10,14 @@ export type ImageStyleOptions = {
   ratio?: "16:9" | "4:3" | "3:2" | "1:1";
   /** Teal brand wash via mix-blend-mode: multiply — works best on light-toned imagery */
   overlay?: boolean;
-  /** 1px solid teal hairline with a 6px inset gap — the margin-frame effect */
-  frame?: boolean;
+  /**
+   * Frame treatment:
+   * "offset" — bold editorial: teal backing block visible as a 12px strip on the
+   *            right/bottom edges, like a designer's mounting board.
+   * "glow"   — atmospheric: inset teal edge glow + outer ambient bloom, as if the
+   *            image is backlit from within.
+   */
+  frame?: "offset" | "glow";
   /** Scroll-triggered wipe reveal: teal bar sweeps right, image follows on its heels */
   animate?: boolean;
   /** "inset" floats the caption over the image bottom-left; "below" places it beneath */
@@ -35,8 +41,8 @@ export type ImageBlockProps = {
 
 const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
   "16:9": "aspect-video",
-  "4:3":  "aspect-[4/3]",
-  "3:2":  "aspect-[3/2]",
+  "4:3":  "aspect-4/3",
+  "3:2":  "aspect-3/2",
   "1:1":  "aspect-square",
 };
 
@@ -51,7 +57,7 @@ export default function ImageBlock({
   const {
     ratio,
     overlay         = false,
-    frame           = false,
+    frame,
     animate         = false,
     captionPosition = "inset",
     shadow          = false,
@@ -128,18 +134,43 @@ export default function ImageBlock({
     zIndex: -1,
   };
 
+  /*
+   * Glow frame: inset teal ring defines the image boundary; outer bloom lifts
+   * the image off the surface as if backlit. No additional wrapper element needed.
+   */
+  const glowStyle: React.CSSProperties = frame === "glow"
+    ? {
+        boxShadow:
+          "inset 0 0 0 2px oklch(55% 0.18 195 / 0.5), " +
+          "0 0 0 1px oklch(55% 0.18 195 / 0.15), " +
+          "0 0 52px oklch(55% 0.18 195 / 0.25)",
+      }
+    : {};
+
   return (
     <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
 
       {/* Chromatic shadow bloom — teal left, signal green right */}
       {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-      {/* Frame: 1px teal border with 6px inset gap */}
-      <div className={frame ? "border border-brand p-1.5" : ""}>
+      {/*
+        * Offset frame: outer wrapper adds 12px of space on the right and bottom.
+        * A teal backing block sits at (12px, 12px), creating a bold editorial
+        * mounting-board effect — the image floats above a teal backing.
+        */}
+      <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+        {frame === "offset" && (
+          <div
+            aria-hidden="true"
+            className="absolute top-3 left-3 right-0 bottom-0 bg-brand"
+          />
+        )}
 
+        {/* Image container — glow applies here as an inline box-shadow */}
         <div
           ref={containerRef}
-          className={`relative overflow-hidden ${aspectClass}`}
+          className={`relative overflow-hidden ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
+          style={glowStyle}
         >
           {/* Teal bar — leads the reveal, exits right before image appears */}
           {animate && (

@@ -30,6 +30,7 @@ const NAV = [
       { href: "/showcase/blocks#typography", label: "Typography" },
       { href: "/showcase/blocks#quote",      label: "Quote"      },
       { href: "/showcase/blocks#media",      label: "Media"      },
+      { href: "/showcase/blocks#card-block", label: "Card"       },
     ],
   },
   {
