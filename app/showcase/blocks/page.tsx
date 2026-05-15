@@ -10,6 +10,8 @@ import QuoteBlock from "@/components/blocks/QuoteBlock";
 import type { QuoteBlockProps } from "@/components/blocks/QuoteBlock";
 import ImageBlock from "@/components/blocks/ImageBlock";
 import type { ImageBlockProps } from "@/components/blocks/ImageBlock";
+import Button from "@/components/ui/Button";
+import { ArrowRight, Zap, ChevronRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Components — Design System — OptiTech",
@@ -413,6 +415,141 @@ const IMAGE_SHADOWS: Array<{ label: string; note: string; props: ImageBlockProps
 export default function ShowcaseBlocksPage() {
   return (
     <>
+
+      {/* ════════════════════════════════════════════════════
+          UI ELEMENTS — BUTTON
+      ═══════════════════════════════════════════════════ */}
+      <BlockGroup
+        id="ui"
+        label="UI Elements"
+        description="Foundational interactive primitives. CVA-based, TypeScript props, polymorphic (button or Link). Three variants, three sizes, optional icon slots."
+      />
+
+      <section id="button" className="border-t border-fg/5">
+        <div className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="00 · UI" title="Button" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            Three variants: <code className="font-mono text-fg text-label">primary</code> (teal fill),{" "}
+            <code className="font-mono text-fg text-label">ghost</code> (bordered, for dark/teal surfaces),{" "}
+            <code className="font-mono text-fg text-label">signal</code> (kinetic fill sweep — the attention CTA).
+            Renders as <code className="font-mono text-fg text-label">&lt;button&gt;</code> or{" "}
+            <code className="font-mono text-fg text-label">&lt;Link&gt;</code> based on <code className="font-mono text-fg text-label">href</code>.
+          </p>
+        </div>
+
+        {/* ── Variants ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variants · md · on canvas
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md items-start">
+          <div className="flex flex-col gap-sm">
+            <span className="font-mono text-label text-fg-muted/50">primary</span>
+            <Button variant="primary" href="#">Get started</Button>
+          </div>
+          <div className="flex flex-col gap-sm">
+            <span className="font-mono text-label text-fg-muted/50">ghost</span>
+            <Button variant="ghost" href="#">Learn more</Button>
+          </div>
+          <div className="flex flex-col gap-sm">
+            <span className="font-mono text-label text-fg-muted/50">signal</span>
+            <Button variant="signal" href="#">See it in action</Button>
+          </div>
+        </div>
+
+        {/* ── Sizes ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Sizes · primary variant
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md items-end">
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">sm</span>
+            <Button variant="primary" size="sm" href="#">Get started</Button>
+          </div>
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">md (default)</span>
+            <Button variant="primary" size="md" href="#">Get started</Button>
+          </div>
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">lg</span>
+            <Button variant="primary" size="lg" href="#">Get started</Button>
+          </div>
+        </div>
+
+        {/* ── Icons ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Icon slots · leading · trailing · both
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md items-start">
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">leadingIcon</span>
+            <Button variant="primary" href="#" leadingIcon={<Zap />}>Deploy now</Button>
+          </div>
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">trailingIcon</span>
+            <Button variant="primary" href="#" trailingIcon={<ArrowRight />}>Get started</Button>
+          </div>
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">ghost + trailingIcon</span>
+            <Button variant="ghost" href="#" trailingIcon={<ChevronRight />}>Learn more</Button>
+          </div>
+          <div className="flex flex-col gap-sm items-start">
+            <span className="font-mono text-label text-fg-muted/50">signal + trailingIcon</span>
+            <Button variant="signal" href="#" trailingIcon={<ArrowRight />}>See it live</Button>
+          </div>
+        </div>
+
+        {/* ── Signal variant in context ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Signal · kinetic fill sweep
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Hover to trigger. Teal fills left-to-right; text transitions to press-white 75ms into the sweep.
+            Reduced-motion: instant background swap, no animation.
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-lg items-end">
+          {(["sm", "md", "lg"] as const).map((s) => (
+            <div key={s} className="flex flex-col gap-sm items-start">
+              <span className="font-mono text-label text-fg-muted/50">{s}</span>
+              <Button variant="signal" size={s} href="#" trailingIcon={<ArrowRight />}>
+                {s === "sm" ? "Start free" : s === "md" ? "Start your trial" : "Start your free trial"}
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Disabled states ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Disabled · all variants
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md items-start">
+          <Button variant="primary" disabled>Get started</Button>
+          <Button variant="ghost" disabled>Learn more</Button>
+          <Button variant="signal" disabled>See it in action</Button>
+        </div>
+
+        {/* ── On brand surface ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            On brand surface · ghost + signal in context
+          </p>
+        </div>
+        <div className="bg-brand px-md py-xl lg:px-lg flex flex-wrap gap-md items-center">
+          <Button variant="ghost" href="#">Learn more</Button>
+          <Button variant="ghost" href="#" trailingIcon={<ChevronRight />}>View the platform</Button>
+        </div>
+
+        <div className="pb-xl" />
+      </section>
 
       {/* ════════════════════════════════════════════════════
           HERO BLOCKS

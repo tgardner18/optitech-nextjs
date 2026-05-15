@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import Button from "@/components/ui/Button";
 
 const NAV_LINKS = [
   { label: "Product",  href: "#" },
@@ -48,16 +49,7 @@ export default function Header() {
           {/* Desktop controls: theme toggle + CTA */}
           <div className="hidden lg:flex items-center gap-md">
             <ThemeToggle />
-            <Link
-              href="#"
-              className="bg-brand hover:bg-brand-hover
-                         text-fg-on-brand text-label font-semibold tracking-label uppercase
-                         px-7 py-3
-                         transition-colors duration-150 ease-quick
-                         focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-[3px]"
-            >
-              Get Started
-            </Link>
+            <Button href="#" size="sm">Get Started</Button>
           </div>
 
           {/* Mobile controls: theme toggle + hamburger */}
@@ -110,16 +102,7 @@ export default function Header() {
         </nav>
 
         <div className="mt-lg">
-          <Link
-            href="#"
-            className="inline-block bg-brand hover:bg-brand-hover
-                       text-fg-on-brand text-label font-semibold tracking-label uppercase
-                       px-12 py-4
-                       transition-colors duration-150 ease-quick"
-            onClick={() => setMenuOpen(false)}
-          >
-            Get Started
-          </Link>
+          <Button href="#" onClick={() => setMenuOpen(false)}>Get Started</Button>
         </div>
       </div>
     </>
