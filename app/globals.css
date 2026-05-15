@@ -116,3 +116,262 @@ body {
   background-clip: text;
   color: transparent;
 }
+
+/* ── Rich Text Prose ─────────────────────────────────────────────────────────
+ * Scoped to [data-rich-text] to safely style TinyMCE WYSIWYG HTML output.
+ * Data attributes on the container drive color, size, and treatment variants.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Container defaults */
+[data-rich-text] {
+  overflow-wrap: break-word;
+}
+
+/* Paragraphs */
+[data-rich-text] p {
+  font-size: var(--ot-text-body);
+  line-height: var(--ot-leading-body);
+  color: var(--ot-fg);
+  text-wrap: pretty;
+  margin-bottom: var(--ot-space-md);
+}
+[data-rich-text] p:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings */
+[data-rich-text] h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ot-fg);
+  text-wrap: balance;
+  margin-top: var(--ot-space-xl);
+  margin-bottom: var(--ot-space-sm);
+}
+[data-rich-text] h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--ot-fg);
+  text-wrap: balance;
+  margin-top: var(--ot-space-lg);
+  margin-bottom: var(--ot-space-xs);
+}
+[data-rich-text] h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--ot-fg);
+  text-wrap: balance;
+  margin-top: var(--ot-space-md);
+  margin-bottom: var(--ot-space-xs);
+}
+[data-rich-text] :is(h2, h3, h4):first-child {
+  margin-top: 0;
+}
+
+/* Lists */
+[data-rich-text] ul,
+[data-rich-text] ol {
+  padding-left: var(--ot-space-lg);
+  margin-bottom: var(--ot-space-md);
+}
+[data-rich-text] ul {
+  list-style-type: disc;
+}
+[data-rich-text] ol {
+  list-style-type: decimal;
+}
+[data-rich-text] li {
+  font-size: var(--ot-text-body);
+  line-height: var(--ot-leading-body);
+  color: var(--ot-fg);
+  margin-bottom: var(--ot-space-xs);
+}
+[data-rich-text] li:last-child {
+  margin-bottom: 0;
+}
+
+/* Blockquote — full border + background tint; no side stripe */
+[data-rich-text] blockquote {
+  border: 1px solid oklch(55% 0.18 195 / 0.35);
+  background: oklch(55% 0.18 195 / 0.07);
+  padding: var(--ot-space-lg);
+  margin: var(--ot-space-lg) 0;
+}
+[data-rich-text] blockquote p {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-weight: 500;
+  margin-bottom: 0;
+  color: var(--ot-fg);
+}
+[data-rich-text] blockquote p:not(:last-child) {
+  margin-bottom: var(--ot-space-sm);
+}
+
+/* Inline */
+[data-rich-text] strong {
+  font-weight: 700;
+}
+[data-rich-text] em {
+  font-style: italic;
+}
+[data-rich-text] a {
+  color: var(--ot-brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: oklch(55% 0.18 195 / 0.4);
+  transition: color 0.15s var(--ot-ease-quick),
+              text-decoration-color 0.15s var(--ot-ease-quick);
+}
+[data-rich-text] a:hover {
+  color: var(--ot-brand-hover);
+  text-decoration-color: var(--ot-brand-hover);
+}
+
+/* Code */
+[data-rich-text] code {
+  font-family: var(--ot-font-mono);
+  font-size: 0.875em;
+  background: var(--ot-surface);
+  color: var(--ot-fg);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+}
+[data-rich-text] pre {
+  background: var(--ot-canvas);
+  border: 1px solid oklch(97% 0.005 195 / 0.1);
+  padding: var(--ot-space-md);
+  overflow-x: auto;
+  margin: var(--ot-space-md) 0;
+}
+[data-rich-text] pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+}
+
+/* Images */
+[data-rich-text] img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: var(--ot-space-md) 0;
+}
+
+/* Horizontal rule */
+[data-rich-text] hr {
+  border: none;
+  border-top: 1px solid oklch(55% 0.18 195 / 0.25);
+  margin: var(--ot-space-lg) 0;
+}
+
+/* ── Color: brand background ── */
+[data-rich-text][data-color="brand"] p,
+[data-rich-text][data-color="brand"] li {
+  color: var(--ot-fg-on-brand);
+}
+[data-rich-text][data-color="brand"] h2,
+[data-rich-text][data-color="brand"] h3,
+[data-rich-text][data-color="brand"] h4 {
+  color: var(--ot-fg-on-brand);
+}
+[data-rich-text][data-color="brand"] blockquote {
+  border-color: oklch(97% 0.005 195 / 0.3);
+  background: oklch(97% 0.005 195 / 0.08);
+}
+[data-rich-text][data-color="brand"] blockquote p {
+  color: var(--ot-fg-on-brand);
+}
+[data-rich-text][data-color="brand"] a {
+  color: var(--ot-fg-on-brand);
+  text-decoration-color: oklch(97% 0.005 195 / 0.45);
+}
+[data-rich-text][data-color="brand"] a:hover {
+  color: var(--ot-fg-on-brand);
+  text-decoration-color: var(--ot-fg-on-brand);
+}
+[data-rich-text][data-color="brand"] code {
+  background: oklch(97% 0.005 195 / 0.15);
+  color: var(--ot-fg-on-brand);
+}
+[data-rich-text][data-color="brand"] hr {
+  border-top-color: oklch(97% 0.005 195 / 0.2);
+}
+
+/* ── Size: compact ── */
+[data-rich-text][data-size="compact"] p {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+[data-rich-text][data-size="compact"] h2 {
+  font-size: 1.25rem;
+  margin-top: var(--ot-space-lg);
+}
+[data-rich-text][data-size="compact"] h3 {
+  font-size: 1.125rem;
+  margin-top: var(--ot-space-md);
+}
+[data-rich-text][data-size="compact"] li {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+[data-rich-text][data-size="compact"] blockquote {
+  padding: var(--ot-space-md);
+  margin: var(--ot-space-md) 0;
+}
+[data-rich-text][data-size="compact"] blockquote p {
+  font-size: 1rem;
+}
+
+/* ── Treatment: lead — first paragraph as editorial deck ── */
+[data-rich-text][data-treatment="lead"] > p:first-child {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--ot-fg-muted);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  margin-bottom: var(--ot-space-lg);
+}
+[data-rich-text][data-color="brand"][data-treatment="lead"] > p:first-child {
+  color: oklch(97% 0.005 195 / 0.75);
+}
+
+/* ── Treatment: dropcap — brand-teal first letter, floated ── */
+[data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter {
+  color: var(--ot-brand);
+  float: left;
+  font-size: 3.75em;
+  font-weight: 800;
+  line-height: 0.82;
+  margin-right: 0.08em;
+  letter-spacing: -0.03em;
+}
+[data-rich-text][data-color="brand"][data-treatment="dropcap"] > p:first-child::first-letter {
+  color: var(--ot-fg-on-brand);
+}
+
+/* ── Ruled headings — 1px teal top-border as chapter divider ── */
+[data-rich-text][data-ruled-headings] h2,
+[data-rich-text][data-ruled-headings] h3 {
+  border-top: 1px solid oklch(55% 0.18 195 / 0.4);
+  padding-top: var(--ot-space-md);
+  margin-top: var(--ot-space-xl);
+}
+[data-rich-text][data-ruled-headings] h2:first-child,
+[data-rich-text][data-ruled-headings] h3:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+[data-rich-text][data-color="brand"][data-ruled-headings] h2,
+[data-rich-text][data-color="brand"][data-ruled-headings] h3 {
+  border-top-color: oklch(97% 0.005 195 / 0.25);
+}
