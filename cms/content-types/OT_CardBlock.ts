@@ -6,9 +6,9 @@ export const OT_CardBlock = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
-    heading:     { type: 'string', displayName: 'Heading',         group: 'OT_Content', sortOrder: 10 },
-    eyebrow:     { type: 'string', displayName: 'Eyebrow',         group: 'OT_Content', sortOrder: 20 },
-    description: { type: 'string', displayName: 'Description',     group: 'OT_Content', sortOrder: 30 },
+    Heading:     { type: 'string', displayName: 'Heading',         group: 'OT_Content', sortOrder: 10 },
+    Eyebrow:     { type: 'string', displayName: 'Eyebrow',         group: 'OT_Content', sortOrder: 20 },
+    Description: { type: 'string', displayName: 'Description',     group: 'OT_Content', sortOrder: 30 },
     image:       { type: 'contentReference', allowedTypes: ['_image'], displayName: 'Image',          group: 'OT_Content', sortOrder: 40 },
     imageAlt:    { type: 'string',                                    displayName: 'Image Alt Text', group: 'OT_Content', sortOrder: 50 },
     ctaLabel:    { type: 'string', displayName: 'CTA Label',        group: 'OT_Content', sortOrder: 60 },

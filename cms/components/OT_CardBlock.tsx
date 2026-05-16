@@ -14,9 +14,9 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
   return (
     <div {...pa()}>
       <CardBlock
-        heading={content.heading ?? ''}
-        eyebrow={content.eyebrow ?? undefined}
-        description={content.description ?? undefined}
+        heading={content.Heading ?? ''}
+        eyebrow={content.Eyebrow ?? undefined}
+        description={content.Description ?? undefined}
         image={
           content.image
             ? { src: src(content.image) ?? '', alt: content.imageAlt ?? '' }
