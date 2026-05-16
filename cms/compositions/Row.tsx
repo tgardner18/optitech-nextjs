@@ -40,14 +40,6 @@ const verticalPaddingClasses: Record<string, string> = {
   xl:     'py-2xl',
 }
 
-const minHeightClasses: Record<string, string> = {
-  auto:         '',
-  quarter:      'min-h-[25vh]',
-  half:         'min-h-[50vh]',
-  threequarter: 'min-h-[75vh]',
-  screen:       'min-h-screen',
-}
-
 const bgColorClasses: Record<string, string> = {
   none:      '',
   canvas:    'bg-canvas',
@@ -86,7 +78,6 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
   const justify    = String(displaySettings.justifyContent   ?? 'start')
   const align      = String(displaySettings.alignItems       ?? 'start')
   const vPadding   = String(displaySettings.verticalPadding  ?? 'none')
-  const minH       = String(displaySettings.minHeight        ?? 'auto')
   const bgColor    = String(displaySettings.backgroundColor  ?? 'none')
   const bgImage    = displaySettings.backgroundImage ? String(displaySettings.backgroundImage) : ''
   const overlay    = String(displaySettings.imageOverlay     ?? 'none')
@@ -98,7 +89,6 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
   const breakpointClass = breakpointTable[breakpoint]        ?? breakpointTable.md
   const spacingClass    = contentSpacingClasses[spacing]     ?? contentSpacingClasses.medium
   const vPaddingClass   = verticalPaddingClasses[vPadding]   ?? ''
-  const minHClass       = minHeightClasses[minH]             ?? ''
   const bgColorClass    = bgColorClasses[bgColor]            ?? ''
   const overlayClass    = overlayClasses[overlay]            ?? ''
   const justifyClass    = justifyClasses[justify]            ?? ''
@@ -109,7 +99,7 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
 
   return (
     <div
-      className={`vb:row relative isolate flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${minHClass} ${bgColorClass} ${justifyClass} ${alignClass}`}
+      className={`vb:row relative isolate flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${bgColorClass} ${justifyClass} ${alignClass}`}
       style={bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
       data-stagger={isAnimated ? entranceAnimation : undefined}
       {...pa(node)}

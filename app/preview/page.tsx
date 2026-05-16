@@ -6,6 +6,8 @@ import {
 } from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
 import { getClient } from '@/lib/optimizely'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -37,10 +39,17 @@ async function PreviewPage({ searchParams }: Props) {
       {/* React 19: <script async src> is hoisted to <head> and deduped automatically */}
       <script async src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       <PreviewComponent />
-      {isExperience
-        ? <OptimizelyComposition nodes={content.composition.nodes} />
-        : <OptimizelyComponent content={content} />
-      }
+      {isExperience ? (
+        <>
+          <Header />
+          <main className="flex-1">
+            <OptimizelyComposition nodes={content.composition.nodes} />
+          </main>
+          <Footer />
+        </>
+      ) : (
+        <OptimizelyComponent content={content} />
+      )}
     </>
   )
 }

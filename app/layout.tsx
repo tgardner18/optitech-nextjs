@@ -3,8 +3,6 @@ import '@/cms/registry'
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 // Runs synchronously before first paint — sets data-theme from localStorage or
@@ -48,9 +46,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          {children}
         </ThemeProvider>
       </body>
     </html>
