@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { MotionObserver } from "@/components/providers/MotionObserver";
 
 // Runs synchronously before first paint — sets data-theme from localStorage or
 // system preference so CSS variables resolve correctly with no flash.
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           {children}
+          <MotionObserver />
         </ThemeProvider>
       </body>
     </html>

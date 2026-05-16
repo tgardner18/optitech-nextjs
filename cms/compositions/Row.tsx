@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { RowBreakpointContext } from '@/cms/compositions/RowBreakpointContext'
 
 type Props = {
   node: any
@@ -107,7 +108,9 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
       {hasOverlay && (
         <div className={`absolute inset-0 -z-10 ${overlayClass}`} aria-hidden="true" />
       )}
-      {children}
+      <RowBreakpointContext.Provider value={breakpoint}>
+        {children}
+      </RowBreakpointContext.Provider>
     </div>
   )
 }
