@@ -8,7 +8,7 @@ type Props = {
 }
 
 export default function OT_HeroBlock({ content, displaySettings = {} }: Props) {
-  const { pa } = getPreviewUtils(content)
+  const { pa, src } = getPreviewUtils(content)
   const styleOptions = getHeroStyles(displaySettings)
 
   return (
@@ -27,7 +27,7 @@ export default function OT_HeroBlock({ content, displaySettings = {} }: Props) {
             ? { label: content.secondaryCtaLabel, href: content.secondaryCtaUrl?.default ?? '#' }
             : undefined
         }
-        visualSrc={content.visual?.url?.default ?? undefined}
+        visualSrc={src(content.visual)}
         visualAlt={content.visualAlt ?? undefined}
         styleOptions={styleOptions}
       />

@@ -1,3 +1,5 @@
+import '@/lib/optimizely'
+import '@/cms/registry'
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";

@@ -8,7 +8,7 @@ type Props = {
 }
 
 export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
-  const { pa } = getPreviewUtils(content)
+  const { pa, src } = getPreviewUtils(content)
   const styleOptions = getCardStyles(displaySettings)
 
   return (
@@ -18,8 +18,8 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
         eyebrow={content.eyebrow ?? undefined}
         description={content.description ?? undefined}
         image={
-          content.image?.url?.default
-            ? { src: content.image.url.default, alt: content.imageAlt ?? '' }
+          content.image
+            ? { src: src(content.image) ?? '', alt: content.imageAlt ?? '' }
             : undefined
         }
         cta={
