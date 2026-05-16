@@ -88,8 +88,9 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
   const bgColor    = String(displaySettings.backgroundColor  ?? 'none')
   const bgImage    = displaySettings.backgroundImage ? String(displaySettings.backgroundImage) : ''
   const overlay    = String(displaySettings.imageOverlay     ?? 'none')
-  const wrap       = displaySettings.wrapColumns    === true
-  const reverse    = displaySettings.reverseColumns === true
+  const wrap              = displaySettings.wrapColumns      === true
+  const reverse           = displaySettings.reverseColumns   === true
+  const entranceAnimation = String(displaySettings.entranceAnimation ?? 'none')
 
   const breakpointTable = reverse ? rowBreakpointReverseClasses : rowBreakpointClasses
   const breakpointClass = breakpointTable[breakpoint]        ?? breakpointTable.md
@@ -101,12 +102,14 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
   const justifyClass    = justifyClasses[justify]            ?? ''
   const alignClass      = alignItemsClasses[align]           ?? ''
 
-  const hasOverlay = overlayClass.length > 0
+  const hasOverlay  = overlayClass.length > 0
+  const isAnimated  = entranceAnimation !== 'none'
 
   return (
     <div
       className={`vb:row relative isolate flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${minHClass} ${bgColorClass} ${justifyClass} ${alignClass}`}
       style={bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      data-stagger={isAnimated ? entranceAnimation : undefined}
       {...pa(node)}
     >
       {hasOverlay && (

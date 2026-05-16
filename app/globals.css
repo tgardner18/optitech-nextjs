@@ -75,6 +75,18 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Row staggered column entrance ──────────────────────────────────────────
+ * Activated by data-stagger="slide"|"fade" on a Row composition.
+ * Columns beyond index 4 share the final delay — editors rarely exceed 4.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  [data-stagger="slide"] > * { animation: slideUp 0.6s var(--ot-ease-kinetic) both; }
+  [data-stagger="fade"]  > * { animation: fadeIn  0.6s var(--ot-ease-kinetic) both; }
+  [data-stagger] > *:nth-child(2) { animation-delay: 120ms; }
+  [data-stagger] > *:nth-child(3) { animation-delay: 240ms; }
+  [data-stagger] > *:nth-child(4) { animation-delay: 360ms; }
+}
+
 body {
   background: var(--ot-canvas);
   color: var(--ot-fg);

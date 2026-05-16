@@ -6,33 +6,47 @@ type Props = {
 }
 
 const widthClasses: Record<string, string> = {
-  full:     'w-full',
-  narrow:   'max-w-4xl w-full mx-auto px-8',
-  wide:     'max-w-7xl w-full mx-auto px-8',
-  default:  'container mx-auto px-8 w-full',
+  full:    'w-full',
+  narrow:  'max-w-4xl w-full mx-auto px-lg',
+  wide:    'max-w-7xl w-full mx-auto px-lg',
+  default: 'container mx-auto px-lg w-full',
 }
 
 const verticalSpacingClasses: Record<string, string> = {
-  small:   'py-8',
-  large:   'py-24',
-  default: 'py-16',
+  none:   'py-0',
+  small:  'py-md',
+  medium: 'py-lg',
+  large:  'py-xl',
+  xl:     'py-2xl',
 }
 
-export default function BlankSection({ content, displaySettings = {} }: Props) {
+const bgColorClasses: Record<string, string> = {
+  none:         '',
+  canvas:       'bg-canvas',
+  surface:      'bg-surface',
+  brand:        'bg-brand',
+  'brand-deep': 'bg-brand-hover',
+}
+
+export default function Section({ content, displaySettings = {} }: Props) {
   const { pa } = getPreviewUtils(content)
 
   const width   = String(displaySettings.gridWidth       ?? 'default')
-  const vSpace  = String(displaySettings.verticalSpacing ?? 'default')
+  const vSpace  = String(displaySettings.verticalSpacing ?? 'large')
+  const bgColor = String(displaySettings.backgroundColor ?? 'none')
 
-  const widthClass  = widthClasses[width]   ?? widthClasses.default
-  const vSpaceClass = verticalSpacingClasses[vSpace] ?? verticalSpacingClasses.default
+  const widthClass   = widthClasses[width]              ?? widthClasses.default
+  const vSpaceClass  = verticalSpacingClasses[vSpace]   ?? verticalSpacingClasses.large
+  const bgColorClass = bgColorClasses[bgColor]          ?? ''
 
   return (
     <section
-      className={`vb:section flex flex-col ${widthClass} ${vSpaceClass}`}
+      className={`vb:section w-full ${bgColorClass}`}
       {...pa(content)}
     >
-      <OptimizelyGridSection nodes={content.nodes ?? []} />
+      <div className={`flex flex-col ${widthClass} ${vSpaceClass}`}>
+        <OptimizelyGridSection nodes={content.nodes ?? []} />
+      </div>
     </section>
   )
 }

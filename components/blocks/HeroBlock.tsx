@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cva } from "class-variance-authority";
@@ -25,14 +25,8 @@ const sectionCva = cva("flex flex-col", {
       imageRight: "lg:flex-row",
       imageLeft:  "lg:flex-row-reverse",
     },
-    animation: {
-      none:     "",
-      fade:     "motion-safe:animate-fade-in",
-      slide:    "motion-safe:animate-slide-up",
-      parallax: "motion-safe:animate-fade-in",
-    },
   },
-  defaultVariants: { layout: "imageRight", animation: "none" },
+  defaultVariants: { layout: "imageRight" },
 });
 
 const textPanelCva = cva(
@@ -165,25 +159,39 @@ export default function HeroBlock({
   styleOptions = {},
 }: HeroBlockProps) {
   const { layout = "imageRight", color = "brand", animation = "none" } = styleOptions;
-  const hasVisual = !!(visual || visualSrc);
+  const hasVisual  = !!(visual || visualSrc);
+  const isAnimated = animation !== "none";
+
+  const animClass = animation === "fade"
+    ? "motion-safe:animate-fade-in"
+    : isAnimated ? "motion-safe:animate-slide-up" : "";
+
+  const stagger = (delay: number): CSSProperties =>
+    isAnimated ? { animationDelay: `${delay}ms` } : {};
 
   return (
-    <section className={sectionCva({ layout, animation })} aria-label="Hero">
+    <section className={sectionCva({ layout })} aria-label="Hero">
 
       {/* ── Text panel ── */}
       <div className={textPanelCva({ color, mode: hasVisual ? "split" : "full" })}>
         <div className="flex flex-col gap-lg">
           {eyebrow && (
-            <p className={eyebrowCva({ color })}>{eyebrow}</p>
+            <p className={`${eyebrowCva({ color })} ${animClass}`} style={stagger(0)}>
+              {eyebrow}
+            </p>
           )}
-          <h1 className={headlineCva({ color })}>{headline}</h1>
+          <h1 className={`${headlineCva({ color })} ${animClass}`} style={stagger(100)}>
+            {headline}
+          </h1>
           {body && (
-            <p className={bodyCva({ color })}>{body}</p>
+            <p className={`${bodyCva({ color })} ${animClass}`} style={stagger(200)}>
+              {body}
+            </p>
           )}
         </div>
 
         {(primaryCta || secondaryCta) && (
-          <div className="mt-xl flex flex-wrap gap-sm">
+          <div className={`mt-xl flex flex-wrap gap-sm ${animClass}`} style={stagger(320)}>
             {primaryCta && (
               <Link href={primaryCta.href} className={primaryCtaCva({ color })}>
                 {primaryCta.label}
@@ -200,7 +208,7 @@ export default function HeroBlock({
 
       {/* ── Visual panel — only rendered when a visual is provided ── */}
       {hasVisual && (
-        <div className={visualPanelCva({ color })}>
+        <div className={`${visualPanelCva({ color })} ${animClass}`} style={stagger(150)}>
           {visual ?? (
             visualSrc ? (
               <Image

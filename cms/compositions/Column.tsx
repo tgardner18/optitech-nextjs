@@ -27,9 +27,25 @@ const gridSpanClasses: Record<string, string> = {
 
 const contentSpacingClasses: Record<string, string> = {
   none:   'gap-0',
-  small:  'gap-2',
-  medium: 'gap-4',
-  large:  'gap-8',
+  small:  'gap-sm',
+  medium: 'gap-md',
+  large:  'gap-lg',
+  xl:     'gap-xl',
+}
+
+const verticalPaddingClasses: Record<string, string> = {
+  none:   'py-0',
+  small:  'py-sm',
+  medium: 'py-md',
+  large:  'py-lg',
+  xl:     'py-xl',
+}
+
+const horizontalPaddingClasses: Record<string, string> = {
+  none:   'px-0',
+  small:  'px-sm',
+  medium: 'px-md',
+  large:  'px-lg',
 }
 
 const justifyClasses: Record<string, string> = {
@@ -47,19 +63,23 @@ const alignClasses: Record<string, string> = {
 export default function Column({ node, displaySettings = {}, children }: Props) {
   const { pa } = getPreviewUtils(node)
 
-  const span    = String(displaySettings.gridSpan        ?? 'auto')
-  const spacing = String(displaySettings.contentSpacing  ?? 'medium')
-  const justify = String(displaySettings.justifyContent  ?? 'start')
-  const align   = String(displaySettings.alignContent    ?? 'start')
+  const span    = String(displaySettings.gridSpan          ?? 'auto')
+  const spacing = String(displaySettings.contentSpacing    ?? 'medium')
+  const justify = String(displaySettings.justifyContent    ?? 'start')
+  const align   = String(displaySettings.alignContent      ?? 'start')
+  const vPad    = String(displaySettings.verticalPadding   ?? 'none')
+  const hPad    = String(displaySettings.horizontalPadding ?? 'none')
 
-  const spanClass    = gridSpanClasses[span]    ?? gridSpanClasses.auto
-  const spacingClass = contentSpacingClasses[spacing] ?? contentSpacingClasses.medium
-  const justifyClass = justifyClasses[justify]  ?? ''
-  const alignClass   = alignClasses[align]      ?? ''
+  const spanClass    = gridSpanClasses[span]              ?? gridSpanClasses.auto
+  const spacingClass = contentSpacingClasses[spacing]     ?? contentSpacingClasses.medium
+  const justifyClass = justifyClasses[justify]            ?? ''
+  const alignClass   = alignClasses[align]                ?? ''
+  const vPadClass    = verticalPaddingClasses[vPad]       ?? ''
+  const hPadClass    = horizontalPaddingClasses[hPad]     ?? ''
 
   return (
     <div
-      className={`vb:col flex flex-col ${spanClass} ${spacingClass} ${justifyClass} ${alignClass}`}
+      className={`vb:col flex flex-col ${spanClass} ${spacingClass} ${vPadClass} ${hPadClass} ${justifyClass} ${alignClass}`}
       {...pa(node)}
     >
       {children}
