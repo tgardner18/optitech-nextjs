@@ -2,7 +2,6 @@ import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins, Syne } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -44,8 +43,10 @@ export default function RootLayout({
       className={`${poppins.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeScript }} />
         <ThemeProvider>
           <Header />
           <main className="flex-1">{children}</main>
