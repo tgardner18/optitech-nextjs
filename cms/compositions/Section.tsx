@@ -21,11 +21,11 @@ const verticalSpacingClasses: Record<string, string> = {
 }
 
 const bgColorClasses: Record<string, string> = {
-  none:         '',
-  canvas:       'bg-canvas',
-  surface:      'bg-surface',
-  brand:        'bg-brand',
-  'brand-deep': 'bg-brand-hover',
+  none:      '',
+  canvas:    'bg-canvas',
+  surface:   'bg-surface',
+  brand:     'bg-brand',
+  brandDeep: 'bg-brand-hover',
 }
 
 export default function Section({ content, displaySettings = {} }: Props) {

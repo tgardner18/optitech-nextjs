@@ -10,19 +10,19 @@ type Props = {
 
 // Maps gridSpan value (1–12 or "auto") to Tailwind flex-basis
 const gridSpanClasses: Record<string, string> = {
-  auto: 'flex-1',
-  '1':  'md:basis-1/12  flex-1',
-  '2':  'md:basis-2/12  flex-1',
-  '3':  'md:basis-3/12  flex-1',
-  '4':  'md:basis-4/12  flex-1',
-  '5':  'md:basis-5/12  flex-1',
-  '6':  'md:basis-6/12  flex-1',
-  '7':  'md:basis-7/12  flex-1',
-  '8':  'md:basis-8/12  flex-1',
-  '9':  'md:basis-9/12  flex-1',
-  '10': 'md:basis-10/12 flex-1',
-  '11': 'md:basis-11/12 flex-1',
-  '12': 'md:basis-full  flex-1',
+  auto:  'flex-1',
+  col1:  'md:basis-1/12  flex-1',
+  col2:  'md:basis-2/12  flex-1',
+  col3:  'md:basis-3/12  flex-1',
+  col4:  'md:basis-4/12  flex-1',
+  col5:  'md:basis-5/12  flex-1',
+  col6:  'md:basis-6/12  flex-1',
+  col7:  'md:basis-7/12  flex-1',
+  col8:  'md:basis-8/12  flex-1',
+  col9:  'md:basis-9/12  flex-1',
+  col10: 'md:basis-10/12 flex-1',
+  col11: 'md:basis-11/12 flex-1',
+  col12: 'md:basis-full  flex-1',
 }
 
 const contentSpacingClasses: Record<string, string> = {
