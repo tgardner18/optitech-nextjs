@@ -5,7 +5,6 @@ import {
   withAppContext,
 } from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
-import Script from 'next/script'
 import { getClient } from '@/lib/optimizely'
 
 type Props = {
@@ -16,15 +15,27 @@ async function PreviewPage({ searchParams }: Props) {
   const params = await searchParams
   const cmsUrl = process.env.OPTIMIZELY_CMS_URL?.replace(/\/$/, '') ?? ''
 
-  const content = await getClient().getPreviewContent(
-    params as unknown as PreviewParams,
-  )
+  let content: any
+  try {
+    content = await getClient().getPreviewContent(
+      params as unknown as PreviewParams,
+    )
+  } catch (err: any) {
+    return (
+      <div style={{ padding: '2rem', fontFamily: 'monospace' }}>
+        <p><strong>Preview unavailable</strong></p>
+        <p>{err?.message ?? 'Unknown error'}</p>
+        <p>The content may not be published or the preview session may have expired. Reload the Visual Builder to get a fresh preview token.</p>
+      </div>
+    )
+  }
 
   const isExperience = Array.isArray(content?.composition?.nodes)
 
   return (
     <>
-      <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
+      {/* React 19: <script async src> is hoisted to <head> and deduped automatically */}
+      <script async src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       <PreviewComponent />
       {isExperience
         ? <OptimizelyComposition nodes={content.composition.nodes} />
