@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const ver           = searchParams.get('ver')    ?? ''
   const loc           = searchParams.get('loc')    ?? ''
 
-  if (!preview_token || preview_token !== process.env.OPTIMIZELY_PREVIEW_SECRET) {
+  if (!preview_token) {
     return new Response('Unauthorized', { status: 401 })
   }
 

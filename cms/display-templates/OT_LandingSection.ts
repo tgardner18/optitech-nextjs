@@ -3,7 +3,7 @@ import { displayTemplate } from '@optimizely/cms-sdk'
 export const OT_LandingSection = displayTemplate({
   key: 'OT_LandingSection',
   displayName: 'Landing Section',
-  nodeType: 'section' as 'row',
+  baseType: '_section',
   isDefault: true,
   settings: {
     gridWidth: {
