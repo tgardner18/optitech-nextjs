@@ -137,15 +137,17 @@ export default function ImageBlock({
   };
 
   /*
-   * Glow frame: inset brand ring defines the image boundary; outer bloom lifts
-   * the image off the surface as if backlit. No additional wrapper element needed.
+   * Glow frame: brand inset ring + outer border; accent adds a 1px chromatic halo
+   * outside the brand border and a directional bloom rising from below.
    */
   const glowStyle: React.CSSProperties = frame === "glow"
     ? {
         boxShadow:
           "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
           "0 0 0 1px var(--ot-bloom-brand-border), " +
-          "0 0 52px var(--ot-bloom-brand-faint)",
+          "0 0 0 2px var(--ot-bloom-accent-border), " +
+          "0 0 52px var(--ot-bloom-brand-faint), " +
+          "0 20px 72px var(--ot-bloom-accent-faint)",
       }
     : {};
 

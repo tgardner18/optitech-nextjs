@@ -86,5 +86,16 @@ export const OT_CardDefault = displayTemplate({
         top:  { displayName: 'Top Edge',       sortOrder: 20 },
       },
     },
+    maxHeight: {
+      displayName: 'Max height',
+      editor: 'select',
+      sortOrder: 90,
+      choices: {
+        none: { displayName: 'None — natural content height (Default)', sortOrder: 10 },
+        sm:   { displayName: 'Small — 320px',                           sortOrder: 20 },
+        md:   { displayName: 'Medium — 480px',                          sortOrder: 30 },
+        lg:   { displayName: 'Large — 640px',                           sortOrder: 40 },
+      },
+    },
   },
 })

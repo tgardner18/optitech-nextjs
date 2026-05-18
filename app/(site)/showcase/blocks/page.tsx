@@ -1477,8 +1477,9 @@ export default function ShowcaseBlocksPage() {
             Detail options · accent line · noise texture
           </p>
           <p className="text-body text-fg-muted mt-xs">
-            Accent line: 3px brand-teal top edge — not a side stripe. Noise: SVG feTurbulence grain at 7% overlay opacity adds
-            tactile depth on dark surfaces without resting shadows.
+            Accent line: 3px top edge using{" "}
+            <code className="font-mono text-fg text-label">--ot-accent</code> — follows the CMS theme override, not a side stripe.
+            Noise: SVG feTurbulence grain at 7% overlay opacity adds tactile depth on dark surfaces without resting shadows.
           </p>
         </div>
         <div className="px-md pb-xl lg:px-lg">
@@ -1504,6 +1505,33 @@ export default function ShowcaseBlocksPage() {
             <OT_CardBlock
               content={{ Heading: "Accent + noise + hover.", Eyebrow: "all three", Description: "Top accent, grain texture, and lift on hover. Each detail earns its place — together they compose without competing.", image: CARD_IMG_C, imageAlt: CARD_IMG_C_ALT, ctaLabel: "Explore", ctaUrl: { default: "#" } }}
               displaySettings={{ fill: "surface", imageStyle: "float", accentLine: "top", noise: true, hover: "lift" }}
+            />
+          </div>
+        </div>
+
+        {/* ── Max height ───────────────────────────────────────────────────────── */}
+        <div className="px-md py-lg lg:px-lg border-t border-fg/5">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            maxHeight · cap card height for background-image cards
+          </p>
+          <p className="text-body text-fg-muted mt-xs">
+            Background and float cards benefit from a height cap in wide or sparse layouts.
+            sm&nbsp;=&nbsp;320px · md&nbsp;=&nbsp;480px · lg&nbsp;=&nbsp;640px.
+          </p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
+            <OT_CardBlock
+              content={{ Heading: "Uncapped.", Eyebrow: "maxHeight:none", Description: "Natural content height — default. Correct for most card grids.", image: CARD_IMG_A, imageAlt: CARD_IMG_A_ALT }}
+              displaySettings={{ fill: "surface", imageStyle: "background" }}
+            />
+            <OT_CardBlock
+              content={{ Heading: "Medium cap.", Eyebrow: "maxHeight:md · 480px", Description: "480px keeps background cards proportional in two- and three-column layouts.", image: CARD_IMG_B, imageAlt: CARD_IMG_B_ALT, ctaLabel: "Get started", ctaUrl: { default: "#" } }}
+              displaySettings={{ fill: "surface", imageStyle: "background", maxHeight: "md" }}
+            />
+            <OT_CardBlock
+              content={{ Heading: "Small cap.", Eyebrow: "maxHeight:sm · 320px", Description: "320px suits dense grids or cards with minimal copy where a tighter frame reads as intentional.", image: CARD_IMG_C, imageAlt: CARD_IMG_C_ALT, ctaLabel: "See more", ctaUrl: { default: "#" } }}
+              displaySettings={{ fill: "surface", imageStyle: "background", maxHeight: "sm" }}
             />
           </div>
         </div>

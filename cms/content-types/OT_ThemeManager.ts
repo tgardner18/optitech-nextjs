@@ -76,12 +76,21 @@ export const OT_ThemeManager = contentType({
 
     // Theme color overrides — CSS values (hex, oklch, hsl, etc.)
     // All optional; if empty the defaults in styles/tokens.css apply.
-    colorBrand:        { type: 'string', displayName: 'Brand Color — primary fill (hex: #00bcd4 or oklch: oklch(55% 0.18 195))', group: 'OT_Theme', sortOrder: 100 },
-    colorBrandHover:   { type: 'string', displayName: 'Brand Hover — depth state (hex or oklch)',                               group: 'OT_Theme', sortOrder: 110 },
-    colorAccent:       { type: 'string', displayName: 'Accent Color — highlights / badges (hex or oklch)',                      group: 'OT_Theme', sortOrder: 120 },
-    colorCanvas:       { type: 'string', displayName: 'Canvas Dark — page background in dark mode (hex or oklch)',              group: 'OT_Theme', sortOrder: 130 },
-    colorSurface:      { type: 'string', displayName: 'Surface Dark — component panels in dark mode (hex or oklch)',            group: 'OT_Theme', sortOrder: 140 },
-    colorCanvasLight:  { type: 'string', displayName: 'Canvas Light — page background in light mode (hex or oklch)',            group: 'OT_Theme', sortOrder: 150 },
-    colorSurfaceLight: { type: 'string', displayName: 'Surface Light — component panels in light mode (hex or oklch)',          group: 'OT_Theme', sortOrder: 160 },
+    // ── Brand ──────────────────────────────────────────────────────────────
+    colorBrand:        { type: 'string', displayName: 'Brand — primary fill: hero panels, CTAs (e.g. oklch(55% 0.18 195))',          group: 'OT_Theme', sortOrder: 100 },
+    colorBrandHover:   { type: 'string', displayName: 'Brand Hover — depth state on hover (hex or oklch)',                             group: 'OT_Theme', sortOrder: 110 },
+    // ── Accent ─────────────────────────────────────────────────────────────
+    colorAccent:       { type: 'string', displayName: 'Accent — highlights, badges, alt CTAs (e.g. oklch(82% 0.19 145))',              group: 'OT_Theme', sortOrder: 120 },
+    colorAccentHover:  { type: 'string', displayName: 'Accent Hover — deeper accent for hover states (hex or oklch)',                  group: 'OT_Theme', sortOrder: 125 },
+    colorFgOnAccent:   { type: 'string', displayName: 'Foreground on Accent — text/icons on accent-filled surfaces (hex or oklch)',    group: 'OT_Theme', sortOrder: 127 },
+    // ── Canvas / Surface ───────────────────────────────────────────────────
+    colorCanvas:       { type: 'string', displayName: 'Canvas Dark — page background in dark mode (hex or oklch)',                     group: 'OT_Theme', sortOrder: 130 },
+    colorSurface:      { type: 'string', displayName: 'Surface Dark — component panels in dark mode (hex or oklch)',                   group: 'OT_Theme', sortOrder: 140 },
+    colorCanvasLight:  { type: 'string', displayName: 'Canvas Light — page background in light mode (hex or oklch)',                   group: 'OT_Theme', sortOrder: 150 },
+    colorSurfaceLight: { type: 'string', displayName: 'Surface Light — component panels in light mode (hex or oklch)',                 group: 'OT_Theme', sortOrder: 160 },
+    // ── Foreground ─────────────────────────────────────────────────────────
+    colorFgOnBrand:    { type: 'string', displayName: 'Foreground on Brand — text/borders on brand-filled surfaces (hex or oklch)',    group: 'OT_Theme', sortOrder: 165 },
+    colorFgMuted:      { type: 'string', displayName: 'Foreground Muted Dark — secondary text in dark mode (hex or oklch)',            group: 'OT_Theme', sortOrder: 170 },
+    colorFgMutedLight: { type: 'string', displayName: 'Foreground Muted Light — secondary text in light mode (hex or oklch)',          group: 'OT_Theme', sortOrder: 175 },
   },
 })

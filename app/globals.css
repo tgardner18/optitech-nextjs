@@ -469,6 +469,32 @@ body {
   border-top-color: oklch(97% 0.005 195 / 0.25);
 }
 
+/* ── Card hover interactions — lift and glow ─────────────────────────────────
+ * Defined here (not as Tailwind arbitrary values) so they can reference
+ * --ot-bloom-brand and --ot-bloom-accent, which follow the CMS theme override.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.card-hover-lift {
+  transition: transform 200ms var(--ot-ease-quick), box-shadow 200ms var(--ot-ease-quick);
+}
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 32px var(--ot-bloom-brand-faint),
+    0 16px 48px oklch(from var(--ot-accent) l c h / 0.10);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-hover-lift:hover { transform: none; }
+}
+
+.card-hover-glow {
+  transition: box-shadow 200ms var(--ot-ease-quick);
+}
+.card-hover-glow:hover {
+  box-shadow:
+    0 8px 32px oklch(from var(--ot-brand) l c h / 0.22),
+    0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
+}
+
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────
  * ::before is the teal fill that sweeps left-to-right on hover/focus.
  * Inner content is z-10 in JSX; text color transitions via group-hover:.

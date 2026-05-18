@@ -102,7 +102,10 @@
   --ot-bloom-brand-ring:   oklch(from var(--ot-brand) l c h / 0.50);
   --ot-bloom-brand-faint:  oklch(from var(--ot-brand) l c h / 0.25);
   --ot-bloom-brand-border: oklch(from var(--ot-brand) l c h / 0.15);
-  --ot-bloom-accent:       oklch(from var(--ot-accent) l c h / 0.60);
+  --ot-bloom-accent:        oklch(from var(--ot-accent) l c h / 0.60);
+  --ot-bloom-accent-ring:   oklch(from var(--ot-accent) l c h / 0.45);
+  --ot-bloom-accent-border: oklch(from var(--ot-accent) l c h / 0.18);
+  --ot-bloom-accent-faint:  oklch(from var(--ot-accent) l c h / 0.13);
 
   /* ── Display gradients — dark-mode stops ────────────────────────────────────
    * Stops are derived from --ot-brand and --ot-accent via CSS Relative Color

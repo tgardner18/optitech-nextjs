@@ -136,7 +136,9 @@ export default function VideoBlock({
           boxShadow:
             "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
             "0 0 0 1px var(--ot-bloom-brand-border), " +
-            "0 0 52px var(--ot-bloom-brand-faint)",
+            "0 0 0 2px var(--ot-bloom-accent-border), " +
+            "0 0 52px var(--ot-bloom-brand-faint), " +
+            "0 20px 72px var(--ot-bloom-accent-faint)",
         }
       : {};
 
@@ -263,7 +265,7 @@ export default function VideoBlock({
                     "relative flex items-center justify-center w-16 h-16",
                     "bg-brand",
                     "motion-safe:transition-[transform,background-color]",
-                    "motion-safe:duration-200 motion-safe:ease-[var(--ease-quick)]",
+                    "motion-safe:duration-200 motion-safe:ease-quick",
                     "group-hover/play:bg-[oklch(38%_0.16_195)]",
                     "motion-safe:group-hover/play:scale-110",
                   ].join(" ")}

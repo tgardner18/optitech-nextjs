@@ -45,10 +45,15 @@ const THEME_QUERY = `
         colorBrand
         colorBrandHover
         colorAccent
+        colorAccentHover
+        colorFgOnAccent
         colorCanvas
         colorSurface
         colorCanvasLight
         colorSurfaceLight
+        colorFgOnBrand
+        colorFgMuted
+        colorFgMutedLight
         primaryNavigation {
           menuLink { text title target url { default } }
           subNavItems {
@@ -102,13 +107,23 @@ export function buildThemeCSS(settings: any): string {
   const root: string[] = []
   const light: string[] = []
 
+  // Brand
   if (settings.colorBrand)        root.push(`--ot-brand: ${settings.colorBrand}`)
   if (settings.colorBrandHover)   root.push(`--ot-brand-hover: ${settings.colorBrandHover}`)
+  // Accent
   if (settings.colorAccent)       root.push(`--ot-accent: ${settings.colorAccent}`)
+  if (settings.colorAccentHover)  root.push(`--ot-accent-hover: ${settings.colorAccentHover}`)
+  if (settings.colorFgOnAccent)   root.push(`--ot-fg-on-accent: ${settings.colorFgOnAccent}`)
+  // Canvas / Surface — dark mode
   if (settings.colorCanvas)       root.push(`--ot-canvas: ${settings.colorCanvas}`)
   if (settings.colorSurface)      root.push(`--ot-surface: ${settings.colorSurface}`)
+  // Canvas / Surface — light mode
   if (settings.colorCanvasLight)  light.push(`--ot-canvas: ${settings.colorCanvasLight}`)
   if (settings.colorSurfaceLight) light.push(`--ot-surface: ${settings.colorSurfaceLight}`)
+  // Foreground
+  if (settings.colorFgOnBrand)    root.push(`--ot-fg-on-brand: ${settings.colorFgOnBrand}`)
+  if (settings.colorFgMuted)      root.push(`--ot-fg-muted: ${settings.colorFgMuted}`)
+  if (settings.colorFgMutedLight) light.push(`--ot-fg-muted: ${settings.colorFgMutedLight}`)
 
   if (!root.length && !light.length) return ''
 

@@ -20,6 +20,7 @@ export type CardStyleOptions = {
   density?:    CardDensity;
   noise?:      boolean;
   accentLine?: "none" | "top";
+  maxHeight?:  "none" | "sm" | "md" | "lg";
 };
 
 export type CardBlockProps = {
@@ -100,23 +101,12 @@ function resolveBorder(fill: CardFill, border: CardBorder): string {
 
 // ─── Hover ────────────────────────────────────────────────────────────────────
 
-// Lift adds translateY + ambient teal shadow only on hover — both disappear at rest,
-// preserving the flat-at-rest rule.
+// Lift/glow classes reference .card-hover-lift and .card-hover-glow in globals.css
+// which use --ot-bloom-brand and --ot-bloom-accent so they follow the CMS theme override.
 const HOVER_CLASS: Record<CardHover, string> = {
   none: "",
-  lift: [
-    "hover:-translate-y-1",
-    "hover:shadow-[0_8px_32px_oklch(55%_0.18_195_/_0.15)]",
-    "transition-[transform,box-shadow]",
-    "duration-200",
-    "ease-[var(--ease-quick)]",
-  ].join(" "),
-  glow: [
-    "hover:shadow-[0_8px_32px_oklch(55%_0.18_195_/_0.25)]",
-    "transition-shadow",
-    "duration-200",
-    "ease-[var(--ease-quick)]",
-  ].join(" "),
+  lift: "card-hover-lift",
+  glow: "card-hover-glow",
 };
 
 // ─── Density ─────────────────────────────────────────────────────────────────
@@ -158,6 +148,7 @@ export default function CardBlock({
     density    = "default",
     noise      = false,
     accentLine = "none",
+    maxHeight  = "none",
   } = styleOptions;
 
   const s        = resolveScheme(fill, imageStyle);
@@ -168,10 +159,16 @@ export default function CardBlock({
   const isHover  = hover !== "none";
   const padding  = DENSITY_CLASS[density];
 
-  // Accent line: 3px top border using the brand or on-brand tone.
-  // Expressed as inline style for reliable rendering alongside border utilities.
+  const MAX_H: Record<NonNullable<CardStyleOptions["maxHeight"]>, string> = {
+    none: "",
+    sm:   "max-h-[320px]",
+    md:   "max-h-[480px]",
+    lg:   "max-h-[640px]",
+  };
+
+  // Accent line uses --ot-accent so it follows the CMS theme override.
   const accentStyle = accentLine === "top"
-    ? { borderTop: fill === "brand" ? "3px solid oklch(97% 0.005 195 / 0.4)" : "3px solid oklch(55% 0.18 195)" }
+    ? { borderTop: fill === "brand" ? "3px solid oklch(97% 0.005 195 / 0.4)" : "3px solid var(--ot-accent)" }
     : undefined;
 
   // Float content needs an explicit background to visually slide over the image.
@@ -182,15 +179,13 @@ export default function CardBlock({
     "relative h-full overflow-hidden",
     FILL_CLASS[fill],
     resolveBorder(fill, border),
-    // Hover behaviour — group enables image zoom via group-hover: child selectors
     isHover && "group cursor-pointer",
     HOVER_CLASS[hover],
-    // Flex direction — side goes row on md+; all others are column
     isSide
       ? cn("flex flex-col md:flex-row", imageSide === "right" && "md:flex-row-reverse")
       : "flex flex-col",
-    // Background mode needs minimum height so the image has room to show
     isBg && "min-h-[320px]",
+    MAX_H[maxHeight],
     className
   );
 

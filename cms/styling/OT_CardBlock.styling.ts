@@ -10,5 +10,6 @@ export function getCardStyles(s: Record<string, string | boolean>): CardStyleOpt
     density:    (s.density    ?? 'default') as CardStyleOptions['density'],
     noise:      s.noise === 'true' || s.noise === true,
     accentLine: (s.accentLine ?? 'none')    as CardStyleOptions['accentLine'],
+    maxHeight:  (s.maxHeight  ?? 'none')    as CardStyleOptions['maxHeight'],
   }
 }
