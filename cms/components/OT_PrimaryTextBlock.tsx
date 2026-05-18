@@ -17,6 +17,7 @@ export default function OT_PrimaryTextBlock({ content, displaySettings = {} }: P
         eyebrow={content.eyebrow ?? undefined}
         headline={content.headline ?? ''}
         styleOptions={styleOptions}
+        pa={pa}
       />
     </div>
   )

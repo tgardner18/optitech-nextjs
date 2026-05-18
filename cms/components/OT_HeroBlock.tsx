@@ -30,6 +30,7 @@ export default function OT_HeroBlock({ content, displaySettings = {} }: Props) {
         visualSrc={src(content.visual)}
         visualAlt={content.visualAlt ?? undefined}
         styleOptions={styleOptions}
+        pa={pa}
       />
     </div>
   )

@@ -60,11 +60,13 @@ const innerCva = cva("", {
 export type RichTextBlockProps = {
   content: string;
   styleOptions?: RichTextStyleOptions;
+  pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
 
 export default function RichTextBlock({
   content,
   styleOptions = {},
+  pa = () => ({}),
 }: RichTextBlockProps) {
   const {
     color         = "canvas",
@@ -84,6 +86,7 @@ export default function RichTextBlock({
         data-treatment={treatment !== "standard" ? treatment : undefined}
         data-ruled-headings={ruledHeadings ? "" : undefined}
         className={innerCva({ alignment, size })}
+        {...pa('content')}
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </section>

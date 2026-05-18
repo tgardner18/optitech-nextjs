@@ -123,12 +123,14 @@ export type QuoteBlockProps = {
   quote: string;
   attribution: { name: string; title?: string };
   styleOptions?: QuoteStyleOptions;
+  pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
 
 export default function QuoteBlock({
   quote,
   attribution,
   styleOptions = {},
+  pa = () => ({}),
 }: QuoteBlockProps) {
   const {
     color     = "canvas",
@@ -155,12 +157,12 @@ export default function QuoteBlock({
         {/* Content: relative so it paints above the absolute mark */}
         <div className={quoteContentCva({ size })}>
           <blockquote>
-            <p className={quoteTextCva({ color, size })}>{quote}</p>
+            <p className={quoteTextCva({ color, size })} {...pa('quote')}>{quote}</p>
           </blockquote>
           <figcaption className="mt-lg flex flex-col gap-xs">
-            <p className={attributionNameCva({ color })}>{attribution.name}</p>
+            <p className={attributionNameCva({ color })} {...pa('attributionName')}>{attribution.name}</p>
             {attribution.title && (
-              <p className={attributionTitleCva({ color })}>{attribution.title}</p>
+              <p className={attributionTitleCva({ color })} {...pa('attributionTitle')}>{attribution.title}</p>
             )}
           </figcaption>
         </div>

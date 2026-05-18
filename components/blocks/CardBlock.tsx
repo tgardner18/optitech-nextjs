@@ -31,6 +31,7 @@ export type CardBlockProps = {
   cta?:          { label: string; href: string };
   className?:    string;
   styleOptions?: CardStyleOptions;
+  pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
 
 // ─── Color scheme ─────────────────────────────────────────────────────────────
@@ -146,6 +147,7 @@ export default function CardBlock({
   cta,
   className,
   styleOptions = {},
+  pa = () => ({}),
 }: CardBlockProps) {
   const {
     fill       = "surface",
@@ -213,13 +215,15 @@ export default function CardBlock({
       {/* ── Background image + scrim ─────────────────────────────────────────── */}
       {isBg && image && (
         <>
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes={IMG_SIZES}
-            className="object-cover"
-          />
+          <div className="absolute inset-0" {...pa('image')}>
+            <Image
+              src={image.src}
+              alt={image.alt}
+              fill
+              sizes={IMG_SIZES}
+              className="object-cover"
+            />
+          </div>
           {/* Scrim: dense at the bottom where text lives, fades to clear at top */}
           <div
             className="absolute inset-0 z-1"
@@ -233,7 +237,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className="relative w-full aspect-4/3 shrink-0 overflow-hidden">
+        <div className="relative w-full aspect-4/3 shrink-0 overflow-hidden" {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -248,7 +252,7 @@ export default function CardBlock({
       {/* Content slides up 2rem with the card's fill background, overlapping    */}
       {/* the image bottom. Creates editorial depth without static shadows.       */}
       {isFloat && image && (
-        <div className="relative w-full aspect-video shrink-0 overflow-hidden">
+        <div className="relative w-full aspect-video shrink-0 overflow-hidden" {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -261,7 +265,7 @@ export default function CardBlock({
 
       {/* ── Side image ────────────────────────────────────────────────────────── */}
       {isSide && image && (
-        <div className="relative w-full aspect-4/3 md:aspect-auto md:w-2/5 shrink-0 overflow-hidden">
+        <div className="relative w-full aspect-4/3 md:aspect-auto md:w-2/5 shrink-0 overflow-hidden" {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -276,11 +280,11 @@ export default function CardBlock({
       {isBg ? (
         // Background: all content anchored to the bottom of the scrim
         <div className={cn("relative z-2 flex flex-col flex-1 justify-end gap-sm", padding)}>
-          {eyebrow && <p className={T.eyebrow[s]}>{eyebrow}</p>}
-          <Tag className={T.heading[s]}>{heading}</Tag>
-          {description && <p className={T.description[s]}>{description}</p>}
+          {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
+          <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
+          {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
           {cta && (
-            <div className="pt-xs">
+            <div className="pt-xs" {...pa('ctaLabel')}>
               <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
             </div>
           )}
@@ -289,12 +293,12 @@ export default function CardBlock({
         // Float: content box slides up over the image bottom with an explicit background
         <div className={cn("relative z-10 flex flex-col flex-1 -mt-8", floatContentBg, padding)}>
           <div className="flex flex-col gap-sm flex-1">
-            {eyebrow && <p className={T.eyebrow[s]}>{eyebrow}</p>}
-            <Tag className={T.heading[s]}>{heading}</Tag>
-            {description && <p className={T.description[s]}>{description}</p>}
+            {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
+            <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
+            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
           </div>
           {cta && (
-            <div className="mt-md">
+            <div className="mt-md" {...pa('ctaLabel')}>
               <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
             </div>
           )}
@@ -303,12 +307,12 @@ export default function CardBlock({
         // Top / Side: content group expands; CTA stays at the bottom
         <div className={cn("flex flex-col flex-1", padding)}>
           <div className="flex flex-col gap-sm flex-1">
-            {eyebrow && <p className={T.eyebrow[s]}>{eyebrow}</p>}
-            <Tag className={T.heading[s]}>{heading}</Tag>
-            {description && <p className={T.description[s]}>{description}</p>}
+            {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
+            <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
+            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
           </div>
           {cta && (
-            <div className="mt-md">
+            <div className="mt-md" {...pa('ctaLabel')}>
               <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
             </div>
           )}

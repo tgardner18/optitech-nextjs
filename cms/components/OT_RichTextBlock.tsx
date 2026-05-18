@@ -16,6 +16,7 @@ export default function OT_RichTextBlock({ content, displaySettings = {} }: Prop
       <RichTextBlock
         content={content.content?.html ?? ''}
         styleOptions={styleOptions}
+        pa={pa}
       />
     </div>
   )

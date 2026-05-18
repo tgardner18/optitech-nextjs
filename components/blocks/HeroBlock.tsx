@@ -145,6 +145,7 @@ export type HeroBlockProps = {
   /** Non-image override — SVG, code sample, illustration, etc. Takes precedence over visualSrc */
   visual?: ReactNode;
   styleOptions?: HeroStyleOptions;
+  pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
 
 export default function HeroBlock({
@@ -157,6 +158,7 @@ export default function HeroBlock({
   visualAlt = "",
   visual,
   styleOptions = {},
+  pa = () => ({}),
 }: HeroBlockProps) {
   const { layout = "imageRight", color = "brand", animation = "none" } = styleOptions;
   const hasVisual  = !!(visual || visualSrc);
@@ -176,15 +178,15 @@ export default function HeroBlock({
       <div className={textPanelCva({ color, mode: hasVisual ? "split" : "full" })}>
         <div className="flex flex-col gap-lg">
           {eyebrow && (
-            <p className={`${eyebrowCva({ color })} ${animClass}`} style={stagger(0)}>
+            <p className={`${eyebrowCva({ color })} ${animClass}`} style={stagger(0)} {...pa('eyebrow')}>
               {eyebrow}
             </p>
           )}
-          <h1 className={`${headlineCva({ color })} ${animClass}`} style={stagger(100)}>
+          <h1 className={`${headlineCva({ color })} ${animClass}`} style={stagger(100)} {...pa('headline')}>
             {headline}
           </h1>
           {body && (
-            <p className={`${bodyCva({ color })} ${animClass}`} style={stagger(200)}>
+            <p className={`${bodyCva({ color })} ${animClass}`} style={stagger(200)} {...pa('body')}>
               {body}
             </p>
           )}
@@ -193,12 +195,12 @@ export default function HeroBlock({
         {(primaryCta || secondaryCta) && (
           <div className={`mt-xl flex flex-wrap gap-sm ${animClass}`} style={stagger(320)}>
             {primaryCta && (
-              <Link href={primaryCta.href} className={primaryCtaCva({ color })}>
+              <Link href={primaryCta.href} className={primaryCtaCva({ color })} {...pa('primaryCtaLabel')}>
                 {primaryCta.label}
               </Link>
             )}
             {secondaryCta && (
-              <Link href={secondaryCta.href} className={secondaryCtaCva({ color })}>
+              <Link href={secondaryCta.href} className={secondaryCtaCva({ color })} {...pa('secondaryCtaLabel')}>
                 {secondaryCta.label}
               </Link>
             )}
@@ -208,7 +210,7 @@ export default function HeroBlock({
 
       {/* ── Visual panel — only rendered when a visual is provided ── */}
       {hasVisual && (
-        <div className={`${visualPanelCva({ color })} ${animClass}`} style={stagger(150)}>
+        <div className={`${visualPanelCva({ color })} ${animClass}`} style={stagger(150)} {...pa('visual')}>
           {visual ?? (
             visualSrc ? (
               <Image

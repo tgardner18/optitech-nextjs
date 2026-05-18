@@ -28,6 +28,7 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
             : undefined
         }
         styleOptions={styleOptions}
+        pa={pa}
       />
     </div>
   )

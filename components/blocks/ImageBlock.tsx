@@ -35,6 +35,7 @@ export type ImageBlockProps = {
   alt: string;
   caption?: string;
   styleOptions?: ImageStyleOptions;
+  previewAttrs?: Record<string, { "data-epi-property-name"?: string }>;
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ export default function ImageBlock({
   alt,
   caption,
   styleOptions = {},
+  previewAttrs,
 }: ImageBlockProps) {
   const {
     ratio,
@@ -171,6 +173,7 @@ export default function ImageBlock({
           ref={containerRef}
           className={`relative overflow-hidden ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
           style={glowStyle}
+          {...(previewAttrs?.image ?? {})}
         >
           {/* Teal bar — leads the reveal, exits right before image appears */}
           {animate && (
@@ -207,7 +210,7 @@ export default function ImageBlock({
             {/* Inset caption badge — floats over bottom-left */}
             {hasInsetCaption && (
               <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
-                <p className="text-label text-fg-muted leading-snug">{caption}</p>
+                <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
               </figcaption>
             )}
           </div>
@@ -217,7 +220,7 @@ export default function ImageBlock({
       {/* Below caption — label-scale text under image */}
       {hasBelowCaption && (
         <figcaption className="mt-sm">
-          <p className="text-label text-fg-muted">{caption}</p>
+          <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
         </figcaption>
       )}
     </figure>

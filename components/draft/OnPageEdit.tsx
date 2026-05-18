@@ -40,7 +40,7 @@ export default function OnPageEdit({ workId, currentRoute }: Props) {
       const { properties = [], newWorkId } = msg
 
       for (const prop of properties) {
-        const selector = `[data-epi-edit="${CSS.escape(prop.name)}"]`
+        const selector = `[data-epi-property-name="${CSS.escape(prop.name)}"]`
         document
           .querySelectorAll<HTMLElement>(selector)
           .forEach(el => {

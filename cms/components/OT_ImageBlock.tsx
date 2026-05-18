@@ -7,8 +7,6 @@ type Props = {
   displaySettings?: Record<string, string | boolean>
 }
 
-// ImageBlock is 'use client' — this server shell applies the block-level preview
-// attribute on the outer div; field editing is available through the CMS right panel.
 export default function OT_ImageBlock({ content, displaySettings = {} }: Props) {
   const { pa, src } = getPreviewUtils(content)
   const styleOptions = getImageStyles(displaySettings)
@@ -20,6 +18,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         alt={content.alt ?? ''}
         caption={content.caption ?? undefined}
         styleOptions={styleOptions}
+        previewAttrs={{ image: pa('image'), caption: pa('caption') }}
       />
     </div>
   )

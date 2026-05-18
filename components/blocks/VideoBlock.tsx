@@ -29,6 +29,7 @@ export type VideoBlockProps = {
   title: string;
   caption?: string;
   styleOptions?: VideoStyleOptions;
+  previewAttrs?: Record<string, { "data-epi-property-name"?: string }>;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ export default function VideoBlock({
   title,
   caption,
   styleOptions = {},
+  previewAttrs,
 }: VideoBlockProps) {
   const {
     ratio,
@@ -284,7 +286,7 @@ export default function VideoBlock({
               {/* Inset caption — floats over bottom-left, clips with the poster */}
               {hasInsetCaption && (
                 <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
-                  <p className="text-label text-fg-muted leading-snug">{caption}</p>
+                  <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
                 </figcaption>
               )}
             </>
@@ -295,7 +297,7 @@ export default function VideoBlock({
       {/* Below caption */}
       {hasBelowCaption && (
         <figcaption className="mt-sm">
-          <p className="text-label text-fg-muted">{caption}</p>
+          <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
         </figcaption>
       )}
     </figure>

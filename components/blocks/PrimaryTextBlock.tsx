@@ -101,12 +101,14 @@ export type PrimaryTextBlockProps = {
   eyebrow?: string;
   headline: string;
   styleOptions?: PrimaryTextStyleOptions;
+  pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
 
 export default function PrimaryTextBlock({
   eyebrow,
   headline,
   styleOptions = {},
+  pa = () => ({}),
 }: PrimaryTextBlockProps) {
   const {
     alignment = "left",
@@ -120,9 +122,9 @@ export default function PrimaryTextBlock({
       <div className={innerCva({ alignment })}>
         <div className="flex flex-col gap-sm">
           {eyebrow && (
-            <p className={eyebrowCva({ color })}>{eyebrow}</p>
+            <p className={eyebrowCva({ color })} {...pa('eyebrow')}>{eyebrow}</p>
           )}
-          <h2 className={headlineCva({ size, color, gradient })}>
+          <h2 className={headlineCva({ size, color, gradient })} {...pa('headline')}>
             {headline}
           </h2>
         </div>
