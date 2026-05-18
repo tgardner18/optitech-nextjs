@@ -1,19 +1,21 @@
 import { notFound, redirect } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import { getClient } from '@/lib/optimizely'
-import { OptimizelyComposition } from '@optimizely/cms-sdk/react/server'
+import { OptimizelyComposition, withAppContext } from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
 import type { PreviewParams } from '@optimizely/cms-sdk'
+import Script from 'next/script'
 
 type Props = {
   params:       Promise<{ slug: string[] }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default async function CmsPage({ params, searchParams }: Props) {
+async function CmsPage({ params, searchParams }: Props) {
   const { slug } = await params
   const sp        = await searchParams
   const path      = '/' + slug.join('/')
+  const cmsUrl    = (process.env.OPTIMIZELY_CMS_URL ?? '').replace(/\/$/, '')
   const dm        = await draftMode()
 
   const sp_str = (key: string) => {
@@ -54,8 +56,13 @@ export default async function CmsPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <OptimizelyComposition nodes={exp.composition.nodes} />
+      {dm.isEnabled && cmsUrl && (
+        <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
+      )}
       {dm.isEnabled && <PreviewComponent />}
+      <OptimizelyComposition nodes={exp.composition.nodes} />
     </>
   )
 }
+
+export default withAppContext(CmsPage)

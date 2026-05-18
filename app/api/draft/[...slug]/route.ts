@@ -82,10 +82,10 @@ export async function GET(request: Request) {
   }
 
   // _Component covers both shared blocks and contentassets-backed blocks.
-  // preview_token and loc are forwarded so the block page can call getPreviewContent.
+  // Route to the unified /preview page so it handles the same way as experiences.
   if (types.includes('_Component')) {
-    const blockQs = new URLSearchParams({ preview_token, loc })
-    redirect(`/draft/${ver}/block/${key}?${blockQs}`)
+    const blockQs = new URLSearchParams({ preview_token: preview_token!, key: key!, ver: ver!, loc: loc!, ctx: 'edit' })
+    redirect(`/preview?${blockQs}`)
   }
 
   if (types.includes('_Page')) {

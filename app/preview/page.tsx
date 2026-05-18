@@ -8,6 +8,7 @@ import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
 import { getClient } from '@/lib/optimizely'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import Script from 'next/script'
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -43,8 +44,7 @@ async function PreviewPage({ searchParams }: Props) {
 
   return (
     <>
-      {/* React 19: <script async src> is hoisted to <head> and deduped automatically */}
-      <script async src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
+      <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       <PreviewComponent />
       {isExperience ? (
         <>

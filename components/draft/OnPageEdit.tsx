@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 
 declare global {
   interface Window {
@@ -13,31 +12,16 @@ declare global {
 }
 
 type ContentSavedMessage = {
-  workId?:     string
-  newWorkId?:  string
   properties?: Array<{ name: string; value: any }>
 }
 
-type Props = {
-  workId:       string
-  currentRoute: string
-}
-
-export default function OnPageEdit({ workId, currentRoute }: Props) {
-  const router = useRouter()
-
-  // Refs keep the handler closure fresh without re-subscribing on every render.
-  const workIdRef = useRef(workId)
-  const routeRef  = useRef(currentRoute)
-  workIdRef.current = workId
-  routeRef.current  = currentRoute
-
+export default function OnPageEdit() {
   useEffect(() => {
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
 
     function handleContentSaved(msg: ContentSavedMessage) {
-      const { properties = [], newWorkId } = msg
+      const { properties = [] } = msg
 
       for (const prop of properties) {
         const selector = `[data-epi-property-name="${CSS.escape(prop.name)}"]`
@@ -49,10 +33,8 @@ export default function OnPageEdit({ workId, currentRoute }: Props) {
             if (prop.value != null) el.innerHTML = prop.value
           })
       }
-
-      if (newWorkId && newWorkId !== workIdRef.current) {
-        router.push(routeRef.current.replace(workIdRef.current, newWorkId))
-      }
+      // Navigation after saves is handled by PreviewComponent via the
+      // optimizely:cms:contentSaved event, which carries a fresh preview token.
     }
 
     function trySubscribe() {
@@ -71,7 +53,7 @@ export default function OnPageEdit({ workId, currentRoute }: Props) {
       clearTimeout(timer)
       window.epi?.unsubscribe?.('contentSaved', handleContentSaved)
     }
-  }, [router]) // router ref is stable; re-subscribe only if it ever changes
+  }, [])
 
   return null
 }

@@ -1,3 +1,4 @@
+import Script from 'next/script'
 import OnPageEditBridge from './OnPageEditBridge'
 
 export const dynamic  = 'force-dynamic'
@@ -10,8 +11,7 @@ export default function DraftLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      {/* React 19: async script tags are hoisted to <head> and deduped automatically */}
-      {cmsUrl && <script async src={`${cmsUrl}/util/javascript/communicationinjector.js`} />}
+      {cmsUrl && <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />}
       <OnPageEditBridge />
       {children}
     </>
