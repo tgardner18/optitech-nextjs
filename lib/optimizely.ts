@@ -49,12 +49,10 @@ const THEME_QUERY = `
         colorSurface
         colorCanvasLight
         colorSurfaceLight
-        navItems {
-          label
-          url { default }
-          dropdownItems {
-            label
-            url { default }
+        primaryNavigation {
+          menuLink { text title target url { default } }
+          subNavItems {
+            menuLink { text title target url { default } }
             description
           }
         }

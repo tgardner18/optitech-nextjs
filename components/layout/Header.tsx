@@ -34,14 +34,14 @@ export default async function Header() {
     logoInvertDark ? 'logo-invert-dark' : '',
   ].filter(Boolean).join(' ')
 
-  const navItems: NavItem[] = settings?.navItems?.length
-    ? settings.navItems.map((item: any) => ({
-        label:    item.label ?? '',
-        href:     item.url?.default ?? '#',
-        children: item.dropdownItems?.length
-          ? item.dropdownItems.map((c: any) => ({
-              label:       c.label ?? '',
-              href:        c.url?.default ?? '#',
+  const navItems: NavItem[] = settings?.primaryNavigation?.length
+    ? settings.primaryNavigation.map((item: any) => ({
+        label:    item.menuLink?.text ?? '',
+        href:     item.menuLink?.url?.default ?? '#',
+        children: item.subNavItems?.length
+          ? item.subNavItems.map((c: any) => ({
+              label:       c.menuLink?.text ?? '',
+              href:        c.menuLink?.url?.default ?? '#',
               description: c.description ?? undefined,
             }))
           : undefined,

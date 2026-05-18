@@ -1,5 +1,5 @@
 import { contentType } from '@optimizely/cms-sdk'
-import { OT_NavItem } from './OT_NavItem'
+import { OT_NavigationItem } from './OT_NavigationItem'
 import { OT_FooterLink } from './OT_FooterLink'
 import { OT_FooterColumn } from './OT_FooterColumn'
 
@@ -45,13 +45,13 @@ export const OT_ThemeManager = contentType({
     ctaUrl:   { type: 'url',    displayName: 'CTA URL',   group: 'OT_Content', sortOrder: 30 },
 
     // Header Navigation
-    navItems: {
+    primaryNavigation: {
       type: 'array',
-      displayName: 'Header Nav Items',
-      description: 'Top-level navigation links. Add Dropdown Items inside each entry to create a multi-level menu.',
+      displayName: 'Primary Navigation',
+      description: 'Top-level nav links. Each item uses a native Link picker (supports internal pages, external URLs, and DAM files). Add Sub-Navigation Items inside each entry to create a dropdown.',
       group: 'OT_Content',
       sortOrder: 40,
-      items: { type: 'component', contentType: OT_NavItem },
+      items: { type: 'component', contentType: OT_NavigationItem },
     },
 
     // Footer

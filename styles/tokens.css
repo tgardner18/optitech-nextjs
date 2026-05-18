@@ -80,8 +80,7 @@
   --ot-radius-input: 4px; /* the only non-zero radius in the system */
 
   /* ── Elevation ───────────────────────────────────────────────────────────── */
-  --ot-shadow-hover-lift: 0 8px 32px oklch(55% 0.18 195 / 0.25);
-  /* Note: update the shadow color if --ot-brand changes significantly. */
+  --ot-shadow-hover-lift: 0 8px 32px var(--ot-bloom-brand-faint);
 
   /* ── Motion ──────────────────────────────────────────────────────────────── */
   --ot-ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1); /* expo out — entrances     */
@@ -93,14 +92,44 @@
    * ──────────────────────────────────────────────────────────────────────── */
   --ot-weight-syne: 450;
 
+  /* ── Bloom / halo alpha variants ─────────────────────────────────────────
+   * CSS Relative Color Syntax derives these from --ot-brand and --ot-accent.
+   * Used by the chromatic shadow bloom and glow frame in ImageBlock/VideoBlock.
+   * They update automatically whenever --ot-brand or --ot-accent change via
+   * the CMS theme override.
+   * ──────────────────────────────────────────────────────────────────────── */
+  --ot-bloom-brand:        oklch(from var(--ot-brand) l c h / 0.80);
+  --ot-bloom-brand-ring:   oklch(from var(--ot-brand) l c h / 0.50);
+  --ot-bloom-brand-faint:  oklch(from var(--ot-brand) l c h / 0.25);
+  --ot-bloom-brand-border: oklch(from var(--ot-brand) l c h / 0.15);
+  --ot-bloom-accent:       oklch(from var(--ot-accent) l c h / 0.60);
+
   /* ── Display gradients — dark-mode stops ────────────────────────────────────
+   * Stops are derived from --ot-brand and --ot-accent via CSS Relative Color
+   * Syntax, so they follow the CMS theme override automatically.
    * background-clip: text applied by .display-gradient-* in globals.css.
-   * Overridden for light surfaces in [data-theme="light"] below.
+   * Light-mode overrides are in [data-theme="light"] below.
    * ──────────────────────────────────────────────────────────────────────────── */
-  --ot-gradient-brand:    linear-gradient(135deg, oklch(72% 0.20 195) 0%, oklch(38% 0.14 195) 100%);
-  --ot-gradient-signal:   linear-gradient(135deg, oklch(82% 0.19 145) 0%, oklch(55% 0.18 195) 100%);
-  --ot-gradient-luminous: linear-gradient(135deg, oklch(96% 0.004 195) 0%, oklch(55% 0.18 195) 100%);
-  --ot-gradient-electric: linear-gradient(135deg, oklch(86% 0.22 145) 0%, oklch(55% 0.16 145) 100%);
+  /* brand: lighter stop (+17% L) → deeper stop (−17% L), same hue */
+  --ot-gradient-brand: linear-gradient(135deg,
+    oklch(from var(--ot-brand) calc(l + 0.17) c h)   0%,
+    oklch(from var(--ot-brand) calc(l - 0.17) c h) 100%
+  );
+  /* signal: accent hue → brand hue cross-spectrum blend */
+  --ot-gradient-signal: linear-gradient(135deg,
+    var(--ot-accent) 0%,
+    var(--ot-brand)  100%
+  );
+  /* luminous: near-fg (light on dark canvas) → brand */
+  --ot-gradient-luminous: linear-gradient(135deg,
+    var(--ot-fg)    0%,
+    var(--ot-brand) 100%
+  );
+  /* electric: brighter accent (+4% L, +3% C) → deeper accent (−27% L, −3% C) */
+  --ot-gradient-electric: linear-gradient(135deg,
+    oklch(from var(--ot-accent) calc(l + 0.04) calc(c + 0.03) h)  0%,
+    oklch(from var(--ot-accent) calc(l - 0.27) calc(c - 0.03) h) 100%
+  );
 }
 
 /* ── Light override ──────────────────────────────────────────────────────────
@@ -115,9 +144,25 @@
   --ot-fg-muted: oklch(38% 0.05  195); /* light mode secondary text — dark muted teal           */
   /* fg-on-brand stays light — brand teal needs light foreground in both modes */
 
-  /* Gradient stops — deeper colours, readable on near-white canvas */
-  --ot-gradient-brand:    linear-gradient(135deg, oklch(42% 0.18 195) 0%, oklch(22% 0.12 195) 100%);
-  --ot-gradient-signal:   linear-gradient(135deg, oklch(48% 0.20 145) 0%, oklch(30% 0.16 195) 100%);
-  --ot-gradient-luminous: linear-gradient(135deg, oklch(28% 0.14 195) 0%, oklch(52% 0.18 195) 100%);
-  --ot-gradient-electric: linear-gradient(135deg, oklch(36% 0.18 145) 0%, oklch(56% 0.17 145) 100%);
+  /* Gradient stops — deeper relative offsets so text reads on near-white canvas */
+  /* brand: −13% L start, −33% L / −6% C end */
+  --ot-gradient-brand: linear-gradient(135deg,
+    oklch(from var(--ot-brand) calc(l - 0.13) c h)              0%,
+    oklch(from var(--ot-brand) calc(l - 0.33) calc(c - 0.06) h) 100%
+  );
+  /* signal: accent −34% L → brand −25% L */
+  --ot-gradient-signal: linear-gradient(135deg,
+    oklch(from var(--ot-accent) calc(l - 0.34) c h) 0%,
+    oklch(from var(--ot-brand)  calc(l - 0.25) c h) 100%
+  );
+  /* luminous: brand −27% L / −4% C → brand −3% L */
+  --ot-gradient-luminous: linear-gradient(135deg,
+    oklch(from var(--ot-brand) calc(l - 0.27) calc(c - 0.04) h) 0%,
+    oklch(from var(--ot-brand) calc(l - 0.03) c h)              100%
+  );
+  /* electric: accent −46% L → accent −26% L */
+  --ot-gradient-electric: linear-gradient(135deg,
+    oklch(from var(--ot-accent) calc(l - 0.46) c h) 0%,
+    oklch(from var(--ot-accent) calc(l - 0.26) c h) 100%
+  );
 }

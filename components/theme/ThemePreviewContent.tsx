@@ -46,8 +46,8 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
   const copyright   = settings?.copyright ?? `© ${new Date().getFullYear()} OptiTech. All rights reserved.`
   const defaultMode = (settings?.defaultMode as string | undefined) ?? 'dark'
 
-  const navItems: { label: string; href: string }[] = settings?.navItems?.length
-    ? settings.navItems.map((i: any) => ({ label: i.label ?? '', href: i.url?.default ?? '#' }))
+  const navItems: { label: string; href: string }[] = settings?.primaryNavigation?.length
+    ? settings.primaryNavigation.map((i: any) => ({ label: i.menuLink?.text ?? '', href: i.menuLink?.url?.default ?? '#' }))
     : [{ label: 'Product', href: '#' }, { label: 'Pricing', href: '#' }, { label: 'About', href: '#' }]
 
   const hasAnyColor = COLOR_FIELDS.some(f => !!settings?.[f.key])

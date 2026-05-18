@@ -132,14 +132,14 @@ export default function VideoBlock({
     frame === "glow"
       ? {
           boxShadow:
-            "inset 0 0 0 2px oklch(55% 0.18 195 / 0.5), " +
-            "0 0 0 1px oklch(55% 0.18 195 / 0.15), " +
-            "0 0 52px oklch(55% 0.18 195 / 0.25)",
+            "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
+            "0 0 0 1px var(--ot-bloom-brand-border), " +
+            "0 0 52px var(--ot-bloom-brand-faint)",
         }
       : {};
 
   /*
-   * Shadow bloom — teal pools bottom-left, signal green pools bottom-right.
+   * Shadow bloom — brand pools bottom-left, accent pools bottom-right.
    * isolation: isolate on the figure paints this between the page and the
    * container, not behind the entire page.
    */
@@ -150,8 +150,8 @@ export default function VideoBlock({
     top:        "28%",
     bottom:     "-28px",
     background:
-      "radial-gradient(ellipse at 22% 100%, oklch(55% 0.18 195 / 0.80) 0%, transparent 58%), " +
-      "radial-gradient(ellipse at 78% 100%, oklch(82% 0.19 145 / 0.60) 0%, transparent 58%)",
+      "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
+      "radial-gradient(ellipse at 78% 100%, var(--ot-bloom-accent) 0%, transparent 58%)",
     filter:    "blur(52px)",
     transform: "scaleX(0.86)",
     zIndex:    -1,
