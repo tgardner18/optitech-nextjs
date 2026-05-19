@@ -27,6 +27,26 @@ export async function getRequestDomain(): Promise<string> {
   }
 }
 
+/**
+ * Returns the full base URL (protocol + host) for the current request.
+ * Used to filter content queries to the correct Optimizely site channel,
+ * matching what is stored as _metadata.url.base in Content Graph.
+ * e.g. "https://optitech-nextjs-tim.vercel.app" or "http://localhost:3000"
+ */
+export async function getRequestBaseUrl(): Promise<string> {
+  try {
+    const h    = await headers()
+    const host = h.get('host') ?? ''
+    if (!host) return ''
+    // x-forwarded-proto may be a comma-separated list; take the first value.
+    const proto = h.get('x-forwarded-proto')?.split(',')[0].trim()
+      ?? (host.startsWith('localhost') ? 'http' : 'https')
+    return `${proto}://${host}`
+  } catch {
+    return ''
+  }
+}
+
 // All fields consumed by layout (theme CSS), Header, and Footer.
 const THEME_QUERY = `
   query GetThemeManagers {

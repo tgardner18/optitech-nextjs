@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { draftMode } from 'next/headers'
-import { getClient } from '@/lib/optimizely'
+import { getClient, getRequestBaseUrl } from '@/lib/optimizely'
 import { OptimizelyComposition, withAppContext } from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
 import type { PreviewParams } from '@optimizely/cms-sdk'
@@ -23,6 +23,8 @@ async function CmsPage({ params, searchParams }: Props) {
     return typeof v === 'string' ? v : ''
   }
 
+  const baseUrl = await getRequestBaseUrl()
+
   let exp: any
   if (dm.isEnabled && sp_str('preview_token')) {
     const previewParams: PreviewParams = {
@@ -34,7 +36,7 @@ async function CmsPage({ params, searchParams }: Props) {
     }
     exp = await getClient().getPreviewContent(previewParams, { cache: false })
   } else {
-    const results = await getClient().getContentByPath(path)
+    const results = await getClient().getContentByPath(path, { host: baseUrl || undefined })
     exp = results?.[0]
   }
 

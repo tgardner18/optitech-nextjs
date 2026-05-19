@@ -26,6 +26,18 @@ const COLOR_FIELDS: ColorField[] = [
   { key: 'colorSurfaceLight', label: 'Surface (light)', mode: 'light' },
 ]
 
+// Stock images from Unsplash — used in component previews
+const CARD_IMAGES = [
+  {
+    src: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=70',
+    alt: 'Earth city lights from orbit',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1488229297570-58520851e868?auto=format&fit=crop&w=800&q=70',
+    alt: 'Abstract data visualization',
+  },
+]
+
 function SectionHead({ label, title }: { label: string; title: string }) {
   return (
     <div className="mb-lg pb-md border-b border-fg/10">
@@ -45,6 +57,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
   const ctaLabel    = settings?.ctaLabel ?? 'Get Started'
   const copyright   = settings?.copyright ?? `© ${new Date().getFullYear()} OptiTech. All rights reserved.`
   const defaultMode = (settings?.defaultMode as string | undefined) ?? 'dark'
+  const brandColor  = settings?.colorBrand as string | undefined
 
   const navItems: { label: string; href: string }[] = settings?.primaryNavigation?.length
     ? settings.primaryNavigation.map((i: any) => ({ label: i.menuLink?.text ?? '', href: i.menuLink?.url?.default ?? '#' }))
@@ -128,7 +141,6 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
             </div>
           </div>
 
-          {/* Logo invert comparison — always shows correct result regardless of current browser mode */}
           {invertDark && (
             <div>
               <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
@@ -187,73 +199,11 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
             })}
           </div>
         )}
-
-        <div className="mt-xl space-y-md">
-          <p className="text-label tracking-label uppercase text-fg-muted font-semibold mb-md">
-            Live token surfaces — active mode
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-sm">
-            {[
-              { label: 'Canvas',  bg: 'bg-canvas',  border: true  },
-              { label: 'Surface', bg: 'bg-surface',  border: false },
-              { label: 'Brand',   bg: 'bg-brand',    border: false },
-              { label: 'Accent',  bg: 'bg-accent',   border: false },
-            ].map(s => (
-              <div key={s.label}>
-                <div className={`h-12 w-full ${s.bg} ${s.border ? 'border border-fg/15' : ''}`} />
-                <p className="text-label text-fg-muted mt-xs">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
-      {/* ── 03 Navigation Preview ── */}
-      <section id="nav" className="px-md py-xl lg:px-lg">
-        <SectionHead label="03 · Theme" title="Navigation" />
-
-        <div className="space-y-lg">
-          <div>
-            <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
-              Header nav items ({navItems.length})
-            </p>
-            <div className="bg-canvas/80 border border-fg/10 px-md py-sm flex flex-wrap items-center gap-lg">
-              {navItems.map(n => (
-                <span key={n.label} className="text-sm font-normal text-fg-muted">{n.label}</span>
-              ))}
-            </div>
-          </div>
-
-          {settings?.footerColumns?.length > 0 && (
-            <div>
-              <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
-                Footer columns ({settings.footerColumns.length})
-              </p>
-              <div
-                className="bg-canvas border border-fg/10 px-md py-lg grid gap-lg"
-                style={{ gridTemplateColumns: `repeat(${Math.min(settings.footerColumns.length, 4)}, minmax(0, 1fr))` }}
-              >
-                {settings.footerColumns.map((col: any, i: number) => (
-                  <div key={i}>
-                    {col.title && (
-                      <p className="text-label tracking-label uppercase font-semibold text-fg mb-sm">{col.title}</p>
-                    )}
-                    <ul className="flex flex-col gap-xs">
-                      {(col.linkItems ?? []).map((l: any, j: number) => (
-                        <li key={j} className="text-sm text-fg-muted">{l.label}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── 04 CTA Button ── */}
+      {/* ── 03 CTA Button ── */}
       <section id="cta" className="px-md py-xl lg:px-lg">
-        <SectionHead label="04 · Theme" title="CTA Button" />
+        <SectionHead label="03 · Theme" title="CTA Button" />
         <div className="flex flex-wrap items-center gap-lg">
           <div className="flex flex-col gap-sm items-start">
             <span className="bg-brand hover:bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
@@ -270,15 +220,21 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
         </div>
       </section>
 
-      {/* ── 05 Component Preview ── */}
+      {/* ── 04 Component Preview ── */}
       <section id="components" className="px-md py-xl lg:px-lg">
-        <SectionHead label="05 · Theme" title="Component Preview" />
+        <SectionHead label="04 · Theme" title="Component Preview" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-lg">
 
           {/* Card — image + body */}
           <div className="bg-surface border border-fg/10 flex flex-col">
-            <div className="aspect-[16/9] bg-brand/15 flex items-center justify-center">
-              <span className="text-brand text-label tracking-label uppercase font-semibold opacity-60">Image area</span>
+            <div className="aspect-video relative overflow-hidden">
+              <Image
+                src={CARD_IMAGES[0].src}
+                alt={CARD_IMAGES[0].alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
             </div>
             <div className="p-md flex flex-col gap-sm flex-1">
               <p className="text-label tracking-label uppercase text-brand font-semibold">Product</p>
@@ -294,8 +250,17 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
             </div>
           </div>
 
-          {/* Card — icon + feature */}
+          {/* Card — image + feature */}
           <div className="bg-surface border border-fg/10 flex flex-col">
+            <div className="aspect-video relative overflow-hidden">
+              <Image
+                src={CARD_IMAGES[1].src}
+                alt={CARD_IMAGES[1].alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </div>
             <div className="p-md flex flex-col gap-sm flex-1">
               <div className="w-10 h-10 bg-accent/20 border border-accent/30 flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent" aria-hidden="true">
@@ -318,9 +283,9 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
         </div>
       </section>
 
-      {/* ── 06 Default Mode ── */}
+      {/* ── 05 Default Mode ── */}
       <section id="mode" className="px-md py-xl lg:px-lg">
-        <SectionHead label="06 · Theme" title="Default Theme Mode" />
+        <SectionHead label="05 · Theme" title="Default Theme Mode" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-lg">
           {(['dark', 'light'] as const).map(mode => {
             const isActive = defaultMode === mode
@@ -328,6 +293,8 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
             const fg   = mode === 'dark'  ? 'oklch(97% 0.005 195)'  : 'oklch(12% 0.012 195)'
             const sub  = mode === 'dark'  ? 'oklch(68% 0.06 195)'   : 'oklch(38% 0.05 195)'
             const surf = mode === 'dark'  ? 'oklch(20% 0.022 195)'  : 'oklch(93% 0.008 195)'
+            // Use the configured brand color for the button; fall back to the default teal
+            const btnBg = brandColor ?? 'oklch(55% 0.18 195)'
             return (
               <div key={mode} className={`border-2 ${isActive ? 'border-brand' : 'border-fg/10'}`}>
                 {isActive && (
@@ -338,12 +305,12 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                 <div className="p-md" style={{ background: bg }}>
                   <div className="flex items-center justify-between mb-md" style={{ background: surf, padding: '8px 12px' }}>
                     <span className="text-label font-semibold" style={{ color: fg }}>OptiTech</span>
-                    <span className="text-label font-semibold tracking-label uppercase" style={{ background: 'oklch(55% 0.18 195)', color: fg, padding: '2px 10px' }}>
+                    <span className="text-label font-semibold tracking-label uppercase" style={{ background: btnBg, color: fg, padding: '2px 10px' }}>
                       {ctaLabel}
                     </span>
                   </div>
                   <div style={{ background: surf, padding: '16px', marginBottom: '8px' }}>
-                    <p className="text-label tracking-label uppercase font-semibold mb-xs" style={{ color: 'oklch(55% 0.18 195)' }}>Hero</p>
+                    <p className="text-label tracking-label uppercase font-semibold mb-xs" style={{ color: btnBg }}>Hero</p>
                     <p className="font-bold" style={{ color: fg, fontSize: '1.25rem' }}>Your headline goes here</p>
                     <p className="text-sm mt-xs" style={{ color: sub }}>Supporting body copy that adapts to the active mode.</p>
                   </div>
