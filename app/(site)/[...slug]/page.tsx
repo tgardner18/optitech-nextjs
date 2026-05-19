@@ -1,9 +1,10 @@
 import { notFound, redirect } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import { getClient, getRequestBaseUrl } from '@/lib/optimizely'
-import { OptimizelyComposition, withAppContext } from '@optimizely/cms-sdk/react/server'
+import { withAppContext } from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
 import type { PreviewParams } from '@optimizely/cms-sdk'
+import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import Script from 'next/script'
 
 type Props = {
@@ -62,7 +63,7 @@ async function CmsPage({ params, searchParams }: Props) {
         <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       )}
       {dm.isEnabled && <PreviewComponent />}
-      <OptimizelyComposition nodes={exp.composition.nodes} />
+      <CompositionRenderer nodes={exp.composition.nodes} />
     </>
   )
 }
