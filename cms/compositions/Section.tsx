@@ -20,14 +20,6 @@ const verticalSpacingClasses: Record<string, string> = {
   xl:     'py-2xl',
 }
 
-const minHeightClasses: Record<string, string> = {
-  auto:         '',
-  quarter:      'min-h-[25vh]',
-  half:         'min-h-[50vh]',
-  threequarter: 'min-h-[75vh]',
-  screen:       'min-h-screen',
-}
-
 const bgColorClasses: Record<string, string> = {
   none:      '',
   canvas:    'bg-canvas',
@@ -42,16 +34,14 @@ export default function Section({ content, displaySettings = {} }: Props) {
   const width   = String(displaySettings.gridWidth       ?? 'default')
   const vSpace  = String(displaySettings.verticalSpacing ?? 'large')
   const bgColor = String(displaySettings.backgroundColor ?? 'none')
-  const minH    = String(displaySettings.minHeight       ?? 'auto')
 
   const widthClass   = widthClasses[width]              ?? widthClasses.default
   const vSpaceClass  = verticalSpacingClasses[vSpace]   ?? verticalSpacingClasses.large
   const bgColorClass = bgColorClasses[bgColor]          ?? ''
-  const minHClass    = minHeightClasses[minH]           ?? ''
 
   return (
     <section
-      className={`vb:section flex flex-col w-full ${bgColorClass} ${minHClass}`}
+      className={`vb:section flex flex-col w-full ${bgColorClass}`}
       {...pa(content)}
     >
       <div className={`flex flex-col flex-1 ${widthClass} ${vSpaceClass}`}>

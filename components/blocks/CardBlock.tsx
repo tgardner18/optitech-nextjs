@@ -11,16 +11,23 @@ export type CardImageSide  = "left" | "right";
 export type CardHover      = "none" | "lift" | "glow";
 export type CardDensity    = "compact" | "default" | "spacious";
 
+export type CardAspectRatio      = "auto" | "square" | "portrait" | "landscape" | "wide" | "cinema";
+export type CardImageAspectRatio = "auto" | "square" | "portrait" | "landscape" | "wide";
+export type CardMinHeight        = "none" | "xs" | "sm" | "md" | "lg";
+
 export type CardStyleOptions = {
-  fill?:       CardFill;
-  border?:     CardBorder;
-  imageStyle?: CardImageStyle;
-  imageSide?:  CardImageSide;
-  hover?:      CardHover;
-  density?:    CardDensity;
-  noise?:      boolean;
-  accentLine?: "none" | "top";
-  maxHeight?:  "none" | "sm" | "md" | "lg";
+  fill?:             CardFill;
+  border?:           CardBorder;
+  imageStyle?:       CardImageStyle;
+  imageSide?:        CardImageSide;
+  hover?:            CardHover;
+  density?:          CardDensity;
+  noise?:            boolean;
+  accentLine?:       "none" | "top";
+  maxHeight?:        "none" | "sm" | "md" | "lg";
+  minHeight?:        CardMinHeight;
+  aspectRatio?:      CardAspectRatio;
+  imageAspectRatio?: CardImageAspectRatio;
 };
 
 export type CardBlockProps = {
@@ -117,6 +124,31 @@ const DENSITY_CLASS: Record<CardDensity, string> = {
   spacious: "p-xl",
 };
 
+const MIN_H_CLASS: Record<CardMinHeight, string> = {
+  none: "",
+  xs:   "min-h-[200px]",
+  sm:   "min-h-[280px]",
+  md:   "min-h-[380px]",
+  lg:   "min-h-[480px]",
+};
+
+const ASPECT_CLASS: Record<CardAspectRatio, string> = {
+  auto:      "",
+  square:    "aspect-square",
+  portrait:  "aspect-[3/4]",
+  landscape: "aspect-[4/3]",
+  wide:      "aspect-video",
+  cinema:    "aspect-[21/9]",
+};
+
+const IMG_ASPECT_CLASS: Record<CardImageAspectRatio, string> = {
+  auto:      "",
+  square:    "aspect-square",
+  portrait:  "aspect-[3/4]",
+  landscape: "aspect-[4/3]",
+  wide:      "aspect-video",
+};
+
 // ─── Noise texture ────────────────────────────────────────────────────────────
 
 // SVG feTurbulence grain — rendered at a fixed tile size and tiled via background-repeat.
@@ -140,15 +172,18 @@ export default function CardBlock({
   pa = () => ({}),
 }: CardBlockProps) {
   const {
-    fill       = "surface",
-    border     = "none",
-    imageStyle = "top",
-    imageSide  = "left",
-    hover      = "none",
-    density    = "default",
-    noise      = false,
-    accentLine = "none",
-    maxHeight  = "none",
+    fill             = "surface",
+    border           = "none",
+    imageStyle       = "top",
+    imageSide        = "left",
+    hover            = "none",
+    density          = "default",
+    noise            = false,
+    accentLine       = "none",
+    maxHeight        = "none",
+    minHeight        = "none",
+    aspectRatio      = "auto",
+    imageAspectRatio = "auto",
   } = styleOptions;
 
   const s        = resolveScheme(fill, imageStyle);
@@ -186,6 +221,8 @@ export default function CardBlock({
       : "flex flex-col",
     isBg && "min-h-[320px]",
     MAX_H[maxHeight],
+    MIN_H_CLASS[minHeight],
+    ASPECT_CLASS[aspectRatio],
     className
   );
 
@@ -232,7 +269,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className="relative w-full aspect-4/3 shrink-0 overflow-hidden" {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3]")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -247,7 +284,7 @@ export default function CardBlock({
       {/* Content slides up 2rem with the card's fill background, overlapping    */}
       {/* the image bottom. Creates editorial depth without static shadows.       */}
       {isFloat && image && (
-        <div className="relative w-full aspect-video shrink-0 overflow-hidden" {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-video")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -260,7 +297,7 @@ export default function CardBlock({
 
       {/* ── Side image ────────────────────────────────────────────────────────── */}
       {isSide && image && (
-        <div className="relative w-full aspect-4/3 md:aspect-auto md:w-2/5 shrink-0 overflow-hidden" {...pa('image')}>
+        <div className={cn("relative w-full md:aspect-auto md:w-2/5 shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3]")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}

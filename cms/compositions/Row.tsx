@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import SliderRow from '@/cms/compositions/SliderRow'
 
 type Props = {
   node: any
@@ -73,6 +74,7 @@ const alignItemsClasses: Record<string, string> = {
 export default function Row({ node, displaySettings = {}, children }: Props) {
   const { pa } = getPreviewUtils(node)
 
+  const displayAs = String(displaySettings.displayAs ?? 'grid')
   const breakpoint = String(displaySettings.showAsRowFrom    ?? 'md')
   const spacing    = String(displaySettings.contentSpacing   ?? 'medium')
   const justify    = String(displaySettings.justifyContent   ?? 'start')
@@ -96,11 +98,32 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
 
   const hasOverlay  = overlayClass.length > 0
   const isAnimated  = entranceAnimation !== 'none'
+  const bgStyle     = bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined
+
+  if (displayAs === 'slider') {
+    return (
+      <SliderRow
+        transition={String(displaySettings.sliderTransition  ?? 'slide')}
+        controls={String(displaySettings.sliderControls      ?? 'both')}
+        autoplay={String(displaySettings.sliderAutoplay      ?? 'off')}
+        loop={String(displaySettings.sliderLoop              ?? 'loop')}
+        peek={String(displaySettings.sliderPeek              ?? 'none')}
+        verticalPadding={vPaddingClass}
+        bgColorClass={bgColorClass}
+        backgroundStyle={bgStyle}
+        overlayClass={overlayClass}
+        staggerAttr={isAnimated ? entranceAnimation : undefined}
+        paProps={pa(node) as Record<string, unknown>}
+      >
+        {children}
+      </SliderRow>
+    )
+  }
 
   return (
     <div
       className={`vb:row relative isolate flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${bgColorClass} ${justifyClass} ${alignClass}`}
-      style={bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      style={bgStyle}
       data-stagger={isAnimated ? entranceAnimation : undefined}
       {...pa(node)}
       data-bp={breakpoint}

@@ -97,5 +97,42 @@ export const OT_CardDefault = displayTemplate({
         lg:   { displayName: 'Large — 640px',                           sortOrder: 40 },
       },
     },
+    minHeight: {
+      displayName: 'Min height',
+      editor: 'select',
+      sortOrder: 92,
+      choices: {
+        none: { displayName: 'None — natural height (Default)', sortOrder: 10 },
+        xs:   { displayName: 'Short — 200px',                  sortOrder: 20 },
+        sm:   { displayName: 'Small — 280px',                  sortOrder: 30 },
+        md:   { displayName: 'Medium — 380px',                 sortOrder: 40 },
+        lg:   { displayName: 'Tall — 480px',                   sortOrder: 50 },
+      },
+    },
+    aspectRatio: {
+      displayName: 'Card aspect ratio',
+      editor: 'select',
+      sortOrder: 94,
+      choices: {
+        auto:      { displayName: 'Auto — natural content height (Default)', sortOrder: 10 },
+        square:    { displayName: 'Square — 1:1',                            sortOrder: 20 },
+        portrait:  { displayName: 'Portrait — 3:4',                          sortOrder: 30 },
+        landscape: { displayName: 'Landscape — 4:3',                         sortOrder: 40 },
+        wide:      { displayName: 'Wide — 16:9',                             sortOrder: 50 },
+        cinema:    { displayName: 'Cinema — 21:9',                           sortOrder: 60 },
+      },
+    },
+    imageAspectRatio: {
+      displayName: 'Image area aspect ratio',
+      editor: 'select',
+      sortOrder: 96,
+      choices: {
+        auto:      { displayName: 'Auto — default per image style (Default)', sortOrder: 10 },
+        square:    { displayName: 'Square — 1:1',                             sortOrder: 20 },
+        portrait:  { displayName: 'Portrait — 3:4',                           sortOrder: 30 },
+        landscape: { displayName: 'Landscape — 4:3',                          sortOrder: 40 },
+        wide:      { displayName: 'Wide — 16:9',                              sortOrder: 50 },
+      },
+    },
   },
 })

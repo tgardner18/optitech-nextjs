@@ -8,8 +8,11 @@ export function getCardStyles(s: Record<string, string | boolean>): CardStyleOpt
     imageSide:  (s.imageSide  ?? 'left')    as CardStyleOptions['imageSide'],
     hover:      (s.hover      ?? 'none')    as CardStyleOptions['hover'],
     density:    (s.density    ?? 'default') as CardStyleOptions['density'],
-    noise:      s.noise === 'true' || s.noise === true,
-    accentLine: (s.accentLine ?? 'none')    as CardStyleOptions['accentLine'],
-    maxHeight:  (s.maxHeight  ?? 'none')    as CardStyleOptions['maxHeight'],
+    noise:            s.noise === 'true' || s.noise === true,
+    accentLine:       (s.accentLine       ?? 'none') as CardStyleOptions['accentLine'],
+    maxHeight:        (s.maxHeight        ?? 'none') as CardStyleOptions['maxHeight'],
+    minHeight:        (s.minHeight        ?? 'none') as CardStyleOptions['minHeight'],
+    aspectRatio:      (s.aspectRatio      ?? 'auto') as CardStyleOptions['aspectRatio'],
+    imageAspectRatio: (s.imageAspectRatio ?? 'auto') as CardStyleOptions['imageAspectRatio'],
   }
 }
