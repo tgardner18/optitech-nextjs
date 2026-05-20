@@ -3,6 +3,7 @@ import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server'
 
 // Display template definitions — registered so the SDK resolves template tags at render time
 import { OT_HeroDefault }         from '@/cms/display-templates/OT_HeroDefault'
+import { OT_ButtonDefault }       from '@/cms/display-templates/OT_ButtonDefault'
 import { OT_CardDefault }         from '@/cms/display-templates/OT_CardDefault'
 import { OT_PrimaryTextDefault }  from '@/cms/display-templates/OT_PrimaryTextDefault'
 import { OT_QuoteDefault }        from '@/cms/display-templates/OT_QuoteDefault'
@@ -17,6 +18,7 @@ import { OT_LandingColumn }       from '@/cms/display-templates/OT_LandingColumn
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
 import { OT_HeroBlock }         from '@/cms/content-types/OT_HeroBlock'
+import { OT_ButtonBlock }       from '@/cms/content-types/OT_ButtonBlock'
 import { OT_CardBlock }         from '@/cms/content-types/OT_CardBlock'
 import { OT_PrimaryTextBlock }  from '@/cms/content-types/OT_PrimaryTextBlock'
 import { OT_QuoteBlock }        from '@/cms/content-types/OT_QuoteBlock'
@@ -32,6 +34,7 @@ import { OT_FooterColumn }      from '@/cms/content-types/OT_FooterColumn'
 
 // React component adapters — maps content type keys to Server Component renderers
 import OT_HeroBlockAdapter        from '@/cms/components/OT_HeroBlock'
+import OT_ButtonBlockAdapter      from '@/cms/components/OT_ButtonBlock'
 import OT_CardBlockAdapter        from '@/cms/components/OT_CardBlock'
 import OT_PrimaryTextBlockAdapter from '@/cms/components/OT_PrimaryTextBlock'
 import OT_QuoteBlockAdapter       from '@/cms/components/OT_QuoteBlock'
@@ -47,6 +50,7 @@ import ColumnAdapter       from '@/cms/compositions/Column'
 
 initDisplayTemplateRegistry([
   OT_HeroDefault,
+  OT_ButtonDefault,
   OT_CardDefault,
   OT_PrimaryTextDefault,
   OT_QuoteDefault,
@@ -61,6 +65,7 @@ initDisplayTemplateRegistry([
 
 initContentTypeRegistry([
   OT_HeroBlock,
+  OT_ButtonBlock,
   OT_CardBlock,
   OT_PrimaryTextBlock,
   OT_QuoteBlock,
@@ -79,6 +84,7 @@ initReactComponentRegistry({
   resolver: {
     // Content blocks
     OT_HeroBlock:        OT_HeroBlockAdapter,
+    OT_ButtonBlock:      OT_ButtonBlockAdapter,
     OT_CardBlock:        OT_CardBlockAdapter,
     OT_PrimaryTextBlock: OT_PrimaryTextBlockAdapter,
     OT_QuoteBlock:       OT_QuoteBlockAdapter,

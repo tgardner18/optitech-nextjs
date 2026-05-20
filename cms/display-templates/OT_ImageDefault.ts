@@ -6,6 +6,18 @@ export const OT_ImageDefault = displayTemplate({
   contentType: 'OT_ImageBlock',
   isDefault: true,
   settings: {
+    maxHeight: {
+      displayName: 'Max height',
+      editor: 'select',
+      sortOrder: 5,
+      choices: {
+        none: { displayName: 'None — natural aspect ratio (Default)', sortOrder: 10 },
+        xs:   { displayName: 'Short — 200px',                        sortOrder: 20 },
+        sm:   { displayName: 'Small — 320px',                        sortOrder: 30 },
+        md:   { displayName: 'Medium — 480px',                       sortOrder: 40 },
+        lg:   { displayName: 'Large — 640px',                        sortOrder: 50 },
+      },
+    },
     ratio: {
       displayName: 'Aspect ratio',
       editor: 'select',

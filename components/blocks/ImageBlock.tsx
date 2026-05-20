@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 export type ImageStyleOptions = {
   /** Lock to a specific aspect ratio — no value renders at the natural image proportion */
   ratio?: "16:9" | "4:3" | "3:2" | "1:1";
+  /** Cap the rendered height so tall images don't dominate narrow columns */
+  maxHeight?: "none" | "xs" | "sm" | "md" | "lg";
   /** Teal brand wash via mix-blend-mode: multiply — works best on light-toned imagery */
   overlay?: boolean;
   /**
@@ -47,6 +49,14 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
   "1:1":  "aspect-square",
 };
 
+const MAX_H_CLASS: Record<NonNullable<ImageStyleOptions["maxHeight"]>, string> = {
+  none: "",
+  xs:   "max-h-[200px]",
+  sm:   "max-h-[320px]",
+  md:   "max-h-[480px]",
+  lg:   "max-h-[640px]",
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ImageBlock({
@@ -58,6 +68,7 @@ export default function ImageBlock({
 }: ImageBlockProps) {
   const {
     ratio,
+    maxHeight       = "none",
     overlay         = false,
     frame,
     animate         = false,
@@ -93,6 +104,7 @@ export default function ImageBlock({
   }, [animate]);
 
   const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
+  const maxHClass   = MAX_H_CLASS[maxHeight];
 
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
@@ -173,7 +185,7 @@ export default function ImageBlock({
         {/* Image container — glow applies here as an inline box-shadow */}
         <div
           ref={containerRef}
-          className={`relative overflow-hidden ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
+          className={`relative overflow-hidden ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
           style={glowStyle}
           {...(previewAttrs?.image ?? {})}
         >

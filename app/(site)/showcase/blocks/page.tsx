@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { SectionLabel } from "../components";
 import OT_HeroBlock        from "@/cms/components/OT_HeroBlock";
+import OT_ButtonBlock      from "@/cms/components/OT_ButtonBlock";
 import OT_PrimaryTextBlock from "@/cms/components/OT_PrimaryTextBlock";
 import OT_RichTextBlock    from "@/cms/components/OT_RichTextBlock";
 import OT_QuoteBlock       from "@/cms/components/OT_QuoteBlock";
@@ -625,6 +626,109 @@ export default function ShowcaseBlocksPage() {
         <div className="bg-brand px-md py-xl lg:px-lg flex flex-wrap gap-md items-center">
           <Button variant="ghost" href="#">Learn more</Button>
           <Button variant="ghost" href="#" trailingIcon={<ChevronRight />}>View the platform</Button>
+        </div>
+
+        <div className="pb-xl" />
+      </section>
+
+      {/* ════════════════════════════════════════════════════
+          BUTTON BLOCK
+      ═══════════════════════════════════════════════════ */}
+      <section id="button-block" className="border-t border-fg/5">
+        <div className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="00 · CMS" title="ButtonBlock" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            CMS-managed button with a link field. Variant, size, icon, position, and alignment are
+            display template settings. Polymorphic — renders as{" "}
+            <code className="font-mono text-fg text-label">&lt;a target=&quot;_blank&quot;&gt;</code> for external URLs,{" "}
+            <code className="font-mono text-fg text-label">&lt;Link&gt;</code> for internal routes.
+          </p>
+        </div>
+
+        {/* ── Variants ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">Variants</p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md">
+          {(["primary", "ghost", "signal"] as const).map((v) => (
+            <div key={v} className="flex flex-col gap-sm">
+              <span className="font-mono text-label text-fg-muted/50">{v}</span>
+              <OT_ButtonBlock
+                content={{ label: v === "primary" ? "Get started" : v === "ghost" ? "Learn more" : "See it in action", url: { default: "#" } }}
+                displaySettings={{ variant: v }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* ── Sizes ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">Sizes · primary</p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md items-end">
+          {(["sm", "md", "lg"] as const).map((s) => (
+            <div key={s} className="flex flex-col gap-sm items-start">
+              <span className="font-mono text-label text-fg-muted/50">{s}</span>
+              <OT_ButtonBlock
+                content={{ label: "Get started", url: { default: "#" } }}
+                displaySettings={{ variant: "primary", size: s }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* ── Icons ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">Icons · trailing (default) · leading</p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg flex flex-wrap gap-md">
+          {(["arrowRight", "chevronRight", "zap", "externalLink", "arrowUpRight"] as const).map((icon) => (
+            <div key={icon} className="flex flex-col gap-sm">
+              <span className="font-mono text-label text-fg-muted/50">{icon}</span>
+              <OT_ButtonBlock
+                content={{ label: "Get started", url: { default: "#" } }}
+                displaySettings={{ variant: "primary", icon, iconPosition: "trailing" }}
+              />
+            </div>
+          ))}
+          <div className="flex flex-col gap-sm">
+            <span className="font-mono text-label text-fg-muted/50">leading · zap</span>
+            <OT_ButtonBlock
+              content={{ label: "Deploy now", url: { default: "#" } }}
+              displaySettings={{ variant: "primary", icon: "zap", iconPosition: "leading" }}
+            />
+          </div>
+        </div>
+
+        {/* ── Alignment ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">Alignment · signal variant</p>
+        </div>
+        <div className="flex flex-col gap-sm pb-xl">
+          {(["left", "center", "right"] as const).map((a) => (
+            <div key={a}>
+              <div className="px-md pb-xs lg:px-lg">
+                <span className="font-mono text-label text-fg-muted/50">{a}</span>
+              </div>
+              <div className="px-md lg:px-lg">
+                <OT_ButtonBlock
+                  content={{ label: "Start your trial", url: { default: "#" } }}
+                  displaySettings={{ variant: "signal", icon: "arrowRight", iconPosition: "trailing", alignment: a }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Full width ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">Full width · primary</p>
+        </div>
+        <div className="px-md pb-xl lg:px-lg">
+          <OT_ButtonBlock
+            content={{ label: "Start your free trial — no credit card required", url: { default: "#" } }}
+            displaySettings={{ variant: "primary", size: "lg", fullWidth: "true" }}
+          />
         </div>
 
         <div className="pb-xl" />
