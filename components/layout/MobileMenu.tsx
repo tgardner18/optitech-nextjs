@@ -58,8 +58,22 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref }: Props) {
       {mounted && createPortal(
         <div
           aria-hidden={!open}
-          className={`fixed inset-0 z-[200] bg-canvas flex flex-col pt-20 overflow-y-auto transition-opacity duration-200 ease-quick ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 z-[200] bg-canvas flex flex-col overflow-y-auto transition-opacity duration-200 ease-quick ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         >
+          {/* Header row — close button mirrors hamburger position */}
+          <div className="flex items-center justify-end px-sm h-20 shrink-0">
+            <button
+              type="button"
+              aria-label="Close navigation"
+              onClick={close}
+              className="flex flex-col justify-center gap-1.5 p-sm text-fg hover:text-fg-muted transition-colors duration-150 ease-quick"
+            >
+              <span className="block w-5 h-px bg-current origin-center translate-y-1.75 rotate-45" />
+              <span className="block w-5 h-px bg-current opacity-0" />
+              <span className="block w-5 h-px bg-current origin-center -translate-y-1.75 -rotate-45" />
+            </button>
+          </div>
+
           <nav aria-label="Mobile navigation" className="px-md">
             {navItems.map((item, i) => {
               const hasChildren = !!item.children?.length

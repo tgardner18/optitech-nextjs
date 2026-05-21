@@ -40,9 +40,12 @@ const rootCva = cva(
           "focus-visible:outline-accent",
         ],
         ghost: [
-          "bg-transparent border border-fg-on-brand/40 text-fg-on-brand",
-          "hover:border-fg-on-brand/70 hover:bg-fg-on-brand/8",
-          "focus-visible:outline-fg-on-brand",
+          // Colors via CSS custom properties so data-surface="light" on any
+          // parent flips transparent buttons to legible dark text automatically.
+          "bg-transparent border",
+          "[color:var(--ot-btn-ghost-fg)] [border-color:var(--ot-btn-ghost-border)]",
+          "hover:[border-color:var(--ot-btn-ghost-border-hover)] hover:[background-color:var(--ot-btn-ghost-bg-hover)]",
+          "focus-visible:outline-[var(--ot-btn-ghost-fg)]",
         ],
         signal: [
           // Kinetic fill sweep handled by .btn-signal in globals.css
@@ -147,8 +150,8 @@ export default function Button({
           "motion-safe:transition-colors motion-safe:duration-150 motion-safe:delay-75 motion-safe:ease-quick",
         ],
         variant === "glass" && [
-          // Dark context: white text. Light context: fg text.
-          "text-fg",
+          // Responds to --ot-btn-clear-fg: white on dark surfaces, dark on light.
+          "text-(--ot-btn-clear-fg)",
         ]
       )}
     >

@@ -699,7 +699,7 @@ export default function ShowcaseBlocksPage() {
           <Button variant="glass" href="#" trailingIcon={<ArrowRight />}>Get started</Button>
           <Button variant="glass" href="#" leadingIcon={<Star />}>Featured release</Button>
         </div>
-        <div className="relative overflow-hidden px-md py-xl lg:px-lg flex flex-wrap gap-md items-center bg-[oklch(0.96_0.01_220)]">
+        <div data-surface="light" className="relative overflow-hidden px-md py-xl lg:px-lg flex flex-wrap gap-md items-center bg-[oklch(0.96_0.01_220)]">
           <span className="font-mono text-label text-fg-muted/50 w-full mb-sm">Light surface</span>
           <Button variant="glass" href="#">View the platform</Button>
           <Button variant="glass" href="#" trailingIcon={<Plus />}>New project</Button>

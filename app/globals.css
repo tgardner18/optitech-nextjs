@@ -65,6 +65,28 @@
   --animate-slide-up: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ── Button surface context tokens ───────────────────────────────────────────
+ * Ghost, hover-fill, signal, and glass have no solid fill at rest — they need
+ * to flip to dark text when placed on a light-colored section. Add
+ * data-surface="light" to any container and all nested transparent buttons
+ * inherit legible dark values automatically; no prop changes required.
+ * ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --ot-btn-ghost-fg:           var(--ot-fg-on-brand);
+  --ot-btn-ghost-border:       oklch(from var(--ot-fg-on-brand) l c h / 0.40);
+  --ot-btn-ghost-border-hover: oklch(from var(--ot-fg-on-brand) l c h / 0.70);
+  --ot-btn-ghost-bg-hover:     oklch(from var(--ot-fg-on-brand) l c h / 0.08);
+  --ot-btn-clear-fg:           var(--ot-fg);
+}
+
+[data-surface="light"] {
+  --ot-btn-ghost-fg:           oklch(12% 0.012 195);
+  --ot-btn-ghost-border:       oklch(12% 0.012 195 / 0.40);
+  --ot-btn-ghost-border-hover: oklch(12% 0.012 195 / 0.70);
+  --ot-btn-ghost-bg-hover:     oklch(12% 0.012 195 / 0.06);
+  --ot-btn-clear-fg:           oklch(12% 0.012 195);
+}
+
 /* Logo dark-mode invert — converts any dark/black logo to white.
  * Applied by Header/Footer when ThemeManager.logoInvertDark is true.
  * Removed in light mode so the original logo shows on the light canvas. */
