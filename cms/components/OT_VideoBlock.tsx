@@ -14,7 +14,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   return (
     <div {...pa(content.__composition)} className="w-full">
       <VideoBlock
-        src={content.videoUrl ?? content.src?.default ?? ''}
+        src={content.videoUrl ?? ''}
         title={content.title ?? ''}
         caption={content.caption ?? undefined}
         styleOptions={styleOptions}
