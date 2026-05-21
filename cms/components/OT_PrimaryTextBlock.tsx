@@ -12,7 +12,7 @@ export default function OT_PrimaryTextBlock({ content, displaySettings = {} }: P
   const styleOptions = getPrimaryTextStyles(displaySettings)
 
   return (
-    <div {...pa(content.__composition)}>
+    <div {...pa(content.__composition)} className="w-full">
       <PrimaryTextBlock
         eyebrow={content.eyebrow ?? undefined}
         headline={content.headline ?? ''}

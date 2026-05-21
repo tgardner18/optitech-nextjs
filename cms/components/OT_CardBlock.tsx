@@ -12,7 +12,7 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
   const styleOptions = getCardStyles(displaySettings)
 
   return (
-    <div {...pa(content.__composition)}>
+    <div {...pa(content.__composition)} className="w-full h-full">
       <CardBlock
         heading={content.Heading ?? ''}
         eyebrow={content.Eyebrow ?? undefined}

@@ -165,7 +165,7 @@ export default function VideoBlock({
   const hasBelowCaption = caption && captionPosition === "below";
 
   return (
-    <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
+    <figure className={`relative w-full${shadow ? " isolate pb-7" : ""}`}>
 
       {/* Chromatic shadow bloom */}
       {shadow && <div aria-hidden="true" style={shadowStyle} />}

@@ -12,7 +12,7 @@ export default function OT_RichTextBlock({ content, displaySettings = {} }: Prop
   const styleOptions = getRichTextStyles(displaySettings)
 
   return (
-    <div {...pa(content.__composition)}>
+    <div {...pa(content.__composition)} className="w-full">
       <RichTextBlock
         content={content.content?.html ?? ''}
         styleOptions={styleOptions}

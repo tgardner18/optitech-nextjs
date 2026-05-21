@@ -38,9 +38,10 @@ const justifyClasses: Record<string, string> = {
 }
 
 const alignClasses: Record<string, string> = {
-  center: 'items-center',
-  end:    'items-end',
-  start:  'items-start',
+  center:  'items-center',
+  end:     'items-end',
+  start:   'items-start',
+  stretch: '',
 }
 
 export default function Column({ node, displaySettings = {}, children }: Props) {
@@ -49,7 +50,7 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
   const span    = String(displaySettings.gridSpan          ?? 'auto')
   const spacing = String(displaySettings.contentSpacing    ?? 'medium')
   const justify = String(displaySettings.justifyContent    ?? 'start')
-  const align   = String(displaySettings.alignContent      ?? 'start')
+  const align   = String(displaySettings.alignContent      ?? 'stretch')
   const vPad    = String(displaySettings.verticalPadding   ?? 'none')
   const hPad    = String(displaySettings.horizontalPadding ?? 'none')
 
