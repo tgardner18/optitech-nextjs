@@ -5,8 +5,8 @@ import { cva } from "class-variance-authority";
 export type PrimaryTextStyleOptions = {
   /** Horizontal alignment of the content column within the section */
   alignment?: "left" | "center";
-  /** Background color of the block */
-  color?: "brand" | "canvas" | "surface";
+  /** Background color of the block — "none" is transparent, inheriting the row/section background */
+  color?: "none" | "brand" | "canvas" | "surface";
   /** Heading scale — controls font size, weight, tracking, and vertical rhythm */
   size?: "display" | "headline" | "title" | "label";
   /**
@@ -23,6 +23,7 @@ export type PrimaryTextStyleOptions = {
 const sectionCva = cva("px-md lg:px-lg", {
   variants: {
     color: {
+      none:    "",
       brand:   "bg-brand",
       canvas:  "bg-canvas",
       surface: "bg-surface",
@@ -52,6 +53,7 @@ const innerCva = cva("", {
 const eyebrowCva = cva("text-label tracking-label uppercase font-semibold", {
   variants: {
     color: {
+      none:    "text-fg-muted",
       brand:   "text-fg-on-brand/60",
       canvas:  "text-fg-muted",
       surface: "text-fg-muted",
@@ -74,6 +76,7 @@ const headlineCva = cva("text-balance", {
       label:    "text-label tracking-label uppercase font-semibold",
     },
     color: {
+      none:    "text-fg",
       brand:   "text-fg-on-brand",
       canvas:  "text-fg",
       surface: "text-fg",

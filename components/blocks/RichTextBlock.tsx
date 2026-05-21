@@ -3,8 +3,8 @@ import { cva } from "class-variance-authority";
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type RichTextStyleOptions = {
-  /** Background color of the block */
-  color?: "brand" | "canvas" | "surface";
+  /** Background color of the block — "none" is transparent, inheriting the row/section background */
+  color?: "none" | "brand" | "canvas" | "surface";
   /** Horizontal alignment of the prose column */
   alignment?: "left" | "center";
   /** Type scale and vertical rhythm: editorial for long-form prose, compact for shorter sections */
@@ -29,6 +29,7 @@ export type RichTextStyleOptions = {
 const sectionCva = cva("px-md lg:px-lg", {
   variants: {
     color: {
+      none:    "",
       brand:   "bg-brand",
       canvas:  "bg-canvas",
       surface: "bg-surface",

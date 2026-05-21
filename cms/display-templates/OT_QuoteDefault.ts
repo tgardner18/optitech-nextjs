@@ -11,9 +11,10 @@ export const OT_QuoteDefault = displayTemplate({
       editor: 'select',
       sortOrder: 10,
       choices: {
-        canvas:  { displayName: 'Canvas (Default)', sortOrder: 10 },
-        brand:   { displayName: 'Brand',            sortOrder: 20 },
-        surface: { displayName: 'Surface',                 sortOrder: 30 },
+        none:    { displayName: 'Transparent (inherit row/section)', sortOrder: 5  },
+        canvas:  { displayName: 'Canvas (Default)',                  sortOrder: 10 },
+        brand:   { displayName: 'Brand',                             sortOrder: 20 },
+        surface: { displayName: 'Surface',                           sortOrder: 30 },
       },
     },
     alignment: {

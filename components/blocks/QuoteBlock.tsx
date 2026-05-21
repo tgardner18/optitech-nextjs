@@ -3,8 +3,8 @@ import { cva } from "class-variance-authority";
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type QuoteStyleOptions = {
-  /** Background color of the block */
-  color?: "brand" | "canvas" | "surface";
+  /** Background color of the block — "none" is transparent, inheriting the row/section background */
+  color?: "none" | "brand" | "canvas" | "surface";
   /** Horizontal alignment of quote and attribution */
   alignment?: "left" | "center";
   /** Quote text scale — large for anchor moments, small for lighter placement */
@@ -16,6 +16,7 @@ export type QuoteStyleOptions = {
 const sectionCva = cva("px-md lg:px-lg", {
   variants: {
     color: {
+      none:    "",
       brand:   "bg-brand",
       canvas:  "bg-canvas",
       surface: "bg-surface",
@@ -52,6 +53,7 @@ const quoteMarkCva = cva(
   {
     variants: {
       color: {
+        none:    "text-brand opacity-20",
         brand:   "text-fg-on-brand opacity-[0.15]",
         canvas:  "text-brand opacity-20",
         surface: "text-brand opacity-20",
@@ -83,6 +85,7 @@ const quoteContentCva = cva("relative", {
 const quoteTextCva = cva("text-balance", {
   variants: {
     color: {
+      none:    "text-fg",
       brand:   "text-fg-on-brand",
       canvas:  "text-fg",
       surface: "text-fg",
@@ -98,6 +101,7 @@ const quoteTextCva = cva("text-balance", {
 const attributionNameCva = cva("text-label tracking-label uppercase font-semibold", {
   variants: {
     color: {
+      none:    "text-fg",
       brand:   "text-fg-on-brand",
       canvas:  "text-fg",
       surface: "text-fg",
@@ -109,6 +113,7 @@ const attributionNameCva = cva("text-label tracking-label uppercase font-semibol
 const attributionTitleCva = cva("text-label font-normal", {
   variants: {
     color: {
+      none:    "text-fg-muted",
       brand:   "text-fg-on-brand/60",
       canvas:  "text-fg-muted",
       surface: "text-fg-muted",

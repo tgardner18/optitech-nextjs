@@ -20,9 +20,10 @@ export const OT_PrimaryTextDefault = displayTemplate({
       editor: 'select',
       sortOrder: 20,
       choices: {
-        canvas:  { displayName: 'Canvas (Default)', sortOrder: 10 },
-        brand:   { displayName: 'Brand',            sortOrder: 20 },
-        surface: { displayName: 'Surface',                 sortOrder: 30 },
+        none:    { displayName: 'Transparent (inherit row/section)', sortOrder: 5  },
+        canvas:  { displayName: 'Canvas (Default)',                  sortOrder: 10 },
+        brand:   { displayName: 'Brand',                             sortOrder: 20 },
+        surface: { displayName: 'Surface',                           sortOrder: 30 },
       },
     },
     size: {
