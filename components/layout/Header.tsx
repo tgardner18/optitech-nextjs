@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button'
 import MobileMenu from '@/components/layout/MobileMenu'
 import DesktopNav from '@/components/layout/DesktopNav'
 import type { NavItem } from '@/components/layout/DesktopNav'
+import SearchTrigger from '@/components/search/SearchTrigger'
 import { getSiteSettings, getRequestDomain } from '@/lib/optimizely'
 
 const FALLBACK_NAV: NavItem[] = [
@@ -66,12 +67,14 @@ export default async function Header() {
 
           <DesktopNav navItems={navItems} />
 
-          <div className="hidden lg:flex items-center gap-md">
+          <div className="hidden lg:flex items-center gap-sm">
+            <SearchTrigger />
             <ThemeToggle />
             <Button href={ctaHref} size="sm">{ctaLabel}</Button>
           </div>
 
           <div className="lg:hidden flex items-center gap-sm">
+            <SearchTrigger />
             <ThemeToggle />
             <MobileMenu navItems={navItems} ctaLabel={ctaLabel} ctaHref={ctaHref} />
           </div>
