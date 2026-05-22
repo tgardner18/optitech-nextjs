@@ -374,7 +374,7 @@ export default function SiteSearch() {
     const thumbSize = isCompact ? 'w-[48px] h-[48px]' : 'w-[68px] h-[68px]'
 
     return (
-      <li>
+      <li key={result.id}>
         <button
           data-result-item
           tabIndex={isFocused ? 0 : -1}
