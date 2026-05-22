@@ -433,14 +433,14 @@ export default function SiteSearch() {
             <p className={[
               'font-semibold text-fg leading-snug line-clamp-2',
               'group-hover:text-brand group-focus-visible:text-brand transition-colors duration-150',
-              isCompact ? 'text-[14px]' : 'text-[16px]',
+              isCompact ? 'text-[14px]' : 'text-[19px]',
             ].join(' ')}>
               {result.title}
             </p>
 
             {/* Excerpt */}
             {result.excerpt && (
-              <p className={`text-fg-muted leading-relaxed mt-[4px] line-clamp-2 ${isCompact ? 'text-[12px]' : 'text-[13px]'}`}>
+              <p className={`text-fg-muted leading-relaxed mt-[4px] line-clamp-2 ${isCompact ? 'text-[12px]' : 'text-[14px]'}`}>
                 {result.excerpt}
               </p>
             )}
@@ -469,26 +469,27 @@ export default function SiteSearch() {
       <div className="flex flex-col h-full overflow-hidden">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-md lg:px-xl py-[10px] border-b border-fg/8 shrink-0">
+        <div className="flex items-center justify-between px-md lg:px-2xl py-2.5 border-b border-fg/8 shrink-0">
           <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-fg-muted/35 select-none">
             OptiTech Search
           </span>
-          <div className="flex items-center gap-[2px]">
+          <div className="flex items-center gap-xs">
             <button
               type="button"
               onClick={toggleMode}
               aria-label="Switch to compact mode"
-              className="p-[7px] text-fg-muted/40 hover:text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+              className="flex items-center gap-1.25 px-sm py-1.75 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
             >
-              <Minimize2 size={14} />
+              <Minimize2 size={16} />
+              <span className="text-[10px] uppercase tracking-[0.08em] font-semibold hidden sm:inline">Compact</span>
             </button>
             <button
               type="button"
               onClick={closeSearch}
               aria-label="Close search"
-              className="p-[7px] text-fg-muted/40 hover:text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+              className="flex items-center justify-center w-9 h-9 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
             >
-              <X size={16} />
+              <X size={20} />
             </button>
           </div>
         </div>
@@ -502,16 +503,18 @@ export default function SiteSearch() {
           aria-live="polite"
           className="flex-1 overflow-y-auto"
         >
-          <div className="max-w-3xl mx-auto px-md lg:px-xl pt-lg pb-2xl">
+          <div className="px-md lg:px-2xl xl:px-[8vw] pt-lg pb-2xl">
 
-            {/* SEARCH display wordmark */}
+            {/* SEARCH display wordmark — hollow Syne with brand glow for legibility */}
             <div className="mb-lg select-none" aria-hidden>
               <span
-                className="display-gradient-brand font-syne font-black block leading-none"
+                className="syne-hollow font-syne font-black block leading-none"
                 style={{
-                  fontSize:              'clamp(3.5rem, 9vw, 7.5rem)',
+                  fontSize:              'clamp(4rem, 10vw, 10rem)',
                   letterSpacing:         '-0.04em',
                   fontVariationSettings: "'wght' 900",
+                  WebkitTextStroke:      '3px var(--ot-brand)',
+                  filter:               'drop-shadow(0 0 32px oklch(from var(--ot-brand) l c h / 0.50))',
                 }}
               >
                 SEARCH

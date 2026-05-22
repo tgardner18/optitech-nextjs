@@ -13,12 +13,12 @@ export default function SearchTrigger() {
       aria-label="Open search"
       className={[
         'flex items-center justify-center w-9 h-9',
-        'text-fg-muted hover:text-fg',
+        'text-fg hover:text-brand',
         'transition-colors duration-150 ease-quick',
         'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2',
       ].join(' ')}
     >
-      <Search size={18} aria-hidden="true" />
+      <Search size={20} aria-hidden="true" />
     </button>
   )
 }
