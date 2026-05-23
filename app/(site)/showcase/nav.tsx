@@ -1,101 +1,160 @@
-"use client";
-import { usePathname } from "next/navigation";
+'use client'
 
-const NAV = [
-  {
-    label: "Overview",
-    href: "/showcase",
-    exact: true,
-    items: [],
-  },
-  {
-    label: "Tokens",
-    href: "/showcase/tokens",
-    exact: false,
-    items: [
-      { href: "/showcase/tokens#colors",     label: "Colors"        },
-      { href: "/showcase/tokens#typography", label: "Typography"    },
-      { href: "/showcase/tokens#buttons",    label: "Buttons"       },
-      { href: "/showcase/tokens#inputs",     label: "Form Elements" },
-      { href: "/showcase/tokens#spacing",    label: "Spacing"       },
-      { href: "/showcase/tokens#motion",     label: "Motion"        },
-    ],
-  },
-  {
-    label: "Components",
-    href: "/showcase/blocks",
-    exact: false,
-    items: [
-      { href: "/showcase/blocks#hero",       label: "Hero"       },
-      { href: "/showcase/blocks#typography", label: "Typography" },
-      { href: "/showcase/blocks#quote",      label: "Quote"      },
-      { href: "/showcase/blocks#media",       label: "Media"      },
-      { href: "/showcase/blocks#video-block", label: "Video"     },
-      { href: "/showcase/blocks#card-block", label: "Card"       },
-    ],
-  },
-  {
-    label: "Page Types",
-    href: "/showcase/pages",
-    exact: false,
-    items: [],
-  },
-  {
-    label: "Theme",
-    href: "/showcase/theme",
-    exact: false,
-    items: [
-      { href: "/showcase/theme#logo",   label: "Logo"       },
-      { href: "/showcase/theme#colors", label: "Colors"     },
-      { href: "/showcase/theme#nav",    label: "Navigation" },
-      { href: "/showcase/theme#cta",    label: "CTA Button" },
-    ],
-  },
-];
+import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { TYPE_TABS, getSectionsForPath, type NavSection } from './config'
 
 export default function ShowcaseNav() {
-  const pathname = usePathname();
+  const pathname = usePathname()
+  const sections = getSectionsForPath(pathname)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+
+  // ── IntersectionObserver: track which section is top-most in viewport ──────
+  useEffect(() => {
+    if (sections.length === 0) {
+      setActiveId(null)
+      return
+    }
+
+    // Wait one tick for the page DOM to be ready after navigation
+    const timer = setTimeout(() => {
+      const els = sections
+        .map(s => document.getElementById(s.id))
+        .filter(Boolean) as HTMLElement[]
+
+      if (els.length === 0) return
+
+      const io = new IntersectionObserver(
+        entries => {
+          const visible = entries
+            .filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+          if (visible.length > 0) {
+            setActiveId(visible[0].target.id)
+          }
+        },
+        // rootMargin: push the bottom of the detection window 55% up —
+        // the section has to clear the fold to become "active".
+        { rootMargin: '0px 0px -55% 0px', threshold: 0.01 },
+      )
+
+      els.forEach(el => io.observe(el))
+      return () => io.disconnect()
+    }, 80)
+
+    return () => clearTimeout(timer)
+  }, [pathname, sections])
+
+  // ── Auto-scroll sidebar item into view when active changes ────────────────
+  useEffect(() => {
+    if (!activeId || !listRef.current) return
+    const btn = listRef.current.querySelector(`[data-section-id="${activeId}"]`) as HTMLElement
+    btn?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [activeId])
+
+  // ── Smooth scroll with offset for sticky site header ─────────────────────
+  function scrollToSection(id: string) {
+    const el = document.getElementById(id)
+    if (!el) return
+    const OFFSET = 80 // 64px site header + 16px breathing room
+    const top = el.getBoundingClientRect().top + window.scrollY - OFFSET
+    window.scrollTo({ top, behavior: 'smooth' })
+    setActiveId(id)
+  }
+
+  const sectionLabel = pathname.startsWith('/showcase/blocks')
+    ? 'Components'
+    : pathname.startsWith('/showcase/tokens')
+      ? 'Sections'
+      : null
 
   return (
-    <nav aria-label="Showcase navigation" className="sticky top-16 p-lg overflow-y-auto max-h-[calc(100vh-4rem)]">
-      <p className="text-label tracking-label uppercase text-fg-muted mb-lg font-semibold">
-        Design System
-      </p>
-      <ul className="flex flex-col gap-lg">
-        {NAV.map((group) => {
-          const isActive = group.exact
-            ? pathname === group.href
-            : pathname.startsWith(group.href);
-          return (
-            <li key={group.href}>
-              <a
-                href={group.href}
-                className={`block text-label font-semibold tracking-label uppercase mb-sm transition-colors duration-150 ease-quick ${
-                  isActive ? "text-brand" : "text-fg-muted hover:text-fg"
-                }`}
-              >
-                {group.label}
-              </a>
-              {group.items.length > 0 && (
-                <ul className="flex flex-col gap-xs">
-                  {group.items.map((item) => (
-                    <li key={item.href}>
-                      <a
-                        href={item.href}
-                        className={`block text-sm font-normal py-xs pl-sm transition-colors duration-150 ease-quick ${
-                          isActive ? "text-fg-muted hover:text-fg" : "text-fg-muted/40"
-                        }`}
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+    <nav
+      aria-label="Showcase navigation"
+      className="flex flex-col h-full overflow-hidden"
+    >
+      {/* ── Identity ─────────────────────────────────────────────────────── */}
+      <div className="px-md pt-lg pb-sm flex-shrink-0">
+        <p className="text-[0.65rem] tracking-widest uppercase text-fg-muted/50 font-semibold mb-0.75">
+          Internal · Design System
+        </p>
+        <p className="font-syne font-bold text-title leading-title tracking-title text-fg">
+          Showcase
+        </p>
+      </div>
+
+      {/* ── Type tabs ────────────────────────────────────────────────────── */}
+      <div className="px-md pt-sm pb-md shrink-0 border-b border-fg/8">
+        <p className="text-[0.6rem] tracking-widest uppercase text-fg-muted/40 font-semibold mb-sm">
+          View
+        </p>
+        <ul className="flex flex-col gap-0.5">
+          {TYPE_TABS.map(tab => {
+            const isActive = tab.exact
+              ? pathname === tab.href
+              : pathname.startsWith(tab.match)
+            return (
+              <li key={tab.href}>
+                <a
+                  href={tab.href}
+                  className={[
+                    'flex items-center gap-sm pl-sm py-1.25 rounded-sm',
+                    'text-label font-semibold tracking-label uppercase',
+                    'border-l-2 transition-colors duration-150 ease-quick',
+                    isActive
+                      ? 'text-brand border-brand bg-brand/4'
+                      : 'text-fg-muted border-transparent hover:text-fg hover:border-fg/20 hover:bg-fg/2.5',
+                  ].join(' ')}
+                >
+                  {tab.label}
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      {/* ── Component / section list ──────────────────────────────────────── */}
+      {sections.length > 0 && (
+        <div className="flex-1 overflow-y-auto py-md px-md min-h-0">
+          {sectionLabel && (
+            <p className="text-[0.6rem] tracking-widest uppercase text-fg-muted/40 font-semibold mb-sm px-sm">
+              {sectionLabel}
+            </p>
+          )}
+          <ul ref={listRef} className="flex flex-col gap-0.5">
+            {sections.map(s => {
+              const isActive = activeId === s.id
+              return (
+                <li key={s.id}>
+                  <button
+                    data-section-id={s.id}
+                    onClick={() => scrollToSection(s.id)}
+                    className={[
+                      'w-full text-left flex items-center gap-sm pl-sm pr-xs py-1.25 text-sm',
+                      'rounded-sm transition-colors duration-150 ease-quick',
+                      isActive
+                        ? 'text-fg bg-fg/6 font-medium'
+                        : 'text-fg-muted hover:text-fg hover:bg-fg/3',
+                    ].join(' ')}
+                  >
+                    <span
+                      className={[
+                        'w-1.25 h-1.25 rounded-full shrink-0',
+                        'transition-all duration-200',
+                        isActive ? 'bg-brand scale-100' : 'bg-fg/15 scale-75',
+                      ].join(' ')}
+                      aria-hidden="true"
+                    />
+                    {s.label}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
     </nav>
-  );
+  )
 }
