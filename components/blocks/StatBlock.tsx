@@ -3,39 +3,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import {
-  Zap, Shield, Users, TrendingUp, Clock, Award,
-  BarChart2, Globe, Sparkles, CheckCircle,
-  type LucideIcon,
-} from 'lucide-react'
+import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
 
-// ─── Icon registry ────────────────────────────────────────────────────────────
-// Accepts both the human-readable CMS dropdown labels ("Zap", "Bar Chart") and
-// the legacy kebab-case keys used in showcase / old content ("zap", "bar-chart").
+// ─── Icon lookup ──────────────────────────────────────────────────────────────
+// Delegates to the shared registry (camelCase keys).
+// Legacy kebab-case aliases kept for backward compat with showcase / old content.
 
 const ICONS: Record<string, LucideIcon> = {
-  // Human-readable labels — matches CMS EnumValues
-  'Zap':           Zap,
-  'Shield':        Shield,
-  'Users':         Users,
-  'Trending Up':   TrendingUp,
-  'Clock':         Clock,
-  'Award':         Award,
-  'Bar Chart':     BarChart2,
-  'Globe':         Globe,
-  'Sparkles':      Sparkles,
-  'Check Circle':  CheckCircle,
-  // Legacy kebab-case — backward compat with existing content / showcase
-  'zap':           Zap,
-  'shield':        Shield,
-  'users':         Users,
-  'trending-up':   TrendingUp,
-  'clock':         Clock,
-  'award':         Award,
-  'bar-chart':     BarChart2,
-  'globe':         Globe,
-  'sparkles':      Sparkles,
-  'check-circle':  CheckCircle,
+  ...ICON_REGISTRY,
+  // Legacy kebab-case aliases
+  'trending-up':  ICON_REGISTRY['trendingUp'],
+  'bar-chart':    ICON_REGISTRY['barChart'],
+  'check-circle': ICON_REGISTRY['checkCircle'],
+  // Title-case aliases from an earlier EnumValues attempt
+  'Zap':          ICON_REGISTRY['zap'],
+  'Shield':       ICON_REGISTRY['shield'],
+  'Users':        ICON_REGISTRY['users'],
+  'Trending Up':  ICON_REGISTRY['trendingUp'],
+  'Clock':        ICON_REGISTRY['clock'],
+  'Award':        ICON_REGISTRY['award'],
+  'Bar Chart':    ICON_REGISTRY['barChart'],
+  'Globe':        ICON_REGISTRY['globe'],
+  'Sparkles':     ICON_REGISTRY['sparkles'],
+  'Check Circle': ICON_REGISTRY['checkCircle'],
 }
 
 export type StatIconKey = keyof typeof ICONS
@@ -49,8 +39,8 @@ export type StatItem = {
   label:    string
   /** Optional supporting context e.g. "vs. industry average" */
   context?: string
-  /** Optional icon key */
-  icon?:    StatIconKey
+  /** Optional icon key — any string; unknown keys silently render nothing */
+  icon?:    string
 }
 
 export type StatBlockStyleOptions = {

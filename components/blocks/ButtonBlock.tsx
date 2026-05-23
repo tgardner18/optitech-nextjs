@@ -1,28 +1,12 @@
-import {
-  ArrowRight, ChevronRight, Zap, ExternalLink, ArrowUpRight,
-  Play, Download, Sparkles, Send, Rocket, Star, Plus,
-} from "lucide-react";
 import Button from "@/components/ui/Button";
 import type { ButtonVariant, ButtonSize } from "@/components/ui/Button";
+import { ICON_REGISTRY } from "@/components/icons/iconRegistry";
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
 
 // ─── Style option types ───────────────────────────────────────────────────────
 
-export type ButtonIconKey =
-  | "none"
-  | "arrowRight"
-  | "chevronRight"
-  | "zap"
-  | "externalLink"
-  | "arrowUpRight"
-  | "play"
-  | "download"
-  | "sparkles"
-  | "send"
-  | "rocket"
-  | "star"
-  | "plus";
+/** "none" + any key from the shared icon registry */
+export type ButtonIconKey = "none" | keyof typeof ICON_REGISTRY;
 
 export type ButtonIconPosition = "leading" | "trailing";
 export type ButtonAlignment    = "left" | "center" | "right";
@@ -40,24 +24,6 @@ export type ButtonBlockProps = {
   label:         string;
   url?:          string;
   styleOptions?: ButtonBlockStyleOptions;
-};
-
-// ─── Icon map ─────────────────────────────────────────────────────────────────
-
-const ICON_MAP: Record<ButtonIconKey, ReactNode> = {
-  none:         null,
-  arrowRight:   <ArrowRight />,
-  chevronRight: <ChevronRight />,
-  zap:          <Zap />,
-  externalLink: <ExternalLink />,
-  arrowUpRight: <ArrowUpRight />,
-  play:         <Play />,
-  download:     <Download />,
-  sparkles:     <Sparkles />,
-  send:         <Send />,
-  rocket:       <Rocket />,
-  star:         <Star />,
-  plus:         <Plus />,
 };
 
 const ALIGN_CLASS: Record<ButtonAlignment, string> = {
@@ -82,7 +48,8 @@ export default function ButtonBlock({
     fullWidth    = false,
   } = styleOptions;
 
-  const iconEl     = ICON_MAP[icon];
+  const IconComp   = icon !== "none" ? ICON_REGISTRY[icon] : undefined;
+  const iconEl     = IconComp ? <IconComp /> : undefined;
   const leadingIcon  = iconEl && iconPosition === "leading"  ? iconEl : undefined;
   const trailingIcon = iconEl && iconPosition === "trailing" ? iconEl : undefined;
 
