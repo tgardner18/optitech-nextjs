@@ -15,6 +15,7 @@ import { OT_LandingRow }              from '@/cms/display-templates/OT_LandingRo
 import { OT_LandingRowSlider }        from '@/cms/display-templates/OT_LandingRowSlider'
 import { OT_LandingColumn }           from '@/cms/display-templates/OT_LandingColumn'
 import { OT_ImageBgSectionTemplate }  from '@/cms/display-templates/OT_ImageBgSection'
+import { OptiFormsContainerDefault }  from '@/cms/display-templates/OptiFormsContainer'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -35,6 +36,20 @@ import { OT_FooterColumn }      from '@/cms/content-types/OT_FooterColumn'
 import { OT_ImageBgSection }    from '@/cms/content-types/OT_ImageBgSection'
 import { OT_BlogPage }          from '@/cms/content-types/OT_BlogPage'
 
+// OptiForm content types — built-in Forms for Visual Builder element schemas
+import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
+import { OptiFormsDependencyRule }  from '@/cms/content-types/OptiFormsDependencyRule'
+import { OptiFormsCondition }       from '@/cms/content-types/OptiFormsCondition'
+import { OptiFormsChoiceElement }   from '@/cms/content-types/OptiFormsChoiceElement'
+import { OptiFormsNumberElement }   from '@/cms/content-types/OptiFormsNumberElement'
+import { OptiFormsRangeElement }    from '@/cms/content-types/OptiFormsRangeElement'
+import { OptiFormsResetElement }    from '@/cms/content-types/OptiFormsResetElement'
+import { OptiFormsSelectionElement }from '@/cms/content-types/OptiFormsSelectionElement'
+import { OptiFormsSubmitElement }   from '@/cms/content-types/OptiFormsSubmitElement'
+import { OptiFormsTextareaElement } from '@/cms/content-types/OptiFormsTextareaElement'
+import { OptiFormsTextboxElement }  from '@/cms/content-types/OptiFormsTextboxElement'
+import { OptiFormsUrlElement }      from '@/cms/content-types/OptiFormsUrlElement'
+
 // React component adapters — maps content type keys to Server Component renderers
 import OT_HeroBlockAdapter        from '@/cms/components/OT_HeroBlock'
 import OT_ButtonBlockAdapter      from '@/cms/components/OT_ButtonBlock'
@@ -46,6 +61,18 @@ import OT_ImageBlockAdapter       from '@/cms/components/OT_ImageBlock'
 import OT_VideoBlockAdapter       from '@/cms/components/OT_VideoBlock'
 import OT_ThemeManagerAdapter     from '@/cms/components/OT_ThemeManager'
 import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
+
+// OptiForm component adapters
+import OptiFormsContainerDataAdapter    from '@/cms/components/OptiFormsContainerData'
+import OptiFormsChoiceElementAdapter    from '@/cms/components/OptiFormsChoiceElement'
+import OptiFormsNumberElementAdapter    from '@/cms/components/OptiFormsNumberElement'
+import OptiFormsRangeElementAdapter     from '@/cms/components/OptiFormsRangeElement'
+import OptiFormsResetElementAdapter     from '@/cms/components/OptiFormsResetElement'
+import OptiFormsSelectionElementAdapter from '@/cms/components/OptiFormsSelectionElement'
+import OptiFormsSubmitElementAdapter    from '@/cms/components/OptiFormsSubmitElement'
+import OptiFormsTextareaElementAdapter  from '@/cms/components/OptiFormsTextareaElement'
+import OptiFormsTextboxElementAdapter   from '@/cms/components/OptiFormsTextboxElement'
+import OptiFormsUrlElementAdapter       from '@/cms/components/OptiFormsUrlElement'
 
 // Composition structure adapters — section/row/column renderers for Visual Builder
 import BlankSectionAdapter    from '@/cms/compositions/Section'
@@ -67,6 +94,7 @@ initDisplayTemplateRegistry([
   OT_LandingRowSlider,
   OT_LandingColumn,
   OT_ImageBgSectionTemplate,
+  OptiFormsContainerDefault,
 ])
 
 initContentTypeRegistry([
@@ -86,6 +114,19 @@ initContentTypeRegistry([
   OT_FooterColumn,
   OT_ImageBgSection,
   OT_BlogPage,
+  // OptiForm types
+  OptiFormsContainerData,
+  OptiFormsDependencyRule,
+  OptiFormsCondition,
+  OptiFormsChoiceElement,
+  OptiFormsNumberElement,
+  OptiFormsRangeElement,
+  OptiFormsResetElement,
+  OptiFormsSelectionElement,
+  OptiFormsSubmitElement,
+  OptiFormsTextareaElement,
+  OptiFormsTextboxElement,
+  OptiFormsUrlElement,
 ])
 
 initReactComponentRegistry({
@@ -107,5 +148,16 @@ initReactComponentRegistry({
     OT_ImageBgSection:  ImageBgSectionAdapter,
     _Row:               RowAdapter,
     _Column:            ColumnAdapter,
+    // OptiForm elements — resolved by content type key when encountered in compositions
+    OptiFormsContainerData:    OptiFormsContainerDataAdapter,
+    OptiFormsChoiceElement:    OptiFormsChoiceElementAdapter,
+    OptiFormsNumberElement:    OptiFormsNumberElementAdapter,
+    OptiFormsRangeElement:     OptiFormsRangeElementAdapter,
+    OptiFormsResetElement:     OptiFormsResetElementAdapter,
+    OptiFormsSelectionElement: OptiFormsSelectionElementAdapter,
+    OptiFormsSubmitElement:    OptiFormsSubmitElementAdapter,
+    OptiFormsTextareaElement:  OptiFormsTextareaElementAdapter,
+    OptiFormsTextboxElement:   OptiFormsTextboxElementAdapter,
+    OptiFormsUrlElement:       OptiFormsUrlElementAdapter,
   },
 })
