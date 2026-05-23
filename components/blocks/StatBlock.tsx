@@ -81,9 +81,9 @@ const sectionCva = cva('px-md lg:px-lg', {
       surface: 'bg-surface',
     },
     columns: {
-      2: 'py-xl lg:py-2xl',
-      3: 'py-xl',
-      4: 'py-lg lg:py-xl',
+      2: 'py-lg lg:py-xl',
+      3: 'py-lg lg:py-xl',
+      4: 'py-md lg:py-lg',
     },
   },
   defaultVariants: { color: 'brand', columns: 3 },
@@ -97,9 +97,9 @@ const sectionCva = cva('px-md lg:px-lg', {
 const glassPanelCva = cva('bg-glass rounded-sm', {
   variants: {
     columns: {
-      2: 'px-md lg:px-xl py-xl lg:py-2xl',
-      3: 'px-md lg:px-xl py-xl',
-      4: 'px-md lg:px-lg py-lg lg:py-xl',
+      2: 'px-md lg:px-xl py-lg lg:py-xl',
+      3: 'px-md lg:px-xl py-lg lg:py-xl',
+      4: 'px-md lg:px-lg py-md lg:py-lg',
     },
   },
   defaultVariants: { columns: 3 },
@@ -381,7 +381,7 @@ export default function StatBlock({
                 )}
                 style={iconWatermarkStyle}
               >
-                <Icon size={96} strokeWidth={0.75} />
+                <Icon size={96} strokeWidth={1.25} />
               </span>
             )}
 

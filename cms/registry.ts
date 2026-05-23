@@ -38,6 +38,7 @@ import { OT_FooterLink }        from '@/cms/content-types/OT_FooterLink'
 import { OT_FooterColumn }      from '@/cms/content-types/OT_FooterColumn'
 import { OT_ImageBgSection }    from '@/cms/content-types/OT_ImageBgSection'
 import { OT_BlogPage }          from '@/cms/content-types/OT_BlogPage'
+import { OT_FolderPage }        from '@/cms/content-types/OT_FolderPage'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -65,6 +66,7 @@ import OT_VideoBlockAdapter       from '@/cms/components/OT_VideoBlock'
 import OT_StatBlockAdapter       from '@/cms/components/OT_StatBlock'
 import OT_ThemeManagerAdapter     from '@/cms/components/OT_ThemeManager'
 import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
+import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter    from '@/cms/components/OptiFormsContainerData'
@@ -121,6 +123,7 @@ initContentTypeRegistry([
   OT_FooterColumn,
   OT_ImageBgSection,
   OT_BlogPage,
+  OT_FolderPage,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -150,6 +153,7 @@ initReactComponentRegistry({
     OT_StatBlock:        OT_StatBlockAdapter,
     OT_ThemeManager:     OT_ThemeManagerAdapter,
     OT_BlogPage:         OT_BlogPageAdapter,
+    OT_FolderPage:       OT_FolderPageAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;
     // '_Row' and '_Column' are the fixed registry keys OptimizelyGridSection resolves.
     BlankSection:       BlankSectionAdapter,
