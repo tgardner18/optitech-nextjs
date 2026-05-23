@@ -81,9 +81,9 @@ const sectionCva = cva('px-md lg:px-lg', {
       surface: 'bg-surface',
     },
     columns: {
-      2: 'py-lg lg:py-xl',
-      3: 'py-lg lg:py-xl',
-      4: 'py-md lg:py-lg',
+      2: 'py-md lg:py-lg',
+      3: 'py-md lg:py-lg',
+      4: 'py-sm lg:py-md',
     },
   },
   defaultVariants: { color: 'brand', columns: 3 },
@@ -97,9 +97,9 @@ const sectionCva = cva('px-md lg:px-lg', {
 const glassPanelCva = cva('bg-glass rounded-sm', {
   variants: {
     columns: {
-      2: 'px-md lg:px-xl py-lg lg:py-xl',
-      3: 'px-md lg:px-xl py-lg lg:py-xl',
-      4: 'px-md lg:px-lg py-md lg:py-lg',
+      2: 'px-md lg:px-xl py-sm lg:py-md',
+      3: 'px-md lg:px-xl py-sm lg:py-md',
+      4: 'px-md lg:px-lg py-xs lg:py-sm',
     },
   },
   defaultVariants: { columns: 3 },
@@ -282,7 +282,7 @@ export default function StatBlock({
   // carries the full content padding via glassPanelCva.
   const outerClass = cn(
     sectionCva({ color, columns }),
-    glass && 'py-sm lg:py-md',
+    glass && 'py-xs lg:py-sm',
   )
 
   const grid = (
@@ -332,14 +332,14 @@ export default function StatBlock({
         // it breathes into place rather than popping in.
         const iconWatermarkStyle: React.CSSProperties = shouldAnim
           ? {
-              opacity:    entered ? 0.08 : 0,
+              opacity:    entered ? 0.18 : 0,
               transform:  entered ? 'none' : 'scale(1.15)',
               transition: [
                 `opacity 1.1s var(--ot-ease-kinetic) ${staggerMs + 180}ms`,
                 `transform 1.1s var(--ot-ease-kinetic) ${staggerMs + 180}ms`,
               ].join(', '),
             }
-          : { opacity: 0.08 }
+          : { opacity: 0.18 }
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
         const disp = displayFor(p)
@@ -348,7 +348,7 @@ export default function StatBlock({
           <li
             key={i}
             className={cn(
-              'relative overflow-hidden flex flex-col py-lg md:py-xl',
+              'relative overflow-hidden flex flex-col py-md md:py-lg',
               'px-md md:pl-xl md:pr-0',
               // Mobile horizontal separator
               `border-t ${mobileBorderClass} first:border-t-0 md:border-t-0`,
@@ -360,7 +360,7 @@ export default function StatBlock({
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute left-0 top-lg bottom-lg hidden md:block w-px',
+                  'absolute left-0 top-md bottom-md hidden md:block w-px',
                   dividerBgClass,
                 )}
                 style={dividerStyle}
