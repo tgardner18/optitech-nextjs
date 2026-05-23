@@ -1,16 +1,8 @@
 import { ChevronDown } from 'lucide-react'
 import FieldWrapper from './FieldWrapper'
+import { inputBase } from './fieldStyles'
 
 type Option = { caption: string; value: string; checked: boolean }
-
-const selectBase = [
-  'w-full appearance-none bg-transparent border-0 border-b border-fg/20 rounded-none',
-  'px-0 pr-6 py-3.5',
-  'text-body text-fg',
-  'focus:outline-none focus-visible:border-brand',
-  'transition-colors duration-150 ease-quick',
-  'cursor-pointer disabled:opacity-50',
-].join(' ')
 
 type Props = {
   id: string
@@ -40,7 +32,7 @@ export default function SelectionField({ id, name, label, placeholder, tooltip, 
           autoComplete={autoComplete || undefined}
           required={required}
           aria-describedby={tooltip ? `${id}-hint` : undefined}
-          className={selectBase}
+          className={`${inputBase} appearance-none cursor-pointer pr-10`}
           size={allowMultiSelect ? Math.min(options.length + 1, 6) : undefined}
         >
           {!allowMultiSelect && (
@@ -55,7 +47,7 @@ export default function SelectionField({ id, name, label, placeholder, tooltip, 
         {!allowMultiSelect && (
           <ChevronDown
             size={14}
-            className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-fg-muted"
+            className="absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-fg/40"
             aria-hidden="true"
           />
         )}

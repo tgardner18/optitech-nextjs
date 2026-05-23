@@ -803,3 +803,13 @@ body {
     ),
     oklch(from var(--ot-brand) l c h / 0.20);
 }
+
+/* ─── Form field — focus glow ────────────────────────────────────────────────
+ * Applies the soft brand outer ring on focus. Defined in CSS (not Tailwind
+ * arbitrary values) so color-mix opacity syntax is reliable cross-browser.
+ * .ot-field is applied via fieldStyles.ts to every text input, textarea,
+ * and select element in the form system.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.ot-field:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ot-brand) 20%, transparent);
+}

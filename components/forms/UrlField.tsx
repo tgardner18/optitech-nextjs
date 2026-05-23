@@ -1,13 +1,5 @@
 import FieldWrapper from './FieldWrapper'
-
-const inputBase = [
-  'w-full bg-transparent border-0 border-b border-fg/20 rounded-none',
-  'px-0 py-3.5',
-  'text-body text-fg placeholder:text-fg-muted/40',
-  'focus:outline-none focus-visible:border-brand',
-  'transition-colors duration-150 ease-quick',
-  'disabled:opacity-50',
-].join(' ')
+import { inputBase } from './fieldStyles'
 
 type Props = {
   id: string
