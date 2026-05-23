@@ -4,31 +4,47 @@
 
 brand
 
+## Site Purpose
+
+OptiTech is a **configurable demo site framework** built on Next.js App Router and the Optimizely JS SDK. The fictional "OptiTech" brand provides a realistic tech company context for what is fundamentally a showcase of what the Optimizely SaaS CMS can do — Visual Builder composition, theme management, display templates, OptimaForms, and headless delivery.
+
+The site has two audiences and must serve both simultaneously:
+1. **Demo persona** — a skeptical visitor evaluating a tech product for the first time
+2. **SDK evaluator** — a developer or solution architect assessing the authoring experience and integration quality
+
+The editorial quality of the design itself is part of the demonstration. A bland, generic demo undermines the story.
+
 ## Users
 
-Consumers and general public exploring OptiTech for the first time. They arrive with questions and mild skepticism, browsing to understand what the product does, whether it's credible, and whether it's worth their time. The primary job is evaluation: "Should I care about this?"
+**Demo visitors**: Arrive with questions and mild skepticism. Browse to understand what OptiTech does, whether it's credible, and whether it's worth their time. Primary job: evaluation.
+
+**Framework evaluators**: Developers inspecting the codebase, content types, and VB authoring experience. They want to see real-world patterns, not scaffolding.
 
 ## Product Purpose
 
-OptiTech is a new brand with no prior visual identity. This site is the first impression, the pitch, and the proof of credibility rolled into one. Success means a visitor leaves with a clear sense of what OptiTech does and enough confidence to take the next step.
+A modern, editorially confident reference implementation that simultaneously functions as:
+- A realistic marketing site for a fictional tech brand (OptiTech)
+- A live demonstration of VB layout composition, dynamic content types, display templates, and OptimaForms
+- A best-practices template for Next.js 16 + Optimizely SDK integration
 
 ## Brand Personality
 
-Bold, energetic, forward. OptiTech moves with conviction. The voice is direct and high-confidence without being aggressive. It earns attention rather than demanding it.
+Bold, energetic, forward-moving. OptiTech acts with conviction. Voice is direct and high-confidence without being aggressive. Earns attention rather than demanding it. The craft of the design IS evidence — the site should look too good to be a boilerplate.
 
 ## Anti-references
 
-- **Generic SaaS cream**: off-white backgrounds, rounded pill cards, pastel gradient blobs, floating feature grids with icons. This is the category reflex for consumer tech — avoid entirely.
-- **Corporate enterprise blue**: navy/grey palettes, stock-photo heroes, formal bullet-list copywriting, "solutions for the modern enterprise" tone.
+- **Generic SaaS cream**: off-white backgrounds, rounded pill cards, pastel gradient blobs, floating feature grids with icons. Category reflex — avoid entirely.
+- **Corporate enterprise blue**: navy/grey palettes, stock-photo heroes, formal bullet-list copy, "solutions for the modern enterprise" tone.
+- **Generic CMS demo**: neutral placeholder content, lorem ipsum, flat card grids that telegraph "template."
 
 ## Design Principles
 
-1. **Make momentum visible.** OptiTech is forward-moving. Layouts, compositions, and interactions should feel like something is happening and going somewhere. Static, symmetric grids signal inertia.
-2. **Earn the bold.** Confidence comes from restraint in the right places and commitment in others. Don't be loud everywhere — reserve boldness so it lands.
-3. **Design for the skeptic.** Visitors arrive with questions. Convert them through clarity and evidence, not hype or feature lists.
-4. **Break the SaaS grid.** If it could ship on any startup's homepage unchanged, it's not OptiTech's. Push for asymmetry, strong typographic moments, and committed color choices.
-5. **Emotion before information.** Brand register means the design must land emotionally before it lands informationally. Lead with conviction, follow with facts.
+1. **Make momentum visible.** OptiTech is forward-moving. Layouts, compositions, and interactions should feel like something is happening. Static, symmetric grids signal inertia.
+2. **Earn the bold.** Confidence comes from restraint in the right places and commitment in others. Reserve boldness so it lands.
+3. **Design for the skeptic.** Convert through clarity and evidence, not hype. The design itself is part of the evidence.
+4. **Break the SaaS grid.** If it could ship on any startup's homepage unchanged, it's not OptiTech's. Asymmetry, strong typographic moments, committed color choices.
+5. **Emotion before information.** Lead with conviction, follow with facts.
 
 ## Accessibility & Inclusion
 
-WCAG 2.1 AA. Support reduced-motion preferences. Ensure sufficient color contrast for all text and interactive states.
+WCAG 2.1 AA minimum. Support `prefers-reduced-motion`. Ensure sufficient color contrast for all text and interactive states.
