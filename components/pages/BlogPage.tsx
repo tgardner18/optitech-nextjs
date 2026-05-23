@@ -435,7 +435,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
           data-rich-text=""
           data-color="canvas"
           data-scale={blogStyle === 'editorial' ? 'large' : undefined}
-          className="mx-auto max-w-3xl px-md"
+          className="mx-auto max-w-5xl px-md"
           {...pa?.('body')}
           // CMS-managed rich text — not user input
           dangerouslySetInnerHTML={{ __html: body?.html ?? '' }}

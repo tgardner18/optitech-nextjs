@@ -9,7 +9,7 @@ export default function OptiFormsUrlElementAdapter({ content }: Props) {
   const id = content._metadata?.key ?? 'field'
 
   return (
-    <div {...pa(content.__composition)}>
+    <div className="w-full" {...pa(content.__composition)}>
       <UrlField
         id={id}
         name={id}

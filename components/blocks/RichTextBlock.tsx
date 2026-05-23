@@ -42,7 +42,7 @@ const sectionCva = cva("px-md lg:px-lg", {
   defaultVariants: { color: "canvas", size: "editorial" },
 });
 
-const innerCva = cva("", {
+const innerCva = cva("w-full", {
   variants: {
     alignment: {
       left:   "",
@@ -53,10 +53,6 @@ const innerCva = cva("", {
       compact:   "",
     },
   },
-  compoundVariants: [
-    { alignment: "center", size: "editorial", class: "max-w-[72ch]" },
-    { alignment: "center", size: "compact",   class: "max-w-[60ch]" },
-  ],
   defaultVariants: { alignment: "left", size: "editorial" },
 });
 

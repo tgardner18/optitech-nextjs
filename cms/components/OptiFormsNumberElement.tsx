@@ -9,7 +9,7 @@ export default function OptiFormsNumberElementAdapter({ content }: Props) {
   const id = content._metadata?.key ?? 'field'
 
   return (
-    <div {...pa(content.__composition)}>
+    <div className="w-full" {...pa(content.__composition)}>
       <NumberField
         id={id}
         name={id}

@@ -10,7 +10,7 @@ export default function OptiFormsChoiceElementAdapter({ content }: Props) {
   const id = content._metadata?.key ?? 'field'
 
   return (
-    <div {...pa(content.__composition)}>
+    <div className="w-full" {...pa(content.__composition)}>
       <ChoiceField
         id={id}
         name={id}
