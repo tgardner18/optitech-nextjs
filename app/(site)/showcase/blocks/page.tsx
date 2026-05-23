@@ -9,7 +9,8 @@ import OT_QuoteBlock       from "@/cms/components/OT_QuoteBlock";
 import OT_ImageBlock       from "@/cms/components/OT_ImageBlock";
 import OT_VideoBlock       from "@/cms/components/OT_VideoBlock";
 import OT_CardBlock        from "@/cms/components/OT_CardBlock";
-import OT_StatBlock       from "@/cms/components/OT_StatBlock";
+import OT_StatBlock            from "@/cms/components/OT_StatBlock";
+import OT_FeatureGridBlock     from "@/cms/components/OT_FeatureGridBlock";
 import Button from "@/components/ui/Button";
 import { ArrowRight, Zap, ChevronRight, Play, Download, Sparkles, Send, Rocket, Star, Plus } from "lucide-react";
 
@@ -2225,6 +2226,227 @@ export default function ShowcaseBlocksPage() {
               ],
             }}
             displaySettings={{ color: "surface", columns: "3", animate: false }}
+          />
+        </div>
+
+        <div className="pb-xl" />
+      </section>
+
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          10 · Features — FeatureGridBlock
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section id="feature-grid-block" className="border-t border-fg/5">
+        <div className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="10 · Features" title="FeatureGridBlock" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            The canonical &ldquo;here&apos;s what the platform does&rdquo; block. Section header (eyebrow +
+            heading + subheading), up to 6 feature items (headline + rich text body + optional
+            per-feature CTA), and a section-level CTA. Grid and ruled layouts; three icon modes;
+            three color schemes. Stagger entrance animation on scroll.
+          </p>
+        </div>
+
+        {/* ── Typography-only · no icons · 3 col grid ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Grid · 3 col · no icons · canvas
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Pure typographic hierarchy. Headline scale separates each entry from its body without
+            visual containers. Gap-based rhythm, no card chrome.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_FeatureGridBlock
+            content={{
+              eyebrow:    "Why OptiTech",
+              heading:    "The platform built for continuous delivery.",
+              subheading: "Every layer of the stack, connected. Every decision, measured.",
+              items: [
+                { headline: "Feature flags at scale", body: "<p>Deploy to targeted segments without a code release. Roll back any flag in a single API call with full audit history.</p>" },
+                { headline: "Concurrent experiments", body: "<p>Run multiple A/B tests simultaneously with built-in interaction detection so results stay clean.</p>" },
+                { headline: "Statistical confidence", body: "<p>Sequential testing with controlled false-discovery rates. Know when you have enough data to call it.</p>" },
+                { headline: "Deployment telemetry", body: "<p>Correlate every release event with downstream metrics. Spot regressions before your users do.</p>" },
+                { headline: "Unified SDK", body: "<p>One SDK, every platform. Server-side, client-side, edge. Sub-millisecond flag evaluation at any throughput.</p>" },
+                { headline: "Audit trail & governance", body: "<p>Full change history with actor attribution. SOC 2 Type II. Approval flows for regulated environments.</p>" },
+              ],
+            }}
+            displaySettings={{ color: "canvas", layout: "grid", columns: "col3", iconStyle: "none", animate: false }}
+          />
+        </div>
+
+        {/* ── Structural icons · 3 col grid · canvas ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Grid · 3 col · structural icons · canvas
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Icons at 32px sit above each headline at 70% opacity. Structural landmark, not label.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_FeatureGridBlock
+            content={{
+              eyebrow:    "The platform",
+              heading:    "Speed that compounds.",
+              subheading: "Faster experiments produce better data. Better data produces more confident decisions.",
+              items: [
+                { headline: "Feature flags",           body: "<p>Decouple deployment from release. Ship dark and turn on when you're ready.</p>" },
+                { headline: "Experiment engine",       body: "<p>Concurrent A/B tests with automatic interaction controls and sequential validity.</p>" },
+                { headline: "Rollout targeting",       body: "<p>Segment by user attributes, cohort, geography, or any combination of the above.</p>" },
+                { headline: "Real-time telemetry",     body: "<p>Latency, error rates, and custom KPIs stream into the platform the moment a flag changes.</p>" },
+                { headline: "SDK for every surface",   body: "<p>JavaScript, Go, Python, Java, Swift, Kotlin. Same evaluation logic everywhere.</p>" },
+                { headline: "Enterprise governance",   body: "<p>Change approvals, audit logs, and role-based access for regulated teams.</p>" },
+              ],
+              ctaLabel: "See all capabilities",
+              ctaUrl:   { default: "#" },
+            }}
+            displaySettings={{ color: "canvas", layout: "grid", columns: "col3", iconStyle: "structural", feature1Icon: "zap", feature2Icon: "barChart", feature3Icon: "users", feature4Icon: "trendingUp", feature5Icon: "globe", feature6Icon: "shield", animate: false }}
+          />
+        </div>
+
+        {/* ── Accent icons · 3 col grid · brand ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Grid · 3 col · accent icons · brand
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            16px icon inline before each headline at full weight. Signals intent without upstaging the copy.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_FeatureGridBlock
+            content={{
+              eyebrow:    "What's included",
+              heading:    "Everything your team needs to ship with confidence.",
+              items: [
+                { headline: "Instant rollback",        body: "<p>One-click flag disable from the dashboard or API. Mean time to recovery measured in seconds.</p>" },
+                { headline: "Mutual exclusion groups", body: "<p>Ensure competing experiments never contaminate each other's results.</p>" },
+                { headline: "Hold-out experiments",    body: "<p>Measure long-term impact by keeping a clean control group across feature iterations.</p>" },
+                { headline: "Funnel analytics",        body: "<p>Track multi-step conversion flows end-to-end, attributed to the correct experiment variant.</p>" },
+                { headline: "Webhook integrations",    body: "<p>Push flag events to Datadog, Slack, PagerDuty, or any custom endpoint.</p>" },
+                { headline: "Compliance exports",      body: "<p>One-click GDPR and CCPA data exports. User deletion propagates to all experiment records.</p>" },
+              ],
+            }}
+            displaySettings={{ color: "brand", layout: "grid", columns: "col3", iconStyle: "accent", feature1Icon: "zap", feature2Icon: "checkCircle", feature3Icon: "shield", feature4Icon: "barChart", feature5Icon: "send", feature6Icon: "award", animate: false }}
+          />
+        </div>
+
+        {/* ── Color schemes · typography only ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Color schemes · 3 col · no icons · animate off
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Canvas (default), surface, and brand. Brand inverts to <code className="font-mono text-fg">fg-on-brand</code> throughout.
+          </p>
+        </div>
+        {(["canvas", "surface", "brand"] as const).map((color) => (
+          <div key={color} className="border-t border-fg/5">
+            <div className="px-md pt-sm pb-xs lg:px-lg">
+              <span className="font-mono text-label text-fg-muted/50">color: &ldquo;{color}&rdquo;</span>
+            </div>
+            <OT_FeatureGridBlock
+              content={{
+                eyebrow: "The platform",
+                heading: "Precision at every layer.",
+                items: [
+                  { headline: "Feature flags", body: "<p>Decouple deployment from release. Ship dark and turn on when ready.</p>" },
+                  { headline: "Experiments",   body: "<p>Concurrent A/B tests with sequential validity and false-discovery controls.</p>" },
+                  { headline: "Telemetry",     body: "<p>Real-time correlation between flag changes and downstream metrics.</p>" },
+                ],
+              }}
+              displaySettings={{ color, layout: "grid", columns: "col3", iconStyle: "none", animate: false }}
+            />
+          </div>
+        ))}
+
+        {/* ── Ruled layout · canvas ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Ruled layout · 2-col · structural icons · canvas
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Horizontal rules as section separators. Editorial rhythm suited to longer copy or reference lists.
+            Always 2-col on desktop regardless of the columns setting.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_FeatureGridBlock
+            content={{
+              eyebrow:    "How it works",
+              heading:    "From flag to finding in four steps.",
+              items: [
+                { headline: "Define your flag",        body: "<p>Create a boolean, multivariate, or JSON flag. Set targeting rules using any combination of user attributes, cohort membership, or random assignment.</p>" },
+                { headline: "Deploy without releasing",body: "<p>Merge your code behind the flag. The feature stays dormant until you flip the switch. No branching, no hotfix risk.</p>" },
+                { headline: "Configure your metric",   body: "<p>Choose the primary metric you're optimising for and the guardrails you can't afford to move. OptiTech watches both automatically.</p>" },
+                { headline: "Read the result",         body: "<p>Sequential testing surfaces significance as it accrues. When you have enough signal, the platform tells you — you don't have to keep checking.</p>" },
+                { headline: "Act on findings",         body: "<p>Roll out to 100%, roll back instantly, or set up the next iteration. Every decision is logged with actor, timestamp, and reason.</p>" },
+                { headline: "Ship the next thing",     body: "<p>The flywheel completes. Your data improves your next hypothesis. Your next hypothesis improves your data.</p>" },
+              ],
+            }}
+            displaySettings={{ color: "canvas", layout: "ruled", iconStyle: "structural", feature1Icon: "zap", feature2Icon: "rocket", feature3Icon: "barChart", feature4Icon: "checkCircle", feature5Icon: "award", feature6Icon: "sparkles", animate: false }}
+          />
+        </div>
+
+        {/* ── Column counts ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Column counts · grid layout · structural icons · canvas
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            2-col for generous prose; 4-col for tighter reference grids. The ruled layout always forces 2-col.
+          </p>
+        </div>
+        {(["col2", "col3", "col4"] as const).map((col) => (
+          <div key={col} className="border-t border-fg/5">
+            <div className="px-md pt-sm pb-xs lg:px-lg">
+              <span className="font-mono text-label text-fg-muted/50">columns: &ldquo;{col}&rdquo;</span>
+            </div>
+            <OT_FeatureGridBlock
+              content={{
+                items: [
+                  { headline: "Feature flags",      body: "<p>Ship dark and turn on when you're ready. Full audit trail.</p>",         icon: "zap"         },
+                  { headline: "Experiments",        body: "<p>Concurrent A/B tests with interaction controls.",                        icon: "barChart"    },
+                  { headline: "Targeting",          body: "<p>Segment by any combination of user attributes.",                        icon: "users"       },
+                  { headline: "Telemetry",          body: "<p>Real-time correlation between flag events and KPIs.",                   icon: "trendingUp"  },
+                ],
+              }}
+              displaySettings={{ color: "canvas", layout: "grid", columns: col, iconStyle: "structural", feature1Icon: "zap", feature2Icon: "barChart", feature3Icon: "users", feature4Icon: "trendingUp", animate: false }}
+            />
+          </div>
+        ))}
+
+        {/* ── Animated (live) ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Animated · brand · 3 col · structural icons
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Scroll into view to trigger. Each item stagers in at {"{"}80ms intervals{"}"}:
+            opacity + translateY, driven by <code className="font-mono text-fg">var(--ot-ease-kinetic)</code>.
+            Respects <code className="font-mono text-fg">prefers-reduced-motion</code>.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_FeatureGridBlock
+            content={{
+              eyebrow:    "What's included",
+              heading:    "Everything your team needs.",
+              subheading: "Experiment continuously. Ship confidently. Know whether it worked.",
+              items: [
+                { headline: "Feature flags",           body: "<p>Decouple deployment from release. Ship dark and turn on when ready.</p>" },
+                { headline: "Concurrent experiments",  body: "<p>Multiple A/B tests running simultaneously with interaction controls.</p>" },
+                { headline: "Rollout targeting",       body: "<p>Segment by user attributes, cohort, geography — or any combination.</p>" },
+                { headline: "Real-time telemetry",     body: "<p>Flag changes correlated to downstream metrics the moment they happen.</p>" },
+                { headline: "SDK for every platform",  body: "<p>JavaScript, Go, Python, Java, Swift, Kotlin. Same logic everywhere.</p>" },
+                { headline: "Enterprise governance",   body: "<p>Approval flows, audit logs, and RBAC for regulated environments.</p>" },
+              ],
+              ctaLabel: "See all capabilities",
+              ctaUrl:   { default: "#" },
+            }}
+            displaySettings={{ color: "brand", layout: "grid", columns: "col3", iconStyle: "structural", feature1Icon: "zap", feature2Icon: "barChart", feature3Icon: "users", feature4Icon: "trendingUp", feature5Icon: "globe", feature6Icon: "shield", animate: true }}
           />
         </div>
 

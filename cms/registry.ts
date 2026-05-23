@@ -10,7 +10,8 @@ import { OT_QuoteDefault }        from '@/cms/display-templates/OT_QuoteDefault'
 import { OT_RichTextDefault }     from '@/cms/display-templates/OT_RichTextDefault'
 import { OT_ImageDefault }        from '@/cms/display-templates/OT_ImageDefault'
 import { OT_VideoDefault }        from '@/cms/display-templates/OT_VideoDefault'
-import { OT_StatBlockDefault }   from '@/cms/display-templates/OT_StatBlockDefault'
+import { OT_StatBlockDefault }      from '@/cms/display-templates/OT_StatBlockDefault'
+import { OT_FeatureGridDefault }    from '@/cms/display-templates/OT_FeatureGridDefault'
 import { OT_LandingSection }          from '@/cms/display-templates/OT_LandingSection'
 import { OT_LandingRow }              from '@/cms/display-templates/OT_LandingRow'
 import { OT_LandingRowSlider }        from '@/cms/display-templates/OT_LandingRowSlider'
@@ -28,8 +29,10 @@ import { OT_QuoteBlock }        from '@/cms/content-types/OT_QuoteBlock'
 import { OT_RichTextBlock }     from '@/cms/content-types/OT_RichTextBlock'
 import { OT_ImageBlock }        from '@/cms/content-types/OT_ImageBlock'
 import { OT_VideoBlock }        from '@/cms/content-types/OT_VideoBlock'
-import { OT_StatItem }         from '@/cms/content-types/OT_StatItem'
-import { OT_StatBlock }        from '@/cms/content-types/OT_StatBlock'
+import { OT_StatItem }           from '@/cms/content-types/OT_StatItem'
+import { OT_StatBlock }          from '@/cms/content-types/OT_StatBlock'
+import { OT_FeatureItem }        from '@/cms/content-types/OT_FeatureItem'
+import { OT_FeatureGridBlock }   from '@/cms/content-types/OT_FeatureGridBlock'
 import { BlankExperience }  from '@/cms/content-types/BlankExperience'
 import { OT_ThemeManager } from '@/cms/content-types/OT_ThemeManager'
 import { OT_NavigationItem }    from '@/cms/content-types/OT_NavigationItem'
@@ -63,7 +66,8 @@ import OT_QuoteBlockAdapter       from '@/cms/components/OT_QuoteBlock'
 import OT_RichTextBlockAdapter    from '@/cms/components/OT_RichTextBlock'
 import OT_ImageBlockAdapter       from '@/cms/components/OT_ImageBlock'
 import OT_VideoBlockAdapter       from '@/cms/components/OT_VideoBlock'
-import OT_StatBlockAdapter       from '@/cms/components/OT_StatBlock'
+import OT_StatBlockAdapter            from '@/cms/components/OT_StatBlock'
+import OT_FeatureGridBlockAdapter     from '@/cms/components/OT_FeatureGridBlock'
 import OT_ThemeManagerAdapter     from '@/cms/components/OT_ThemeManager'
 import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
 import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
@@ -96,6 +100,7 @@ initDisplayTemplateRegistry([
   OT_ImageDefault,
   OT_VideoDefault,
   OT_StatBlockDefault,
+  OT_FeatureGridDefault,
   OT_LandingSection,
   OT_LandingRow,
   OT_LandingRowSlider,
@@ -115,6 +120,8 @@ initContentTypeRegistry([
   OT_VideoBlock,
   OT_StatItem,
   OT_StatBlock,
+  OT_FeatureItem,
+  OT_FeatureGridBlock,
   BlankExperience,
   OT_ThemeManager,
   OT_NavigationItem,
@@ -151,6 +158,7 @@ initReactComponentRegistry({
     OT_ImageBlock:       OT_ImageBlockAdapter,
     OT_VideoBlock:       OT_VideoBlockAdapter,
     OT_StatBlock:        OT_StatBlockAdapter,
+    OT_FeatureGridBlock: OT_FeatureGridBlockAdapter,
     OT_ThemeManager:     OT_ThemeManagerAdapter,
     OT_BlogPage:         OT_BlogPageAdapter,
     OT_FolderPage:       OT_FolderPageAdapter,
