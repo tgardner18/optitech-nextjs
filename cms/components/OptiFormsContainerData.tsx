@@ -27,9 +27,6 @@ const bgClasses: Record<string, string> = {
 }
 
 export default async function OptiFormsContainerDataAdapter({ content, displaySettings = {} }: Props) {
-  console.log('[OptiFormsContainerData] content keys:', Object.keys(content))
-  console.log('[OptiFormsContainerData] nodes:', JSON.stringify(content.nodes ?? null, null, 2)?.slice(0, 500))
-  console.log('[OptiFormsContainerData] __typename:', content.__typename)
   const { pa } = getPreviewUtils(content)
 
   const width   = String(displaySettings.contentWidth      ?? 'default')

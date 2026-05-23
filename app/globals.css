@@ -574,26 +574,27 @@ body {
 }
 
 /* ── Glass panel — frosted brand-tinted surface for rows and sections ─────────
- * Brand-tinted backdrop-filter layer at structural/architectural scale.
- * Earns its blur over brand fills, image backgrounds, or layered sections.
- * Over flat canvas it renders as a subtle dark tinted panel — valid but quiet.
+ * Solid-backed frosted glass: visually distinct from both canvas and surface.
+ * oklch(26% 0.04 195) sits between surface (20%) and midtone, with more chroma.
+ * 85% opacity lets backdrop-filter contribute when placed over layered content.
  * Top/bottom 1px borders read as glass edges, not decorative side-stripes.
  * ─────────────────────────────────────────────────────────────────────────── */
 .bg-glass {
   background:
+    /* Specular highlight — catches light from top-left */
     linear-gradient(
-      155deg,
-      oklch(from var(--ot-fg) l c h / 0.08) 0%,
-      transparent 38%
+      145deg,
+      oklch(97% 0.005 195 / 0.07) 0%,
+      transparent 45%
     ),
-    oklch(from var(--ot-brand) l c h / 0.13);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border-top: 1px solid oklch(from var(--ot-fg) l c h / 0.10);
-  border-bottom: 1px solid oklch(from var(--ot-brand) l c h / 0.08);
+    oklch(26% 0.04 195 / 0.85);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-top: 1px solid oklch(97% 0.005 195 / 0.14);
+  border-bottom: 1px solid oklch(55% 0.18 195 / 0.08);
   box-shadow:
-    inset 0 1px 0 oklch(from var(--ot-fg) l c h / 0.16),
-    0 12px 60px var(--ot-bloom-brand-faint);
+    inset 0 1px 0 oklch(97% 0.005 195 / 0.20),
+    0 8px 48px oklch(55% 0.18 195 / 0.05);
 }
 
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────

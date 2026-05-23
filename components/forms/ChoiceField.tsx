@@ -14,7 +14,7 @@ export default function ChoiceField({ id, name, label, tooltip, options, allowMu
   const inputType = allowMultiSelect ? 'checkbox' : 'radio'
 
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset className="flex flex-col gap-3 w-full">
       {label && (
         <legend className="text-label font-medium text-fg-muted tracking-label uppercase mb-xs">
           {label}
