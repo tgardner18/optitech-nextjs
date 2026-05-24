@@ -8,15 +8,24 @@ export const OT_ThemeManager = contentType({
   displayName: 'Theme Manager',
   baseType: '_component',
   properties: {
-    // Language selector — which locales to show in the site header language picker
-    // Leave empty to show all locales configured in lib/i18n/config.ts.
+    // Language selector — multi-select of which locales to show in the site header.
+    // Leave empty to show all supported locales.
+    // ⚠️ Each language selected here must also be enabled in CMS > Settings > Languages.
     enabledLocales: {
       type: 'array',
       displayName: 'Enabled Languages',
-      description: 'Locale codes to show in the language picker (e.g. en, fr, de, es). Leave empty to show all configured locales.',
+      description: 'Select which languages appear in the site header language picker. Leave empty to show all supported languages. Each selected language must also be enabled in CMS ▸ Settings ▸ Languages.',
       group: 'OT_Content',
       sortOrder: 2,
-      items: { type: 'string' },
+      items: {
+        type: 'string',
+        enum: [
+          { value: 'en', displayName: 'English (EN)' },
+          { value: 'fr', displayName: 'Français (FR)' },
+          { value: 'de', displayName: 'Deutsch (DE)' },
+          { value: 'es', displayName: 'Español (ES)' },
+        ],
+      },
     },
 
     // Identity — which front-end domain loads this theme

@@ -19,7 +19,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_Author = contentType({
   key: 'OT_Author',
   displayName: 'Author',
-  baseType: '_page',
+  baseType: '_component',
   properties: {
     name: {
       type: 'string',
