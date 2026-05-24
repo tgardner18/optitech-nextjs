@@ -39,7 +39,7 @@ const sectionCva = cva('w-full px-md lg:px-lg py-xl lg:py-2xl', {
     color: {
       canvas:  'bg-canvas',
       surface: 'bg-surface',
-      brand:   'bg-brand',
+      brand:   'bg-brand-fill',
     },
   },
   defaultVariants: { color: 'canvas' },

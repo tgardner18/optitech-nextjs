@@ -34,7 +34,7 @@ const textPanelCva = cva(
   {
     variants: {
       color: {
-        brand:   "bg-brand",
+        brand:   "bg-brand-fill",
         canvas:  "bg-canvas",
         surface: "bg-surface",
       },

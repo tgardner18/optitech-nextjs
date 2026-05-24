@@ -603,32 +603,53 @@ body {
     0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
 }
 
-/* ── Glass panel — neutral frosted-glass overlay for rows, sections, and stat panels
- * Pure glassmorphism: blurs and slightly darkens whatever is behind it without
- * imposing any brand hue. Works correctly over brand fills, images, canvas, or
- * surface — the effect is entirely from backdrop-filter + a neutral dark fill.
+/* ── Glass panel — true frosted-glass overlay for rows, sections, and stat panels
+ * True glassmorphism: backdrop-filter is the frost — the background MUST be
+ * near-transparent so blur of whatever is behind shows through.
  *
- * oklch(8% 0 0 / 0.55): near-black at 55% opacity darkens the bg for legibility.
- * The diagonal sheen (top-left white gradient) reads as glass catching light.
- * Top/bottom 1px borders use neutral white to suggest the glass edge.
+ * background: rgba(255,255,255,0.07) — white tint (NOT a dark fill) lets the
+ *   backdrop-filter do the work; a dark fill occludes the blur completely.
+ * backdrop-filter: blur(18px) saturate(180%) — the actual frost + colour-pop.
+ * border: 1px solid rgba(255,255,255,0.20) — visible edge highlight, glass-like.
+ * box-shadow outer: depth; inset top-edge shimmer creates the glass-catching-light look.
+ * ::before: 135° diagonal sheen — surface specular, always on top of content.
+ *
+ * CRITICAL: the parent section must have a rich/varied background (gradient, image,
+ * etc.) — backdrop-filter blurs what's behind. A flat solid hex makes it invisible.
+ * Use .bg-brand-fill (not .bg-brand) on any section that hosts a glass child.
  * ─────────────────────────────────────────────────────────────────────────── */
 .bg-glass {
-  background:
-    /* Diagonal specular sheen — glass catching ambient light */
-    linear-gradient(
-      145deg,
-      oklch(100% 0 0 / 0.07) 0%,
-      transparent 42%
-    ),
-    /* Neutral near-black fill — darkens whatever is behind, no imposed hue */
-    oklch(8% 0 0 / 0.55);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border-top: 1px solid oklch(100% 0 0 / 0.12);
-  border-bottom: 1px solid oklch(0% 0 0 / 0.10);
+  position: relative;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
   box-shadow:
-    inset 0 1px 0 oklch(100% 0 0 / 0.18),
-    0 8px 40px oklch(0% 0 0 / 0.20);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.bg-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Brand-fill section — multi-stop radial gradient for rich glass backdrop ──
+ * Use this class instead of bg-brand on any full-width section that may host
+ * a .bg-glass child. backdrop-filter requires a non-uniform background to show
+ * the blur — a flat hex hex makes the frost effect invisible.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.bg-brand-fill {
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    oklch(from var(--ot-brand) calc(l + 0.12) c h) 0%,
+    var(--ot-brand) 50%,
+    oklch(from var(--ot-brand) calc(l - 0.15) c h) 100%
+  );
 }
 
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────

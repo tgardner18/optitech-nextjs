@@ -24,7 +24,7 @@ const sectionCva = cva("px-md lg:px-lg", {
   variants: {
     color: {
       none:    "",
-      brand:   "bg-brand",
+      brand:   "bg-brand-fill",
       canvas:  "bg-canvas",
       surface: "bg-surface",
     },

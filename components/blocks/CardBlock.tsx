@@ -87,23 +87,25 @@ const FILL_CLASS: Record<CardFill, string> = {
   surface: "bg-surface",
   brand:   "bg-brand",
   light:   "bg-[oklch(97%_0.005_195)]",
-  // Gradient from lighter teal-tinted surface to deeper canvas gives the glass-panel depth.
-  // backdrop-blur is subtle so it doesn't fight image-heavy contexts.
-  glass:   "bg-gradient-to-br from-surface/80 to-canvas/95 backdrop-blur-sm",
+  // True glassmorphism: bg-glass provides the exact recipe (rgba white tint, blur+saturate,
+  // full border, box-shadow with inset shimmer, and ::before surface sheen).
+  glass:   "bg-glass",
 };
 
 function resolveBorder(fill: CardFill, border: CardBorder): string {
-  // Glass always gets a border — the edge is what makes glass readable
-  const effectiveBorder = fill === "glass" && border === "none" ? "subtle" : border;
+  // Glass: bg-glass already sets border: 1px solid rgba(255,255,255,0.20) and the inset shimmer.
+  // Don't add a Tailwind border that would fight it — only allow brand border override.
+  if (fill === "glass") {
+    return border === "brand" ? "border-brand" : "";
+  }
 
-  if (effectiveBorder === "none") return "";
-  if (effectiveBorder === "brand") {
+  if (border === "none") return "";
+  if (border === "brand") {
     return fill === "brand" ? "border border-fg-on-brand/30" : "border border-brand";
   }
   // subtle — adapts to fill context
   if (fill === "brand") return "border border-fg-on-brand/20";
   if (fill === "light") return "border border-canvas/10";
-  if (fill === "glass") return "border border-fg/[0.14] shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]";
   return "border border-fg/10"; // ghost + surface
 }
 
