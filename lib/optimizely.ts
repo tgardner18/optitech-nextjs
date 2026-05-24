@@ -91,8 +91,9 @@ export async function getRequestBaseUrl(): Promise<string> {
 // All fields consumed by layout (theme CSS), Header, and Footer.
 const THEME_QUERY = `
   query GetThemeManagers {
-    OT_ThemeManager(limit: 20) {
+    OT_ThemeManager(limit: 100, orderBy: { _metadata: { published: DESC } }) {
       items {
+        _metadata { key }
         frontEndDomain
         logo { url { default } }
         logoAlt
@@ -164,10 +165,20 @@ export async function getLocalizedContentByPath(
 }
 
 // One Graph fetch per request; layout, Header, and Footer all share this cache.
+// Content Graph returns all published versions of each item. We deduplicate by
+// content key so each ThemeManager item appears only once (latest version first,
+// guaranteed by orderBy published DESC in the query).
 const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
   try {
-    const data = await getClient().request(THEME_QUERY, {})
-    return (data?.OT_ThemeManager?.items ?? []) as any[]
+    const data  = await getClient().request(THEME_QUERY, {})
+    const items = (data?.OT_ThemeManager?.items ?? []) as any[]
+    const seen  = new Set<string>()
+    return items.filter((item: any) => {
+      const key = item._metadata?.key as string | undefined
+      if (!key || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   } catch {
     return []
   }
