@@ -87,9 +87,11 @@ const AUTHOR_QUERY = `
  * lookup so we can resolve author names without a per-item round-trip.
  * The ContentReference.item approach is avoided for the same reason as above.
  */
+// Fetch more than needed: Content Graph may return multiple locale variants of
+// the same item (each with the same _metadata.key). We deduplicate by key below.
 const LATEST_POSTS_QUERY = `
   query GetLatestBlogPosts {
-    OT_BlogPage(limit: 4) {
+    OT_BlogPage(limit: 12, orderBy: { _metadata: { published: DESC } }) {
       items {
         _metadata { key published url { default } }
         headline
@@ -160,7 +162,19 @@ export const getLatestBlogPosts = cache(async function getLatestBlogPosts(
       if (ak && a.name) authorMap.set(ak, a.name as string)
     }
 
-    return items
+    // Deduplicate by content key — Content Graph returns one row per locale
+    // variant; all variants share the same key, which causes React "duplicate
+    // key" errors when used as a list key. Keep only the first occurrence
+    // (latest published, guaranteed by orderBy DESC in the query).
+    const seen = new Set<string>()
+    const unique = items.filter(p => {
+      const k = p._metadata?.key as string | undefined
+      if (!k || seen.has(k)) return false
+      seen.add(k)
+      return true
+    })
+
+    return unique
       .filter(p => !excludeKey || p._metadata?.key !== excludeKey)
       .slice(0, 3)
       .map(p => {

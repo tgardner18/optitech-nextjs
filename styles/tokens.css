@@ -138,16 +138,18 @@
 /* ── Dark override ───────────────────────────────────────────────────────────
  * Re-asserts dark-mode tokens on any element with data-theme="dark".
  * Necessary when a dark-mode container is nested inside a light-mode ancestor
- * (e.g. ThemeManager preview inside the Optimizely CMS editor light shell).
- * Without this rule, [data-theme="light"] set on an ancestor cascades its dark
- * fg + light canvas tokens into the preview container, causing black text on
- * dark backgrounds.
+ * (brand sections, glass rows, hero panels, stat blocks inside a light-mode page).
+ * Without this rule, [data-theme="light"] set on an ancestor cascades its
+ * tokens into the nested dark element — causing dark text on dark backgrounds.
+ * fg-on-brand is included here as a defensive base; buildThemeCSS emits
+ * [data-theme="dark"] overrides too so ThemeManager values take precedence.
  * ─────────────────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --ot-canvas:   oklch(12% 0.012 195);
-  --ot-surface:  oklch(20% 0.022 195);
-  --ot-fg:       oklch(97% 0.005 195);
-  --ot-fg-muted: oklch(68% 0.06  195);
+  --ot-canvas:      oklch(12% 0.012 195);
+  --ot-surface:     oklch(20% 0.022 195);
+  --ot-fg:          oklch(97% 0.005 195);
+  --ot-fg-muted:    oklch(68% 0.06  195);
+  --ot-fg-on-brand: oklch(97% 0.005 195); /* always light — defensive base for nested dark */
 
   --ot-gradient-brand: linear-gradient(135deg,
     oklch(from var(--ot-brand) calc(l + 0.17) c h)   0%,

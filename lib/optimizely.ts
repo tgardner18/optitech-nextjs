@@ -225,37 +225,56 @@ export async function getSiteSettings(domain = ''): Promise<any | null> {
  * Builds an inline <style> block that overrides --ot-* CSS custom properties
  * based on ThemeManager color values. Returns an empty string if no overrides are set.
  */
+/**
+ * Builds an inline <style> block that overrides --ot-* CSS custom properties
+ * based on ThemeManager color values. Returns an empty string if no overrides are set.
+ *
+ * Dark-mode overrides are emitted to BOTH :root AND [data-theme="dark"] so that
+ * nested dark surfaces (brand sections, glass rows, hero panels) pick up the
+ * correct ThemeManager values even when they appear inside a light-mode page.
+ * Without the [data-theme="dark"] block, :root overrides cascade from <html>
+ * and may be superseded by the [data-theme="light"] ancestor rule.
+ */
 export function buildThemeCSS(settings: any): string {
   if (!settings) return ''
 
-  const root: string[] = []
-  const light: string[] = []
+  const root: string[] = []   // :root — applies globally (dark mode default)
+  const dark: string[] = []   // [data-theme="dark"] — nested dark surfaces
+  const light: string[] = []  // [data-theme="light"] — light mode overrides
 
-  // Brand
+  // Brand & accent — constant across modes; :root only
   if (settings.colorBrand)        root.push(`--ot-brand: ${settings.colorBrand}`)
   if (settings.colorBrandHover)   root.push(`--ot-brand-hover: ${settings.colorBrandHover}`)
-  // Accent
   if (settings.colorAccent)       root.push(`--ot-accent: ${settings.colorAccent}`)
   if (settings.colorAccentHover)  root.push(`--ot-accent-hover: ${settings.colorAccentHover}`)
   if (settings.colorFgOnAccent)   root.push(`--ot-fg-on-accent: ${settings.colorFgOnAccent}`)
-  // Canvas / Surface — dark mode
-  if (settings.colorCanvas)       root.push(`--ot-canvas: ${settings.colorCanvas}`)
-  if (settings.colorSurface)      root.push(`--ot-surface: ${settings.colorSurface}`)
-  // Canvas / Surface — light mode
+
+  // Canvas / Surface — dark mode: root + [data-theme="dark"]
+  if (settings.colorCanvas)  { root.push(`--ot-canvas: ${settings.colorCanvas}`);   dark.push(`--ot-canvas: ${settings.colorCanvas}`) }
+  if (settings.colorSurface) { root.push(`--ot-surface: ${settings.colorSurface}`); dark.push(`--ot-surface: ${settings.colorSurface}`) }
+
+  // Canvas / Surface — light mode only
   if (settings.colorCanvasLight)  light.push(`--ot-canvas: ${settings.colorCanvasLight}`)
   if (settings.colorSurfaceLight) light.push(`--ot-surface: ${settings.colorSurfaceLight}`)
-  // Foreground
-  if (settings.colorFgOnBrand)    root.push(`--ot-fg-on-brand: ${settings.colorFgOnBrand}`)
-  if (settings.colorFg)           root.push(`--ot-fg: ${settings.colorFg}`)
+
+  // Foreground on brand — always light; root + [data-theme="dark"] so nested dark elements win
+  if (settings.colorFgOnBrand) { root.push(`--ot-fg-on-brand: ${settings.colorFgOnBrand}`); dark.push(`--ot-fg-on-brand: ${settings.colorFgOnBrand}`) }
+
+  // Foreground — dark mode: root + [data-theme="dark"]
+  if (settings.colorFg)      { root.push(`--ot-fg: ${settings.colorFg}`);           dark.push(`--ot-fg: ${settings.colorFg}`) }
+  if (settings.colorFgMuted) { root.push(`--ot-fg-muted: ${settings.colorFgMuted}`); dark.push(`--ot-fg-muted: ${settings.colorFgMuted}`) }
+
+  // Foreground — light mode only
   if (settings.colorFgLight)      light.push(`--ot-fg: ${settings.colorFgLight}`)
-  if (settings.colorFgMuted)      root.push(`--ot-fg-muted: ${settings.colorFgMuted}`)
   if (settings.colorFgMutedLight) light.push(`--ot-fg-muted: ${settings.colorFgMutedLight}`)
 
-  if (!root.length && !light.length) return ''
+  if (!root.length && !dark.length && !light.length) return ''
 
+  const fmt = (v: string) => `${v};`
   const parts: string[] = []
-  if (root.length)  parts.push(`:root { ${root.map(v => `${v};`).join(' ')} }`)
-  if (light.length) parts.push(`[data-theme="light"] { ${light.map(v => `${v};`).join(' ')} }`)
+  if (root.length)  parts.push(`:root { ${root.map(fmt).join(' ')} }`)
+  if (dark.length)  parts.push(`[data-theme="dark"] { ${dark.map(fmt).join(' ')} }`)
+  if (light.length) parts.push(`[data-theme="light"] { ${light.map(fmt).join(' ')} }`)
 
   return parts.join('\n')
 }

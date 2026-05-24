@@ -1,9 +1,13 @@
 import { displayTemplate } from '@optimizely/cms-sdk'
 
+// NOTE: The CMS currently has this keyed to baseType "_folder" (a workaround
+// because the API cannot atomically switch from baseType to contentType).
+// The intended state is contentType: 'OptiFormsContainerData' — scoped to the
+// Optimizely Forms container block only, not visible in every block's picker.
 export const OptiFormsContainerDefault = displayTemplate({
   key:         'OptiFormsContainerData',
   displayName: 'Form Container',
-  baseType:    '_section',
+  contentType: 'OptiFormsContainerData',
   isDefault:   true,
   settings: {
     contentWidth: {
