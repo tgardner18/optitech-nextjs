@@ -55,31 +55,44 @@ export default async function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative overflow-hidden isolate bg-canvas border-t border-fg/10">
+    <footer className="relative overflow-hidden isolate bg-surface border-t border-fg/10">
 
-      {/* ── Geometric background layer ───────────────────────────────────────
-           Diamond lattice: two crossing repeating-linear-gradients at ±45°
-           produce a crystallographic mesh. Brand color at 15% opacity on
-           0.5px lines — visible but never dominant.
-           Corner bloom: a soft radial gradient from bottom-right anchors the
-           composition and reads as a light source behind the sparse content.
-           Static — no animation, satisfies prefers-reduced-motion. ────────── */}
+      {/* ── Background depth layer ───────────────────────────────────────────
+           Soft brand bloom from bottom-right: gives the footer a light-source
+           quality without pattern clutter. Static — no motion concern. ────── */}
       <div
         className="absolute inset-0 pointer-events-none select-none"
         aria-hidden="true"
         style={{
           zIndex: -1,
-          backgroundImage: [
-            'radial-gradient(ellipse 70% 90% at 100% 100%, var(--ot-bloom-brand-faint) 0%, transparent 60%)',
-            'repeating-linear-gradient( 45deg, var(--ot-bloom-brand-border) 0, var(--ot-bloom-brand-border) 0.5px, transparent 0.5px, transparent 28px)',
-            'repeating-linear-gradient(-45deg, var(--ot-bloom-brand-border) 0, var(--ot-bloom-brand-border) 0.5px, transparent 0.5px, transparent 28px)',
-          ].join(', '),
+          backgroundImage:
+            'radial-gradient(ellipse 60% 80% at 95% 110%, var(--ot-bloom-brand-faint) 0%, transparent 65%)',
         }}
       />
 
-      {/* ── Accent bar — gradient horizon: brand → accent, fading at edges ── */}
+      {/* ── Decorative Syne glyph — typographic depth ───────────────────────
+           A large "/>" code-tag fragment sits at the back-right of the footer.
+           References JSX/HTML syntax: on-brand for a dev-facing CMS demo.
+           Syne at weight 400, brand color at 6% opacity — present but distant.
+           aria-hidden; no interaction; font-syne loaded via next/font. ─────── */}
+      <span
+        className="absolute right-0 bottom-0 font-syne text-brand pointer-events-none select-none leading-none"
+        aria-hidden="true"
+        style={{
+          fontSize: 'clamp(9rem, 22vw, 18rem)',
+          fontWeight: 400,
+          opacity: 0.06,
+          transform: 'translate(8%, 20%)',
+          zIndex: -1,
+        }}
+      >
+        /&gt;
+      </span>
+
+      {/* ── Accent bar — 2 px gradient horizon: brand ➜ accent ──────────────
+           At 1 px the gradient disappeared entirely. 2 px makes it readable. */}
       <div
-        className="h-px"
+        className="h-0.5"
         aria-hidden="true"
         style={{
           background: 'linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent)',
@@ -183,9 +196,9 @@ export default async function Footer() {
         </div>
       )}
 
-      {/* ── Year mark — always present, very quiet ──────────────────────────── */}
+      {/* ── Year mark — label in brand color, quiet but present ──────────────── */}
       <div className="border-t border-fg/5 px-md lg:px-lg py-sm">
-        <p className="text-label text-fg-muted/40 tracking-label uppercase">
+        <p className="text-label text-brand/50 tracking-label uppercase">
           {year}
         </p>
       </div>
