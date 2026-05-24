@@ -7,6 +7,7 @@ export type AuthorData = {
   name:     string
   role?:    string
   photo?:   { url: { default: string | null } }
+  bio?:     { html: string }
   linkedIn?: string | null
   twitter?:  string | null
 }
@@ -52,23 +53,40 @@ const BLOG_PAGE_QUERY = `
         featuredImage { url { default } }
         featuredVideo { url { default } }
         body { html }
-        authorRef {
-          item {
-            ... on OT_Author {
-              name
-              role
-              photo { url { default } }
-              linkedIn { default }
-              twitter  { default }
-            }
-          }
-        }
+        authorRef { key }
         readTime
       }
     }
   }
 `
 
+/**
+ * OT_Author data is fetched separately because ContentReference.item for
+ * _component types returns __typename: "Data" in Content Graph — the type
+ * cannot be resolved via the ContentReference item resolver. We get the
+ * author key from the blog page, then query OT_Author directly by that key.
+ */
+const AUTHOR_QUERY = `
+  query GetAuthor($key: String!) {
+    OT_Author(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
+      items {
+        _metadata { key }
+        name
+        role
+        bio  { html }
+        photo    { url { default } }
+        linkedIn { default }
+        twitter  { default }
+      }
+    }
+  }
+`
+
+/**
+ * Latest posts query fetches blog page metadata plus a parallel OT_Author
+ * lookup so we can resolve author names without a per-item round-trip.
+ * The ContentReference.item approach is avoided for the same reason as above.
+ */
 const LATEST_POSTS_QUERY = `
   query GetLatestBlogPosts {
     OT_BlogPage(limit: 4) {
@@ -77,14 +95,14 @@ const LATEST_POSTS_QUERY = `
         headline
         topic
         featuredImage { url { default } }
-        authorRef {
-          item {
-            ... on OT_Author {
-              name
-            }
-          }
-        }
+        authorRef { key }
         readTime
+      }
+    }
+    OT_Author(limit: 20) {
+      items {
+        _metadata { key }
+        name
       }
     }
   }
@@ -92,23 +110,34 @@ const LATEST_POSTS_QUERY = `
 
 // ─── Data access ────────────────────────────────────────────────────────────────
 
+async function fetchAuthorByKey(key: string): Promise<AuthorData | null> {
+  try {
+    const data = await getClient().request(AUTHOR_QUERY, { key })
+    const item = (data as any)?.OT_Author?.items?.[0] ?? null
+    if (!item || !item.name) return null
+    return {
+      name:     item.name ?? '',
+      role:     item.role ?? undefined,
+      bio:      item.bio  ?? undefined,
+      photo:    item.photo ?? undefined,
+      linkedIn: item.linkedIn?.default ?? null,
+      twitter:  item.twitter?.default  ?? null,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getBlogPage(key: string): Promise<BlogPageContent | null> {
   try {
     const data = await getClient().request(BLOG_PAGE_QUERY, { key })
     const item = (data as any)?.OT_BlogPage?.items?.[0] ?? null
     if (!item) return null
 
-    // authorRef is a ContentReference — actual author data lives in .item
-    const authorItem = item.authorRef?.item ?? null
-    const authorRef = authorItem && Object.keys(authorItem).length > 0
-      ? {
-          name:     authorItem.name ?? '',
-          role:     authorItem.role ?? undefined,
-          photo:    authorItem.photo ?? undefined,
-          linkedIn: authorItem.linkedIn?.default ?? null,
-          twitter:  authorItem.twitter?.default  ?? null,
-        }
-      : null
+    // authorRef is a ContentReference — item resolver returns "Data" for
+    // _component types. Fetch author separately using the reference key.
+    const authorKey = item.authorRef?.key as string | undefined
+    const authorRef = authorKey ? await fetchAuthorByKey(authorKey) : null
 
     return { ...item, authorRef }
   } catch {
@@ -122,17 +151,24 @@ export const getLatestBlogPosts = cache(async function getLatestBlogPosts(
   try {
     const data = await getClient().request(LATEST_POSTS_QUERY, {})
     const items: any[] = (data as any)?.OT_BlogPage?.items ?? []
+
+    // Build key → name map from the parallel OT_Author query
+    const authorItems: any[] = (data as any)?.OT_Author?.items ?? []
+    const authorMap = new Map<string, string>()
+    for (const a of authorItems) {
+      const ak = a._metadata?.key as string | undefined
+      if (ak && a.name) authorMap.set(ak, a.name as string)
+    }
+
     return items
       .filter(p => !excludeKey || p._metadata?.key !== excludeKey)
       .slice(0, 3)
       .map(p => {
-        const authorItem = p.authorRef?.item ?? null
+        const authorKey = p.authorRef?.key as string | undefined
+        const authorName = authorKey ? authorMap.get(authorKey) : undefined
         return {
           ...p,
-          // authorRef is a ContentReference — name lives in .item
-          authorRef: authorItem && Object.keys(authorItem).length > 0
-            ? { name: authorItem.name ?? '' }
-            : null,
+          authorRef: authorName ? { name: authorName } : null,
         }
       })
   } catch {

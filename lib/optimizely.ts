@@ -102,17 +102,7 @@ const THEME_QUERY = `
         defaultMode
         ctaLabel
         ctaUrl { default }
-        footerRef {
-          item {
-            ... on OT_FooterBlock {
-              description { html }
-              links {
-                label
-                url { default }
-              }
-            }
-          }
-        }
+        footerRef { key }
         copyright
         colorBrand
         colorBrandHover
@@ -136,6 +126,16 @@ const THEME_QUERY = `
       }
     }
   }
+  OT_FooterBlock(limit: 20) {
+    items {
+      _metadata { key }
+      description { html }
+      links {
+        label
+        url { default }
+      }
+    }
+  }
 `
 
 /**
@@ -154,10 +154,13 @@ export async function getLocalizedContentByPath(
   const results = await getClient().getContentByPath(path, { host: baseUrl || undefined })
   if (!results?.length) return null
   if (results.length === 1) return results[0]
-  // Multiple locale variants — prefer the requested locale
-  const preferred = results.find(
-    (r: any) => r._metadata?.locale?.toLowerCase() === locale.toLowerCase(),
-  )
+  // Multiple locale variants — prefer the requested locale.
+  // Use prefix matching so app locale 'es' matches CMS locale 'es-MX', etc.
+  const al = locale.toLowerCase()
+  const preferred = results.find((r: any) => {
+    const rl = (r._metadata?.locale ?? '').toLowerCase()
+    return rl === al || rl.startsWith(al + '-') || al.startsWith(rl + '-')
+  })
   const fallback = results.find(
     (r: any) => r._metadata?.locale?.toLowerCase() === DEFAULT_LOCALE.toLowerCase(),
   )
@@ -172,13 +175,35 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
   try {
     const data  = await getClient().request(THEME_QUERY, {})
     const items = (data?.OT_ThemeManager?.items ?? []) as any[]
+
+    // Build a key → data map for footer blocks so we can attach them below.
+    // ContentReference.item is not resolvable for _component types in Graph —
+    // they come back as __typename: "Data". We fetch them as a parallel root
+    // query and join by key instead.
+    const footerItems = (data?.OT_FooterBlock?.items ?? []) as any[]
+    const footerMap = new Map<string, any>()
+    for (const fb of footerItems) {
+      const fk = fb._metadata?.key as string | undefined
+      if (fk) footerMap.set(fk, fb)
+    }
+
     const seen  = new Set<string>()
-    return items.filter((item: any) => {
-      const key = item._metadata?.key as string | undefined
-      if (!key || seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
+    return items
+      .filter((item: any) => {
+        const key = item._metadata?.key as string | undefined
+        if (!key || seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .map((item: any) => {
+        const footerKey = item.footerRef?.key as string | undefined
+        const resolvedFooter = footerKey ? footerMap.get(footerKey) ?? null : null
+        // Attach resolved footer data under footerRef.item so Footer.tsx's
+        // existing `settings?.footerRef?.item` accessor continues to work.
+        return resolvedFooter
+          ? { ...item, footerRef: { ...item.footerRef, item: resolvedFooter } }
+          : item
+      })
   } catch {
     return []
   }

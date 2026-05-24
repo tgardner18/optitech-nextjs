@@ -28,6 +28,16 @@ import type { Locale } from '@/lib/i18n/config'
 
 const LOCALE_COOKIE = 'optitech-locale'
 
+/**
+ * BCP-47 regional variants the CMS may use in content URLs.
+ * Maps full locale codes (lower-cased for comparison) → app locale.
+ * When such a prefix is detected in the URL, we 301-redirect to the
+ * canonical short-code form so the proxy can then handle it normally.
+ */
+const BCP47_CANONICAL: Record<string, Locale> = {
+  'es-mx': 'es',
+}
+
 /** Parse the best locale from the Accept-Language header. */
 function parseAcceptLanguage(header: string | null): Locale {
   if (!header) return DEFAULT_LOCALE
@@ -42,6 +52,23 @@ function parseAcceptLanguage(header: string | null): Locale {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // ── Normalize BCP-47 regional variants → canonical short codes ─────────
+  // The CMS may publish content with locale-prefixed URLs like /es-MX/path.
+  // Redirect those to the canonical app locale prefix (/es/path) so the
+  // regular locale detection loop below can handle them consistently.
+  for (const [bcp47, canonical] of Object.entries(BCP47_CANONICAL)) {
+    const pfx = `/${bcp47}`
+    const pfxSlash = `${pfx}/`
+    if (pathname.toLowerCase() === pfx || pathname.toLowerCase().startsWith(pfxSlash)) {
+      const stripped = pathname.slice(pfx.length) || '/'
+      const url = request.nextUrl.clone()
+      url.pathname = canonical === DEFAULT_LOCALE
+        ? stripped
+        : `/${canonical}${stripped === '/' ? '' : stripped}`
+      return NextResponse.redirect(url, 301)
+    }
+  }
 
   // ── Detect locale from URL prefix ─────────────────────────────────────
   let detectedLocale: Locale = DEFAULT_LOCALE

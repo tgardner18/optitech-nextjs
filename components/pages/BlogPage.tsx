@@ -445,6 +445,101 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
         />
       </section>
 
+      {/* ── Author bio ───────────────────────────────────────────────────── */}
+      {authorRef?.name && (
+        <>
+          {/* Brand-tinted separator — marks the article boundary */}
+          <div className="h-px bg-brand/30" aria-hidden="true" />
+
+          <section className="bg-surface py-xl" aria-label="About the author">
+            <div className="mx-auto max-w-5xl px-md">
+              <div className="grid grid-cols-1 sm:grid-cols-[3.5rem_1fr] gap-lg items-start">
+
+                {/* Photo — square crop, brand-tinted fallback monogram */}
+                <div className="flex-none w-14 h-14 overflow-hidden border border-fg/10 bg-canvas">
+                  {authorPhotoUrl ? (
+                    <img
+                      src={authorPhotoUrl}
+                      alt={authorName!}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-brand/20 flex items-center justify-center">
+                      <span className="text-title font-bold text-brand select-none">
+                        {initials}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Text content */}
+                <div>
+                  <p className="text-label uppercase tracking-label text-fg-muted/60 mb-xs">
+                    About the author
+                  </p>
+                  <p className="text-title font-semibold text-fg leading-tight">
+                    {authorName}
+                  </p>
+                  {authorRole && (
+                    <p className="text-label text-fg-muted mt-[3px]">{authorRole}</p>
+                  )}
+
+                  {authorRef.bio?.html && (
+                    <div
+                      className="
+                        mt-md text-body leading-[1.65] text-fg-muted max-w-[52ch]
+                        [&_p]:m-0 [&_p+p]:mt-[0.75em]
+                        [&_strong]:font-semibold [&_strong]:text-fg
+                        [&_em]:not-italic [&_em]:text-accent
+                      "
+                      dangerouslySetInnerHTML={{ __html: authorRef.bio.html }}
+                    />
+                  )}
+
+                  {(authorRef.linkedIn || authorRef.twitter) && (
+                    <div className="mt-md flex items-center gap-md">
+                      {authorRef.linkedIn && (
+                        <a
+                          href={authorRef.linkedIn}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            inline-flex items-center gap-xs
+                            text-label uppercase tracking-label
+                            text-fg-muted hover:text-fg
+                            transition-colors duration-150 ease-quick
+                          "
+                        >
+                          LinkedIn
+                          <span aria-hidden className="text-accent text-[0.7rem]">↗</span>
+                        </a>
+                      )}
+                      {authorRef.twitter && (
+                        <a
+                          href={authorRef.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            inline-flex items-center gap-xs
+                            text-label uppercase tracking-label
+                            text-fg-muted hover:text-fg
+                            transition-colors duration-150 ease-quick
+                          "
+                        >
+                          X&hairsp;/&hairsp;Twitter
+                          <span aria-hidden className="text-accent text-[0.7rem]">↗</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
       {/* ── Latest posts ─────────────────────────────────────────────────── */}
       {latestPosts.length > 0 && (
         <section className="bg-surface pt-xl pb-2xl">
