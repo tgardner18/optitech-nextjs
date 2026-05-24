@@ -62,14 +62,17 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
                In a VB experience, add form elements (Textbox, Selection, etc.)
                directly inside this form container section. */
             <div className="flex flex-col gap-sm">
-              {/* Placeholder fields that hint the expected layout */}
+              {/* Placeholder fields — labels are visible text so you can see
+                  what the form will look like when embedded in a VB experience */}
               {[
                 { label: 'Text field', w: 'w-full' },
                 { label: 'Text field', w: 'w-full' },
                 { label: 'Selection', w: 'w-full md:w-1/2' },
               ].map((f, i) => (
                 <div key={i} className={`${f.w} flex flex-col gap-xs`}>
-                  <div className="h-3.5 w-24 rounded-sm bg-fg/8" />
+                  <p className="text-label font-medium text-fg-muted/50 tracking-label uppercase">
+                    {f.label}
+                  </p>
                   <div className="h-10 w-full rounded-input border border-fg/10 bg-canvas/40" />
                 </div>
               ))}
