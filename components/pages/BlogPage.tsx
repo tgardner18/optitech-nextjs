@@ -7,19 +7,25 @@ type BlogStyle = 'impact' | 'atmospheric' | 'editorial'
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const TOPIC_LABELS: Record<string, string> = {
+  news:       'News',
+  insights:   'Insights',
+  leadership: 'Leadership',
+  stories:    'Stories',
   innovation: 'Innovation',
-  engineering: 'Engineering',
-  product:     'Product',
-  trends:      'Trends',
-  community:   'Community',
+  culture:    'Culture',
+  events:     'Events',
+  resources:  'Resources',
 }
 
 const TOPIC_INDEX: Record<string, string> = {
-  innovation: '01',
-  engineering: '02',
-  product:    '03',
-  trends:     '04',
-  community:  '05',
+  news:       '01',
+  insights:   '02',
+  leadership: '03',
+  stories:    '04',
+  innovation: '05',
+  culture:    '06',
+  events:     '07',
+  resources:  '08',
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
