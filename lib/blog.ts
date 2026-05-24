@@ -53,12 +53,14 @@ const BLOG_PAGE_QUERY = `
         featuredVideo { url { default } }
         body { html }
         authorRef {
-          ... on OT_Author {
-            name
-            role
-            photo { url { default } }
-            linkedIn { default }
-            twitter  { default }
+          item {
+            ... on OT_Author {
+              name
+              role
+              photo { url { default } }
+              linkedIn { default }
+              twitter  { default }
+            }
           }
         }
         readTime
@@ -76,8 +78,10 @@ const LATEST_POSTS_QUERY = `
         topic
         featuredImage { url { default } }
         authorRef {
-          ... on OT_Author {
-            name
+          item {
+            ... on OT_Author {
+              name
+            }
           }
         }
         readTime
@@ -94,14 +98,15 @@ export async function getBlogPage(key: string): Promise<BlogPageContent | null> 
     const item = (data as any)?.OT_BlogPage?.items?.[0] ?? null
     if (!item) return null
 
-    // Normalise url fields from Optimizely's { default: string } structure
-    const authorRef = item.authorRef
+    // authorRef is a ContentReference — actual author data lives in .item
+    const authorItem = item.authorRef?.item ?? null
+    const authorRef = authorItem && Object.keys(authorItem).length > 0
       ? {
-          name:     item.authorRef.name ?? '',
-          role:     item.authorRef.role ?? undefined,
-          photo:    item.authorRef.photo ?? undefined,
-          linkedIn: item.authorRef.linkedIn?.default ?? null,
-          twitter:  item.authorRef.twitter?.default  ?? null,
+          name:     authorItem.name ?? '',
+          role:     authorItem.role ?? undefined,
+          photo:    authorItem.photo ?? undefined,
+          linkedIn: authorItem.linkedIn?.default ?? null,
+          twitter:  authorItem.twitter?.default  ?? null,
         }
       : null
 
@@ -120,10 +125,16 @@ export const getLatestBlogPosts = cache(async function getLatestBlogPosts(
     return items
       .filter(p => !excludeKey || p._metadata?.key !== excludeKey)
       .slice(0, 3)
-      .map(p => ({
-        ...p,
-        authorRef: p.authorRef ? { name: p.authorRef.name ?? '' } : null,
-      }))
+      .map(p => {
+        const authorItem = p.authorRef?.item ?? null
+        return {
+          ...p,
+          // authorRef is a ContentReference — name lives in .item
+          authorRef: authorItem && Object.keys(authorItem).length > 0
+            ? { name: authorItem.name ?? '' }
+            : null,
+        }
+      })
   } catch {
     return []
   }
