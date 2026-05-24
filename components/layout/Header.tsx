@@ -38,6 +38,11 @@ export default async function Header() {
     logoInvertDark ? 'logo-invert-dark' : '',
   ].filter(Boolean).join(' ')
 
+  // Locale codes configured in the CMS ThemeManager. Empty array = show all.
+  const enabledLocales: string[] = Array.isArray(settings?.enabledLocales)
+    ? settings.enabledLocales.filter((l: unknown) => typeof l === 'string' && l.trim())
+    : []
+
   const navItems: NavItem[] = settings?.primaryNavigation?.length
     ? settings.primaryNavigation.map((item: any) => ({
         label:    item.menuLink?.text ?? '',
@@ -82,7 +87,7 @@ export default async function Header() {
 
           <div className="hidden lg:flex items-center gap-sm">
             <SearchTrigger />
-            <LocaleSelector />
+            <LocaleSelector enabledLocales={enabledLocales} />
             <ThemeToggle />
             <Button href={ctaHref} size="sm">{ctaLabel}</Button>
           </div>
@@ -90,7 +95,7 @@ export default async function Header() {
           <div className="lg:hidden flex items-center gap-sm">
             <SearchTrigger />
             <ThemeToggle />
-            <MobileMenu navItems={navItems} ctaLabel={ctaLabel} ctaHref={ctaHref} />
+            <MobileMenu navItems={navItems} ctaLabel={ctaLabel} ctaHref={ctaHref} enabledLocales={enabledLocales} />
           </div>
 
         </div>

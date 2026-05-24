@@ -9,12 +9,13 @@ import type { NavItem } from '@/components/layout/DesktopNav'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
 type Props = {
-  navItems: NavItem[]
-  ctaLabel: string
-  ctaHref:  string
+  navItems:        NavItem[]
+  ctaLabel:        string
+  ctaHref:         string
+  enabledLocales?: string[]
 }
 
-export default function MobileMenu({ navItems, ctaLabel, ctaHref }: Props) {
+export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales }: Props) {
   const [open,        setOpen]        = useState(false)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
   const [mounted,     setMounted]     = useState(false)
@@ -138,7 +139,7 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref }: Props) {
             })}
 
             {/* Locale selector — below nav links, above CTA */}
-            <LocaleSelectorMobile onSelect={close} />
+            <LocaleSelectorMobile onSelect={close} enabledLocales={enabledLocales} />
           </nav>
 
           <div className="mt-lg px-md">

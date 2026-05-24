@@ -30,6 +30,26 @@ export function isSupportedLocale(value: unknown): value is Locale {
 }
 
 /**
+ * Returns display metadata for any locale code.
+ * For bundled locales returns the pre-configured native name and code.
+ * For unknown locales (added in the CMS but not yet bundled) falls back to
+ * a generated display using the uppercase locale code as both label and code.
+ */
+export function getLocaleMeta(locale: string): { native: string; code: string } {
+  if (isSupportedLocale(locale)) return LOCALE_META[locale]
+  // Best-effort: use Intl.DisplayNames if available, otherwise just capitalise
+  try {
+    const displayNames = new Intl.DisplayNames([locale, DEFAULT_LOCALE], { type: 'language' })
+    const name = displayNames.of(locale)
+    if (name && name !== locale) {
+      return { native: name, code: locale.toUpperCase().slice(0, 2) }
+    }
+  } catch { /* Intl not available or locale unknown */ }
+  const code = locale.toUpperCase().slice(0, 2)
+  return { native: code, code }
+}
+
+/**
  * Strips the locale prefix from a URL path.
  * '/fr/about' → '/about'
  * '/about'    → '/about'  (default locale, no prefix)

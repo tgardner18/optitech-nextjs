@@ -94,6 +94,7 @@ const THEME_QUERY = `
     OT_ThemeManager(limit: 20) {
       items {
         frontEndDomain
+        enabledLocales
         logo { url { default } }
         logoAlt
         logoFit

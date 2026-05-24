@@ -8,6 +8,17 @@ export const OT_ThemeManager = contentType({
   displayName: 'Theme Manager',
   baseType: '_component',
   properties: {
+    // Language selector — which locales to show in the site header language picker
+    // Leave empty to show all locales configured in lib/i18n/config.ts.
+    enabledLocales: {
+      type: 'array',
+      displayName: 'Enabled Languages',
+      description: 'Locale codes to show in the language picker (e.g. en, fr, de, es). Leave empty to show all configured locales.',
+      group: 'OT_Content',
+      sortOrder: 2,
+      items: { type: 'string' },
+    },
+
     // Identity — which front-end domain loads this theme
     frontEndDomain: {
       type: 'string',

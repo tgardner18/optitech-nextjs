@@ -16,24 +16,32 @@
  *  - Active locale: accent dot + text-accent
  *  - Muted locale code alongside native name (text-label text-fg-muted)
  *  - Kinetic ease on dropdown: 180ms opacity + translateY
+ *
+ * enabledLocales prop: array of locale codes to display, sourced from the CMS
+ * ThemeManager. Falls back to SUPPORTED_LOCALES when not provided or empty.
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { SUPPORTED_LOCALES, LOCALE_META, localizedHref } from '@/lib/i18n/config'
+import { SUPPORTED_LOCALES, getLocaleMeta, localizedHref, isSupportedLocale } from '@/lib/i18n/config'
+import type { Locale } from '@/lib/i18n/config'
 import { useLocale } from '@/lib/i18n/LocaleProvider'
 import { useTranslation } from '@/lib/i18n/useTranslation'
-import type { Locale } from '@/lib/i18n/config'
 
 const LOCALE_COOKIE = 'optitech-locale'
 
-function setCookie(locale: Locale) {
+function setCookie(locale: string) {
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`
+}
+
+type LocaleSelectorProps = {
+  /** Locale codes to show in the picker. Omit or pass [] to show all SUPPORTED_LOCALES. */
+  enabledLocales?: string[]
 }
 
 // ── Desktop trigger + dropdown ────────────────────────────────────────────────
 
-export function LocaleSelector() {
+export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
   const locale      = useLocale()
   const { t }       = useTranslation()
   const router      = useRouter()
@@ -44,6 +52,17 @@ export function LocaleSelector() {
   const firstItemRef    = useRef<HTMLButtonElement>(null)
 
   const close = useCallback(() => setOpen(false), [])
+
+  // Resolve which locales to show.
+  // Filter against SUPPORTED_LOCALES so only routable, middleware-known locales
+  // appear — this prevents broken URLs if an editor types an unsupported code.
+  // If the CMS list is empty or not set, fall back to showing all supported locales.
+  const visibleLocales: Locale[] = enabledLocales?.length
+    ? enabledLocales.filter(isSupportedLocale)
+    : [...SUPPORTED_LOCALES]
+
+  // If the site only has one language configured, don't render the selector at all
+  if (visibleLocales.length <= 1) return null
 
   // Close on outside click
   useEffect(() => {
@@ -79,7 +98,7 @@ export function LocaleSelector() {
     router.push(localizedHref(pathname, next))
   }
 
-  const meta = LOCALE_META[locale]
+  const meta = getLocaleMeta(locale)
 
   return (
     <div ref={containerRef} className="relative">
@@ -111,8 +130,8 @@ export function LocaleSelector() {
                      min-w-[180px]
                      motion-safe:animate-dropdown-in"
         >
-          {SUPPORTED_LOCALES.map((loc, i) => {
-            const lm       = LOCALE_META[loc]
+          {visibleLocales.map((loc: Locale, i) => {
+            const lm       = getLocaleMeta(loc)
             const isActive = loc === locale
 
             return (
@@ -156,11 +175,24 @@ export function LocaleSelector() {
 
 // ── Mobile inline variant ─────────────────────────────────────────────────────
 
-export function LocaleSelectorMobile({ onSelect }: { onSelect?: () => void }) {
+export function LocaleSelectorMobile({
+  onSelect,
+  enabledLocales,
+}: {
+  onSelect?: () => void
+  enabledLocales?: string[]
+}) {
   const locale   = useLocale()
   const { t }    = useTranslation()
   const router   = useRouter()
   const pathname = usePathname()
+
+  const visibleLocales: Locale[] = enabledLocales?.length
+    ? enabledLocales.filter(isSupportedLocale)
+    : [...SUPPORTED_LOCALES]
+
+  // Don't render if only one language is configured
+  if (visibleLocales.length <= 1) return null
 
   function selectLocale(next: Locale) {
     if (next === locale) { onSelect?.(); return }
@@ -175,8 +207,8 @@ export function LocaleSelectorMobile({ onSelect }: { onSelect?: () => void }) {
         {t('locale.selector')}
       </p>
       <div className="grid grid-cols-2 gap-xs">
-        {SUPPORTED_LOCALES.map(loc => {
-          const lm       = LOCALE_META[loc]
+        {visibleLocales.map((loc: Locale) => {
+          const lm       = getLocaleMeta(loc)
           const isActive = loc === locale
 
           return (
