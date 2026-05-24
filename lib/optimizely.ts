@@ -125,14 +125,14 @@ const THEME_QUERY = `
         }
       }
     }
-  }
-  OT_FooterBlock(limit: 20) {
-    items {
-      _metadata { key }
-      description { html }
-      links {
-        label
-        url { default }
+    OT_FooterBlock(limit: 20) {
+      items {
+        _metadata { key }
+        description { html }
+        links {
+          label
+          url { default }
+        }
       }
     }
   }

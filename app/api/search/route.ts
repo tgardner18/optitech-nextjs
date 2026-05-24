@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getClient } from '@/lib/optimizely'
+import { DEFAULT_LOCALE } from '@/lib/i18n/config'
 import type { SearchResult } from '@/lib/search'
 
 function stripHtml(html: string): string {
@@ -19,23 +20,27 @@ const SCOPE_QUERY = `
   }
 `
 
-// Build a blog query with optional Graph-level domain scoping.
+// Build a blog query with Graph-level locale scoping (always applied) and
+// optional domain scoping. Locale is sourced from the x-locale request header
+// so results are restricted to the site's active language.
 // When withDomain=true, _metadata.url.base is compared against $domain so the
 // CMS itself enforces site isolation — not a post-filter on relative paths.
 // Adds fuzzy matching and synonym expansion for more forgiving keyword search.
 function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
-  const domainFilter = withDomain ? '_metadata: { url: { base: { eq: $domain } } }' : ''
+  const metaFilter   = withDomain
+    ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
+    : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
     ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
-    query SearchBlogs($query: String!, $limit: Int!${domainVar}) {
+    query SearchBlogs($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_BlogPage(
         ${ranking}
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
-          ${domainFilter}
+          ${metaFilter}
         }
         limit: $limit
       ) {
@@ -54,13 +59,15 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
 
 function buildContentQuery(withDomain: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
-  const domainFilter = withDomain ? '_metadata: { url: { base: { eq: $domain } } }' : ''
+  const metaFilter   = withDomain
+    ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
+    : '_metadata: { locale: { eq: $locale } }'
   return `
-    query SearchContent($query: String!, $limit: Int!${domainVar}) {
+    query SearchContent($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       _Content(
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
-          ${domainFilter}
+          ${metaFilter}
         }
         limit: $limit
       ) {
@@ -75,13 +82,15 @@ function buildContentQuery(withDomain: boolean): string {
 
 function buildExperienceQuery(withDomain: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
-  const domainFilter = withDomain ? '_metadata: { url: { base: { eq: $domain } } }' : ''
+  const metaFilter   = withDomain
+    ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
+    : '_metadata: { locale: { eq: $locale } }'
   return `
-    query SearchExperiences($query: String!, $limit: Int!${domainVar}) {
+    query SearchExperiences($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       _Experience(
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
-          ${domainFilter}
+          ${metaFilter}
         }
         limit: $limit
       ) {
@@ -111,6 +120,11 @@ export async function GET(req: NextRequest) {
   const limit    = 16
 
   if (q.length < 2) return NextResponse.json([])
+
+  // ── Locale resolution ────────────────────────────────────────────────────
+  // x-locale is set by middleware for every request. Falls back to the default
+  // locale so search always has a locale constraint even without a prefix.
+  const locale = req.headers.get('x-locale') ?? DEFAULT_LOCALE
 
   // ── Site scope resolution ────────────────────────────────────────────────
   // filterBase is built from ThemeManager's canonical frontEndDomain, NOT the
@@ -142,13 +156,16 @@ export async function GET(req: NextRequest) {
   const withDomain = !allSites && filterBase !== null
   const domainVars = withDomain ? { domain: filterBase } : {}
 
+  // locale is always included — every query builder declares $locale: String!
+  const baseVars = { query: q, limit, locale, ...domainVars }
+
   const results: SearchResult[] = []
 
   // ── Blog results ─────────────────────────────────────────────────────────
   if (type !== 'Page') {
     try {
       const blogQuery = buildBlogQuery(withDomain, semantic)
-      const data = await getClient().request(blogQuery, { query: q, limit, ...domainVars })
+      const data = await getClient().request(blogQuery, baseVars)
       const items: any[] = (data as any)?.OT_BlogPage?.items ?? []
       for (const item of items) {
         if (!item._metadata?.url?.default) continue
@@ -175,7 +192,7 @@ export async function GET(req: NextRequest) {
   if (type !== 'Blog') {
     try {
       const contentQuery = buildContentQuery(withDomain)
-      const data = await getClient().request(contentQuery, { query: q, limit, ...domainVars })
+      const data = await getClient().request(contentQuery, baseVars)
       const items: any[] = (data as any)?._Content?.items ?? []
       for (const item of items) {
         const types: string[] = item._metadata?.types ?? []
@@ -196,7 +213,7 @@ export async function GET(req: NextRequest) {
 
     try {
       const expQuery = buildExperienceQuery(withDomain)
-      const data = await getClient().request(expQuery, { query: q, limit, ...domainVars })
+      const data = await getClient().request(expQuery, baseVars)
       const items: any[] = (data as any)?._Experience?.items ?? []
       for (const item of items) {
         if (!item._metadata?.url?.default) continue
