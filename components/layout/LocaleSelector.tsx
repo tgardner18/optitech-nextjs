@@ -22,7 +22,6 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 import { SUPPORTED_LOCALES, getLocaleMeta, localizedHref, isSupportedLocale } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
 import { useLocale } from '@/lib/i18n/LocaleProvider'
@@ -34,6 +33,17 @@ function setCookie(locale: string) {
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`
 }
 
+/**
+ * Returns the real browser URL path — important because Next.js proxy/middleware
+ * rewrites locale-prefixed paths (/es/about → /about) before they reach the
+ * app router. usePathname() returns the REWRITTEN path, not the browser URL.
+ * Using window.location.pathname gives us the prefix so we can swap it correctly.
+ */
+function getBrowserPathname(): string {
+  if (typeof window === 'undefined') return '/'
+  return window.location.pathname
+}
+
 type LocaleSelectorProps = {
   /** Locale codes to show in the picker. Omit or pass [] to show all SUPPORTED_LOCALES. */
   enabledLocales?: string[]
@@ -42,10 +52,8 @@ type LocaleSelectorProps = {
 // ── Desktop trigger + dropdown ────────────────────────────────────────────────
 
 export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
-  const locale      = useLocale()
-  const { t }       = useTranslation()
-  const router      = useRouter()
-  const pathname    = usePathname()
+  const locale   = useLocale()
+  const { t }    = useTranslation()
   const [open, setOpen] = useState(false)
   const containerRef    = useRef<HTMLDivElement>(null)
   const triggerRef      = useRef<HTMLButtonElement>(null)
@@ -95,7 +103,14 @@ export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
     close()
     if (next === locale) return
     setCookie(next)
-    router.push(localizedHref(pathname, next))
+    // Use the actual browser URL (window.location.pathname) not the Next.js rewritten
+    // path (usePathname). The proxy rewrites /es/about → /about, so usePathname()
+    // returns '/about' — stripping the locale prefix. Switching back to English from
+    // '/es' would then call router.push('/') while already at '/' → no navigation.
+    // window.location.pathname always reflects what's in the browser URL bar.
+    // Full navigation (href assignment) also guarantees the proxy runs fresh and
+    // sets the x-locale header correctly.
+    window.location.href = localizedHref(getBrowserPathname(), next)
   }
 
   const meta = getLocaleMeta(locale)
@@ -182,10 +197,8 @@ export function LocaleSelectorMobile({
   onSelect?: () => void
   enabledLocales?: string[]
 }) {
-  const locale   = useLocale()
-  const { t }    = useTranslation()
-  const router   = useRouter()
-  const pathname = usePathname()
+  const locale = useLocale()
+  const { t }  = useTranslation()
 
   const visibleLocales: Locale[] = enabledLocales?.length
     ? enabledLocales.filter(isSupportedLocale)
@@ -198,7 +211,7 @@ export function LocaleSelectorMobile({
     if (next === locale) { onSelect?.(); return }
     setCookie(next)
     onSelect?.()
-    router.push(localizedHref(pathname, next))
+    window.location.href = localizedHref(getBrowserPathname(), next)
   }
 
   return (

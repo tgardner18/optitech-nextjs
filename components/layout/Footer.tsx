@@ -37,7 +37,8 @@ export default async function Footer() {
   ].filter(Boolean).join(' ')
 
   // ── Footer block data (from OT_FooterBlock via contentReference) ───────────
-  const footerRef       = settings?.footerRef as any | undefined
+  // footerRef is a ContentReference — the actual block data lives in .item
+  const footerRef       = (settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
   const descriptionHtml = (footerRef?.description?.html as string | undefined) ?? null
 
   type FooterLink = { label: string; href: string }

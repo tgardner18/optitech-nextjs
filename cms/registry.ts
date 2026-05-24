@@ -8,6 +8,7 @@ import { OT_CardDefault }         from '@/cms/display-templates/OT_CardDefault'
 import { OT_PrimaryTextDefault }  from '@/cms/display-templates/OT_PrimaryTextDefault'
 import { OT_QuoteDefault }        from '@/cms/display-templates/OT_QuoteDefault'
 import { OT_AuthorDefault }       from '@/cms/display-templates/OT_AuthorDefault'
+import { OT_FooterBlockDefault }  from '@/cms/display-templates/OT_FooterBlockDefault'
 import { OT_RichTextDefault }     from '@/cms/display-templates/OT_RichTextDefault'
 import { OT_ImageDefault }        from '@/cms/display-templates/OT_ImageDefault'
 import { OT_VideoDefault }        from '@/cms/display-templates/OT_VideoDefault'
@@ -73,6 +74,7 @@ import OT_StatBlockAdapter            from '@/cms/components/OT_StatBlock'
 import OT_FeatureGridBlockAdapter     from '@/cms/components/OT_FeatureGridBlock'
 import OT_ThemeManagerAdapter     from '@/cms/components/OT_ThemeManager'
 import OT_AuthorAdapter           from '@/cms/components/OT_Author'
+import OT_FooterBlockAdapter      from '@/cms/components/OT_FooterBlock'
 import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
 import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
 
@@ -101,6 +103,7 @@ initDisplayTemplateRegistry([
   OT_PrimaryTextDefault,
   OT_QuoteDefault,
   OT_AuthorDefault,
+  OT_FooterBlockDefault,
   OT_RichTextDefault,
   OT_ImageDefault,
   OT_VideoDefault,
@@ -168,6 +171,7 @@ initReactComponentRegistry({
     OT_FeatureGridBlock: OT_FeatureGridBlockAdapter,
     OT_ThemeManager:     OT_ThemeManagerAdapter,
     OT_Author:           OT_AuthorAdapter,
+    OT_FooterBlock:      OT_FooterBlockAdapter,
     OT_BlogPage:         OT_BlogPageAdapter,
     OT_FolderPage:       OT_FolderPageAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;

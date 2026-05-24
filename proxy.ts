@@ -40,7 +40,7 @@ function parseAcceptLanguage(header: string | null): Locale {
   return DEFAULT_LOCALE
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // ── Detect locale from URL prefix ─────────────────────────────────────

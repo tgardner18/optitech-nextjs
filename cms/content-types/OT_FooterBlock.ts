@@ -18,8 +18,8 @@ export const OT_FooterBlock = contentType({
   key: 'OT_FooterBlock',
   displayName: 'Footer',
   baseType: '_component',
-  // No compositionBehaviors — referenced only via ThemeManager.footerRef,
-  // not droppable into Visual Builder experiences.
+  // elementEnabled lets the CMS render a preview pane when editing this shared block.
+  compositionBehaviors: ['elementEnabled'],
   properties: {
     description: {
       type: 'richText',

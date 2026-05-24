@@ -102,11 +102,13 @@ const THEME_QUERY = `
         ctaLabel
         ctaUrl { default }
         footerRef {
-          ... on OT_FooterBlock {
-            description { html }
-            links {
-              label
-              url { default }
+          item {
+            ... on OT_FooterBlock {
+              description { html }
+              links {
+                label
+                url { default }
+              }
             }
           }
         }
