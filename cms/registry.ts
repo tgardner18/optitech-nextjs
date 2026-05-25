@@ -47,6 +47,7 @@ import { OT_Author }            from '@/cms/content-types/OT_Author'
 import { OT_FooterBlock }       from '@/cms/content-types/OT_FooterBlock'
 import { OT_BlogPage }          from '@/cms/content-types/OT_BlogPage'
 import { OT_FolderPage }        from '@/cms/content-types/OT_FolderPage'
+import { ImageMedia }           from '@/cms/content-types/ImageMedia'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -79,6 +80,7 @@ import OT_AuthorAdapter           from '@/cms/components/OT_Author'
 import OT_FooterBlockAdapter      from '@/cms/components/OT_FooterBlock'
 import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
 import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
+import ImageMediaAdapter          from '@/cms/components/ImageMedia'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -143,6 +145,7 @@ initContentTypeRegistry([
   OT_FooterBlock,
   OT_BlogPage,
   OT_FolderPage,
+  ImageMedia,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -177,6 +180,7 @@ initReactComponentRegistry({
     OT_FooterBlock:      OT_FooterBlockAdapter,
     OT_BlogPage:         OT_BlogPageAdapter,
     OT_FolderPage:       OT_FolderPageAdapter,
+    ImageMedia:          ImageMediaAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;
     // '_Row' and '_Column' are the fixed registry keys OptimizelyGridSection resolves.
     BlankSection:       BlankSectionAdapter,
