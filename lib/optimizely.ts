@@ -213,12 +213,19 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
 
 /**
  * Returns the ThemeManager instance whose frontEndDomain matches `domain`,
- * falling back to the first available instance if none match.
+ * or null if no match is found.
+ *
+ * Returning null on no match is intentional: an unrecognised domain (e.g. a
+ * fresh Vercel deployment whose URL hasn't been registered in any ThemeManager
+ * yet) should render with the default CSS token values ("generic OptiTech
+ * branding") rather than inheriting whatever theme was most recently published.
+ * All callers (Header, Footer, layout) handle null gracefully via optional
+ * chaining and hardcoded fallback values.
  */
 export async function getSiteSettings(domain = ''): Promise<any | null> {
   const items = await _fetchAllThemeManagers()
   if (!items.length) return null
-  return items.find((i: any) => i.frontEndDomain === domain) ?? items[0]
+  return items.find((i: any) => i.frontEndDomain === domain) ?? null
 }
 
 /**
