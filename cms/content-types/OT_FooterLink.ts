@@ -5,7 +5,7 @@ export const OT_FooterLink = contentType({
   displayName: 'Footer Link',
   baseType: '_component',
   properties: {
-    label: { type: 'string', maxLength: 60, displayName: 'Label', group: 'OT_Content', sortOrder: 10 },
+    label: { type: 'string', isLocalized: true, maxLength: 60, displayName: 'Label', group: 'OT_Content', sortOrder: 10 },
     url:   { type: 'url',   displayName: 'URL',   group: 'OT_Content', sortOrder: 20 },
   },
 })

@@ -6,6 +6,6 @@ export const OT_NavigationSubItem = contentType({
   baseType: '_component',
   properties: {
     menuLink:    { type: 'link',   displayName: 'Link',                                          group: 'OT_Content', sortOrder: 10 },
-    description: { type: 'string', maxLength: 150, displayName: 'Description (optional — shown in mega menu)', group: 'OT_Content', sortOrder: 20 },
+    description: { type: 'string', isLocalized: true, maxLength: 150, displayName: 'Description (optional — shown in mega menu)', group: 'OT_Content', sortOrder: 20 },
   },
 })

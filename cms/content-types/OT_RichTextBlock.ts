@@ -6,6 +6,6 @@ export const OT_RichTextBlock = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
-    content: { type: 'richText', displayName: 'Content', group: 'OT_Content', sortOrder: 10 },
+    content: { type: 'richText', isLocalized: true, displayName: 'Content', group: 'OT_Content', sortOrder: 10 },
   },
 })

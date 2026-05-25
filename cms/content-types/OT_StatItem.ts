@@ -24,6 +24,7 @@ export const OT_StatItem = contentType({
     },
     label: {
       type:        'string',
+      isLocalized: true,
       maxLength:   80,
       displayName: 'Label',
       description: 'Short descriptor shown below the value. e.g. "Faster deployment"',
@@ -32,6 +33,7 @@ export const OT_StatItem = contentType({
     },
     context: {
       type:        'string',
+      isLocalized: true,
       maxLength:   120,
       displayName: 'Context',
       description: 'Optional supporting line. e.g. "vs. industry average"',
