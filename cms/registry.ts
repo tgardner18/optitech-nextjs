@@ -14,6 +14,7 @@ import { OT_ImageDefault }        from '@/cms/display-templates/OT_ImageDefault'
 import { OT_VideoDefault }        from '@/cms/display-templates/OT_VideoDefault'
 import { OT_StatBlockDefault }      from '@/cms/display-templates/OT_StatBlockDefault'
 import { OT_FeatureGridDefault }    from '@/cms/display-templates/OT_FeatureGridDefault'
+import { OT_TrustRailDefault }      from '@/cms/display-templates/OT_TrustRailDefault'
 import { OT_LandingSection }          from '@/cms/display-templates/OT_LandingSection'
 import { OT_LandingRow }              from '@/cms/display-templates/OT_LandingRow'
 import { OT_LandingRowSlider }        from '@/cms/display-templates/OT_LandingRowSlider'
@@ -34,6 +35,8 @@ import { OT_StatItem }           from '@/cms/content-types/OT_StatItem'
 import { OT_StatBlock }          from '@/cms/content-types/OT_StatBlock'
 import { OT_FeatureItem }        from '@/cms/content-types/OT_FeatureItem'
 import { OT_FeatureGridBlock }   from '@/cms/content-types/OT_FeatureGridBlock'
+import { OT_LogoItem }           from '@/cms/content-types/OT_LogoItem'
+import { OT_TrustRail }          from '@/cms/content-types/OT_TrustRail'
 import { BlankExperience }  from '@/cms/content-types/BlankExperience'
 import { OT_ThemeManager } from '@/cms/content-types/OT_ThemeManager'
 import { OT_NavigationItem }    from '@/cms/content-types/OT_NavigationItem'
@@ -70,6 +73,7 @@ import OT_ImageBlockAdapter       from '@/cms/components/OT_ImageBlock'
 import OT_VideoBlockAdapter       from '@/cms/components/OT_VideoBlock'
 import OT_StatBlockAdapter            from '@/cms/components/OT_StatBlock'
 import OT_FeatureGridBlockAdapter     from '@/cms/components/OT_FeatureGridBlock'
+import OT_TrustRailAdapter            from '@/cms/components/OT_TrustRail'
 import OT_ThemeManagerAdapter     from '@/cms/components/OT_ThemeManager'
 import OT_AuthorAdapter           from '@/cms/components/OT_Author'
 import OT_FooterBlockAdapter      from '@/cms/components/OT_FooterBlock'
@@ -106,6 +110,7 @@ initDisplayTemplateRegistry([
   OT_VideoDefault,
   OT_StatBlockDefault,
   OT_FeatureGridDefault,
+  OT_TrustRailDefault,
   OT_LandingSection,
   OT_LandingRow,
   OT_LandingRowSlider,
@@ -126,6 +131,8 @@ initContentTypeRegistry([
   OT_StatBlock,
   OT_FeatureItem,
   OT_FeatureGridBlock,
+  OT_LogoItem,
+  OT_TrustRail,
   BlankExperience,
   OT_ThemeManager,
   OT_NavigationItem,
@@ -164,6 +171,7 @@ initReactComponentRegistry({
     OT_VideoBlock:       OT_VideoBlockAdapter,
     OT_StatBlock:        OT_StatBlockAdapter,
     OT_FeatureGridBlock: OT_FeatureGridBlockAdapter,
+    OT_TrustRail:        OT_TrustRailAdapter,
     OT_ThemeManager:     OT_ThemeManagerAdapter,
     OT_Author:           OT_AuthorAdapter,
     OT_FooterBlock:      OT_FooterBlockAdapter,

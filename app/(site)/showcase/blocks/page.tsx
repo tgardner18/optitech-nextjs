@@ -11,6 +11,7 @@ import OT_VideoBlock       from "@/cms/components/OT_VideoBlock";
 import OT_CardBlock        from "@/cms/components/OT_CardBlock";
 import OT_StatBlock            from "@/cms/components/OT_StatBlock";
 import OT_FeatureGridBlock     from "@/cms/components/OT_FeatureGridBlock";
+import OT_TrustRail            from "@/cms/components/OT_TrustRail";
 import Button from "@/components/ui/Button";
 import { ArrowRight, Zap, ChevronRight, Play, Download, Sparkles, Send, Rocket, Star, Plus } from "lucide-react";
 
@@ -2365,6 +2366,130 @@ export default function ShowcaseBlocksPage() {
             displaySettings={{ color: "brand", layout: "grid", columns: "col3", iconStyle: "structural", feature1Icon: "zap", feature2Icon: "barChart", feature3Icon: "users", feature4Icon: "trendingUp", feature5Icon: "globe", feature6Icon: "shield", animate: true }}
           />
         </div>
+
+        <div className="pb-xl" />
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          TRUST RAIL — partner / customer logo strip
+          ════════════════════════════════════════════════════════════════ */}
+      <section id="trust-rail">
+        <BlockGroup
+          id="trust-rail-header"
+          label="11 · TrustRail"
+          description="A horizontal logo strip for partner and customer social proof. Three motion modes: infinite scroll marquee, staggered fade reveal, and static grid. Image treatment (grayscale/color), background, density, logo size, and glass overlay are all display-template settings."
+        />
+
+        {/*
+          Placeholder logos — SVG wordmarks encoded as data URIs.
+          In production, editors upload transparent PNG / SVG images via the CMS.
+          We vary widths to simulate the natural variance of real logo lockups.
+        */}
+
+        {(() => {
+          function logo(text: string, w = 88): string {
+            const svg = [
+              `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="32" viewBox="0 0 ${w} 32">`,
+              `<text x="${w / 2}" y="17" text-anchor="middle" dominant-baseline="middle"`,
+              ` font-family="system-ui,-apple-system,sans-serif"`,
+              ` font-size="11" font-weight="800" fill="#64748b" letter-spacing="2.5">${text}</text>`,
+              `</svg>`,
+            ].join('')
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+          }
+
+          const LOGOS = [
+            { imageUrl: logo('ACME',    68),  altText: 'Acme Corp'      },
+            { imageUrl: logo('VERITAS', 96),  altText: 'Veritas'        },
+            { imageUrl: logo('NEXUS',   80),  altText: 'Nexus Systems'  },
+            { imageUrl: logo('STRATOS', 96),  altText: 'Stratos'        },
+            { imageUrl: logo('AXIOM',   80),  altText: 'Axiom Group'    },
+            { imageUrl: logo('VORTEX',  88),  altText: 'Vortex Inc'     },
+            { imageUrl: logo('CANOPY',  88),  altText: 'Canopy'         },
+            { imageUrl: logo('ZENITH',  88),  altText: 'Zenith Global'  },
+          ]
+
+          return (
+            <>
+              {/* ── 01: Scroll + Mono + Canvas (compact, default) ─── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">scroll · mono · canvas · compact</code> — default configuration
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'Trusted by industry leaders', logos: LOGOS }}
+                displaySettings={{ motion: 'scroll', treatment: 'mono', background: 'canvas', density: 'compact', size: 'md' }}
+              />
+
+              {/* ── 02: Scroll + Mono + Canvas + glass overlay ─────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">scroll · mono · canvas · glass</code> — frosted panel lift
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'Our integration ecosystem', logos: LOGOS }}
+                displaySettings={{ motion: 'scroll', treatment: 'mono', background: 'canvas', density: 'comfortable', size: 'md', glass: 'true' }}
+              />
+
+              {/* ── 03: Scroll + Color + Surface ───────────────────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">scroll · color · surface · comfortable</code> — full colour logos
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ logos: LOGOS }}
+                displaySettings={{ motion: 'scroll', treatment: 'color', background: 'surface', density: 'comfortable', size: 'lg' }}
+              />
+
+              {/* ── 04: Fade + Mono + Surface ──────────────────────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">fade · mono · surface · spacious</code> — staggered entrance on scroll
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'Built for teams that move fast', logos: LOGOS.slice(0, 6) }}
+                displaySettings={{ motion: 'fade', treatment: 'mono', background: 'surface', density: 'spacious', size: 'md' }}
+              />
+
+              {/* ── 05: Static + Color + Canvas ────────────────────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">static · color · canvas · comfortable</code> — plain grid, no animation
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'Partners we work with', logos: LOGOS }}
+                displaySettings={{ motion: 'static', treatment: 'color', background: 'canvas', density: 'comfortable', size: 'md' }}
+              />
+
+              {/* ── 06: Scroll + Mono + Brand (white logos) ────────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">scroll · mono · brand</code> — on-brand surface, logos rendered white
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'The ecosystem behind OptiTech', logos: LOGOS }}
+                displaySettings={{ motion: 'scroll', treatment: 'mono', background: 'brand', density: 'comfortable', size: 'md' }}
+              />
+
+              {/* ── 07: Empty state (< 3 logos) ─────────────────────── */}
+              <div className="pt-lg px-md lg:px-lg pb-md">
+                <p className="text-label text-fg-muted uppercase tracking-label">
+                  <code className="font-mono text-accent">empty state</code> — fewer than 3 logos show a placeholder
+                </p>
+              </div>
+              <OT_TrustRail
+                content={{ headline: 'Add logos to get started', logos: LOGOS.slice(0, 2) }}
+                displaySettings={{ motion: 'scroll', treatment: 'mono', background: 'canvas', density: 'comfortable' }}
+              />
+            </>
+          )
+        })()}
 
         <div className="pb-xl" />
       </section>

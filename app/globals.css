@@ -122,6 +122,23 @@
   }
 }
 
+/* ── TrustRail marquee ────────────────────────────────────────────────────────
+ * Infinite horizontal scroll. Duration is set via --trust-rail-duration on the
+ * element itself, allowing the React component to tune speed per logo count.
+ * Paused automatically for prefers-reduced-motion (class not applied).
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes trustRailScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-trust-rail-scroll {
+    animation: trustRailScroll var(--trust-rail-duration, 28s) linear infinite;
+    will-change: transform;
+  }
+}
+
 /* ── Grid column spans ───────────────────────────────────────────────────────
  * Row outputs data-bp="sm|md|lg|xl" on its div.
  * Column outputs data-col-span="col1…col12" on its div.
