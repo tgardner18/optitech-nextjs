@@ -18,8 +18,9 @@ export const OT_FooterBlock = contentType({
   key: 'OT_FooterBlock',
   displayName: 'Footer',
   baseType: '_component',
-  // elementEnabled lets the CMS render a preview pane when editing this shared block.
-  compositionBehaviors: ['elementEnabled'],
+  // No compositionBehaviors — this is a singleton managed via ThemeManager.footerRef,
+  // never placed directly in a Visual Builder canvas. elementEnabled is intentionally
+  // absent because the CMS disallows array/component properties on elementEnabled blocks.
   properties: {
     description: {
       type: 'richText',
