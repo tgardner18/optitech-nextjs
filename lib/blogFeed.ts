@@ -7,7 +7,7 @@ export type BlogFeedPost = {
   _metadata: {
     key:       string
     published: string
-    url:       { default: string | null; hierarchical?: string | null }
+    url:       { default: string | null; hierarchical?: string | null; base?: string | null }
   }
   headline:       string
   topic?:         string
@@ -40,7 +40,7 @@ const BLOG_FEED_QUERY = `
         _metadata {
           key
           published
-          url { default hierarchical }
+          url { default hierarchical base }
         }
         headline
         topic
@@ -61,18 +61,23 @@ const BLOG_FEED_QUERY = `
 // ─── Data access ───────────────────────────────────────────────────────────────
 
 /**
- * Fetches all blog posts for `locale`, optionally scoped to a `articleRootPath`
- * prefix. The result is React-cached so multiple Blog Feed blocks on the same
- * page share a single Graph round-trip.
+ * Fetches all blog posts for `locale`, scoped to the current site and
+ * optionally to an `articleRootPath` prefix. The result is React-cached so
+ * multiple Blog Feed blocks on the same page share a single Graph round-trip.
  *
  * @param locale          BCP-47 locale string (e.g. "en", "fr")
  * @param articleRootPath Hierarchical URL of the article root page (e.g.
  *                        "/blog/"). Posts whose hierarchical URL begins with
  *                        this prefix are included. Pass null to include all.
+ * @param siteBaseUrl     Protocol + host of the current site (e.g.
+ *                        "https://example.vercel.app"). Used to filter out
+ *                        posts from other sites sharing the same Graph index.
+ *                        Pass null/undefined to skip site filtering.
  */
 export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
   locale: string,
   articleRootPath: string | null,
+  siteBaseUrl?: string | null,
 ): Promise<BlogFeedResult> {
   try {
     const data = await getClient().request(BLOG_FEED_QUERY, { locale })
@@ -97,6 +102,29 @@ export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
       seen.add(k)
       return true
     })
+
+    // ── Site scoping ─────────────────────────────────────────────────────────
+    // Content Graph indexes all sites in the same tenant. Without scoping,
+    // blog posts from every site would appear in the feed.
+    // Prefer `url.base` (a CMS-provided field containing the site's base URL)
+    // when available; fall back to matching the default URL against siteBaseUrl.
+    if (siteBaseUrl) {
+      const normalizedBase = siteBaseUrl.replace(/\/$/, '')
+      posts = posts.filter(p => {
+        // url.base is the canonical site base URL (e.g. "https://example.com")
+        const base        = p._metadata?.url?.base
+        const defaultUrl  = p._metadata?.url?.default
+        if (typeof base === 'string' && base) {
+          return base.replace(/\/$/, '') === normalizedBase
+        }
+        // Fallback: check whether the post's default URL starts with the site base
+        if (typeof defaultUrl === 'string' && defaultUrl) {
+          return defaultUrl.startsWith(normalizedBase + '/')
+            || defaultUrl === normalizedBase
+        }
+        return true // keep if URL info is absent — better to over-include than drop
+      })
+    }
 
     // Scope to article root when provided.
     // The hierarchical URL looks like "/blog/my-post/" — we filter to items
@@ -128,6 +156,7 @@ export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
           url: {
             default:      p._metadata?.url?.default      ?? null,
             hierarchical: p._metadata?.url?.hierarchical ?? null,
+            base:         p._metadata?.url?.base         ?? null,
           },
         },
         headline:      p.headline      ?? '',

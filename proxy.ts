@@ -120,14 +120,22 @@ export function proxy(request: NextRequest) {
   // ── Rewrite non-default locale paths internally ────────────────────────
   // The catch-all slug handler (/app/(site)/[...slug]/page.tsx) sees the
   // bare path without locale prefix. The x-locale header carries the locale.
+  //
+  // IMPORTANT: server components read headers() from the *request* headers,
+  // not response headers. We must inject x-locale into the forwarded request
+  // headers via the `request` option — setting it on response.headers alone
+  // is invisible to server components.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-locale', detectedLocale)
+
   const response = hasPrefix
     ? NextResponse.rewrite(
         new URL(stripLocalePrefix(pathname), request.url),
-        { request: { headers: new Headers(request.headers) } },
+        { request: { headers: requestHeaders } },
       )
-    : NextResponse.next()
+    : NextResponse.next({ request: { headers: requestHeaders } })
 
-  // Propagate locale via header so server components can read it.
+  // Also expose on response headers for CDN Vary headers and debugging.
   response.headers.set('x-locale', detectedLocale)
 
   // Persist locale cookie on every response (refreshes expiry on navigation).

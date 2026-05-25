@@ -1,5 +1,5 @@
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
-import { getRequestLocale } from '@/lib/optimizely'
+import { getRequestLocale, getRequestBaseUrl } from '@/lib/optimizely'
 import { getBlogFeedPosts }  from '@/lib/blogFeed'
 import BlogFeedBlock         from '@/components/blocks/BlogFeedBlock'
 import type { BlogFeedColor, BlogFeedColumns, BlogFeedHeadingSize } from '@/components/blocks/BlogFeedBlock'
@@ -27,10 +27,13 @@ export default async function OT_BlogFeedBlockAdapter({
 }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  // ── Locale ────────────────────────────────────────────────────────────────
+  // ── Locale + site base URL ────────────────────────────────────────────────
   // getRequestLocale reads the x-locale header set by middleware; falls back
   // to the default locale when called outside a request context (e.g. build).
-  const locale = await getRequestLocale()
+  // getRequestBaseUrl provides the current site's origin for scoping the feed
+  // to only this site's blog posts (Content Graph is shared across all sites).
+  const locale      = await getRequestLocale()
+  const siteBaseUrl = await getRequestBaseUrl()
 
   // ── Article root ──────────────────────────────────────────────────────────
   // The SDK's generated fragment includes _metadata.url.hierarchical for
@@ -47,7 +50,7 @@ export default async function OT_BlogFeedBlockAdapter({
   // ── Fetch posts ───────────────────────────────────────────────────────────
   // React cache() dedups this call if multiple Blog Feed blocks appear on the
   // same page with the same locale + root (e.g. the same locale + no root).
-  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath)
+  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, siteBaseUrl || null)
 
   // ── Display settings ──────────────────────────────────────────────────────
   const color       = String(displaySettings.color       ?? 'canvas')  as BlogFeedColor
