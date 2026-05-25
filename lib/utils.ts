@@ -19,7 +19,7 @@ import { extendTailwindMerge } from "tailwind-merge";
  *   text-color group so they conflict with each other (correct) but NOT with size
  *   or line-height utilities (also correct).
  */
-const twMerge = extendTailwindMerge({
+const twMerge = extendTailwindMerge<'ot-text-size'>({
   extend: {
     classGroups: {
       "ot-text-size": [
