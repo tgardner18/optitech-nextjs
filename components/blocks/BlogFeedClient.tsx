@@ -93,26 +93,41 @@ function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
 // ─── BlogListRow ──────────────────────────────────────────────────────────────
 
 function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
+  const imageUrl  = post.featuredImage?.url?.default
   const postUrl   = post._metadata?.url?.default ?? '#'
   const published = post._metadata?.published
   const topic     = post.topic
   const author    = post.authorRef?.name
 
-  const borderClass  = onBrand ? 'border-fg-on-brand/15'  : 'border-fg/8'
-  const topicClass   = onBrand ? 'text-fg-on-brand/70'    : 'text-accent'
+  const borderClass   = onBrand ? 'border-fg-on-brand/15'  : 'border-fg/8'
+  const topicClass    = onBrand ? 'text-fg-on-brand/70'    : 'text-accent'
   const headlineClass = onBrand ? 'text-fg-on-brand'       : 'text-fg'
-  const metaClass    = onBrand ? 'text-fg-on-brand/55'    : 'text-fg-muted'
-  const arrowClass   = onBrand ? 'text-fg-on-brand/40 group-hover:text-fg-on-brand' : 'text-fg-muted/40 group-hover:text-brand'
+  const metaClass     = onBrand ? 'text-fg-on-brand/55'    : 'text-fg-muted'
+  const arrowClass    = onBrand ? 'text-fg-on-brand/40 group-hover:text-fg-on-brand' : 'text-fg-muted/40 group-hover:text-brand'
 
   return (
     <a
       href={postUrl}
-      className={`group flex items-start gap-md py-lg border-b last:border-b-0 ${borderClass}
+      className={`group flex items-center gap-md py-md border-b last:border-b-0 ${borderClass}
         transition-colors duration-150 ease-quick
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
     >
-      {/* Topic column */}
-      <div className="hidden sm:flex items-center gap-xs w-[130px] shrink-0 mt-[3px]">
+      {/* Thumbnail — only rendered when a featured image is set */}
+      {imageUrl && (
+        <div className="shrink-0 w-20 h-14 sm:w-28 sm:h-18 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="w-full h-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+          />
+        </div>
+      )}
+
+      {/* Topic column — desktop only */}
+      <div className="hidden sm:flex items-center gap-xs w-[130px] shrink-0">
         {topic ? (
           <>
             <span className="block w-1.5 h-1.5 bg-accent flex-none" aria-hidden />
@@ -146,7 +161,7 @@ function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }
       </div>
 
       {/* Arrow */}
-      <div className={`hidden sm:flex items-center shrink-0 mt-1 transition-transform duration-150 group-hover:translate-x-0.5 ${arrowClass}`}>
+      <div className={`hidden sm:flex items-center shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 ${arrowClass}`}>
         <ChevronRight size={18} strokeWidth={1.75} />
       </div>
     </a>
