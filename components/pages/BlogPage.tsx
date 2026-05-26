@@ -17,16 +17,6 @@ const TOPIC_LABELS: Record<string, string> = {
   resources:  'Resources',
 }
 
-const TOPIC_INDEX: Record<string, string> = {
-  news:       '01',
-  insights:   '02',
-  leadership: '03',
-  stories:    '04',
-  innovation: '05',
-  culture:    '06',
-  events:     '07',
-  resources:  '08',
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -463,7 +453,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                     />
                   ) : (
                     <div className="w-full h-full bg-brand/20 flex items-center justify-center">
-                      <span className="text-title font-bold text-brand select-none">
+                      <span className="text-title font-bold text-fg select-none">
                         {initials}
                       </span>
                     </div>
