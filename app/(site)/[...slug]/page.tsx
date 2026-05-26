@@ -8,10 +8,22 @@ import type { PreviewParams } from '@optimizely/cms-sdk'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import BlogPage from '@/components/pages/BlogPage'
 import Script from 'next/script'
+import { DraftStateBanner } from '@/components/preview/DraftStateBanner'
+import { ExternalPreviewLinkPanel } from '@/components/preview/ExternalPreviewLinkPanel'
 
 type Props = {
   params:       Promise<{ slug: string[] }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+// Resolves an absolute or relative URL string to just the pathname.
+function toPathname(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  try {
+    return raw.startsWith('http') ? new URL(raw).pathname : raw
+  } catch {
+    return raw.startsWith('/') ? raw : null
+  }
 }
 
 async function CmsPage({ params, searchParams }: Props) {
@@ -59,12 +71,64 @@ async function CmsPage({ params, searchParams }: Props) {
       const latestPosts = await getLatestBlogPosts(contentKey, locale, baseUrl)
 
       if (blogContent) {
+        // ── Draft mode context ──────────────────────────────────────────────────
+        // ext_preview=1 means this was reached via an External Preview Link
+        // (the reviewer followed the shareable URL, not the CMS editor's own
+        // preview frame). Without this flag, dm.isEnabled means CMS edit mode.
+        const isExternalPreview = dm.isEnabled && sp_str('ext_preview') === '1'
+        const isCmsEdit         = dm.isEnabled && !isExternalPreview
+
+        // ── CMS-side external preview link ──────────────────────────────────────
+        // Shown in the slug route when the CMS editor is viewing the blog page
+        // in draft mode and the content has enableExternalPreview: true.
+        // (Also shown in /preview page via ExternalPreviewLinkPanel — this
+        // covers the case where the CMS opens the draft through the slug URL.)
+        let externalPreviewUrl: string | null = null
+        if (isCmsEdit && blogContent.enableExternalPreview === true) {
+          const contentSlug = toPathname(
+            blogContent._metadata?.url?.hierarchical ??
+            blogContent._metadata?.url?.default
+          ) ?? path
+
+          const qs = new URLSearchParams({
+            preview_token: sp_str('preview_token'),
+            key:           sp_str('key'),
+            ver:           sp_str('ver'),
+            loc:           sp_str('loc') || locale,
+            ctx:           contentSlug,
+            ext_preview:   '1',
+          })
+          if (baseUrl) {
+            externalPreviewUrl = `${baseUrl}/api/draft?${qs}`
+          }
+        }
+        // ───────────────────────────────────────────────────────────────────────
+
         return (
           <>
             {dm.isEnabled && cmsUrl && (
               <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
             )}
             {dm.isEnabled && <PreviewComponent />}
+
+            {/* External reviewer's draft-state banner */}
+            {isExternalPreview && (
+              <DraftStateBanner
+                headline={blogContent.headline ?? ''}
+                topic={blogContent.topic    ?? undefined}
+                version={sp_str('ver')      || undefined}
+                locale={sp_str('loc')       || locale}
+              />
+            )}
+
+            {/* CMS editor's shareable-link panel */}
+            {externalPreviewUrl && (
+              <ExternalPreviewLinkPanel
+                url={externalPreviewUrl}
+                topic={blogContent.topic ?? undefined}
+              />
+            )}
+
             <BlogPage content={blogContent} latestPosts={latestPosts} />
           </>
         )

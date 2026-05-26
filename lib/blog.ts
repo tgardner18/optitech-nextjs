@@ -16,8 +16,9 @@ export type BlogPageContent = {
   _metadata: {
     key: string
     published: string
-    url: { default: string | null }
+    url: { default: string | null; hierarchical?: string | null }
   }
+  enableExternalPreview?: boolean
   headline:      string
   subHeadline?:  string
   topic?:        string
