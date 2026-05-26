@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
   Search, X, Maximize2, Minimize2,
-  FileText, Newspaper, LayoutGrid, Sparkles, Hash,
+  FileText, Newspaper, LayoutGrid, Sparkles, Hash, List,
 } from 'lucide-react'
 import { useSearch } from './SearchProvider'
 import { useTranslation } from '@/lib/i18n/useTranslation'
@@ -14,6 +14,7 @@ import type { SearchResult } from '@/lib/search'
 
 type DisplayMode = 'immersive' | 'compact'
 type TypeFilter  = 'all' | 'Blog' | 'Page'
+type ViewMode    = 'list' | 'card'
 
 const DISPLAY_MODE_KEY  = 'ot-search-mode'
 const SUGGESTED_QUERIES = ['Platform', 'Engineering', 'AI', 'Product', 'Innovation']
@@ -49,8 +50,8 @@ export default function SiteSearch() {
   const [focusedIdx,  setFocusedIdx]  = useState(-1)
   const [mounted,     setMounted]     = useState(false)
   const [semantic,    setSemantic]    = useState(false)
-  // Used to trigger a brief scale-bounce animation on the newly active filter
   const [flashFilter, setFlashFilter] = useState<TypeFilter | null>(null)
+  const [viewMode,    setViewMode]    = useState<ViewMode>('list')
 
   const inputRef    = useRef<HTMLInputElement>(null)
   const resultsRef  = useRef<HTMLElement>(null)
@@ -199,9 +200,11 @@ export default function SiteSearch() {
     exit:    { opacity: 0, transition: { duration: dur(150) } },
   }
 
-  // ─── Type filter buttons with icon + label + count ─────────────────────────
+  // ─── Type filter pills ─────────────────────────────────────────────────────
+  // Rounded pill selectors — filled active state, neutral inactive.
+  // Both modes share the same component; compact adjusts size.
 
-  function TypeFilterButtons({ compact: isCompact }: { compact: boolean }) {
+  function TypeFilterPills({ compact: isCompact }: { compact: boolean }) {
     const countFor = (f: TypeFilter) => {
       if (f === 'all')  return allCount
       if (f === 'Blog') return blogCount
@@ -210,7 +213,7 @@ export default function SiteSearch() {
 
     return (
       <div
-        className={`flex items-center ${isCompact ? 'gap-[6px]' : 'gap-sm'}`}
+        className={`flex items-center flex-wrap ${isCompact ? 'gap-[5px]' : 'gap-xs'}`}
         role="group"
         aria-label={t('search.contentTypeFilter')}
       >
@@ -227,20 +230,26 @@ export default function SiteSearch() {
               aria-pressed={isActive}
               animate={isNew && !prefersReducedMotion ? { scale: [1, 0.92, 1.04, 1] } : { scale: 1 }}
               transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-              whileTap={prefersReducedMotion ? {} : { scale: 0.93 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.94 }}
               className={[
-                'flex items-center gap-[5px] border transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand',
-                isCompact ? 'px-sm py-[7px] text-[11px]' : 'px-md py-[10px] text-[12px]',
+                'flex items-center gap-[5px] rounded-full transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 focus-visible:ring-offset-canvas',
+                isCompact
+                  ? 'px-[10px] py-[5px] text-[10px]'
+                  : 'px-[14px] py-[8px] text-[12px]',
                 isActive
-                  ? 'border-brand/70 bg-brand/10 text-brand shadow-[0_0_0_1px_var(--ot-bloom-brand-border)]'
-                  : 'border-fg/12 bg-transparent text-fg-muted/55 hover:border-fg/28 hover:text-fg-muted hover:bg-fg/4',
+                  ? 'bg-brand text-fg-on-brand shadow-[0_2px_10px_var(--ot-bloom-brand-faint)]'
+                  : 'bg-fg/7 text-fg-muted/65 hover:bg-fg/12 hover:text-fg',
               ].join(' ')}
             >
-              <f.Icon size={isCompact ? 11 : 12} className="shrink-0" />
-              <span className="uppercase tracking-[0.08em] font-semibold">{f.label}</span>
-              {hasSearched && (
-                <span className={`font-bold tabular-nums ${isActive ? 'text-brand' : 'text-fg-muted/35'}`}>
+              <f.Icon size={isCompact ? 10 : 12} className="shrink-0" />
+              <span className="font-semibold uppercase tracking-[0.07em]">{f.label}</span>
+              {hasSearched && count > 0 && (
+                <span className={[
+                  'font-bold tabular-nums',
+                  isCompact ? 'text-[9px]' : 'text-[10px]',
+                  isActive ? 'text-fg-on-brand/80' : 'text-fg-muted/40',
+                ].join(' ')}>
                   {count}
                 </span>
               )}
@@ -248,24 +257,24 @@ export default function SiteSearch() {
           )
         })}
 
-        {/* Semantic / AI search toggle */}
+        {/* Semantic / AI toggle */}
         <motion.button
           type="button"
           onClick={handleSemanticToggle}
           aria-pressed={semantic}
-          whileTap={prefersReducedMotion ? {} : { scale: 0.93 }}
+          whileTap={prefersReducedMotion ? {} : { scale: 0.94 }}
           title={semantic ? t('search.semanticOn') : t('search.semanticOff')}
           className={[
-            'flex items-center gap-[5px] border transition-all duration-200',
-            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand',
-            isCompact ? 'px-sm py-[7px] text-[11px]' : 'px-md py-[10px] text-[12px]',
+            'flex items-center gap-[5px] rounded-full transition-all duration-200',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-canvas',
+            isCompact ? 'px-[10px] py-[5px] text-[10px]' : 'px-[14px] py-[8px] text-[12px]',
             semantic
-              ? 'border-accent/60 bg-accent/8 text-accent'
-              : 'border-fg/12 bg-transparent text-fg-muted/40 hover:border-fg/28 hover:text-fg-muted hover:bg-fg/4',
+              ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
+              : 'bg-fg/7 text-fg-muted/50 hover:bg-fg/12 hover:text-fg',
           ].join(' ')}
         >
-          <Sparkles size={isCompact ? 11 : 12} className="shrink-0" />
-          <span className="uppercase tracking-[0.08em] font-semibold">AI</span>
+          <Sparkles size={isCompact ? 10 : 12} className="shrink-0" />
+          <span className="font-semibold uppercase tracking-[0.07em]">AI</span>
         </motion.button>
       </div>
     )
@@ -288,12 +297,12 @@ export default function SiteSearch() {
               aria-pressed={isActive}
               whileTap={prefersReducedMotion ? {} : { scale: 0.93 }}
               className={[
-                isCompact ? 'px-xs py-[4px] text-[10px]' : 'px-sm py-[5px] text-[11px]',
-                'uppercase tracking-[0.08em] font-semibold border transition-all duration-200',
+                isCompact ? 'px-[9px] py-[4px] text-[10px]' : 'px-sm py-[5px] text-[11px]',
+                'uppercase tracking-[0.08em] font-semibold rounded-full transition-all duration-200',
                 'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand',
                 isActive
-                  ? 'border-brand/50 bg-brand/10 text-brand'
-                  : 'border-fg/10 text-fg-muted/45 hover:border-fg/25 hover:text-fg-muted',
+                  ? 'bg-brand/15 ring-1 ring-brand/30 text-brand'
+                  : 'bg-fg/6 text-fg-muted/50 hover:bg-fg/10 hover:text-fg-muted',
               ].join(' ')}
             >
               {topic}
@@ -328,10 +337,10 @@ export default function SiteSearch() {
               type="button"
               onClick={() => handleQueryChange(s)}
               className={[
-                'px-sm py-[6px] text-[12px]',
+                'px-sm py-[6px] text-[12px] rounded-full',
                 'uppercase tracking-[0.08em] font-medium',
-                'border border-fg/8 text-fg-muted/45',
-                'hover:border-brand/35 hover:text-brand/70',
+                'bg-fg/6 text-fg-muted/50',
+                'hover:bg-brand/10 hover:text-brand',
                 'transition-all duration-150 focus-visible:outline-none',
               ].join(' ')}
             >
@@ -359,7 +368,7 @@ export default function SiteSearch() {
     )
   }
 
-  // ─── Result item ───────────────────────────────────────────────────────────
+  // ─── Result item — list row ────────────────────────────────────────────────
 
   function ResultItem({ result, index, compact: isCompact }: {
     result:  SearchResult
@@ -407,7 +416,6 @@ export default function SiteSearch() {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {/* Meta row */}
             <div className="flex items-center gap-[6px] flex-wrap mb-[5px]">
               <span className={`text-[10px] uppercase tracking-[0.1em] font-bold ${result.type === 'Blog' ? 'text-brand' : 'text-fg-muted/60'}`}>
                 {result.type}
@@ -428,7 +436,6 @@ export default function SiteSearch() {
               )}
             </div>
 
-            {/* Title */}
             <p className={[
               'font-semibold text-fg leading-snug line-clamp-2',
               'group-hover:text-brand group-focus-visible:text-brand transition-colors duration-150',
@@ -437,7 +444,6 @@ export default function SiteSearch() {
               {result.title}
             </p>
 
-            {/* Excerpt */}
             {result.excerpt && (
               <p className={`text-fg-muted leading-relaxed mt-[4px] line-clamp-2 ${isCompact ? 'text-[12px]' : 'text-[14px]'}`}>
                 {result.excerpt}
@@ -459,7 +465,81 @@ export default function SiteSearch() {
     )
   }
 
-  // ─── Immersive panel — single-column, centered ────────────────────────────
+  // ─── Result card — card grid view (immersive only) ─────────────────────────
+
+  function ResultCard({ result, index }: { result: SearchResult; index: number }) {
+    const date      = formatDate(result.published)
+    const isFocused = focusedIdx === index
+
+    return (
+      <li>
+        <button
+          data-result-item
+          tabIndex={isFocused ? 0 : -1}
+          type="button"
+          onClick={() => handleResultClick(result.url)}
+          className={[
+            'group w-full text-left overflow-hidden',
+            'border border-fg/8',
+            'hover:border-brand/30 hover:shadow-[0_4px_24px_var(--ot-bloom-brand-faint)]',
+            'focus-visible:outline-none focus-visible:border-brand/40',
+            'transition-all duration-200',
+            isFocused ? 'border-brand/30 shadow-[0_4px_24px_var(--ot-bloom-brand-faint)]' : '',
+          ].join(' ')}
+        >
+          {/* Thumbnail */}
+          <div className="aspect-video w-full overflow-hidden bg-surface/60 flex items-center justify-center">
+            {result.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={result.imageUrl}
+                alt=""
+                loading="lazy"
+                className="w-full h-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                {result.type === 'Blog'
+                  ? <Newspaper size={28} className="text-fg-muted/18" />
+                  : <FileText  size={28} className="text-fg-muted/18" />}
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="px-md pt-md pb-lg">
+            <div className="flex items-center gap-[6px] flex-wrap mb-[6px]">
+              <span className={`text-[10px] uppercase tracking-[0.1em] font-bold ${result.type === 'Blog' ? 'text-brand' : 'text-fg-muted/60'}`}>
+                {result.type}
+              </span>
+              {result.topic && (
+                <>
+                  <span className="text-fg/15">·</span>
+                  <span className="text-[10px] uppercase tracking-[0.08em] font-semibold text-fg-muted/55">
+                    {result.topic}
+                  </span>
+                </>
+              )}
+            </div>
+            <p className={[
+              'font-semibold text-fg leading-snug line-clamp-3 text-[17px]',
+              'group-hover:text-brand group-focus-visible:text-brand transition-colors duration-150',
+            ].join(' ')}>
+              {result.title}
+            </p>
+            {result.excerpt && (
+              <p className="text-fg-muted text-[13px] leading-relaxed mt-[6px] line-clamp-2">
+                {result.excerpt}
+              </p>
+            )}
+            {date && <p className="text-[10px] text-fg-muted/40 mt-sm">{date}</p>}
+          </div>
+        </button>
+      </li>
+    )
+  }
+
+  // ─── Immersive panel ───────────────────────────────────────────────────────
 
   function ImmersivePanel() {
     const resultCount = filteredResults.length
@@ -470,30 +550,25 @@ export default function SiteSearch() {
     return (
       <div className="flex flex-col h-full overflow-hidden">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-md lg:px-2xl py-2.5 border-b border-fg/8 shrink-0">
-          <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-fg-muted/35 select-none">
-            OptiTech Search
-          </span>
-          <div className="flex items-center gap-xs">
-            <button
-              type="button"
-              onClick={toggleMode}
-              aria-label={t('search.compact')}
-              className="flex items-center gap-1.25 px-sm py-1.75 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
-            >
-              <Minimize2 size={16} />
-              <span className="text-[10px] uppercase tracking-[0.08em] font-semibold hidden sm:inline">Compact</span>
-            </button>
-            <button
-              type="button"
-              onClick={closeSearch}
-              aria-label={t('search.close')}
-              className="flex items-center justify-center w-9 h-9 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
-            >
-              <X size={20} />
-            </button>
-          </div>
+        {/* Top bar — controls only, no "OptiTech Search" wordmark */}
+        <div className="flex items-center justify-end px-md lg:px-2xl py-2.5 border-b border-fg/8 shrink-0 gap-xs">
+          <button
+            type="button"
+            onClick={toggleMode}
+            aria-label={t('search.compact')}
+            className="flex items-center gap-1.25 px-sm py-1.75 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+          >
+            <Minimize2 size={16} />
+            <span className="text-[10px] uppercase tracking-[0.08em] font-semibold hidden sm:inline">Compact</span>
+          </button>
+          <button
+            type="button"
+            onClick={closeSearch}
+            aria-label={t('search.close')}
+            className="flex items-center justify-center w-9 h-9 border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Scrollable body */}
@@ -556,9 +631,43 @@ export default function SiteSearch() {
               )}
             </div>
 
-            {/* Filter buttons */}
-            <div className="flex items-center flex-wrap gap-sm mb-md">
-              {TypeFilterButtons({ compact: false })}
+            {/* Filter pills + view toggle */}
+            <div className="flex items-center flex-wrap gap-sm justify-between mb-md">
+              {TypeFilterPills({ compact: false })}
+
+              {/* List / card view toggle */}
+              <div className="flex items-center gap-[2px] ml-auto" role="group" aria-label="View mode">
+                <button
+                  type="button"
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'list'}
+                  onClick={() => setViewMode('list')}
+                  className={[
+                    'p-[7px] rounded-full transition-colors duration-150',
+                    'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-1',
+                    viewMode === 'list'
+                      ? 'text-brand bg-brand/10'
+                      : 'text-fg-muted/40 hover:text-fg-muted hover:bg-fg/6',
+                  ].join(' ')}
+                >
+                  <List size={16} strokeWidth={1.75} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Card view"
+                  aria-pressed={viewMode === 'card'}
+                  onClick={() => setViewMode('card')}
+                  className={[
+                    'p-[7px] rounded-full transition-colors duration-150',
+                    'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-1',
+                    viewMode === 'card'
+                      ? 'text-brand bg-brand/10'
+                      : 'text-fg-muted/40 hover:text-fg-muted hover:bg-fg/6',
+                  ].join(' ')}
+                >
+                  <LayoutGrid size={16} strokeWidth={1.75} />
+                </button>
+              </div>
             </div>
 
             {/* Topic chips */}
@@ -595,11 +704,19 @@ export default function SiteSearch() {
                     <span className="ml-sm text-accent/70"> · {t('search.aiRanked')}</span>
                   )}
                 </p>
-                <ul>
-                  {filteredResults.map((result, i) =>
-                    ResultItem({ result, index: i, compact: false })
-                  )}
-                </ul>
+                {viewMode === 'list' ? (
+                  <ul>
+                    {filteredResults.map((result, i) =>
+                      ResultItem({ result, index: i, compact: false })
+                    )}
+                  </ul>
+                ) : (
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
+                    {filteredResults.map((result, i) =>
+                      ResultCard({ result, index: i })
+                    )}
+                  </ul>
+                )}
               </>
             )}
 
@@ -621,19 +738,14 @@ export default function SiteSearch() {
         }}
       >
 
-        {/* Header row */}
+        {/* Header row — brand bar indicator replaces hollow wordmark */}
         <div className="flex items-center justify-between px-md pt-[14px] pb-[10px] border-b border-fg/8 shrink-0">
-          <span
-            className="syne-hollow font-syne font-black select-none leading-none"
-            aria-hidden
-            style={{
-              fontSize:              '1.625rem',
-              letterSpacing:         '-0.03em',
-              fontVariationSettings: "'wght' 500",
-            }}
-          >
-            SEARCH
-          </span>
+          <div className="flex items-center gap-[8px]" aria-hidden>
+            <span className="block w-[3px] h-[16px] bg-brand rounded-full" />
+            <span className="text-[11px] uppercase tracking-[0.13em] font-bold text-fg-muted/45 select-none">
+              SEARCH
+            </span>
+          </div>
           <div className="flex items-center gap-[2px]">
             <button
               type="button"
@@ -689,10 +801,10 @@ export default function SiteSearch() {
           )}
         </div>
 
-        {/* Filter row */}
+        {/* Filter row — compact pills */}
         <div className="px-md py-[9px] border-b border-fg/8 shrink-0 overflow-x-auto">
-          <div className="flex items-center gap-[6px] min-w-max">
-            {TypeFilterButtons({ compact: true })}
+          <div className="flex items-center gap-[5px] min-w-max">
+            {TypeFilterPills({ compact: true })}
           </div>
         </div>
 
@@ -725,7 +837,7 @@ export default function SiteSearch() {
                     key={s}
                     type="button"
                     onClick={() => handleQueryChange(s)}
-                    className="px-sm py-[5px] text-[11px] uppercase tracking-[0.08em] font-medium border border-fg/8 text-fg-muted/45 hover:border-brand/35 hover:text-brand/70 transition-all"
+                    className="px-sm py-[5px] text-[11px] uppercase tracking-[0.08em] font-medium rounded-full bg-fg/6 text-fg-muted/50 hover:bg-brand/10 hover:text-brand transition-all duration-150"
                   >
                     {s}
                   </button>

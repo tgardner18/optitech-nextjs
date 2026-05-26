@@ -754,10 +754,10 @@ body {
   }
 }
 
-/* ── Blog: Impact — hollow Syne display type, accent extrude + ambient halo ──
- * Outline-only letterforms using -webkit-text-stroke in the accent (signal
- * green). A hard 2-step diagonal shadow in progressively darkened accent
- * creates a retro letterpress / risograph depth effect at display scale.
+/* ── Blog: Impact — hollow Syne display type, brand extrude + ambient halo ───
+ * Outline-only letterforms using -webkit-text-stroke in the brand colour.
+ * A hard 2-step diagonal shadow in progressively darkened brand creates a
+ * retro letterpress / risograph depth effect at display scale.
  * The faint radial halo keeps the letterforms glowing on the dark canvas.
  * blog-impact-index is the ghost ordinal watermark behind the headline.
  * blog-impact-ruled-bg lays a faint horizontal rule grid over the header.
@@ -769,13 +769,13 @@ body {
   line-height: 0.88;
   letter-spacing: -0.04em;
   color: transparent;
-  -webkit-text-stroke: 2px var(--ot-accent);
+  -webkit-text-stroke: 2px var(--ot-brand);
   paint-order: stroke fill;
   text-shadow:
-    3px  3px  0    oklch(from var(--ot-accent) calc(l * 0.52) c h),
-    6px  6px  0    oklch(from var(--ot-accent) calc(l * 0.35) c h / 0.72),
-    0    0    80px oklch(from var(--ot-accent) l c h / 0.18),
-    0    0   180px oklch(from var(--ot-accent) l c h / 0.08);
+    3px  3px  0    oklch(from var(--ot-brand) calc(l * 0.52) c h),
+    6px  6px  0    oklch(from var(--ot-brand) calc(l * 0.35) c h / 0.72),
+    0    0    80px oklch(from var(--ot-brand) l c h / 0.28),
+    0    0   180px oklch(from var(--ot-brand) l c h / 0.12);
 }
 
 .blog-impact-index {
