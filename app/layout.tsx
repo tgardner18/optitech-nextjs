@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Geist_Mono, Poppins, Monoton } from "next/font/google";
+import { Geist_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";
 import Script from 'next/script'
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -14,10 +14,11 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
-const monoton = Monoton({
+const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
-  weight: "400", // Monoton is a single-weight display font
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -47,7 +48,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${poppins.variable} ${geistMono.variable} ${monoton.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

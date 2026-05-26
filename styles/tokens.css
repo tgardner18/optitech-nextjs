@@ -39,7 +39,7 @@
   /* ── Typography ─────────────────────────────────────────────────────────── */
   --ot-font-sans: var(--font-poppins), system-ui, sans-serif;
   --ot-font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --ot-font-syne: var(--font-syne), system-ui, sans-serif; /* Monoton — geometric display */
+  --ot-font-syne: var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
 
   /* Scale */
   --ot-text-display:  clamp(3rem, 8vw, 6rem);

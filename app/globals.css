@@ -232,10 +232,16 @@ body {
   font-family: var(--ot-font-sans);
 }
 
-/* Monoton hollow: wire letterforms — transparent fill, brand stroke */
+/* Syne hollow: wire letterforms — transparent fill, accent stroke + hard stepped extrude.
+   The two-step shadow in darkened accent creates a retro letterpress / risograph offset
+   feel without sacrificing legibility of the outline. */
 .syne-hollow {
-  -webkit-text-stroke: 2px var(--ot-brand);
   color: transparent;
+  -webkit-text-stroke: 1.5px var(--ot-accent);
+  paint-order: stroke fill;
+  text-shadow:
+    2px 2px 0 oklch(from var(--ot-accent) calc(l * 0.52) c h),
+    4px 4px 0 oklch(from var(--ot-accent) calc(l * 0.35) c h / 0.65);
 }
 
 /* Display gradient fills — use once per composition, display scale only.
@@ -748,9 +754,11 @@ body {
   }
 }
 
-/* ── Blog: Impact — hollow Monoton display type with ambient glow ────────────
- * Outline-only letterforms using -webkit-text-stroke. The glow text-shadow
- * halo creates ambient brand light radiating from the stroke edges.
+/* ── Blog: Impact — hollow Syne display type, accent extrude + ambient halo ──
+ * Outline-only letterforms using -webkit-text-stroke in the accent (signal
+ * green). A hard 2-step diagonal shadow in progressively darkened accent
+ * creates a retro letterpress / risograph depth effect at display scale.
+ * The faint radial halo keeps the letterforms glowing on the dark canvas.
  * blog-impact-index is the ghost ordinal watermark behind the headline.
  * blog-impact-ruled-bg lays a faint horizontal rule grid over the header.
  * ─────────────────────────────────────────────────────────────────────────── */
@@ -761,11 +769,13 @@ body {
   line-height: 0.88;
   letter-spacing: -0.04em;
   color: transparent;
-  -webkit-text-stroke: 2px var(--ot-brand);
+  -webkit-text-stroke: 2px var(--ot-accent);
   paint-order: stroke fill;
   text-shadow:
-    0 0 80px  oklch(from var(--ot-brand) l c h / 0.28),
-    0 0 180px oklch(from var(--ot-brand) l c h / 0.12);
+    3px  3px  0    oklch(from var(--ot-accent) calc(l * 0.52) c h),
+    6px  6px  0    oklch(from var(--ot-accent) calc(l * 0.35) c h / 0.72),
+    0    0    80px oklch(from var(--ot-accent) l c h / 0.18),
+    0    0   180px oklch(from var(--ot-accent) l c h / 0.08);
 }
 
 .blog-impact-index {
