@@ -21,6 +21,7 @@ import { OT_LandingRowSlider }        from '@/cms/display-templates/OT_LandingRo
 import { OT_LandingColumn }           from '@/cms/display-templates/OT_LandingColumn'
 import { OptiFormsContainerDefault }  from '@/cms/display-templates/OptiFormsContainer'
 import { OT_BlogFeedDefault }         from '@/cms/display-templates/OT_BlogFeedDefault'
+import { OT_AccordionDefault }        from '@/cms/display-templates/OT_AccordionDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -50,6 +51,8 @@ import { OT_BlogPage }          from '@/cms/content-types/OT_BlogPage'
 import { OT_FolderPage }        from '@/cms/content-types/OT_FolderPage'
 import { ImageMedia }           from '@/cms/content-types/ImageMedia'
 import { OT_BlogFeedBlock }     from '@/cms/content-types/OT_BlogFeedBlock'
+import { OT_AccordionItem }    from '@/cms/content-types/OT_AccordionItem'
+import { OT_AccordionBlock }   from '@/cms/content-types/OT_AccordionBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -84,6 +87,7 @@ import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
 import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
 import ImageMediaAdapter          from '@/cms/components/ImageMedia'
 import OT_BlogFeedBlockAdapter    from '@/cms/components/OT_BlogFeedBlock'
+import OT_AccordionBlockAdapter   from '@/cms/components/OT_AccordionBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -122,6 +126,7 @@ initDisplayTemplateRegistry([
   OT_LandingColumn,
   OptiFormsContainerDefault,
   OT_BlogFeedDefault,
+  OT_AccordionDefault,
 ])
 
 initContentTypeRegistry([
@@ -151,6 +156,8 @@ initContentTypeRegistry([
   OT_FolderPage,
   ImageMedia,
   OT_BlogFeedBlock,
+  OT_AccordionItem,
+  OT_AccordionBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -187,6 +194,7 @@ initReactComponentRegistry({
     OT_FolderPage:       OT_FolderPageAdapter,
     ImageMedia:          ImageMediaAdapter,
     OT_BlogFeedBlock:    OT_BlogFeedBlockAdapter,
+    OT_AccordionBlock:   OT_AccordionBlockAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;
     // '_Row' and '_Column' are the fixed registry keys OptimizelyGridSection resolves.
     BlankSection:       BlankSectionAdapter,

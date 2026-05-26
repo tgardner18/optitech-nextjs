@@ -25,6 +25,7 @@ export const BLOCK_SECTIONS: NavSection[] = [
   { id: 'card-block',         label: 'Card' },
   { id: 'stat-block',         label: 'Stat Block' },
   { id: 'feature-grid-block', label: 'Feature Grid' },
+  { id: 'accordion-block',    label: 'Accordion' },
 ]
 
 /** Matches the section `id=` attributes in app/(site)/showcase/tokens/page.tsx */

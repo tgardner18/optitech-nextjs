@@ -139,6 +139,42 @@
   }
 }
 
+/* ── AccordionBlock ──────────────────────────────────────────────────────────
+ * Uses grid-template-rows (0fr ↔ 1fr) instead of height to avoid animating
+ * a layout property. Content element is a grid; inner wrapper has min-h-0.
+ * Kinetic ease (expo-out) — same curve used for all block entrances.
+ * The motion-safe: Tailwind modifier in the component gates these classes.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes accordionOpen {
+  from { grid-template-rows: 0fr; }
+  to   { grid-template-rows: 1fr; }
+}
+
+@keyframes accordionClose {
+  from { grid-template-rows: 1fr; }
+  to   { grid-template-rows: 0fr; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-accordion-open {
+    animation: accordionOpen 0.32s var(--ot-ease-kinetic) forwards;
+  }
+  .animate-accordion-close {
+    animation: accordionClose 0.26s var(--ot-ease-quick) forwards;
+  }
+}
+
+/* Grid container must be declared unconditionally — the animation targets it */
+[data-radix-accordion-content] {
+  display: grid;
+}
+[data-radix-accordion-content][data-state='open'] {
+  grid-template-rows: 1fr;
+}
+[data-radix-accordion-content][data-state='closed'] {
+  grid-template-rows: 0fr;
+}
+
 /* ── Grid column spans ───────────────────────────────────────────────────────
  * Row outputs data-bp="sm|md|lg|xl" on its div.
  * Column outputs data-col-span="col1…col12" on its div.

@@ -15,6 +15,7 @@ import OT_TrustRail            from "@/cms/components/OT_TrustRail";
 import Button from "@/components/ui/Button";
 import { ArrowRight, Zap, ChevronRight, Play, Download, Sparkles, Send, Rocket, Star, Plus } from "lucide-react";
 import BlogFeedBlock from "@/components/blocks/BlogFeedBlock";
+import OT_AccordionBlock from "@/cms/components/OT_AccordionBlock";
 import type { BlogFeedPost } from "@/lib/blogFeed";
 
 export const metadata: Metadata = {
@@ -2682,6 +2683,167 @@ export default function ShowcaseBlocksPage() {
           </>
         )
       })()}
+
+      {/* ════════════════════════════════════════════════════
+          ACCORDION BLOCK
+      ═══════════════════════════════════════════════════ */}
+      <BlockGroup
+        id="accordion-block"
+        label="Accordion Block"
+        description="Expandable content for FAQ, disclosure, and structured Q&A. Uses Radix UI Accordion for keyboard navigation and ARIA semantics. Border style, open mode (single / multiple), and color scheme are display template settings. Min 2 items, max 12."
+      />
+
+      <section id="accordion-block" className="border-t border-fg/5">
+        <div className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="12 · Accordion" title="AccordionBlock" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            Three border styles, three color schemes, single and multiple open modes, and an optional
+            default-open first item. All display settings map 1:1 to CMS display template choices.
+          </p>
+        </div>
+
+        {/* ── Border styles ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Border styles · canvas · single open
+          </p>
+        </div>
+
+        <div className="border-t border-fg/5">
+          <div className="px-md pt-sm pb-xs lg:px-lg">
+            <span className="font-mono text-label text-fg-muted/50">borderStyle: "ruled" — horizontal separator lines (default)</span>
+          </div>
+          <OT_AccordionBlock
+            content={{
+              eyebrow: 'FAQ',
+              headline: 'Common questions.',
+              items: [
+                { question: 'How does OptiTech pricing work?', answer: 'Pricing scales with usage. You pay for active flag evaluations and experiment impressions — not seat licences. Every plan includes unlimited environments, feature flags, and team members. Overages are billed monthly at a predictable per-unit rate.' },
+                { question: 'Can I run experiments on the server side?', answer: 'Yes. The Node.js SDK evaluates flags and assigns experiment variants server-side — before any HTML is rendered. This eliminates flicker, works with SSR and edge functions, and gives you clean statistical separation from client-side rendering differences.' },
+                { question: 'How does statistical significance work in OptiTech?', answer: 'OptiTech uses a sequential testing framework so you can check results continuously without inflating your false-positive rate. You set a minimum detectable effect and a confidence threshold upfront; the platform signals when you have enough data to act.' },
+                { question: 'What happens to running experiments during a deployment?', answer: 'Flag state and variant assignments are persisted independently of your deployment pipeline. A deployment does not flush sessions or re-randomise users. Your in-flight experiments continue running and accumulating data across deploys.' },
+                { question: 'Is there a free tier available?', answer: 'Yes. The Developer plan is free forever, includes up to 100,000 monthly flag evaluations, unlimited feature flags, and two environments. No credit card required.' },
+              ],
+            }}
+            displaySettings={{ color: 'canvas', borderStyle: 'ruled', openMode: 'single', defaultOpen: 'false' }}
+          />
+        </div>
+
+        <div className="border-t border-fg/5">
+          <div className="px-md pt-sm pb-xs lg:px-lg">
+            <span className="font-mono text-label text-fg-muted/50">borderStyle: "boxed" — each item fully bordered</span>
+          </div>
+          <OT_AccordionBlock
+            content={{
+              eyebrow: 'How it works',
+              items: [
+                { question: 'How do I connect my existing CI/CD pipeline?', answer: 'OptiTech provides native integrations for GitHub Actions, GitLab CI, CircleCI, and Jenkins. Install the CLI as a build step; it reads flag state from your repository and gates deployments on experiment data. Setup takes under 10 minutes for most teams.' },
+                { question: 'What data does OptiTech collect?', answer: 'OptiTech collects anonymous event data: flag evaluation results, experiment impressions, and conversion events you instrument. No PII is collected by default. All data is processed in-region and you retain full ownership. GDPR and CCPA compliance tooling is included on every plan.' },
+                { question: 'Can I import data from a previous experimentation platform?', answer: 'Yes. The migration toolkit supports imports from LaunchDarkly, Split, Optimizely Full Stack, and Statsig. Historical experiment data is preserved; flag configurations are converted automatically. A migration assistant is available for complex setups.' },
+                { question: 'How does the SDK handle offline or degraded network conditions?', answer: 'The SDK ships with a local flag cache and a built-in fallback resolver. If the OptiTech edge cannot be reached, flags resolve against the last known state. You define default values per flag at initialisation; they activate only when the cache is cold and the network is unavailable.' },
+              ],
+            }}
+            displaySettings={{ color: 'canvas', borderStyle: 'boxed', openMode: 'single', defaultOpen: 'false' }}
+          />
+        </div>
+
+        <div className="border-t border-fg/5">
+          <div className="px-md pt-sm pb-xs lg:px-lg">
+            <span className="font-mono text-label text-fg-muted/50">borderStyle: "clean" — spacing only, no borders</span>
+          </div>
+          <OT_AccordionBlock
+            content={{
+              items: [
+                { question: 'Does OptiTech support multi-variate experiments?', answer: 'Yes. You can configure up to eight variants per experiment, each with independent traffic allocation. The results dashboard surfaces per-variant lift against baseline and shows pairwise confidence intervals so you can identify which variant outperforms the others, not just whether any variant wins.' },
+                { question: 'What metrics can I use as experiment goals?', answer: 'Any event you instrument can be a goal metric. OptiTech ships with computed metrics for revenue, retention, session depth, and page performance. Custom metrics accept any numeric value and support sum, mean, and ratio aggregations. You can attach multiple metrics to a single experiment and designate primary versus guardrail goals.' },
+                { question: 'How do I prevent experiment interactions?', answer: 'OptiTech maintains an exclusion layer. You can declare mutual exclusion between any two experiments, which prevents the same user from entering both. For experiments that must run in the same traffic pool, the platform models interaction effects and surfaces them in the results view.' },
+              ],
+            }}
+            displaySettings={{ color: 'canvas', borderStyle: 'clean', openMode: 'single', defaultOpen: 'false' }}
+          />
+        </div>
+
+        {/* ── Color schemes ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Color schemes · ruled · single open
+          </p>
+        </div>
+
+        {(["canvas", "surface", "brand"] as const).map((color) => (
+          <div key={color} className="border-t border-fg/5">
+            <div className="px-md pt-sm pb-xs lg:px-lg">
+              <span className="font-mono text-label text-fg-muted/50">color: "{color}"</span>
+            </div>
+            <OT_AccordionBlock
+              content={{
+                eyebrow: 'Support',
+                headline: color === 'brand' ? 'Answers for every team.' : undefined,
+                items: [
+                  { question: 'Is there an enterprise SLA available?', answer: 'Yes. Enterprise plans include a 99.99% uptime SLA with sub-100ms p99 evaluation latency, a dedicated support engineer, and 24/7 incident response. Custom data residency regions, single-tenant deployment, and MSA agreements are available.' },
+                  { question: 'How long are experiment results retained?', answer: 'Results are retained for 24 months on all plans. Raw event data is retained for 90 days and can be exported to your data warehouse at any time using the Snowflake, BigQuery, or Redshift connectors included on Growth and Enterprise plans.' },
+                  { question: 'Does OptiTech support A/A testing?', answer: 'Yes. A/A tests verify that your experiment infrastructure is working correctly before you run consequential experiments. OptiTech makes it a one-click configuration; results show the expected null result distribution and flag any statistically anomalous variance in your assignment pipeline.' },
+                ],
+              }}
+              displaySettings={{ color, borderStyle: 'ruled', openMode: 'single', defaultOpen: color === 'brand' ? 'true' : 'false' }}
+            />
+          </div>
+        ))}
+
+        {/* ── Open mode ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Open mode · surface · boxed
+          </p>
+        </div>
+
+        <div className="border-t border-fg/5">
+          <div className="px-md pt-sm pb-xs lg:px-lg">
+            <span className="font-mono text-label text-fg-muted/50">openMode: "single" — one item open at a time</span>
+          </div>
+          <OT_AccordionBlock
+            content={{
+              items: [
+                { question: 'Can I use OptiTech without a backend SDK?', answer: 'Yes. The JavaScript edge SDK evaluates flags at the CDN layer — no backend required. It runs on Vercel Edge, Cloudflare Workers, and any V8-compatible runtime. For client-only deployments, the browser SDK fetches a pre-evaluated flag bundle so no evaluation logic runs in the browser.' },
+                { question: 'What languages does the SDK support?', answer: 'OptiTech ships first-party SDKs for Node.js, Python, Go, Java, Ruby, and .NET. The browser SDK targets TypeScript and JavaScript. React, Vue, and SvelteKit integration packages are maintained separately and provide hook-based APIs for component-level flag evaluation.' },
+                { question: 'How do I roll back a flag in production?', answer: 'Open the flag in the dashboard and toggle it off — the change propagates to the edge in under 500ms. Alternatively, use the API or CLI: `optitech flags off <flag-key> --env production`. You can also configure automatic rollback rules that trigger on a metric threshold breach.' },
+              ],
+            }}
+            displaySettings={{ color: 'surface', borderStyle: 'boxed', openMode: 'single', defaultOpen: 'false' }}
+          />
+        </div>
+
+        <div className="border-t border-fg/5">
+          <div className="px-md pt-sm pb-xs lg:px-lg">
+            <span className="font-mono text-label text-fg-muted/50">openMode: "multiple" — items open independently</span>
+          </div>
+          <OT_AccordionBlock
+            content={{
+              items: [
+                { question: 'Can I use OptiTech without a backend SDK?', answer: 'Yes. The JavaScript edge SDK evaluates flags at the CDN layer — no backend required. It runs on Vercel Edge, Cloudflare Workers, and any V8-compatible runtime. For client-only deployments, the browser SDK fetches a pre-evaluated flag bundle so no evaluation logic runs in the browser.' },
+                { question: 'What languages does the SDK support?', answer: 'OptiTech ships first-party SDKs for Node.js, Python, Go, Java, Ruby, and .NET. The browser SDK targets TypeScript and JavaScript. React, Vue, and SvelteKit integration packages are maintained separately and provide hook-based APIs for component-level flag evaluation.' },
+                { question: 'How do I roll back a flag in production?', answer: 'Open the flag in the dashboard and toggle it off — the change propagates to the edge in under 500ms. Alternatively, use the API or CLI: `optitech flags off <flag-key> --env production`. You can also configure automatic rollback rules that trigger on a metric threshold breach.' },
+              ],
+            }}
+            displaySettings={{ color: 'surface', borderStyle: 'boxed', openMode: 'multiple', defaultOpen: 'true' }}
+          />
+        </div>
+
+        {/* ── Empty state ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Empty state · fewer than 2 items
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_AccordionBlock
+            content={{ items: [{ question: 'Only one item', answer: 'Not enough to render.' }] }}
+            displaySettings={{ color: 'canvas', borderStyle: 'ruled', openMode: 'single', defaultOpen: 'false' }}
+          />
+        </div>
+
+        <div className="pb-xl" />
+      </section>
 
     </>
   );
