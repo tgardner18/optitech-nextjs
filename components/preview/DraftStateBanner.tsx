@@ -132,29 +132,16 @@ export function DraftStateBanner({ headline, topic, version, locale, authorName 
           exit={{ opacity: 0, y: 8 }}
           transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.24 }}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-sm px-md py-2 bg-surface/95 backdrop-blur-sm border border-fg/10 shadow-[0_4px_20px_oklch(0_0_0/0.28)] hover:border-fg/20 transition-colors group"
+          className="fixed bottom-6 left-6 z-[9999] flex items-center gap-sm px-md py-2 bg-brand text-fg-on-brand shadow-[0_4px_20px_var(--ot-bloom-brand-faint),0_0_0_1px_var(--ot-bloom-brand-border)] hover:bg-brand-hover hover:shadow-[0_6px_28px_var(--ot-bloom-brand-ring),0_0_0_1px_var(--ot-bloom-brand-ring)] transition-all duration-200"
           aria-label="Show draft preview notice"
         >
-          {/* Amber indicator dot */}
-          <span
-            className="shrink-0 w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: DRAFT_AMBER }}
-            aria-hidden
-          />
-
           {/* Label */}
-          <span
-            className="text-label uppercase tracking-label font-semibold"
-            style={{ color: DRAFT_AMBER }}
-          >
+          <span className="text-label uppercase tracking-label font-semibold">
             Draft Preview
           </span>
 
           {/* Icon */}
-          <FileEdit
-            className="w-3.5 h-3.5 text-fg-muted/50 group-hover:text-fg-muted transition-colors"
-            aria-hidden
-          />
+          <FileEdit className="w-3.5 h-3.5 opacity-70" aria-hidden />
         </motion.button>
 
       )}
