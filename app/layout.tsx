@@ -36,10 +36,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const domain      = await getRequestDomain()
-  const settings    = await getSiteSettings(domain)
+  const locale      = await getRequestLocale()
+  const settings    = await getSiteSettings(domain, locale)
   const themeCSS    = buildThemeCSS(settings)
   const defaultMode = (settings?.defaultMode as string | undefined) === 'light' ? 'light' : 'dark'
-  const locale      = await getRequestLocale()
 
   return (
     <html

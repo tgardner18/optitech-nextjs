@@ -155,7 +155,17 @@ export async function getAuthorName(key: string): Promise<string | null> {
 export async function getBlogPage(key: string, locale = 'en'): Promise<BlogPageContent | null> {
   try {
     const data = await getClient().request(BLOG_PAGE_QUERY, { key, locale })
-    const item = (data as any)?.OT_BlogPage?.items?.[0] ?? null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let item = (data as any)?.OT_BlogPage?.items?.[0] ?? null
+
+    // No translation for the requested locale — fall back to English so the
+    // page renders with default-locale content rather than 404-ing.
+    if (!item && locale !== 'en') {
+      const fallback = await getClient().request(BLOG_PAGE_QUERY, { key, locale: 'en' })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      item = (fallback as any)?.OT_BlogPage?.items?.[0] ?? null
+    }
+
     if (!item) return null
 
     // authorRef is a ContentReference — item resolver returns "Data" for

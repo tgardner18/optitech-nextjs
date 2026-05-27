@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getSiteSettings, getRequestDomain } from '@/lib/optimizely'
+import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 import { SectionLabel } from '../components'
 import ThemePreviewContent from '@/components/theme/ThemePreviewContent'
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ThemePreviewPage() {
-  const settings = await getSiteSettings(await getRequestDomain())
+  const settings = await getSiteSettings(await getRequestDomain(), await getRequestLocale())
 
   return (
     <>

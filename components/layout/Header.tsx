@@ -67,8 +67,8 @@ function normalizeNavHref(
 
 export default async function Header() {
   const domain   = await getRequestDomain()
-  const settings = await getSiteSettings(domain)
   const locale   = await getRequestLocale()
+  const settings = await getSiteSettings(domain, locale)
 
   const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
   const logoAlt        = settings?.logoAlt       ?? 'OptiTech'
