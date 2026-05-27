@@ -16,6 +16,7 @@ import Button from "@/components/ui/Button";
 import { ArrowRight, Zap, ChevronRight, Play, Download, Sparkles, Send, Rocket, Star, Plus } from "lucide-react";
 import BlogFeedBlock from "@/components/blocks/BlogFeedBlock";
 import OT_AccordionBlock from "@/cms/components/OT_AccordionBlock";
+import OT_TabsBlock      from "@/cms/components/OT_TabsBlock";
 import type { BlogFeedPost } from "@/lib/blogFeed";
 
 export const metadata: Metadata = {
@@ -2840,6 +2841,288 @@ export default function ShowcaseBlocksPage() {
             content={{ items: [{ question: 'Only one item', answer: 'Not enough to render.' }] }}
             displaySettings={{ color: 'canvas', borderStyle: 'ruled', openMode: 'single', defaultOpen: 'false' }}
           />
+        </div>
+
+        <div className="pb-xl" />
+      </section>
+
+      {/* ════════════════════════════════════════════════════
+          TABS BLOCK
+      ═══════════════════════════════════════════════════ */}
+      <BlockGroup
+        id="tabs"
+        label="Tabs Block"
+        description="CMS-driven tabbed content with auto-play countdown, side/top trigger positions, and a glass variant for use over imagery. Progress bar is a precise 3px linear sweep — a countdown, not a loader."
+      />
+
+      <section id="tabs-block" className="border-t border-fg/5">
+        <div className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="11 · Tabs" title="TabsBlock" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            Structured tabbed content with auto-play, three trigger styles, top and side trigger positions, and four color variants including a glass overlay for use over rich backgrounds.
+          </p>
+        </div>
+
+        {/* ── Variant 1: Underline / top / canvas / auto-play on / 5s ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variant 1 — Underline · top · canvas · auto-play on · 5 seconds
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Primary showcase variant. Watch the 3px brand progress bar count down before the next tab advances.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_TabsBlock
+            content={{
+              eyebrow: 'Platform Capabilities',
+              heading: 'Everything your growth team needs to move fast.',
+              tabs: [
+                {
+                  tabLabel: 'Experimentation',
+                  tabIcon:  'zap',
+                  heading:  'Ship with statistical confidence.',
+                  body:     "OptiTech's experimentation engine runs A/B, multivariate, and multi-page tests simultaneously. Bayesian and frequentist stats sit side by side — pick the model that matches how your team thinks about risk. Results stream in real time; you never wait for a batch job to know whether your variant won.",
+                  ctaLabel: 'Explore experimentation',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Personalization',
+                  tabIcon:  'users',
+                  heading:  'Every visitor gets the right message.',
+                  body:     "Build audience segments from behavioral signals, CRM attributes, or real-time context. Assign experiences to segments without touching code. Personalization rules compose with experiment variants — so your tests never conflict with your campaigns.",
+                  ctaLabel: 'See personalization',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'CMS',
+                  tabIcon:  'layers',
+                  heading:  'Content as infrastructure.',
+                  body:     "The Optimizely SaaS CMS delivers structured content over GraphQL to any front end. Visual Builder lets editors compose pages from typed blocks — no developer involvement for layout changes. Feature flags and content variations share the same delivery layer.",
+                  ctaLabel: 'Explore the CMS',
+                  ctaUrl:   { default: '#' },
+                },
+              ],
+            }}
+            displaySettings={{ tabStyle: 'underline', tabPosition: 'top', color: 'canvas', contentLayout: 'textOnly', triggerAlign: 'left', autoPlay: 'on', autoPlayDuration: '5' }}
+          />
+        </div>
+
+        {/* ── Variant 2: Pill / top / brand / auto-play off ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variant 2 — Pill · top · brand · auto-play off
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Audience-segmented messaging. Each tab speaks directly to a role.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_TabsBlock
+            content={{
+              eyebrow: 'Built for every team',
+              heading: 'OptiTech speaks your language.',
+              tabs: [
+                {
+                  tabLabel: 'Engineering',
+                  tabIcon:  'code',
+                  heading:  'Feature flags that ship with your code.',
+                  body:     "SDKs for every runtime. Flag evaluation happens at the edge in under 1ms. Type-safe flag definitions, gradual rollouts, kill-switch overrides, and a CLI for CI/CD pipelines. No third-party scripts. No layout shift. No surprises.",
+                  ctaLabel: 'Read the SDK docs',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Product',
+                  tabIcon:  'rocket',
+                  heading:  'Run experiments without writing a ticket.',
+                  body:     "Create and launch A/B tests from the dashboard in minutes. Define your own success metrics, set statistical thresholds, and watch results update in real time. No sprint planning, no engineering dependency for simple tests.",
+                  ctaLabel: 'Start a free trial',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Marketing',
+                  tabIcon:  'sparkles',
+                  heading:  'Publish content that responds to your audience.',
+                  body:     "Pair personalization rules with the Visual Builder to deliver targeted content without a developer. Segment by source, behavior, or CRM data. Measure lift directly — every content variation ties back to a conversion goal.",
+                  ctaLabel: 'See the content tools',
+                  ctaUrl:   { default: '#' },
+                },
+              ],
+            }}
+            displaySettings={{ tabStyle: 'pill', tabPosition: 'top', color: 'brand', contentLayout: 'textOnly', triggerAlign: 'left', autoPlay: 'off' }}
+          />
+        </div>
+
+        {/* ── Variant 3: Button Group / top / surface / auto-play on / 3s / icons ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variant 3 — Button Group · top · surface · auto-play on · 3 seconds · icons
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Faster cadence. Segmented control with icon-led labels. Tests the 3-second interval and icon rendering.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_TabsBlock
+            content={{
+              eyebrow: 'OptiTech platform',
+              heading: 'Four pillars. One platform.',
+              tabs: [
+                {
+                  tabLabel: 'Flag Management',
+                  tabIcon:  'shield',
+                  heading:  'Control every release.',
+                  body:     "Separate deployment from release. Ship dark, validate in production, roll out to 100% with a single toggle. Flag rules are evaluated server-side — your users never see an experiment assignment in their network tab.",
+                },
+                {
+                  tabLabel: 'Analytics',
+                  tabIcon:  'barChart',
+                  heading:  'Every metric you care about.',
+                  body:     "Connect your data warehouse or use OptiTech's built-in metric engine. Track conversion, revenue, retention, and custom events per flag state. Statistical significance is calculated continuously — no batch windows.",
+                },
+                {
+                  tabLabel: 'Integrations',
+                  tabIcon:  'package',
+                  heading:  'Works with your stack.',
+                  body:     "Pre-built integrations with Segment, Amplitude, LaunchDarkly, Contentful, Shopify, and Salesforce. The REST API and webhook system connect OptiTech to anything else. Your data never gets locked in.",
+                },
+                {
+                  tabLabel: 'Infrastructure',
+                  tabIcon:  'globe',
+                  heading:  'Global edge delivery.',
+                  body:     "Flag evaluations replicate across 200+ edge locations. The CDN-level cache ensures sub-millisecond flag resolution with zero backend calls at runtime. 99.99% uptime SLA. SOC 2 Type II certified.",
+                },
+              ],
+            }}
+            displaySettings={{ tabStyle: 'buttonGroup', tabPosition: 'top', color: 'surface', contentLayout: 'textOnly', triggerAlign: 'left', autoPlay: 'on', autoPlayDuration: '3' }}
+          />
+        </div>
+
+        {/* ── Variant 4: Underline / side / canvas / auto-play off / image right ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variant 4 — Underline · side · canvas · auto-play off · image right
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Side trigger column at 220px. Image right layout at md+. Collapses to top position on mobile.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          <OT_TabsBlock
+            content={{
+              eyebrow: 'Platform deep dive',
+              heading: 'Built for scale from day one.',
+              tabs: [
+                {
+                  tabLabel: 'Edge Evaluation',
+                  tabIcon:  'zap',
+                  heading:  'Flags resolved at the CDN layer.',
+                  body:     'OptiTech evaluates feature flags at 200+ edge locations worldwide. No origin hit at runtime — just sub-millisecond evaluation with a global consistent view of flag state. Traffic never touches your infrastructure for evaluation.',
+                  imageSrc: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80&fit=crop',
+                  imageAlt: 'Server infrastructure in a data center',
+                  ctaLabel: 'Architecture docs',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Real-Time Stats',
+                  tabIcon:  'barChart',
+                  heading:  'Statistical significance, streaming.',
+                  body:     'Results update as conversions happen. Bayesian inference gives you a probability-of-being-best without waiting for a fixed sample size. Frequentist p-values are available for teams with stricter reporting requirements.',
+                  imageSrc: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&fit=crop',
+                  imageAlt: 'Analytics dashboard showing real-time experiment data',
+                  ctaLabel: 'Stats methodology',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Audit Trail',
+                  tabIcon:  'shield',
+                  heading:  'Every change, every actor, every time.',
+                  body:     "SOC 2 Type II certified. Every flag change, segment edit, and experiment launch is logged with the actor, timestamp, and diff. Export to your SIEM or query the API. Compliance-ready without extra tooling.",
+                  imageSrc: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80&fit=crop',
+                  imageAlt: 'Security audit log interface',
+                  ctaLabel: 'Security overview',
+                  ctaUrl:   { default: '#' },
+                },
+                {
+                  tabLabel: 'Webhooks',
+                  tabIcon:  'settings',
+                  heading:  'Integrate with anything.',
+                  body:     "Fire webhooks on flag changes, experiment state transitions, and metric threshold breaches. Subscribe with any HTTPS endpoint. Retry logic, signature verification, and delivery logs are included. No polling required.",
+                  imageSrc: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800&q=80&fit=crop',
+                  imageAlt: 'Developer integrations and webhook configuration',
+                  ctaLabel: 'Webhook reference',
+                  ctaUrl:   { default: '#' },
+                },
+              ],
+            }}
+            displaySettings={{ tabStyle: 'underline', tabPosition: 'side', color: 'canvas', contentLayout: 'imageRight', triggerAlign: 'left', autoPlay: 'off' }}
+          />
+        </div>
+
+        {/* ── Variant 5: Glass / top / auto-play on / 5s — over image background ── */}
+        <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+          <p className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Variant 5 — Underline · top · <span className="text-brand">glass</span> · auto-play on · 5 seconds
+          </p>
+          <p className="text-label text-fg-muted/60 mt-xs">
+            Glass variant — best used over imagery or brand sections. Progress bar visible against the frosted surface.
+          </p>
+        </div>
+        <div className="border-t border-fg/5">
+          {/* Image background wrapper — the glass variant must sit over rich content */}
+          <div className="relative overflow-hidden">
+            {/* Background image */}
+            <Image
+              src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80&fit=crop"
+              alt="Abstract digital infrastructure visualization"
+              width={1600}
+              height={900}
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-hidden
+            />
+            {/* Strong dark overlay so glass text remains readable */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to bottom, oklch(12% 0.012 195 / 0.75) 0%, oklch(12% 0.012 195 / 0.88) 100%)' }}
+              aria-hidden
+            />
+            {/* Glass TabsBlock sits on top */}
+            <div className="relative z-10">
+              <OT_TabsBlock
+                content={{
+                  eyebrow: 'Always on. Always learning.',
+                  heading: 'The platform that evolves with your product.',
+                  tabs: [
+                    {
+                      tabLabel: 'Ship Faster',
+                      tabIcon:  'rocket',
+                      heading:  'Decouple deployment from release.',
+                      body:     'Feature flags let you merge to main without activating features. Dark-launch, validate in production, and flip the switch when you are ready. Rollbacks take seconds, not hours.',
+                      ctaLabel: 'Start building',
+                      ctaUrl:   { default: '#' },
+                    },
+                    {
+                      tabLabel: 'Learn Quickly',
+                      tabIcon:  'sparkles',
+                      heading:  'Every release is an experiment.',
+                      body:     "OptiTech attaches measurement to every flag by default. You always know whether the new experience improved the metrics that matter — without retrofitting analytics after the fact.",
+                      ctaLabel: 'See the data',
+                      ctaUrl:   { default: '#' },
+                    },
+                    {
+                      tabLabel: 'Scale Safely',
+                      tabIcon:  'shield',
+                      heading:  'Enterprise reliability at startup speed.',
+                      body:     'SOC 2 certified, 99.99% uptime, global CDN delivery. Gradual rollout controls let you increase exposure at the pace your infrastructure can absorb. Automated circuit breakers roll back on anomaly detection.',
+                      ctaLabel: 'Review the SLA',
+                      ctaUrl:   { default: '#' },
+                    },
+                  ],
+                }}
+                displaySettings={{ tabStyle: 'underline', tabPosition: 'top', color: 'glass', contentLayout: 'textOnly', triggerAlign: 'left', autoPlay: 'on', autoPlayDuration: '5' }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="pb-xl" />

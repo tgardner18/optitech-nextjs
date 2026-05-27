@@ -17,6 +17,8 @@ import {
   ArrowRight, ChevronRight, ExternalLink, ArrowUpRight, Rocket, Plus,
   // Media & Communication
   Play, Download, Send,
+  // Structural & Technical
+  Layers, Settings, Code, Package,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -48,4 +50,9 @@ export const ICON_REGISTRY: Record<string, LucideIcon> = {
   play:         Play,
   download:     Download,
   send:         Send,
+  // ── Structural & Technical ────────────────────────────────────────────────
+  layers:       Layers,
+  settings:     Settings,
+  code:         Code,
+  package:      Package,
 }

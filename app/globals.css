@@ -711,6 +711,58 @@ body {
   );
 }
 
+/* ── TabsBlock — progress bar + panel entrance animations ────────────────────
+ * keyframes used by the auto-play countdown and panel entrance.
+ * The JS layer guards these against prefers-reduced-motion.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes tab-progress {
+  from { width: 0% }
+  to   { width: 100% }
+}
+
+@keyframes tab-progress-v {
+  from { height: 0% }
+  to   { height: 100% }
+}
+
+@keyframes tab-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  animation: tab-progress var(--tab-dur, 5s) linear forwards;
+  animation-play-state: var(--tab-play, running);
+  pointer-events: none;
+}
+
+.tab-progress-bar-v {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 0%;
+  animation: tab-progress-v var(--tab-dur, 5s) linear forwards;
+  animation-play-state: var(--tab-play, running);
+  pointer-events: none;
+}
+
+.tab-panel-enter {
+  animation: tab-panel-in 200ms ease-out forwards;
+}
+
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────
  * ::before is the teal fill that sweeps left-to-right on hover/focus.
  * Inner content is z-10 in JSX; text color transitions via group-hover:.
