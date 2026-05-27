@@ -1,20 +1,43 @@
-import { notFound, redirect } from 'next/navigation'
-import { draftMode } from 'next/headers'
-import { getClient, getLocalizedContentByPath, getRequestBaseUrl, getRequestLocale, setRequestContext } from '@/lib/optimizely'
+import { cache }                from 'react'
+import { notFound, redirect }  from 'next/navigation'
+import { draftMode }           from 'next/headers'
+import type { Metadata }       from 'next'
+import {
+  getClient,
+  getLocalizedContentByPath,
+  getRequestBaseUrl,
+  getRequestDomain,
+  getRequestLocale,
+  getSiteSettings,
+  setRequestContext,
+} from '@/lib/optimizely'
 import { getBlogPage, getLatestBlogPosts, getAuthorName } from '@/lib/blog'
-import { withAppContext } from '@optimizely/cms-sdk/react/server'
-import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
-import type { PreviewParams } from '@optimizely/cms-sdk'
+import { withAppContext }       from '@optimizely/cms-sdk/react/server'
+import { PreviewComponent }    from '@optimizely/cms-sdk/react/client'
+import type { PreviewParams }  from '@optimizely/cms-sdk'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
-import BlogPage from '@/components/pages/BlogPage'
-import Script from 'next/script'
-import { DraftStateBanner } from '@/components/preview/DraftStateBanner'
+import BlogPage                from '@/components/pages/BlogPage'
+import Script                  from 'next/script'
+import { DraftStateBanner }    from '@/components/preview/DraftStateBanner'
 import { ExternalPreviewLinkPanel } from '@/components/preview/ExternalPreviewLinkPanel'
+import { buildPageMetadata, type PageSeoFields } from '@/lib/metadata'
+import { buildJsonLd }         from '@/lib/structured-data'
+import JsonLd                  from '@/components/seo/JsonLd'
+import type { Locale }         from '@/lib/i18n/config'
 
 type Props = {
   params:       Promise<{ slug: string[] }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
+
+// ── Per-request content cache ─────────────────────────────────────────────────
+//
+// React cache() deduplicates calls with the same arguments within one React
+// render tree. generateMetadata and CmsPage both call this for the same path,
+// locale, and baseUrl — the second call is a no-op (same cached result).
+const fetchPageContent = cache(async (path: string, locale: Locale, baseUrl: string) =>
+  getLocalizedContentByPath(path, locale, baseUrl),
+)
 
 // Resolves an absolute or relative URL string to just the pathname.
 function toPathname(raw: string | null | undefined): string | null {
@@ -26,6 +49,35 @@ function toPathname(raw: string | null | undefined): string | null {
   }
 }
 
+// ── Metadata ──────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug }   = await params
+  const path       = '/' + slug.join('/')
+  const locale     = await getRequestLocale()
+  const domain     = await getRequestDomain()
+  const baseUrl    = await getRequestBaseUrl()
+
+  const [exp, settings] = await Promise.all([
+    fetchPageContent(path, locale, baseUrl),
+    getSiteSettings(domain, locale),
+  ])
+
+  // Blog page — fetch the full content record (includes SEO fields)
+  if (exp?.__typename === 'OT_BlogPage' && exp?._metadata?.key) {
+    const blogContent = await getBlogPage(exp._metadata.key as string, locale)
+    return buildPageMetadata(
+      (blogContent ?? {}) as PageSeoFields,
+      settings ?? {},
+      path,
+    )
+  }
+
+  return buildPageMetadata((exp ?? {}) as PageSeoFields, settings ?? {}, path)
+}
+
+// ── Page component ────────────────────────────────────────────────────────────
+
 async function CmsPage({ params, searchParams }: Props) {
   const { slug } = await params
   const sp        = await searchParams
@@ -33,13 +85,22 @@ async function CmsPage({ params, searchParams }: Props) {
   const cmsUrl    = (process.env.OPTIMIZELY_CMS_URL ?? '').replace(/\/$/, '')
   const dm        = await draftMode()
   const locale    = await getRequestLocale()
+  const domain    = await getRequestDomain()
+  const baseUrl   = await getRequestBaseUrl()
 
   const sp_str = (key: string) => {
     const v = sp[key]
     return typeof v === 'string' ? v : ''
   }
 
-  const baseUrl = await getRequestBaseUrl()
+  // Site settings needed for buildJsonLd (Organization node) on every path.
+  // getSiteSettings is React cache()-wrapped — no extra round-trip.
+  const settings = await getSiteSettings(domain, locale)
+
+  // Full page URL for JSON-LD — prefer the configured site URL so canonical
+  // references in structured data always point to the production domain.
+  const siteOrigin  = process.env.NEXT_PUBLIC_SITE_URL ?? baseUrl
+  const fullPageUrl = `${siteOrigin}${path}`
 
   let exp: any
   if (dm.isEnabled && sp_str('preview_token')) {
@@ -56,7 +117,8 @@ async function CmsPage({ params, searchParams }: Props) {
     }
     exp = await getClient().getPreviewContent(previewParams, { cache: false })
   } else {
-    exp = await getLocalizedContentByPath(path, locale, baseUrl)
+    // Shared cache with generateMetadata when both run in the same render.
+    exp = await fetchPageContent(path, locale, baseUrl)
   }
 
   if (!exp?.composition?.nodes) {
@@ -64,7 +126,8 @@ async function CmsPage({ params, searchParams }: Props) {
     if (exp?.__typename === 'OT_BlogPage') {
       const contentKey = exp._metadata?.key as string | undefined
       // For preview, getPreviewContent already returns all fields.
-      // For public, make a targeted query to ensure all fields are present.
+      // For public, make a targeted query to ensure all fields are present
+      // (including the new SEO fields added to BLOG_PAGE_QUERY).
       const blogContent = dm.isEnabled
         ? exp
         : (contentKey ? await getBlogPage(contentKey, locale) : null)
@@ -117,8 +180,15 @@ async function CmsPage({ params, searchParams }: Props) {
         }
         // ───────────────────────────────────────────────────────────────────────
 
+        const blogJsonLd = buildJsonLd(
+          blogContent as PageSeoFields,
+          settings ?? {},
+          fullPageUrl,
+        )
+
         return (
           <>
+            <JsonLd data={blogJsonLd} />
             {dm.isEnabled && cmsUrl && (
               <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
             )}
@@ -164,8 +234,11 @@ async function CmsPage({ params, searchParams }: Props) {
     notFound()
   }
 
+  const expJsonLd = buildJsonLd(exp as PageSeoFields, settings ?? {}, fullPageUrl)
+
   return (
     <>
+      <JsonLd data={expJsonLd} />
       {dm.isEnabled && cmsUrl && (
         <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       )}

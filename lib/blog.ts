@@ -29,6 +29,15 @@ export type BlogPageContent = {
   /** Resolved author reference — replaces inline author/authorRole/authorPhoto fields */
   authorRef?:    AuthorData | null
   readTime?:     string
+  // ── SEO / Search & Discovery ──────────────────────────────────────────────
+  seoTitle?:         string | null
+  seoDescription?:   string | null
+  canonicalUrl?:     { default?: string | null } | null
+  ogImage?:          { url?: { default?: string | null } | null } | null
+  pageAnswer?:       string | null
+  schemaType?:       string | null
+  noIndex?:          boolean | null
+  customSchemaJson?: string | null
 }
 
 export type BlogPostSummary = {
@@ -59,6 +68,14 @@ const BLOG_PAGE_QUERY = `
         body { html }
         authorRef { key }
         readTime
+        seoTitle
+        seoDescription
+        canonicalUrl { default }
+        ogImage { url { default } }
+        pageAnswer
+        schemaType
+        noIndex
+        customSchemaJson
       }
     }
   }

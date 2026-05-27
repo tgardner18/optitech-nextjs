@@ -30,6 +30,13 @@ OPTIMIZELY_GRAPH_SINGLE_KEY=   # Graph single-key for public content queries
 OPTIMIZELY_CMS_URL=            # Full CMS instance URL (e.g. https://app-xxx.cms.optimizely.com/)
 OPTIMIZELY_CMS_CLIENT_ID=      # OAuth client ID for content type sync (cms-cli)
 OPTIMIZELY_CMS_CLIENT_SECRET=  # OAuth client secret for content type sync (cms-cli)
+
+# SEO / metadata
+NEXT_PUBLIC_SITE_URL=          # Canonical site origin — no trailing slash
+                               # (e.g. https://optitech-nextjs-tim.vercel.app)
+                               # Used to build <link rel="canonical"> hrefs and
+                               # JSON-LD pageUrl values. Falls back to the
+                               # request Host header when not set (useful in dev).
 ```
 
 ### Shared block preview — set a default application in the CMS

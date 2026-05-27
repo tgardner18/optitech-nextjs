@@ -123,6 +123,11 @@ const THEME_QUERY = `
         colorFgLight
         colorFgMuted
         colorFgMutedLight
+        siteName
+        defaultSeoDescription
+        defaultSocialImage { url { default } }
+        twitterHandle
+        organizationDescription
         primaryNavigation {
           menuLink { text title target url { default } }
           subNavItems {

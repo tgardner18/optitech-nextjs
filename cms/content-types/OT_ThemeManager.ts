@@ -108,5 +108,43 @@ export const OT_ThemeManager = contentType({
     colorFgLight:      { type: 'string', displayName: 'Foreground Light — primary text in light mode (default: near-black)',           group: 'OT_Theme', sortOrder: 168 },
     colorFgMuted:      { type: 'string', displayName: 'Foreground Muted Dark — secondary text in dark mode (hex or oklch)',            group: 'OT_Theme', sortOrder: 170 },
     colorFgMutedLight: { type: 'string', displayName: 'Foreground Muted Light — secondary text in light mode (hex or oklch)',          group: 'OT_Theme', sortOrder: 175 },
+
+    // ── SEO / Search & Discovery ──────────────────────────────────────────────
+    siteName: {
+      type: 'string',
+      displayName: 'Site Name',
+      description: 'Used in the browser tab title template ("Page Title | Site Name") and og:site_name.',
+      group: 'OT_SEO',
+      sortOrder: 10,
+    },
+    defaultSeoDescription: {
+      type: 'string',
+      displayName: 'Default Meta Description',
+      description: 'Fallback description for pages that have no Meta Description set.',
+      group: 'OT_SEO',
+      sortOrder: 20,
+    },
+    defaultSocialImage: {
+      type: 'contentReference',
+      displayName: 'Default Social Share Image',
+      description: 'Fallback og:image and twitter:image for pages with no Social Share Image set.',
+      allowedTypes: ['_image'],
+      group: 'OT_SEO',
+      sortOrder: 30,
+    },
+    twitterHandle: {
+      type: 'string',
+      displayName: 'X / Twitter Handle',
+      description: 'Include the @ symbol. Used as twitter:site on every page.',
+      group: 'OT_SEO',
+      sortOrder: 40,
+    },
+    organizationDescription: {
+      type: 'string',
+      displayName: 'Organization Summary',
+      description: 'One or two sentences describing the organization. Injected into the Organization JSON-LD block on every page — used by AI engines to establish entity identity.',
+      group: 'OT_SEO',
+      sortOrder: 50,
+    },
   },
 })
