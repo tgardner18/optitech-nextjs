@@ -12,9 +12,10 @@ async function HomePage() {
   const baseUrl = await getRequestBaseUrl()
   const locale  = await getRequestLocale()
 
-  // Try root path first; fall back to /home which is the conventional CMS home path.
+  // Try root path first; fall back to common CMS home slugs.
+  // '/home' is the Optimizely CMS convention; '/base-home' is the OTBase default slug.
   let exp: any
-  for (const path of ['/', '/home']) {
+  for (const path of ['/', '/home', '/base-home']) {
     exp = await getLocalizedContentByPath(path, locale, baseUrl)
     if (exp?.composition?.nodes) break
   }

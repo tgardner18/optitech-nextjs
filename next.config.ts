@@ -1,4 +1,9 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// Point next-intl at our server config so getLocale() works in any
+// server component or route handler without the [locale] folder pattern.
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 // Derive the CMS hostname from the configured URL so next/image can fetch
 // media assets from that origin without relying solely on the wildcard pattern.
@@ -50,4 +55,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

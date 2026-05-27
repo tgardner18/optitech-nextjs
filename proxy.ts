@@ -1,0 +1,105 @@
+/**
+ * Next.js proxy — locale detection and URL normalisation.
+ * (Next.js 16+ renames "middleware" → "proxy"; same concept, new file name.)
+ *
+ * Why custom instead of next-intl's createMiddleware:
+ *   next-intl's createMiddleware is designed for apps that have a [locale]
+ *   directory segment (app/[locale]/page.tsx). This project intentionally omits
+ *   the [locale] segment to keep routes clean — locale is a cross-cutting
+ *   concern, not a URL segment from the app's perspective.
+ *
+ *   With createMiddleware, visiting /es/showcase results in a pass-through (not
+ *   a rewrite) because next-intl computes the locale-prefixed URL and sees it
+ *   equals the current URL, so it just calls next(). Without [locale] routes in
+ *   the app, Next.js then routes /es/showcase to [...slug] instead of the
+ *   showcase page — causing everything to 404.
+ *
+ * What this proxy does:
+ *   1. Detects locale from URL prefix (/es/about → locale=es, path=/about)
+ *   2. Strips the locale prefix via NextResponse.rewrite so the app router sees
+ *      the clean path (/es/showcase → internally serves /showcase)
+ *   3. Sets X-NEXT-INTL-LOCALE request header so next-intl's getLocale() and
+ *      getRequestConfig() receive the correct locale in server components.
+ *   4. For non-prefixed URLs (/showcase, /), reads the NEXT_LOCALE cookie so
+ *      the locale persists across navigation (set by LocaleSelector on switch).
+ *
+ * Strategy (mirrors localePrefix: 'as-needed'):
+ *   - Default locale (English) → no URL prefix  (/about)
+ *   - Non-default locales      → URL prefix      (/fr/about, /es/about)
+ *
+ * Excluded from proxy (see matcher):
+ *   - /api/*     — API routes have their own locale handling (or none).
+ *   - /preview   — CMS preview route: locale comes from search params (loc=).
+ *   - /_next/*   — Next.js build artefacts.
+ *   - Static file extensions (svg, png, woff2, etc.).
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
+import type { Locale } from '@/lib/i18n/config'
+
+/** Header name used by next-intl server APIs (getLocale, getRequestConfig). */
+const LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
+
+/** Cookie name used by LocaleSelector to persist locale preference. */
+const LOCALE_COOKIE = 'NEXT_LOCALE'
+
+export default function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // ── 1. Detect locale from URL prefix ──────────────────────────────────────
+  // Check whether the first path segment is a supported non-default locale.
+  // e.g. /es/showcase → firstSegment='es'  → locale='es', internalPath='/showcase'
+  //      /fr/         → firstSegment='fr'  → locale='fr', internalPath='/'
+  //      /showcase    → firstSegment='showcase' → not a locale, no change
+  const firstSegment = pathname.split('/')[1] ?? ''
+  let locale: Locale = DEFAULT_LOCALE
+  let internalPath   = pathname
+
+  if (firstSegment && isSupportedLocale(firstSegment) && firstSegment !== DEFAULT_LOCALE) {
+    locale       = firstSegment as Locale
+    internalPath = pathname.slice(`/${firstSegment}`.length) || '/'
+  } else {
+    // No locale prefix in URL — check NEXT_LOCALE cookie for preferred locale.
+    // LocaleSelector writes this cookie before navigating, so non-English users
+    // who return to an unprefixed URL (e.g. after following a link) still get
+    // their preferred language in the locale context.
+    const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value
+    if (cookieLocale && isSupportedLocale(cookieLocale)) {
+      locale = cookieLocale as Locale
+    }
+  }
+
+  // ── 2. Build request headers with locale injected ─────────────────────────
+  // next-intl's getLocale() and getRequestConfig() read this header from
+  // next/headers() inside server components — we must set it on the REQUEST
+  // (not the response) so it flows through to the server-side handlers.
+  const headers = new Headers(request.headers)
+  headers.set(LOCALE_HEADER, locale)
+
+  // ── 3. Rewrite or pass through ────────────────────────────────────────────
+  if (internalPath !== pathname) {
+    // Locale prefix was stripped — rewrite to the clean path so the app router
+    // matches the correct page (e.g. /es/showcase → /showcase → showcase page,
+    // not [...slug] with slug=['es','showcase']).
+    const url = request.nextUrl.clone()
+    url.pathname = internalPath
+    return NextResponse.rewrite(url, { request: { headers } })
+  }
+
+  // No rewrite needed — just forward the locale header.
+  return NextResponse.next({ request: { headers } })
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths EXCEPT:
+     *   - api routes (handled separately)
+     *   - /preview (CMS preview; locale resolved from ?loc= param)
+     *   - _next/static, _next/image (Next.js internals)
+     *   - Static files with well-known extensions
+     */
+    '/((?!api|preview|_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff2?)$).*)',
+  ],
+}

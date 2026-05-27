@@ -67,7 +67,7 @@ async function CmsPage({ params, searchParams }: Props) {
       // For public, make a targeted query to ensure all fields are present.
       const blogContent = dm.isEnabled
         ? exp
-        : (contentKey ? await getBlogPage(contentKey) : null)
+        : (contentKey ? await getBlogPage(contentKey, locale) : null)
       const latestPosts = await getLatestBlogPosts(contentKey, locale, baseUrl)
 
       if (blogContent) {
