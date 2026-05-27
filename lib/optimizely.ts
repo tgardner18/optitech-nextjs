@@ -148,9 +148,18 @@ const THEME_QUERY = `
 /**
  * Fetches a CMS page/experience by URL path with locale awareness.
  *
- * The SDK's getContentByPath may return multiple locale variants of the same
- * content item. This helper prefers the requested locale, falls back to the
- * default locale, then to any available item.
+ * Content Graph indexes localized content at locale-prefixed URLs:
+ *   English home  → url.default = "/"
+ *   Spanish home  → url.default = "/es/"
+ *   Spanish /about → url.default = "/es/about"
+ *
+ * For non-default locales we therefore search the locale-prefixed path first
+ * (e.g. /es/ or /es/about). If nothing is found there (translation not yet
+ * published), we fall back to the un-prefixed path so the page renders with
+ * default-locale content rather than 404-ing.
+ *
+ * If multiple locale variants are returned for a path, the requested locale
+ * is preferred; then the default locale; then the first available item.
  */
 export async function getLocalizedContentByPath(
   path: string,
@@ -158,22 +167,34 @@ export async function getLocalizedContentByPath(
   baseUrl?: string,
 ): Promise<any | null> {
   await setRequestContext(locale)
-  const results = await getClient().getContentByPath(path, { host: baseUrl || undefined })
 
-  if (!results?.length) return null
-  if (results.length === 1) return results[0]
+  // Build the ordered list of paths to search.
+  // Non-default locales: try /<locale><path> first (e.g. /es/, /es/about),
+  //                      fall back to the un-prefixed path.
+  // Default locale:      just use the path as-is.
+  const pathsToTry: string[] =
+    locale !== DEFAULT_LOCALE ? [`/${locale}${path}`, path] : [path]
 
-  // Multiple locale variants — prefer the requested locale.
-  // Use prefix matching so app locale 'es' matches CMS locale 'es-MX', etc.
-  const al = locale.toLowerCase()
-  const preferred = results.find((r: any) => {
-    const rl = (r._metadata?.locale ?? '').toLowerCase()
-    return rl === al || rl.startsWith(al + '-') || al.startsWith(rl + '-')
-  })
-  const fallback = results.find(
-    (r: any) => r._metadata?.locale?.toLowerCase() === DEFAULT_LOCALE.toLowerCase(),
-  )
-  return preferred ?? fallback ?? results[0]
+  for (const tryPath of pathsToTry) {
+    const results = await getClient().getContentByPath(tryPath, { host: baseUrl || undefined })
+    if (!results?.length) continue
+
+    if (results.length === 1) return results[0]
+
+    // Multiple locale variants — prefer the requested locale.
+    // Use prefix matching so app locale 'es' matches CMS locale 'es-MX', etc.
+    const al = locale.toLowerCase()
+    const preferred = results.find((r: any) => {
+      const rl = (r._metadata?.locale ?? '').toLowerCase()
+      return rl === al || rl.startsWith(al + '-') || al.startsWith(rl + '-')
+    })
+    const fallback = results.find(
+      (r: any) => r._metadata?.locale?.toLowerCase() === DEFAULT_LOCALE.toLowerCase(),
+    )
+    return preferred ?? fallback ?? results[0]
+  }
+
+  return null
 }
 
 // One Graph fetch per request; layout, Header, and Footer all share this cache.
