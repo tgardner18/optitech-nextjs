@@ -43,10 +43,13 @@ export type BlogPostSummary = {
 // ─── GraphQL queries ────────────────────────────────────────────────────────────
 
 const BLOG_PAGE_QUERY = `
-  query GetBlogPage($key: String!) {
-    OT_BlogPage(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
+  query GetBlogPage($key: String!, $locale: String) {
+    OT_BlogPage(
+      where: { _metadata: { key: { eq: $key }, locale: { eq: $locale } } }
+      limit: 1
+    ) {
       items {
-        _metadata { key published url { default } }
+        _metadata { key locale published url { default } }
         headline
         subHeadline
         topic
@@ -149,9 +152,9 @@ export async function getAuthorName(key: string): Promise<string | null> {
   }
 }
 
-export async function getBlogPage(key: string): Promise<BlogPageContent | null> {
+export async function getBlogPage(key: string, locale = 'en'): Promise<BlogPageContent | null> {
   try {
-    const data = await getClient().request(BLOG_PAGE_QUERY, { key })
+    const data = await getClient().request(BLOG_PAGE_QUERY, { key, locale })
     const item = (data as any)?.OT_BlogPage?.items?.[0] ?? null
     if (!item) return null
 
