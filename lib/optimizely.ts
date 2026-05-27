@@ -95,7 +95,7 @@ export async function getRequestBaseUrl(): Promise<string> {
 
 // All fields consumed by layout (theme CSS), Header, and Footer.
 const THEME_QUERY = `
-  query GetThemeManagers {
+  query GetThemeManagers($locale: [Locales]) {
     OT_ThemeManager(limit: 100, orderBy: { _metadata: { published: DESC } }) {
       items {
         _metadata { key }
@@ -132,9 +132,9 @@ const THEME_QUERY = `
         }
       }
     }
-    OT_FooterBlock(limit: 20) {
+    OT_FooterBlock(limit: 20, locale: $locale) {
       items {
-        _metadata { key }
+        _metadata { key locale }
         description { html }
         links {
           label
@@ -298,13 +298,14 @@ function applyLinkResolution(
   return key ? (resolved.get(key) ?? url) : url
 }
 
-// One Graph fetch per request; layout, Header, and Footer all share this cache.
+// One Graph fetch per request per locale; layout, Header, and Footer all share this cache.
+// React cache() memoizes by argument so each locale gets its own cached result.
 // Content Graph returns all published versions of each item. We deduplicate by
 // content key so each ThemeManager item appears only once (latest version first,
 // guaranteed by orderBy published DESC in the query).
-const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
+const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers(locale: string) {
   try {
-    const data  = await getClient().request(THEME_QUERY, {})
+    const data  = await getClient().request(THEME_QUERY, { locale: [locale] })
     const items = (data?.OT_ThemeManager?.items ?? []) as any[]
 
     // Build a key → data map for footer blocks so we can attach them below.
@@ -400,8 +401,9 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
  * All callers (Header, Footer, layout) handle null gracefully via optional
  * chaining and hardcoded fallback values.
  */
-export async function getSiteSettings(domain = ''): Promise<any | null> {
-  const items = await _fetchAllThemeManagers()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getSiteSettings(domain = '', locale = DEFAULT_LOCALE): Promise<any | null> {
+  const items = await _fetchAllThemeManagers(locale)
   if (!items.length) return null
   return items.find((i: any) => i.frontEndDomain === domain) ?? null
 }
