@@ -25,10 +25,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "OptiTech",
-  description: "OptiTech — bold, forward-moving.",
-};
+// Dynamic metadata from the CMS ThemeManager.
+// getSiteSettings is React cache()-wrapped so this share the same fetch
+// as the RootLayout body below — no extra round-trip per request.
+//
+// Why generateMetadata (async) and not a static `metadata` export?
+// The title template ("%s | SiteName") MUST be set at the layout level.
+// Next.js applies a parent layout's template to child pages' string titles.
+// If the template is returned from the page's own generateMetadata, Next.js
+// treats it as applying to that page's *children*, so the page's own <title>
+// falls back to whatever the layout declared — breaking the browser tab title.
+export async function generateMetadata(): Promise<Metadata> {
+  const domain   = await getRequestDomain()
+  const locale   = await getRequestLocale()
+  const settings = await getSiteSettings(domain, locale)
+  const siteName = (settings?.siteName as string | null | undefined) ?? 'OptiTech'
+  return {
+    title: {
+      default:  siteName,
+      // Applied automatically to every CMS page's string title:
+      //   seoTitle "Using the SDK"  →  <title>Using the SDK | OptiTech</title>
+      //   seoTitle blank            →  <title>OptiTech</title>  (the default above)
+      template: `%s | ${siteName}`,
+    },
+    description: (settings?.defaultSeoDescription as string | null | undefined)
+      ?? 'OptiTech — bold, forward-moving.',
+  }
+}
 
 export default async function RootLayout({
   children,

@@ -56,10 +56,32 @@ export function buildPageMetadata(
   site: SiteMetaSettings,
   pagePath: string,
 ): Metadata {
-  const title       = page.seoTitle ?? site.siteName ?? 'OptiTech'
+  // ── Title handling ─────────────────────────────────────────────────────────
+  //
+  // Next.js title templates work like this:
+  //   layout  →  { default: "SiteName", template: "%s | SiteName" }
+  //   page    →  title: "Using the SDK"          (plain string)
+  //   result  →  <title>Using the SDK | SiteName</title>
+  //
+  // The template MUST live in the ROOT LAYOUT (app/layout.tsx generateMetadata).
+  // Returning a TemplateString from a page applies the template to that page's
+  // *children*, not to the page itself — so the current page's <title> falls
+  // back to the layout's plain string, which is just "SiteName".
+  //
+  // Rule: page-level title = seoTitle only (the layout template adds "| SiteName").
+  //       undefined when seoTitle is blank → layout `default` kicks in.
+  const pageTitle = page.seoTitle ?? undefined
+
+  // OG / Twitter need the fully-formatted "Page Title | Site Name" string
+  // because social platforms don't apply any template logic.
+  const richTitle =
+    pageTitle && site.siteName
+      ? `${pageTitle} | ${site.siteName}`
+      : pageTitle ?? site.siteName ?? 'OptiTech'
+
   const description = page.seoDescription ?? site.defaultSeoDescription ?? undefined
 
-  const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+  const siteUrl   = process.env.NEXT_PUBLIC_SITE_URL ?? ''
   const canonical = page.canonicalUrl?.default ?? `${siteUrl}${pagePath}`
 
   const imageUrl =
@@ -68,9 +90,8 @@ export function buildPageMetadata(
     undefined
 
   return {
-    title: site.siteName
-      ? { default: title, template: `%s | ${site.siteName}` }
-      : title,
+    // Plain string — the root layout's template appends "| SiteName" automatically.
+    title: pageTitle,
 
     description,
 
@@ -79,7 +100,7 @@ export function buildPageMetadata(
     },
 
     openGraph: {
-      title,
+      title: richTitle,
       description,
       url: canonical,
       siteName: site.siteName ?? undefined,
@@ -90,7 +111,7 @@ export function buildPageMetadata(
     twitter: {
       card: 'summary_large_image',
       site: site.twitterHandle ?? undefined,
-      title,
+      title: richTitle,
       description,
       images: imageUrl ? [imageUrl] : undefined,
     },
