@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getSiteSettings, getRequestDomain } from '@/lib/optimizely'
+import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 
 /**
  * Footer — driven by OT_FooterBlock via ThemeManager.footerRef.
@@ -18,7 +18,7 @@ import { getSiteSettings, getRequestDomain } from '@/lib/optimizely'
  * Link auto-column: ≤5 links → 1 column. 6–10 links → 2 columns (desktop+).
  */
 export default async function Footer() {
-  const settings = await getSiteSettings(await getRequestDomain())
+  const settings = await getSiteSettings(await getRequestDomain(), await getRequestLocale())
 
   // ── Logo (from ThemeManager — identical source to header) ──────────────────
   const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
