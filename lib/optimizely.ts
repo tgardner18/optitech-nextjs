@@ -145,21 +145,44 @@ const THEME_QUERY = `
   }
 `
 
+// ── Locale-aware content fetching ─────────────────────────────────────────────
+
 /**
- * Fetches a CMS page/experience by URL path with locale awareness.
+ * Picks the best result from a getContentByPath response for the given locale.
+ * Prefers exact locale match, then default locale, then first available item.
+ */
+function pickByLocale(results: any[], locale: Locale): any | null {
+  if (!results.length) return null
+  if (results.length === 1) return results[0]
+  const al = locale.toLowerCase()
+  const dl = DEFAULT_LOCALE.toLowerCase()
+  return (
+    results.find((r: any) => {
+      const rl = (r._metadata?.locale ?? '').toLowerCase()
+      return rl === al || rl.startsWith(`${al}-`) || al.startsWith(`${rl}-`)
+    }) ??
+    results.find((r: any) => (r._metadata?.locale ?? '').toLowerCase() === dl) ??
+    results[0]
+  )
+}
+
+/**
+ * Fetches a CMS page/experience by URL path with full locale awareness.
  *
- * Content Graph indexes localized content at locale-prefixed URLs:
- *   English home  → url.default = "/"
- *   Spanish home  → url.default = "/es/"
- *   Spanish /about → url.default = "/es/about"
+ * Strategy (Content Graph indexes localized content at locale-prefixed URLs):
+ *   English home   → url.default = "/"
+ *   Spanish home   → url.default = "/es/"
+ *   French article → url.default = "/fr/polished-landing/"  (slug may differ!)
  *
- * For non-default locales we therefore search the locale-prefixed path first
- * (e.g. /es/ or /es/about). If nothing is found there (translation not yet
- * published), we fall back to the un-prefixed path so the page renders with
- * default-locale content rather than 404-ing.
- *
- * If multiple locale variants are returned for a path, the requested locale
- * is preferred; then the default locale; then the first available item.
+ * 1. For the default locale: look up `path` directly.
+ * 2. For non-default locales:
+ *    a. Try `/<locale><path>` first — the common case where the slug is the
+ *       same across locales (e.g. /es/about for an /about page).
+ *    b. If that returns nothing, look up the English version at `path` to get
+ *       the content key, then fetch that key for the requested locale. This
+ *       handles pages where the URL slug changes per locale.
+ *    c. If still nothing, return the English version as a fallback so the
+ *       page renders content rather than 404-ing.
  */
 export async function getLocalizedContentByPath(
   path: string,
@@ -167,34 +190,112 @@ export async function getLocalizedContentByPath(
   baseUrl?: string,
 ): Promise<any | null> {
   await setRequestContext(locale)
+  const host = baseUrl || undefined
 
-  // Build the ordered list of paths to search.
-  // Non-default locales: try /<locale><path> first (e.g. /es/, /es/about),
-  //                      fall back to the un-prefixed path.
-  // Default locale:      just use the path as-is.
-  const pathsToTry: string[] =
-    locale !== DEFAULT_LOCALE ? [`/${locale}${path}`, path] : [path]
-
-  for (const tryPath of pathsToTry) {
-    const results = await getClient().getContentByPath(tryPath, { host: baseUrl || undefined })
-    if (!results?.length) continue
-
-    if (results.length === 1) return results[0]
-
-    // Multiple locale variants — prefer the requested locale.
-    // Use prefix matching so app locale 'es' matches CMS locale 'es-MX', etc.
-    const al = locale.toLowerCase()
-    const preferred = results.find((r: any) => {
-      const rl = (r._metadata?.locale ?? '').toLowerCase()
-      return rl === al || rl.startsWith(al + '-') || al.startsWith(rl + '-')
-    })
-    const fallback = results.find(
-      (r: any) => r._metadata?.locale?.toLowerCase() === DEFAULT_LOCALE.toLowerCase(),
-    )
-    return preferred ?? fallback ?? results[0]
+  // ── Default locale ────────────────────────────────────────────────────────
+  if (locale === DEFAULT_LOCALE) {
+    const results = await getClient().getContentByPath(path, { host })
+    return results?.length ? pickByLocale(results, locale) : null
   }
 
-  return null
+  // ── Non-default locale: step 1 — locale-prefixed path ─────────────────────
+  // Content Graph stores translated pages at /<locale><path>.
+  const prefixedResults = await getClient().getContentByPath(`/${locale}${path}`, { host })
+  if (prefixedResults?.length) {
+    return pickByLocale(prefixedResults, locale)
+  }
+
+  // ── Non-default locale: step 2 — key-based locale lookup ──────────────────
+  // The locale-prefixed path wasn't found. Two possibilities:
+  //   (A) No translation published → fall back to English.
+  //   (B) Translation exists but the URL slug changed per locale
+  //       (e.g. /ui-testing2/ in English → /fr/polished-landing/ in French).
+  // Fetch the English version first to get the content key, then ask for
+  // that key's translation in the requested locale.
+  const defaultResults = await getClient().getContentByPath(path, { host })
+  if (!defaultResults?.length) return null
+
+  const defaultContent = pickByLocale(defaultResults, DEFAULT_LOCALE) ?? defaultResults[0]
+  const contentKey = defaultContent?._metadata?.key as string | undefined
+
+  if (contentKey) {
+    try {
+      // getItems with a locale-bearing GraphReference fetches that locale's version.
+      const localizedItems = await getClient().getItems({ key: contentKey, locale })
+      const localized = (localizedItems ?? []).find(
+        (r: any) => (r._metadata?.locale ?? '').toLowerCase() === locale.toLowerCase(),
+      )
+      if (localized) return localized
+    } catch {
+      // getItems may throw for non-page content types — fall through to English.
+    }
+  }
+
+  // ── Fallback: English content ──────────────────────────────────────────────
+  return defaultContent
+}
+
+// ── cms:// link resolution helpers ───────────────────────────────────────────
+//
+// The Optimizely CMS link picker stores internal page references as
+// "cms://content/{contentKey}" instead of a plain web URL. Content Graph's
+// link type returns the raw cms:// URI — it does NOT auto-resolve it.
+// We detect these and replace them with the page's canonical front-end path
+// via a single batch _Content query, run once inside _fetchAllThemeManagers.
+
+/** Returns the content key from a cms://content/{key} URI, or null. */
+function parseCmsContentKey(url: string | null | undefined): string | null {
+  if (!url?.startsWith('cms://content/')) return null
+  return url.slice('cms://content/'.length).split(/[?#]/)[0] || null
+}
+
+/**
+ * Batch-resolves content keys to their canonical published URL pathnames.
+ * Uses the default (English) locale so callers can apply locale prefixes.
+ * Returns Map<contentKey → pathname>, e.g. "abc" → "/about".
+ * Keys that cannot be resolved are omitted — the caller falls back to '#'.
+ */
+async function resolveCmsLinks(keys: string[]): Promise<Map<string, string>> {
+  const unique = [...new Set(keys)].filter(Boolean)
+  if (!unique.length) return new Map()
+  try {
+    const data = await getClient().request(
+      `query ResolveCmsLinks($keys: [String]) {
+         _Content(
+           where: { _metadata: { key: { in: $keys } status: { eq: "Published" } locale: { eq: "en" } } }
+           limit: 100
+         ) {
+           items { _metadata { key url { default } } }
+         }
+       }`,
+      { keys: unique },
+    )
+    const map = new Map<string, string>()
+    for (const item of (data?._Content?.items ?? []) as any[]) {
+      const key  = item._metadata?.key as string | undefined
+      const raw  = item._metadata?.url?.default as string | undefined
+      if (!key || !raw) continue
+      // Absolute URL → extract pathname only (strip origin so callers get a
+      // relative path they can locale-prefix).
+      let path = raw
+      if (path.startsWith('http')) {
+        try { path = new URL(path).pathname } catch { continue }
+      }
+      map.set(key, path)
+    }
+    return map
+  } catch {
+    return new Map()
+  }
+}
+
+/** Resolves a cms://content/{key} value using the pre-built map; passes other values through. */
+function applyLinkResolution(
+  url: string | null | undefined,
+  resolved: Map<string, string>,
+): string | null | undefined {
+  const key = parseCmsContentKey(url)
+  return key ? (resolved.get(key) ?? url) : url
 }
 
 // One Graph fetch per request; layout, Header, and Footer all share this cache.
@@ -218,7 +319,7 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
     }
 
     const seen  = new Set<string>()
-    return items
+    const deduped = items
       .filter((item: any) => {
         const key = item._metadata?.key as string | undefined
         if (!key || seen.has(key)) return false
@@ -234,6 +335,55 @@ const _fetchAllThemeManagers = cache(async function fetchAllThemeManagers() {
           ? { ...item, footerRef: { ...item.footerRef, item: resolvedFooter } }
           : item
       })
+
+    // ── Resolve all cms://content/{key} nav/cta link references ──────────
+    // Collect every cms:// key across ALL ThemeManagers in one pass, then
+    // resolve them in a single batch Content Graph request.
+    const cmsKeys: string[] = []
+    for (const item of deduped) {
+      const ctaKey = parseCmsContentKey(item.ctaUrl?.default)
+      if (ctaKey) cmsKeys.push(ctaKey)
+      for (const nav of (item.primaryNavigation ?? []) as any[]) {
+        const nk = parseCmsContentKey(nav.menuLink?.url?.default)
+        if (nk) cmsKeys.push(nk)
+        for (const sub of (nav.subNavItems ?? []) as any[]) {
+          const sk = parseCmsContentKey(sub.menuLink?.url?.default)
+          if (sk) cmsKeys.push(sk)
+        }
+      }
+    }
+    const linkMap = await resolveCmsLinks(cmsKeys)
+
+    // Rewrite cms:// values in-place so downstream consumers (Header, Footer)
+    // always receive plain web paths — no cms:// handling needed elsewhere.
+    return deduped.map((item: any) => ({
+      ...item,
+      ctaUrl: item.ctaUrl
+        ? { ...item.ctaUrl, default: applyLinkResolution(item.ctaUrl?.default, linkMap) }
+        : item.ctaUrl,
+      primaryNavigation: ((item.primaryNavigation ?? []) as any[]).map((nav: any) => ({
+        ...nav,
+        menuLink: nav.menuLink
+          ? {
+              ...nav.menuLink,
+              url: nav.menuLink.url
+                ? { ...nav.menuLink.url, default: applyLinkResolution(nav.menuLink.url.default, linkMap) }
+                : nav.menuLink.url,
+            }
+          : nav.menuLink,
+        subNavItems: ((nav.subNavItems ?? []) as any[]).map((sub: any) => ({
+          ...sub,
+          menuLink: sub.menuLink
+            ? {
+                ...sub.menuLink,
+                url: sub.menuLink.url
+                  ? { ...sub.menuLink.url, default: applyLinkResolution(sub.menuLink.url.default, linkMap) }
+                  : sub.menuLink.url,
+              }
+            : sub.menuLink,
+        })),
+      })),
+    }))
   } catch {
     return []
   }
