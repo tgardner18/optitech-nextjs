@@ -7,10 +7,10 @@ type Props = {
 }
 
 const widthClasses: Record<string, string> = {
-  narrow:  'max-w-2xl w-full mx-auto px-lg',
-  default: 'max-w-3xl w-full mx-auto px-lg',
-  wide:    'max-w-5xl w-full mx-auto px-lg',
-  full:    'w-full px-lg',
+  narrow:  'max-w-2xl w-full mx-auto',
+  default: 'max-w-3xl w-full mx-auto',
+  wide:    'max-w-5xl w-full mx-auto',
+  full:    'w-full px-md lg:px-lg',
 }
 
 const spacingClasses: Record<string, string> = {
@@ -57,30 +57,21 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
           {nodes.length > 0 ? (
             <OptimizelyGridSection nodes={nodes} />
           ) : (
-            /* Empty state — shown in standalone CMS preview or when no elements
-               have been added to this form container in the Visual Builder.
-               In a VB experience, add form elements (Textbox, Selection, etc.)
-               directly inside this form container section. */
+            /*
+             * Empty state — the Forms editor preview calls this adapter with only
+             * the form's metadata (Title, Description, SubmitUrl). The form's step/
+             * row/column/element composition is not passed in this context, so form
+             * fields can't render here.
+             *
+             * The form fields DO render correctly when the form is embedded on a VB
+             * page — preview from the page to see the real layout.
+             */
             <div className="flex flex-col gap-sm">
-              {/* Placeholder fields — labels are visible text so you can see
-                  what the form will look like when embedded in a VB experience */}
-              {[
-                { label: 'Text field', w: 'w-full' },
-                { label: 'Text field', w: 'w-full' },
-                { label: 'Selection', w: 'w-full md:w-1/2' },
-              ].map((f, i) => (
-                <div key={i} className={`${f.w} flex flex-col gap-xs`}>
-                  <p className="text-label font-medium text-fg-muted/50 tracking-label uppercase">
-                    {f.label}
-                  </p>
-                  <div className="h-10 w-full rounded-input border border-fg/10 bg-canvas/40" />
-                </div>
-              ))}
-              <div className="pt-sm">
-                <div className="h-10 w-32 rounded-sm bg-brand/20 border border-brand/30" />
-              </div>
-              <p className="text-label text-fg-muted/50 tracking-label uppercase pt-xs">
-                Add form elements in the Visual Builder
+              <p className="text-label font-medium text-fg-muted/40 tracking-label uppercase">
+                Form fields not visible in Forms editor preview
+              </p>
+              <p className="text-[11px] text-fg-muted/30 leading-snug max-w-sm">
+                To preview form fields, open the page this form is placed on and use the Visual Builder preview from there.
               </p>
             </div>
           )}
