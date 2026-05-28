@@ -30,7 +30,7 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
   return (
     <div
       {...pa(content.__composition)}
-      className="bg-canvas border border-fg/10 p-lg max-w-2xl"
+      className="bg-canvas border border-fg/10 p-lg max-w-3xl"
     >
       {/* Description */}
       {descriptionHtml && (
