@@ -280,44 +280,86 @@ body {
     4px 4px 0 oklch(from var(--ot-accent) calc(l * 0.35) c h / 0.65);
 }
 
-/* Display gradient fills — use once per composition, display scale only.
-   Stops are defined in tokens.css and adapt to the active theme.
-   padding-bottom extends the element box below the last line so the gradient
-   paints through descenders (g, p, q, y). Without it, background-clip:text
-   stops at the element boundary and descenders appear transparent. */
-.display-gradient-brand,
-.display-gradient-warm,
-.display-gradient-luminous,
-.display-gradient-ember {
-  padding-bottom: 0.2em;
+/* ── Display depth treatments ────────────────────────────────────────────────
+ * Prismatic letterpress depth: solid color face + layered text-shadow stack
+ * that uses OKLCH relative color to derive progressively darker/hue-shifted
+ * tones from the face color. Uses calc() on a @property number so the depth
+ * offset animates smoothly on entrance (flat → full depth).
+ *
+ * CSS class names are kept as display-gradient-* for backwards compatibility
+ * with the CMS display template values (brand/warm/luminous/ember).
+ *
+ * text-shadow offsets use em units so depth scales with font size.
+ * @property initial-value:1 means reduced-motion users see full depth
+ * immediately without any animation.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@property --display-depth {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
 }
 
+@keyframes depth-arrive {
+  from { --display-depth: 0; }
+  to   { --display-depth: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .display-gradient-brand,
+  .display-gradient-warm,
+  .display-gradient-luminous,
+  .display-gradient-ember {
+    animation: depth-arrive 0.9s var(--ot-ease-kinetic) both;
+  }
+}
+
+/* Brand · teal face, teal shadow stack — the committed brand statement */
 .display-gradient-brand {
-  background: var(--ot-gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-brand);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.72) c h),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.48) c h),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.27) calc(c * 0.8) h / 0.75);
 }
 
+/* Warm · accent face (signal green), brand-toned shadow — cross-spectrum offset */
 .display-gradient-warm {
-  background: var(--ot-gradient-signal);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-accent);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.85) c h),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.55) c h),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.3) calc(c * 0.7) h / 0.75);
 }
 
+/* Luminous · fg (near-white) face, brand-tinted shadow — carved from light */
 .display-gradient-luminous {
-  background: var(--ot-gradient-luminous);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.95) calc(c * 0.4) h / 0.5),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.62) calc(c * 0.6) h / 0.45),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.33) calc(c * 0.5) h / 0.4);
 }
 
+/* Ember · accent face, shadow hue shifts from green → amber through depth layers */
 .display-gradient-ember {
-  background: var(--ot-gradient-electric);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-accent);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-accent) calc(l * 0.78) c calc(h * 0.75)),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-accent) calc(l * 0.54) calc(c * 0.9) calc(h * 0.5)),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-accent) calc(l * 0.33) calc(c * 0.75) calc(h * 0.25) / 0.75);
 }
 
 /* ── Rich Text Prose ─────────────────────────────────────────────────────────

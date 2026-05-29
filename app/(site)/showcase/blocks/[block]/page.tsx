@@ -353,11 +353,11 @@ function PrimaryTextShowcase() {
     { content: { eyebrow: 'The method', headline: 'Precision at every layer.' }, displaySettings: { size: 'headline', color: 'surface', alignment: 'left', gradient: 'none' } },
   ]
 
-  const gradients = [
-    { content: { eyebrow: 'Brand Sweep',  headline: 'Kinetic by design.'     }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'brand'    } },
-    { content: { eyebrow: 'Warm to Cool', headline: 'Heat meets precision.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'warm'     } },
-    { content: { eyebrow: 'Luminous',     headline: 'Lit from within.'       }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'luminous' } },
-    { content: { eyebrow: 'Ember',        headline: 'Burn bright.'           }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'ember'    } },
+  const depths = [
+    { content: { eyebrow: 'Brand',    headline: 'Kinetic by design.'     }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'brand'    } },
+    { content: { eyebrow: 'Warm',     headline: 'Heat meets precision.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'warm'     } },
+    { content: { eyebrow: 'Luminous', headline: 'Lit from within.'       }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'luminous' } },
+    { content: { eyebrow: 'Ember',    headline: 'Burn bright.'           }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'ember'    } },
   ]
 
   return (
@@ -380,8 +380,8 @@ function PrimaryTextShowcase() {
         </div>
       ))}
 
-      <VariantGroup label="Display gradients · display · center · canvas" note='Gradient fires only when size is "display" — enforced by CVA compound variant.' />
-      {gradients.map((item, i) => (
+      <VariantGroup label="Display depth · display · center · canvas" note='Depth treatment fires only when size is "display" — enforced by CVA compound variant.' />
+      {depths.map((item, i) => (
         <div key={i} className="border-t border-fg/5">
           <VariantLabel label={`gradient: "${item.displaySettings.gradient}"`} />
           <OT_PrimaryTextBlock content={item.content} displaySettings={item.displaySettings} />
