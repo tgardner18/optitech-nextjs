@@ -285,16 +285,16 @@ export default function TrustRail({
 
             {/* Scrolling track — logos doubled for seamless loop */}
             <div
-              className={cn(
-                'flex items-center',
-                !prefersReduced && 'animate-trust-rail-scroll',
-              )}
+              className="flex items-center"
               style={{
                 gap: `${railGap}px`,
                 // paddingRight = railGap ensures translateX(-50%) lands exactly
                 // at the seam between the two copies — no jitter on loop reset.
                 paddingRight: `${railGap}px`,
-                ['--trust-rail-duration' as string]: `${duration}s`,
+                animation: !prefersReduced
+                  ? `trustRailScroll ${duration}s linear infinite`
+                  : undefined,
+                willChange: !prefersReduced ? 'transform' : undefined,
               }}
               // Entire track is decorative; screen readers get the list below
               aria-hidden
