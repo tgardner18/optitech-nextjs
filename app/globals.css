@@ -1001,46 +1001,44 @@ body {
   }
 }
 
-/* ── QuoteBlock — quote mark glyph glow ─────────────────────────────────────
- * Large Syne " in brand teal. The layered text-shadow uses the same teal as
- * the laser signature below, connecting the two visual elements into one system.
- * Applied via .qm-glow class (only on canvas/surface/none — not brand bg).
- * ─────────────────────────────────────────────────────────────────────────── */
-.qm-glow {
-  text-shadow:
-    0 0  8px oklch(55% 0.18 195 / 0.55),
-    0 0 22px oklch(55% 0.18 195 / 0.28),
-    0 0 48px oklch(55% 0.18 195 / 0.12);
-}
-
-/* ── LaserSignature — cinematic SVG signature etch ──────────────────────────
+/* ── LaserSignature — character-by-character signature etch ─────────────────
+ *
+ * Each letter appears as though a laser is etching it: invisible → white-hot
+ * flash with teal glow → cools to the settled brand color. Characters stagger
+ * left to right, 110ms apart, so the name writes itself sequentially.
  *
  * Sequence (triggered by IntersectionObserver → data-active on .ls-wrap):
  *
- *   0ms    Separator rule scores left → right (150ms scaleX)
- *   150ms  Stroke draws via stroke-dashoffset (1.6s kinetic ease);
- *          .ls-tip circle traverses simultaneously via Web Animations API
- *   1750ms Glow layers fade (1.1s ease-out)
- *   1750ms Incision fill rises via @property --ls-fill-a (0.9s ease-out)
+ *   0ms    Separator rule scores left→right (180ms scaleX, ease-out)
+ *   200ms  First character etches in — flash → cool (500ms ease-out)
+ *   +110ms Each subsequent character follows with 110ms stagger
  *
- * Layers (SVG, bottom → top):
- *   .ls-bloom  wide stroke + CSS blur — outer energy halo
- *   .ls-glow   medium stroke + chained drop-shadows — the laser beam
- *   .ls-line   0.8px crisp stroke — the permanent incision
- *   .ls-tip    circle driven by Web Animations API — white-hot cut point
+ * Per-character keyframe (lsCharWrite, 500ms):
+ *   0%   invisible, settled color
+ *   18%  opaque, near-white-hot (oklch 92%), teal glow text-shadow
+ *   100% opaque, var(--ls-settled-color), no glow
  *
- * prefers-reduced-motion → data-static: all layers shown statically.
+ * --ls-settled-color (registered as <color>, inherits: true):
+ *   default   → oklch(55% 0.18 195)  brand teal
+ *   brand bg  → oklch(97% 0.005 195) near-white
+ *
+ * prefers-reduced-motion → data-static: all characters visible instantly.
  * ─────────────────────────────────────────────────────────────────────────── */
 
-@property --ls-fill-a {
-  syntax: '<number>';
-  initial-value: 0;
-  inherits: false;
+/* Registered so lsCharWrite can animate color back to the inherited value */
+@property --ls-settled-color {
+  syntax: '<color>';
+  initial-value: oklch(55% 0.18 195);
+  inherits: true;
 }
 
 /* ── Wrapper ── */
 .ls-wrap {
   display: block;
+  --ls-settled-color: oklch(55% 0.18 195); /* default: brand teal */
+}
+.ls-wrap--brand {
+  --ls-settled-color: oklch(97% 0.005 195); /* on brand bg: near-white */
 }
 
 /* ── Separator rule: 1px scores before signature starts ── */
@@ -1056,149 +1054,39 @@ body {
   background: oklch(97% 0.005 195 / 0.22);
 }
 
-/* ── SVG container — height matches font-size so text fits ── */
-.ls-svg {
-  display: block;
-  overflow: visible;
-  height: clamp(3.2rem, 6.5vw, 5rem);
-}
-
-/* ── All text layers: Caveat 400 at signature scale ── */
-/* Caveat at 400 weight has naturally thin strokes — larger size compensates */
-.ls-svg text {
+/* ── Signature container — Caveat 400, large handwriting scale ── */
+/* Caveat 400 has naturally thin strokes; the large size keeps it legible */
+.ls-sig {
   font-family: var(--ot-font-signature);
   font-size: clamp(3.2rem, 6.5vw, 5rem);
   font-weight: 400;
+  display: block;
+  line-height: 1.15;
 }
 
-/* ── Bloom: wide halo stroke, blurred — diffuse outer energy field ──
- * Slightly brighter/warmer than brand teal (hue 188 vs 195) to suggest heat.
- * Kept subtle — the tip circle is the star; bloom is ambient atmosphere. */
-.ls-svg .ls-bloom {
-  fill: transparent;
-  stroke: oklch(62% 0.18 188);
-  stroke-width: 8;
-  filter: blur(9px);
+/* ── Individual characters: hidden until active ── */
+.ls-char {
+  display: inline-block;
   opacity: 0;
-  stroke-dasharray: 12000;
-  stroke-dashoffset: 12000;
-}
-.ls-svg--brand .ls-bloom { stroke: oklch(97% 0.005 195); }
-
-/* ── Glow: drawn trail — deliberately subtle so the tip dominates ──
- * The full drawn path has this glow applied equally. Keeping it dim lets the
- * eye naturally perceive the tip area as the heat source. */
-.ls-svg .ls-glow {
-  fill: transparent;
-  stroke: oklch(55% 0.18 195);
-  stroke-width: 1.5;
-  opacity: 0;
-  stroke-dasharray: 12000;
-  stroke-dashoffset: 12000;
-  filter:
-    drop-shadow(0 0 1px  oklch(80%  0.10  190 / 0.90))  /* faint warm core */
-    drop-shadow(0 0 4px  oklch(55%  0.18  195 / 0.60))  /* brand teal      */
-    drop-shadow(0 0 10px oklch(55%  0.18  195 / 0.30))  /* soft mid        */
-    drop-shadow(0 0 22px oklch(55%  0.18  195 / 0.14)); /* ambient         */
-}
-.ls-svg--brand .ls-glow {
-  stroke: oklch(97% 0.005 195);
-  filter:
-    drop-shadow(0 0 1px  oklch(100% 0     0   / 0.90))
-    drop-shadow(0 0 4px  oklch(97%  0.005 195 / 0.60))
-    drop-shadow(0 0 10px oklch(97%  0.005 195 / 0.30))
-    drop-shadow(0 0 22px oklch(97%  0.005 195 / 0.14));
+  color: var(--ls-settled-color);
 }
 
-/* ── Etch: 0.6px crisp line — permanent incision after beam shuts off ── */
-.ls-svg .ls-line {
-  fill: oklch(55% 0.18 195 / var(--ls-fill-a));
-  stroke: oklch(55% 0.18 195);
-  stroke-width: 0.6;
-  opacity: 0;
-  stroke-dasharray: 12000;
-  stroke-dashoffset: 12000;
-}
-.ls-svg--brand .ls-line {
-  fill: oklch(97% 0.005 195 / var(--ls-fill-a));
-  stroke: oklch(97% 0.005 195);
-}
-
-/* ── Hot tip: the star of the show ──
- * 6-stop drop-shadow chain: pure white → warm bright teal → brand teal → deep bloom.
- * The warmth gradient (hue 182→188→192→195) creates a "cooling laser" temperature
- * effect that reads as genuine heat even in a cold brand palette.
- * Large outer radii (48px, 80px) make the tip visually dominate the drawn path,
- * so the eye perceives the glow as concentrated at the cutting point. */
-.ls-svg .ls-tip {
-  fill: oklch(99% 0.005 180);    /* white-hot, barely perceptible warm tint */
-  filter:
-    drop-shadow(0 0 0px  oklch(100% 0     0   / 1.00))  /* pure white core  */
-    drop-shadow(0 0 2px  oklch(90%  0.06  182 / 1.00))  /* warm bright teal */
-    drop-shadow(0 0 6px  oklch(68%  0.18  188 / 1.00))  /* hot teal         */
-    drop-shadow(0 0 16px oklch(55%  0.18  192 / 0.85))  /* brand teal       */
-    drop-shadow(0 0 36px oklch(55%  0.18  195 / 0.60))  /* outer bloom      */
-    drop-shadow(0 0 70px oklch(42%  0.14  195 / 0.35)); /* far ambient      */
-  opacity: 0;
-}
-.ls-svg--brand .ls-tip {
-  fill: oklch(100% 0 0);
-  filter:
-    drop-shadow(0 0 0px  oklch(100% 0     0   / 1.00))
-    drop-shadow(0 0 2px  oklch(98%  0.01  180 / 1.00))
-    drop-shadow(0 0 6px  oklch(97%  0.005 195 / 1.00))
-    drop-shadow(0 0 16px oklch(97%  0.005 195 / 0.85))
-    drop-shadow(0 0 36px oklch(97%  0.005 195 / 0.60))
-    drop-shadow(0 0 70px oklch(80%  0.005 195 / 0.35));
-}
-
-/* ── Static fallback (prefers-reduced-motion) ── */
+/* ── Static fallback (prefers-reduced-motion or no JS) ── */
 .ls-wrap[data-static] .ls-rule {
   transform: scaleX(1);
 }
-.ls-wrap[data-static] .ls-svg .ls-bloom,
-.ls-wrap[data-static] .ls-svg .ls-glow,
-.ls-wrap[data-static] .ls-svg .ls-tip {
-  display: none;
-}
-.ls-wrap[data-static] .ls-svg .ls-line {
-  stroke-dashoffset: 0;
+.ls-wrap[data-static] .ls-char {
   opacity: 1;
-  --ls-fill-a: 0.08;
 }
 
-/* ── Active: play the cinematic signing sequence ──
- * Rule scores in 180ms, then the laser signs for 2.4s (deliberately slow —
- * it should feel like a pen moving, not a flash). Glow fades after 2.58s. */
+/* ── Active: trigger the sequential signing animation ── */
 @media (prefers-reduced-motion: no-preference) {
   .ls-wrap[data-active] .ls-rule {
     animation: lsRuleDraw 180ms ease-out forwards;
   }
 
-  .ls-wrap[data-active] .ls-svg .ls-bloom {
-    animation:
-      lsStrokeDraw  2.4s 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
-      lsBloomFade   0.9s 2.58s ease-out                       forwards;
-    opacity: 0.35;
-  }
-
-  .ls-wrap[data-active] .ls-svg .ls-glow {
-    animation:
-      lsStrokeDraw  2.4s 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
-      lsGlowFade    1.1s 2.58s ease-out                       forwards;
-    opacity: 1;
-  }
-
-  .ls-wrap[data-active] .ls-svg .ls-line {
-    animation:
-      lsStrokeDraw  2.4s 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
-      lsFillRise    0.9s 2.58s ease-out                       forwards;
-    opacity: 1;
-  }
-
-  /* Tip opacity controlled by JS Web Animations API; CSS just shows it */
-  .ls-wrap[data-active] .ls-svg .ls-tip {
-    opacity: 1;
+  .ls-wrap[data-active] .ls-char {
+    animation: lsCharWrite 500ms calc(var(--ls-char-delay, 200ms)) ease-out both;
   }
 }
 
@@ -1207,22 +1095,26 @@ body {
   to   { transform: scaleX(1); }
 }
 
-@keyframes lsStrokeDraw {
-  from { stroke-dashoffset: 12000; }
-  to   { stroke-dashoffset: 0;     }
-}
-
-@keyframes lsBloomFade {
-  from { opacity: 0.35; }
-  to   { opacity: 0;    }
-}
-
-@keyframes lsGlowFade {
-  from { opacity: 1.00; }
-  to   { opacity: 0;    }
-}
-
-@keyframes lsFillRise {
-  from { --ls-fill-a: 0;    }
-  to   { --ls-fill-a: 0.08; }
+/* Character etch: invisible → white-hot flash → cool to settled brand color.
+ * The 18% peak mimics a laser cutting point: instantly full brightness, then
+ * the heat dissipates as the beam moves on to the next letterform. */
+@keyframes lsCharWrite {
+  0% {
+    opacity: 0;
+    color: var(--ls-settled-color);
+    text-shadow: none;
+  }
+  18% {
+    opacity: 1;
+    color: oklch(92% 0.04 182); /* near-white-hot — laser temperature */
+    text-shadow:
+      0 0  5px oklch(55% 0.18 195 / 1.00),
+      0 0 14px oklch(55% 0.18 195 / 0.65),
+      0 0 30px oklch(55% 0.18 195 / 0.30);
+  }
+  100% {
+    opacity: 1;
+    color: var(--ls-settled-color);
+    text-shadow: none;
+  }
 }

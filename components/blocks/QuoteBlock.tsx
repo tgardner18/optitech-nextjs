@@ -39,27 +39,26 @@ const figureCva = cva("", {
 });
 
 /**
- * Quote mark: a large `"` glyph in Syne 700.
+ * Quote mark: an oversized `"` in Syne 700, positioned absolutely behind the
+ * quote body at low opacity. Functions as a visual watermark — unmistakably a
+ * quotation mark, never competing with the text.
  *
- * Uses the same font as the quote body for visual continuity.
- * Brand teal color with a layered text-shadow glow — same material language
- * as the laser signature below. Unmistakably a quotation mark; never ornamental.
- *
- * On brand surface: near-white at 55% opacity (legible but recessed).
+ * On brand surface: slightly higher opacity (text is on a teal bg, mark can
+ * be more present). On dark/canvas: brand teal at 12%.
  */
-const quoteMarkCva = cva(
-  "block select-none pointer-events-none font-syne font-bold leading-none",
+const quoteMarkBgCva = cva(
+  "absolute select-none pointer-events-none font-syne font-bold leading-none",
   {
     variants: {
       color: {
-        none:    "text-brand qm-glow",
-        brand:   "text-fg-on-brand/55",
-        canvas:  "text-brand qm-glow",
-        surface: "text-brand qm-glow",
+        none:    "text-brand/[0.12]",
+        brand:   "text-fg-on-brand/[0.18]",
+        canvas:  "text-brand/[0.12]",
+        surface: "text-brand/[0.12]",
       },
       alignment: {
         left:   "",
-        center: "text-center",
+        center: "left-1/2 -translate-x-1/2",
       },
     },
     defaultVariants: { color: "canvas", alignment: "left" },
@@ -67,11 +66,12 @@ const quoteMarkCva = cva(
 );
 
 /**
- * Quote text: Syne 700 — the font's character carries the weight.
- * No italic. Tight tracking. Capped at 52ch for readability.
+ * Quote text: Poppins 300 at reading scale.
+ * The signature is the visual centrepiece; the quote should feel like something
+ * you read, not a headline you scan. Light weight, generous leading, relaxed.
  */
 const quoteTextCva = cva(
-  "font-syne font-bold text-pretty max-w-[52ch] leading-[1.15] tracking-[-0.02em]",
+  "font-sans font-light text-pretty max-w-[65ch] leading-[1.75] tracking-[0.003em]",
   {
     variants: {
       color: {
@@ -81,8 +81,8 @@ const quoteTextCva = cva(
         surface: "text-fg",
       },
       size: {
-        large: "text-headline",
-        small: "text-title",
+        large: "text-[1.375rem]",
+        small: "text-[1.1rem]",
       },
       alignment: {
         left:   "",
@@ -129,54 +129,63 @@ export default function QuoteBlock({
     size      = "large",
   } = styleOptions;
 
-  const markSize = size === "large"
-    ? "clamp(3rem, 5.5vw, 4rem)"
-    : "clamp(2.2rem, 4vw, 3rem)";
+  // Oversized background mark — large enough to dwarf the body text
+  const bgMarkSize = size === "large"
+    ? "clamp(7rem, 13vw, 10rem)"
+    : "clamp(5rem, 10vw, 7.5rem)";
 
   return (
     <section className={sectionCva({ color, size })}>
-      <figure className={figureCva({ alignment })}>
+      {/* relative so the absolute background " is contained */}
+      <figure className={cn(figureCva({ alignment }), "relative")}>
 
-        {/* ── Quote mark: Syne " with brand teal glow ─────────────────────
-          * Large, clearly a quotation mark. Teal text-shadow matches the
-          * laser aesthetic below — same material, same glow language. */}
+        {/* ── Background quote mark ─────────────────────────────────────────
+          * Absolutely positioned behind everything else (z-0). Large enough
+          * to read as a deliberate shape, low enough opacity to stay recessed.
+          * Left-aligned: sits at the top-left of the figure, partially behind
+          * the first line of the quote body. Center-aligned: centered via cva. */}
         <span
           aria-hidden="true"
-          className={cn(quoteMarkCva({ color, alignment }), "mb-md")}
-          style={{ fontSize: markSize }}
+          className={cn(quoteMarkBgCva({ color, alignment }), "top-[-0.15em] left-[-0.05em] z-0")}
+          style={{ fontSize: bgMarkSize }}
         >
           &ldquo;
         </span>
 
-        {/* ── Quote body ────────────────────────────────────────────────── */}
-        <blockquote>
-          <p
-            className={quoteTextCva({ color, size, alignment })}
-            {...pa('quote')}
-          >
-            {quote}
-          </p>
-        </blockquote>
+        {/* ── All content sits above the background mark (z-10) ─────────── */}
+        <div className="relative z-10">
 
-        {/* ── Signature & attribution ───────────────────────────────────── */}
-        <figcaption className={cn(
-          "mt-xl",
-          alignment === "center" && "flex flex-col items-center"
-        )}>
-          <LaserSignature
-            name={attribution.name}
-            color={color}
-            epiProps={pa('attributionName')}
-          />
-          {attribution.title && (
+          {/* ── Quote body ──────────────────────────────────────────────── */}
+          <blockquote>
             <p
-              className={cn(attributionTitleCva({ color }), "mt-xs")}
-              {...pa('attributionTitle')}
+              className={quoteTextCva({ color, size, alignment })}
+              {...pa('quote')}
             >
-              {attribution.title}
+              {quote}
             </p>
-          )}
-        </figcaption>
+          </blockquote>
+
+          {/* ── Signature & attribution ─────────────────────────────────── */}
+          <figcaption className={cn(
+            "mt-xl",
+            alignment === "center" && "flex flex-col items-center"
+          )}>
+            <LaserSignature
+              name={attribution.name}
+              color={color}
+              epiProps={pa('attributionName')}
+            />
+            {attribution.title && (
+              <p
+                className={cn(attributionTitleCva({ color }), "mt-xs")}
+                {...pa('attributionTitle')}
+              >
+                {attribution.title}
+              </p>
+            )}
+          </figcaption>
+
+        </div>
 
       </figure>
     </section>
