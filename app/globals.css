@@ -711,6 +711,156 @@ body {
   );
 }
 
+/* ── HeroBlock — atmospheric text panel depth system ────────────────────────
+ *
+ * Three-layer depth applied to the text panel via .hero-atmos:
+ *
+ *   ::before  Edge-lit radial gradient — a diffuse light source positioned at
+ *             the panel's edge that faces the image, as if ambient light from
+ *             the visual panel spills into the text panel. Adapts to layout
+ *             direction (imageRight / imageLeft / full-width).
+ *
+ *   ::after   Micro-grain texture — SVG feTurbulence noise at 3% opacity.
+ *             Barely visible, but breaks the "digital flat panel" flatness.
+ *
+ * canvas/surface panels: the glow breathes slowly on a 9s alternate cycle,
+ * creating a subconscious sense that the surface is alive. Brand panel is
+ * static — .bg-brand-fill already provides rich gradient depth.
+ *
+ * All gradient stops use CSS Relative Color Syntax from --ot-brand, so they
+ * follow CMS theme overrides automatically.
+ *
+ * Legibility: the gradient sits entirely behind the text (z-index 0 vs z-10).
+ * Brand color at these opacity levels does not compromise WCAG AA contrast.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* --hero-glow-a drives the animated opacity of the light gradient.
+ * Registered as <number> so it can be interpolated in keyframes. */
+@property --hero-glow-a {
+  syntax: '<number>';
+  initial-value: 0.18;
+  inherits: false;
+}
+
+.hero-atmos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-atmos::before,
+.hero-atmos::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Brand panel: reinforce bg-brand-fill with directional depth ──
+ * A brighter spot from the image-adjacent edge (warmth from the visual)
+ * and a deeper shadow at the far corner (dimensionality). */
+.hero-atmos[data-color="brand"][data-layout="imageRight"]::before {
+  /* Image on right → light spills from right edge */
+  background:
+    radial-gradient(ellipse 65% 80% at 108% 28%,
+      oklch(from var(--ot-brand) calc(l + 0.25) c h / 0.30) 0%,
+      transparent 58%
+    ),
+    radial-gradient(ellipse 45% 50% at -5% 82%,
+      oklch(from var(--ot-brand) calc(l - 0.22) c h / 0.35) 0%,
+      transparent 52%
+    );
+}
+.hero-atmos[data-color="brand"][data-layout="imageLeft"]::before {
+  /* Image on left → light spills from left edge */
+  background:
+    radial-gradient(ellipse 65% 80% at -8% 28%,
+      oklch(from var(--ot-brand) calc(l + 0.25) c h / 0.30) 0%,
+      transparent 58%
+    ),
+    radial-gradient(ellipse 45% 50% at 105% 82%,
+      oklch(from var(--ot-brand) calc(l - 0.22) c h / 0.35) 0%,
+      transparent 52%
+    );
+}
+.hero-atmos[data-color="brand"][data-layout="full"]::before {
+  /* Full-width: overhead-center wash */
+  background: radial-gradient(ellipse 75% 55% at 30% -5%,
+    oklch(from var(--ot-brand) calc(l + 0.20) c h / 0.22) 0%,
+    transparent 60%
+  );
+}
+
+/* ── Canvas panel: brand-tinted ambient glow; breathes slowly ──
+ * The glow is not centred — it drifts from the image-adjacent edge,
+ * reinforcing that the two panels are part of one composition. */
+.hero-atmos[data-color="canvas"][data-layout="imageRight"]::before {
+  background: radial-gradient(ellipse 75% 78% at 110% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="canvas"][data-layout="imageLeft"]::before {
+  background: radial-gradient(ellipse 75% 78% at -10% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="canvas"][data-layout="full"]::before {
+  background: radial-gradient(ellipse 82% 65% at 25% -5%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Surface panel: same intent as canvas, slightly stronger presence ──
+ * Surface is one tone above canvas, so the brand glow can be a touch warmer. */
+.hero-atmos[data-color="surface"][data-layout="imageRight"]::before {
+  background: radial-gradient(ellipse 75% 78% at 110% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="surface"][data-layout="imageLeft"]::before {
+  background: radial-gradient(ellipse 75% 78% at -10% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="surface"][data-layout="full"]::before {
+  background: radial-gradient(ellipse 82% 65% at 25% -5%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Micro-grain texture overlay ──
+ * SVG fractalNoise rendered as a greyscale tile, tiled at 250px.
+ * At 3% opacity it adds micro-texture without being consciously visible.
+ * Applied to all variants — brand, canvas, and surface all benefit. */
+.hero-atmos::after {
+  /* stylelint-disable-next-line function-url-quotes */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 250px 250px;
+  opacity: 0.03;
+}
+
+/* ── Ambient breathing — canvas and surface panels only ──
+ * The glow gently intensifies and recedes on a 9-second alternate cycle.
+ * Designed to be perceived subliminally: present but never distracting.
+ * Uses a near-linear ease (0.45, 0, 0.55, 1) to feel breath-like, not mechanical. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-atmos[data-color="canvas"]::before,
+  .hero-atmos[data-color="surface"]::before {
+    animation: heroPanelBreathe 9s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  }
+}
+
+@keyframes heroPanelBreathe {
+  from { --hero-glow-a: 0.11; }
+  to   { --hero-glow-a: 0.28; }
+}
+
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
  * keyframes used by the auto-play countdown and panel entrance.
  * The JS layer guards these against prefers-reduced-motion.

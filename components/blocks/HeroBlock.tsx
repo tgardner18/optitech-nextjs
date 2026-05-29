@@ -171,6 +171,12 @@ export default function HeroBlock({
   const stagger = (delay: number): CSSProperties =>
     isAnimated ? { animationDelay: `${delay}ms` } : {};
 
+  // Tells the atmospheric layer where the light source is relative to the panel.
+  // imageRight → image is on the right → light spills in from the right edge.
+  // imageLeft  → image is on the left  → light spills in from the left edge.
+  // full       → no image              → overhead-center ambient source.
+  const atmosLayout = hasVisual ? layout : "full"
+
   return (
     <section className={sectionCva({ layout })} aria-label="Hero">
 
@@ -179,10 +185,20 @@ export default function HeroBlock({
           and button hover states always resolve to dark-mode values regardless of
           the site's page-level theme (light or dark). */}
       <div
-        className={textPanelCva({ color, mode: hasVisual ? "split" : "full" })}
+        className={`${textPanelCva({ color, mode: hasVisual ? "split" : "full" })} relative overflow-hidden`}
         data-theme={color === 'brand' ? 'dark' : undefined}
       >
-        <div className="flex flex-col gap-lg">
+        {/* Atmospheric depth layer — edge-lit gradient + micro-grain texture.
+            Absolutely positioned so it has zero impact on flex layout. */}
+        <div
+          className="hero-atmos"
+          data-color={color}
+          data-layout={atmosLayout}
+          aria-hidden="true"
+        />
+
+        {/* Content lifted above the atmospheric layer */}
+        <div className="relative z-10 flex flex-col gap-lg">
           {eyebrow && (
             <p className={`${eyebrowCva({ color })} ${animClass}`} style={stagger(0)} {...pa('eyebrow')}>
               {eyebrow}
@@ -199,7 +215,7 @@ export default function HeroBlock({
         </div>
 
         {(primaryCta || secondaryCta) && (
-          <div className={`mt-xl flex flex-wrap gap-sm ${animClass}`} style={stagger(320)}>
+          <div className={`relative z-10 mt-xl flex flex-wrap gap-sm ${animClass}`} style={stagger(320)}>
             {primaryCta && (
               <Link href={primaryCta.href} className={primaryCtaCva({ color })} {...pa('primaryCtaLabel')}>
                 {primaryCta.label}
