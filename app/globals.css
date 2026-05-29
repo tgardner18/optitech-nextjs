@@ -281,7 +281,17 @@ body {
 }
 
 /* Display gradient fills — use once per composition, display scale only.
-   Stops are defined in tokens.css and adapt to the active theme. */
+   Stops are defined in tokens.css and adapt to the active theme.
+   padding-bottom extends the element box below the last line so the gradient
+   paints through descenders (g, p, q, y). Without it, background-clip:text
+   stops at the element boundary and descenders appear transparent. */
+.display-gradient-brand,
+.display-gradient-warm,
+.display-gradient-luminous,
+.display-gradient-ember {
+  padding-bottom: 0.2em;
+}
+
 .display-gradient-brand {
   background: var(--ot-gradient-brand);
   -webkit-background-clip: text;

@@ -58,7 +58,7 @@ const headingCva = cva(
         compact: 'text-headline',
         // leading-[1.05] overrides the leading-headline base — at display scale
         // (up to 6rem) the 0.9 token would clip descenders against overflow-hidden.
-        display: 'text-display leading-[1.05] tracking-display font-extrabold',
+        display: 'text-display leading-[1.15] tracking-display font-extrabold',
       },
     },
     defaultVariants: { color: 'canvas', size: 'large' },
