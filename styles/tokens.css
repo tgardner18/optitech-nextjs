@@ -37,9 +37,10 @@
   --ot-fg-on-brand:  oklch(97% 0.005 195); /* always light — brand teal needs contrast  */
 
   /* ── Typography ─────────────────────────────────────────────────────────── */
-  --ot-font-sans: var(--font-poppins), system-ui, sans-serif;
-  --ot-font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --ot-font-syne: var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
+  --ot-font-sans:      var(--font-poppins), system-ui, sans-serif;
+  --ot-font-mono:      var(--font-geist-mono), ui-monospace, monospace;
+  --ot-font-syne:      var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
+  --ot-font-signature: var(--font-dancing-script), cursive;     /* Dancing Script 700 — QuoteBlock laser signature */
 
   /* Scale */
   --ot-text-display:  clamp(3rem, 8vw, 6rem);

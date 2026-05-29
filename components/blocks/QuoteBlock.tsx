@@ -4,7 +4,7 @@ import LaserSignature from "./LaserSignature";
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type QuoteStyleOptions = {
-  /** Background color of the block — "none" is transparent, inheriting the row/section background */
+  /** Background color of the block */
   color?: "none" | "brand" | "canvas" | "surface";
   /** Horizontal alignment of quote and attribution */
   alignment?: "left" | "center";
@@ -30,10 +30,10 @@ const sectionCva = cva("px-md lg:px-lg", {
   defaultVariants: { color: "canvas", size: "large" },
 });
 
-const figureCva = cva("relative overflow-hidden", {
+const figureCva = cva("relative", {
   variants: {
     alignment: {
-      left:   "",
+      left:   "max-w-screen-lg",
       center: "mx-auto max-w-screen-md text-center",
     },
   },
@@ -41,27 +41,23 @@ const figureCva = cva("relative overflow-hidden", {
 });
 
 /**
- * The `"` character: absolutely positioned behind the text.
- * Sits at the top of the figure, fades downward via mask-image so it
- * dissolves naturally as the quote text begins.
- *
- * On dark surfaces: brand teal at 20% opacity.
- * On brand surface: white at 15% opacity.
- * Centered alignment centers it behind the text column.
+ * Opening quotation mark — a large typographic ornament sitting behind the text,
+ * dissolving downward with a mask so it integrates rather than crowds.
+ * Kept smaller than before so it defers to the signature as the focal element.
  */
 const quoteMarkCva = cva(
   "absolute top-0 font-extrabold leading-none select-none pointer-events-none",
   {
     variants: {
       color: {
-        none:    "text-brand opacity-20",
-        brand:   "text-fg-on-brand opacity-[0.15]",
-        canvas:  "text-brand opacity-20",
-        surface: "text-brand opacity-20",
+        none:    "text-brand opacity-[0.12]",
+        brand:   "text-fg-on-brand opacity-[0.10]",
+        canvas:  "text-brand opacity-[0.12]",
+        surface: "text-brand opacity-[0.12]",
       },
       size: {
-        large: "text-[10rem] lg:text-[13rem]",
-        small: "text-[7rem]  lg:text-[9rem]",
+        large: "text-[7rem] lg:text-[9rem]",
+        small: "text-[5rem] lg:text-[7rem]",
       },
       alignment: {
         left:   "left-0",
@@ -72,50 +68,40 @@ const quoteMarkCva = cva(
   }
 );
 
-/** Pushes the text content down so the top of the quote mark peeks above it */
-const quoteContentCva = cva("relative", {
-  variants: {
-    size: {
-      large: "pt-[4rem] lg:pt-[5.5rem]",
-      small: "pt-[2.5rem] lg:pt-[3.5rem]",
+/**
+ * Quote text — italic, strong weight, headline scale.
+ * The quote carries full visual weight; the signature below is the signature
+ * of authorship that closes the statement. Both are prominent.
+ * Capped at 55ch so lines never sprawl on wide viewports.
+ */
+const quoteTextCva = cva(
+  "text-pretty max-w-[55ch] italic font-semibold",
+  {
+    variants: {
+      color: {
+        none:    "text-fg",
+        brand:   "text-fg-on-brand",
+        canvas:  "text-fg",
+        surface: "text-fg",
+      },
+      size: {
+        large: "text-headline leading-headline tracking-headline",
+        small: "text-title leading-title tracking-title",
+      },
+      alignment: {
+        left:   "",
+        center: "mx-auto",
+      },
     },
-  },
-  defaultVariants: { size: "large" },
-});
+    defaultVariants: { color: "canvas", size: "large", alignment: "left" },
+  }
+);
 
-const quoteTextCva = cva("text-balance", {
-  variants: {
-    color: {
-      none:    "text-fg",
-      brand:   "text-fg-on-brand",
-      canvas:  "text-fg",
-      surface: "text-fg",
-    },
-    size: {
-      large: "text-headline leading-headline tracking-headline font-bold",
-      small: "text-title leading-title tracking-title font-semibold",
-    },
-  },
-  defaultVariants: { color: "canvas", size: "large" },
-});
-
-const attributionNameCva = cva("text-label tracking-label uppercase font-semibold", {
-  variants: {
-    color: {
-      none:    "text-fg",
-      brand:   "text-fg-on-brand",
-      canvas:  "text-fg",
-      surface: "text-fg",
-    },
-  },
-  defaultVariants: { color: "canvas" },
-});
-
-const attributionTitleCva = cva("text-label font-normal", {
+const attributionTitleCva = cva("text-label font-normal tracking-label", {
   variants: {
     color: {
       none:    "text-fg-muted",
-      brand:   "text-fg-on-brand/60",
+      brand:   "text-fg-on-brand/55",
       canvas:  "text-fg-muted",
       surface: "text-fg-muted",
     },
@@ -148,31 +134,43 @@ export default function QuoteBlock({
     <section className={sectionCva({ color, size })}>
       <figure className={figureCva({ alignment })}>
 
-        {/* Quote mark: absolute, behind the text, top peeks — bottom fades */}
+        {/* Recessed opening mark — ornamental, not structural */}
         <span
           aria-hidden="true"
           className={quoteMarkCva({ color, size, alignment })}
           style={{
-            WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent 78%)",
-            maskImage:        "linear-gradient(to bottom, black 30%, transparent 78%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 20%, transparent 72%)",
+            maskImage:        "linear-gradient(to bottom, black 20%, transparent 72%)",
           }}
         >
           &ldquo;
         </span>
 
-        {/* Content: relative so it paints above the absolute mark */}
-        <div className={quoteContentCva({ size })}>
+        {/* ── Quote body ─────────────────────────────────────────────────── */}
+        <div className={size === "large" ? "pt-[3rem] lg:pt-[4rem]" : "pt-[2rem] lg:pt-[3rem]"}>
           <blockquote>
-            <p className={quoteTextCva({ color, size })} {...pa('quote')}>{quote}</p>
+            <p
+              className={quoteTextCva({ color, size, alignment })}
+              {...pa('quote')}
+            >
+              {quote}
+            </p>
           </blockquote>
-          <figcaption className="mt-lg flex flex-col gap-xs">
+
+          {/* ── Signature block ──────────────────────────────────────────── */}
+          <figcaption className={`mt-xl ${alignment === 'center' ? 'flex flex-col items-center' : ''}`}>
             <LaserSignature
-                name={attribution.name}
-                color={color}
-                epiProps={pa('attributionName')}
-              />
+              name={attribution.name}
+              color={color}
+              epiProps={pa('attributionName')}
+            />
             {attribution.title && (
-              <p className={attributionTitleCva({ color })} {...pa('attributionTitle')}>{attribution.title}</p>
+              <p
+                className={`${attributionTitleCva({ color })} mt-xs uppercase tracking-label`}
+                {...pa('attributionTitle')}
+              >
+                {attribution.title}
+              </p>
             )}
           </figcaption>
         </div>
