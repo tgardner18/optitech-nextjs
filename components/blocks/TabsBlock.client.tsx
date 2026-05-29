@@ -387,7 +387,7 @@ function TriggerButton({
         onClick={() => onSelect(index)}
         className={cn(
           baseClass,
-          'px-lg py-sm text-sm font-semibold tracking-label uppercase',
+          'px-lg py-sm text-sm font-semibold',
           triggerTextClass(color, isActive ? 'active' : 'inactive'),
           // Glass active: frosted bg
           isActive && color === 'glass' && [
@@ -581,7 +581,7 @@ type PanelContentProps = {
 function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
 
   const headingClass = cn(
-    'text-title font-semibold leading-title tracking-title text-balance',
+    'text-headline font-bold leading-headline tracking-headline text-balance',
     color === 'brand'  ? 'text-fg-on-brand'
     : color === 'glass' ? 'text-white'
     : 'text-fg',
@@ -599,8 +599,16 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
   // Fall back to textOnly if the active tab has no image
   const resolvedLayout = hasImage ? contentLayout : 'textOnly'
 
+  const eyebrowClass = cn(
+    'text-label tracking-label uppercase font-semibold',
+    color === 'brand'  ? 'text-fg-on-brand/70'
+    : color === 'glass' ? 'text-white/60'
+    : 'text-brand',
+  )
+
   const textContent = (
     <div className="flex flex-col gap-sm flex-1">
+      <p className={eyebrowClass}>{tab.tabLabel}</p>
       {tab.heading && <h3 className={headingClass}>{tab.heading}</h3>}
       {tab.body    && (
         <div
