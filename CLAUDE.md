@@ -45,11 +45,18 @@ Tailwind v4 note: there is no `tailwind.config.ts`. Customizations go in `global
 
 ## Block Components & Showcase
 
-Every new block component added to `components/blocks/` must also get a static demonstration section on the showcase page (`app/showcase/page.tsx`) in the same task. The showcase section should:
+Every new block component added to `components/blocks/` must also get a static demonstration section on the showcase **in the same task**. The showcase has two parts — both must be updated:
 
-- Show the block in all meaningful `styleOptions` combinations (color schemes, sizes, orientation variants, etc.)
-- Use realistic placeholder copy consistent with the OptiTech brand voice
-- Be added as a clearly labelled section following the existing showcase page conventions
+1. **Block showcase page** — `app/(site)/showcase/blocks/[block]/page.tsx`
+   - Add the block slug to the `BLOCK_SLUGS` const array
+   - Add an entry to `BLOCK_META` record
+   - Write a `<YourBlockShowcase />` component with all meaningful `styleOptions` combinations
+   - Add a `case 'your-block': return <YourBlockShowcase />` to the switch statement
+   - Use realistic placeholder copy consistent with the OptiTech brand voice
+
+2. **Showcase nav config** — `app/(site)/showcase/config.ts`
+   - Add `{ label: 'Your Block', slug: 'your-block' }` to the `items` array inside the `'blocks'` category
+   - Without this the block is unreachable from the nav — the page exists but no link points to it
 
 This is a standing requirement — do not wait to be asked.
 
@@ -108,17 +115,35 @@ export const OT_YourBlock = contentType({
   displayName: 'Your Block',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],   // add 'sectionEnabled' if it can span a full row
+  // mayContainTypes: ['_self', 'OT_OtherPage', 'OT_BlogPage']  ← _page/_experience/_folder only
   properties: {
-    heading: { type: 'string', displayName: 'Heading', group: 'OT_Content', sortOrder: 10 },
-    body:     { type: 'string', displayName: 'Body',    group: 'OT_Content', sortOrder: 20 },
-    // url type: { type: 'url', isLocalized: true }
-    // image:   { type: 'contentReference', allowedTypes: ['_image'] }
-    // bool:    { type: 'boolean' }
-    // int:     { type: 'integer' }
-    // json:    { type: 'json' }
+    heading: { type: 'string',   displayName: 'Heading', group: 'OT_Content', sortOrder: 10, isLocalized: true, maxLength: 80 },
+    body:    { type: 'richText', displayName: 'Body',    group: 'OT_Content', sortOrder: 20, isLocalized: true },
+    // url type:    { type: 'url', isLocalized: true }
+    // image:       { type: 'contentReference', allowedTypes: ['_image'] }
+    // bool:        { type: 'boolean' }
+    // int:         { type: 'integer' }
+    // json:        { type: 'json' }
+    // selectOne:   { type: 'string', format: 'selectOne', enum: [{ value: 'foo', displayName: 'Foo' }] }
     // array with nested component: { type: 'array', items: { type: 'component', contentType: OtherType } }
   },
 })
+```
+
+### SDK property type rules — learned the hard way
+
+These are non-obvious SDK constraints. Getting them wrong causes TypeScript build errors.
+
+| Rule | Correct | Wrong |
+|---|---|---|
+| Enum items use `value` | `{ value: 'line', displayName: 'Line' }` | `{ key: 'line', displayName: 'Line' }` |
+| Validation is top-level | `maxLength: 80` at property root | `validation: { maxLength: 80 }` — does not exist |
+| Localization flag | `isLocalized: true` | `localized: true` — wrong key |
+| `required` field | Not supported by SDK types — omit | `required: true` — causes TS error |
+| Rich text type | `type: 'richText'` | `type: 'xhtml'` — not a valid SDK type |
+| Rich text GraphQL shape | Returns `{ html, json }` — access via `.html` in adapter | Treating it as a plain string |
+| `mayContainTypes` | Available on `_page`, `_experience`, `_folder` base types | Not available on `_component` |
+| Child type self-reference | Use `'_self'` string | Circular import of the same file |
 ```
 
 ### Display template — block (links to content type)
@@ -253,10 +278,16 @@ For a new **experience page type** (e.g. `OT_BlogPage`):
 
 ### CLI sync
 
-The Optimizely CMS CLI (`@optimizely/cms-cli`) syncs TypeScript definitions to the SaaS CMS. Requires `.env` with:
+The Optimizely CMS CLI (`@optimizely/cms-cli`) syncs TypeScript definitions to the SaaS CMS. Requires `.env.local` with:
 ```
 OPTIMIZELY_CMS_URL=
 OPTIMIZELY_CMS_CLIENT_ID=
 OPTIMIZELY_CMS_CLIENT_SECRET=
 ```
-Run via: `npx @optimizely/cms-cli push` (check the package for exact command — there is no custom yarn script configured).
+Run via: `npx @optimizely/cms-cli config push` — the subcommand is `config push`, not just `push`.
+
+**Critical:** Registering a content type in `cms/registry.ts` immediately adds it to every GraphQL query the SDK sends. If the type has not been pushed to the CMS Graph schema yet, the Next.js production build (`yarn build`) will fail with `HTTP 400: Unknown type "OT_YourBlock"`. The dev server (`yarn dev`) is not affected. Push the type before deploying.
+
+### OptiForm elements — not part of this SDK
+
+The `OptiFormsChoiceElement`, `OptiFormsTextboxElement`, and related types registered in `cms/registry.ts` are **Optimizely Forms** components — a separate hosted service, not the CMS SDK. They are included in the content type registry for Graph fragment compatibility but are not authored through the same SDK patterns. Do not attempt to style, preview, or extend them using the four-layer block pattern described above. If editors report form preview issues, the cause is almost certainly the Forms service configuration, not the Next.js app.

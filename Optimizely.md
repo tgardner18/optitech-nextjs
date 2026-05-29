@@ -96,11 +96,41 @@ export const OT_HeroBlock = contentType({
 | `type` | GraphQL shape | Notes |
 |---|---|---|
 | `string` | plain scalar | Also supports `format: 'selectOne'` with an `enum` list for dropdowns |
+| `richText` | `{ html, json }` | Full rich-text editor (TinyMCE). Access `.html` in adapters for rendering. Toolbar preset is configured in the CMS admin, not in code. |
 | `url` | `{ default }` | The `default` key holds the resolved URL string |
 | `contentReference` | expanded object with `url { default }` | Use `src(field)` from `getPreviewUtils` to extract the URL |
 | `link` | `{ text, title, target, url { default } }` | Used for navigation links |
 | `boolean` | plain scalar | |
+| `integer` | plain scalar | |
+| `json` | plain scalar | Stored and returned as a raw JSON string — parse on the client |
 | `array` | array of items | Items can be `{ type: 'component', contentType: SomeType }` for nested structured content |
+
+### Property definition rules — SDK type constraints
+
+These are non-obvious constraints enforced by the SDK's TypeScript types. Violating them produces build errors.
+
+- **Enum `value` not `key`**: dropdown items must be `{ value: 'foo', displayName: 'Foo' }`, not `{ key: 'foo' }`.
+- **Flat validation**: `maxLength` is a top-level property field — there is no `validation: {}` wrapper object.
+- **`isLocalized` not `localized`**: the localization flag is `isLocalized: true`.
+- **`required` is unsupported**: the SDK types do not include a `required` field — omit it.
+- **`xhtml` does not exist**: rich text is `type: 'richText'`, not `type: 'xhtml'`.
+
+### Controlling child content types (`mayContainTypes`)
+
+`_page`, `_experience`, and `_folder` content types can declare which child content types editors are allowed to create inside them in the CMS tree. Without this, the CMS defaults to "None" and editors cannot add child pages.
+
+```ts
+export const BlankExperience = contentType({
+  key: 'BlankExperience',
+  baseType: '_experience',
+  mayContainTypes: ['_self', 'OT_BlogPage', 'OT_FolderPage'],
+  // '_self' = "same type as me", avoids circular import
+  // string keys avoid circular imports between co-dependent files
+  ...
+})
+```
+
+`mayContainTypes` accepts an array of `ContentType` references or string keys. Use string keys when two files would otherwise circularly import each other (e.g. `BlankExperience` and `OT_FolderPage` both reference each other).
 
 ### Composite/nested content types
 
@@ -517,7 +547,7 @@ Run `npx @optimizely/cms-cli config push` after any change to a content type or 
 
 6. **Route handler** — in `app/(site)/[...slug]/page.tsx`, add a branch inside the `!exp?.composition?.nodes` block that checks `exp?.__typename === 'OT_MyPage'`. For public requests make a targeted direct query to fetch all fields (the initial `getContentByPath` call may not return page-specific fields). For draft/preview mode, `exp` from `getPreviewContent` already contains all fields and can be used directly.
 
-7. **Showcase** — add a section with mock data to `app/(site)/showcase/blocks/page.tsx`.
+7. **Showcase** — add a `<YourPageShowcase />` component to `app/(site)/showcase/blocks/[block]/page.tsx` and a `{ label: 'Your Page', slug: 'your-page' }` entry to `app/(site)/showcase/config.ts`.
 
 ### How `_page` routing differs from `_experience`
 
@@ -535,6 +565,20 @@ Run `npx @optimizely/cms-cli config push` after any change to a content type or 
 | Type key | Component | Data fetching |
 |---|---|---|
 | `OT_BlogPage` | `components/pages/BlogPage.tsx` | `lib/blog.ts` — `getBlogPage(key)`, `getLatestBlogPosts(excludeKey)` |
+
+---
+
+## OptiForm elements — separate service, not the CMS SDK
+
+The `OptiFormsChoiceElement`, `OptiFormsTextboxElement`, `OptiFormsNumberElement`, and related types that appear in `cms/registry.ts` and `cms/content-types/` are **Optimizely Forms** — a hosted form service that is separate from the Optimizely SaaS CMS SDK. They are registered in the content type registry purely so the SDK can include them in GraphQL composition fragments (preventing HTTP 400 errors), but they are **not authored through the four-layer block pattern**.
+
+Do not:
+- Create display templates for OptiForm types
+- Build CMS adapters for OptiForm types following the `OT_` pattern
+- Attempt to style OptiForm fields using `cms/styling/` helpers
+- Try to add OptiForm types to `compositionBehaviors`
+
+If editors report form preview issues or the forms service does not render in the preview iframe, the root cause is the Forms service configuration (webhook endpoints, form IDs, or site permissions) — not the Next.js application code.
 
 ---
 
@@ -556,7 +600,7 @@ Follow all steps in order; omitting any step causes silent failures.
 
 7. **React component** — create `components/blocks/MyBlock.tsx`. Pure React component with typed props. Use `cva` for variant logic driven by `styleOptions`. Spread `pa('fieldName')` on each element that holds an editable property. The component must not import anything from `@optimizely/cms-sdk`.
 
-8. **Showcase** — add a demonstration section to `app/(site)/showcase/page.tsx` showing the block in all meaningful display setting combinations. This is a standing requirement per `CLAUDE.md`.
+8. **Showcase** — add a `<YourBlockShowcase />` component to `app/(site)/showcase/blocks/[block]/page.tsx`, a case in the switch statement, and a `{ label: 'Your Block', slug: 'your-block' }` entry to `app/(site)/showcase/config.ts`. Both files must be updated or the block won't be reachable from the nav.
 
 ---
 
@@ -596,3 +640,53 @@ cms/
 
 optimizely.config.mjs  CLI push config (paths + property groups)
 ```
+
+---
+
+## Lessons learned — known gotchas
+
+Consolidated from real build failures and runtime bugs. Read this before starting any CMS work.
+
+### Build fails with "Unknown type OT_YourBlock" on Vercel
+
+**Cause:** Registering a content type in `cms/registry.ts` immediately includes it in every GraphQL composition fragment the SDK auto-generates. If the type hasn't been pushed to the CMS Graph yet, the Next.js static page generation query returns HTTP 400.
+
+**Fix:** Run `npx @optimizely/cms-cli config push` before merging/deploying any new content type. The dev server (`yarn dev`) is not affected because it does not run static page generation.
+
+### CLI command is `config push`, not `push`
+
+The correct command is `npx @optimizely/cms-cli config push`. Running `npx @optimizely/cms-cli push` alone will not push content types.
+
+### `richText` fields return an object, not a string
+
+A `type: 'richText'` property returns `{ html, json }` from GraphQL. In adapters, access `.html`:
+```ts
+body: item.body?.html ?? undefined
+```
+Then render it in the React component with `dangerouslySetInnerHTML={{ __html: body }}`, never as a plain text node.
+
+### Server adapters cannot be imported in client components
+
+CMS adapter components (`cms/components/OT_*.tsx`) are server components — they import from `@optimizely/cms-sdk/react/server`. Importing them inside a `'use client'` module will either fail silently or produce unexpected output.
+
+The showcase pages (`app/(site)/showcase/blocks/[block]/page.tsx`) are server components — they must **not** have `'use client'` at the top. The adapter imports work correctly there. If a showcase page ever becomes a client component, replace adapter imports with direct imports of the underlying `components/blocks/` component and map props manually.
+
+### Showcase nav requires two file updates
+
+Adding a new block showcase requires updating **both**:
+1. `app/(site)/showcase/blocks/[block]/page.tsx` — the showcase component and switch case
+2. `app/(site)/showcase/config.ts` — the nav chip entry
+
+Missing the config update means the route exists but is unreachable from the nav. There is no redirect from the listing page; it redirects to `hero` by default.
+
+### `prefers-reduced-motion` gates CSS animations
+
+Custom CSS animation classes defined inside `@media (prefers-reduced-motion: no-preference)` blocks will not animate on machines where Reduce Motion is enabled (macOS: System Settings → Accessibility → Motion → Reduce Motion). This is correct WCAG behaviour, not a bug. For animations that need to be reliable across environments, apply the `animation` property via inline React style, referencing the `@keyframes` name directly. The keyframe definition can remain in `globals.css` without the media query wrapper.
+
+### `mayContainTypes` must be set on page/experience/folder types
+
+Without `mayContainTypes`, the CMS defaults to "None" for allowed child content types, and editors cannot create child pages or nest content in the tree. Every `_page`, `_experience`, and `_folder` type that should contain children needs this field. Use `'_self'` for self-referential nesting and string keys for cross-references to avoid circular imports.
+
+### OptiForm elements are third-party
+
+`OptiFormsChoiceElement` and related types in the registry are Optimizely Forms — a separate service. They exist in the registry only for GraphQL fragment compatibility. Preview and rendering issues with forms are Forms service issues, not Next.js issues.
