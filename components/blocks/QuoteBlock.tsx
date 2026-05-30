@@ -40,9 +40,9 @@ const figureCva = cva("", {
 
 /**
  * Quote mark watermark — absolutely positioned behind the text at z-0.
- * Left-aligned: anchors to the top-left corner of the figure.
- * Center-aligned: centered horizontally via left-1/2 + -translate-x-1/2.
- * Both use the same large bgMarkSize so the visual weight is identical.
+ * Always anchors to the top-left corner of the figure regardless of alignment.
+ * Center alignment centers the text, not the mark — the mark stays as a
+ * fixed opening-quote anchor at the left edge.
  */
 const quoteMarkCva = cva(
   "absolute select-none pointer-events-none font-syne font-bold leading-none top-[-0.15em] z-0",
@@ -126,16 +126,13 @@ export default function QuoteBlock({
     <section className={sectionCva({ color, size })}>
       <figure className={cn(figureCva({ alignment }), "relative")}>
 
-        {/* ── Watermark mark — same large treatment for both alignments ────────
-          * Left:   anchors top-left, text indented right via pl-10/pl-14.
-          * Center: centered horizontally, text flows centered beneath it.
-          * Both sit at z-0 so text content at z-10 overlaps cleanly. */}
+        {/* ── Watermark mark — anchors top-left for both alignments ─────────
+          * The mark is always left-anchored. Center alignment centers the
+          * text beneath/around it, but the mark itself stays at the left
+          * edge so it reads as an opening quote, not a floating decoration. */}
         <span
           aria-hidden="true"
-          className={cn(
-            quoteMarkCva({ color }),
-            alignment === "left" ? "left-[-0.05em]" : "left-1/2 -translate-x-1/2",
-          )}
+          className={cn(quoteMarkCva({ color }), "left-[-0.05em]")}
           style={{ fontSize: bgMarkSize }}
         >
           &ldquo;
