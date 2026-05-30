@@ -70,7 +70,7 @@ export default async function Header() {
   const locale   = await getRequestLocale()
   const settings = await getSiteSettings(domain, locale)
 
-  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
+  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OptiTech-Logo.svg'
   const logoAlt        = settings?.logoAlt       ?? 'OptiTech'
   const logoFit        = (settings?.logoFit as string | undefined) ?? 'full'
   const logoInvertDark = settings?.logoInvertDark === true
@@ -124,8 +124,8 @@ export default async function Header() {
             <Image
               src={logoSrc}
               alt={logoAlt}
-              width={200}
-              height={40}
+              width={444}
+              height={90}
               className={logoImgClass}
               priority
             />

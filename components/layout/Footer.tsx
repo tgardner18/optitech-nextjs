@@ -18,24 +18,38 @@ export default async function Footer() {
   const settings = await getSiteSettings(await getRequestDomain(), await getRequestLocale())
 
   // ── Logo ──────────────────────────────────────────────────────────────────
-  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
-  const logoAlt        = settings?.logoAlt ?? 'OptiTech'
-  const logoFit        = (settings?.logoFit as string | undefined) ?? 'full'
-  const logoInvertDark = settings?.logoInvertDark === true
+  // ThemeManager logo is the site-wide default. FooterBlock can override it with
+  // a dedicated logo (e.g. icon mark in the footer, full wordmark in the header).
+  const themeLogoSrc      = settings?.logo?.url?.default ?? '/brand/logo/optitech-icon.svg'
+  const logoAlt           = settings?.logoAlt ?? 'OptiTech'
+  const themeLogoInvert   = settings?.logoInvertDark === true
 
-  // Larger sizes than the header — footer logo is a focal point, not a utility mark
-  const LOGO_IMG_CLASS: Record<string, string> = {
-    full:    'max-h-14 w-auto',
-    icon:    'h-14 w-14 object-contain',
-    compact: 'max-h-10 w-auto max-w-[200px]',
+  // ── Footer block data ─────────────────────────────────────────────────────
+  const footerRef         = (settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
+
+  // Footer-specific logo: overrides the ThemeManager logo when set.
+  // Inversion: when the footer has its own logo, use its own invert flag;
+  // when falling back to the theme logo, respect the theme's invert setting.
+  const footerLogoOverride = footerRef?.footerLogo?.url?.default as string | undefined
+  const footerLogoSrc      = footerLogoOverride ?? themeLogoSrc
+  const footerLogoInvert   = footerLogoOverride !== undefined
+                             ? footerRef?.footerLogoInvertDark === true
+                             : themeLogoInvert
+  const footerLogoSize    = (footerRef?.footerLogoSize as string | undefined) ?? 'md'
+
+  // Size → CSS class. Controls display height; width is auto (preserves aspect ratio).
+  const FOOTER_LOGO_SIZE: Record<string, string> = {
+    sm: 'max-h-10 w-auto',
+    md: 'max-h-14 w-auto',
+    lg: 'max-h-20 w-auto',
+    xl: 'max-h-28 w-auto',
   }
   const logoImgClass = [
-    LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full,
-    logoInvertDark ? 'logo-invert-dark' : '',
+    FOOTER_LOGO_SIZE[footerLogoSize] ?? FOOTER_LOGO_SIZE.md,
+    footerLogoInvert ? 'logo-invert-dark' : '',
   ].filter(Boolean).join(' ')
 
   // ── Footer block data ─────────────────────────────────────────────────────
-  const footerRef       = (settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
   const descriptionHtml = (footerRef?.description?.html as string | undefined) ?? null
 
   type FooterLink = { label: string; href: string }
@@ -113,10 +127,10 @@ export default async function Footer() {
             }}
           >
             <Image
-              src={logoSrc}
+              src={footerLogoSrc}
               alt={logoAlt}
-              width={260}
-              height={56}
+              width={444}
+              height={90}
               className={logoImgClass}
             />
           </Link>

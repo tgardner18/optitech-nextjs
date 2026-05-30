@@ -7,8 +7,9 @@ import { OT_FooterLink } from './OT_FooterLink'
  * Referenced from OT_ThemeManager.footerRef. Not a Visual Builder element;
  * editors manage it as a standalone shared item and assign it to the theme.
  *
- * The logo is NOT stored here — it is read from the ThemeManager directly so
- * there is a single source of truth for the site logo across header and footer.
+ * Logo: when footerLogo is set here, it overrides the ThemeManager site logo
+ * specifically in the footer — useful when the footer calls for an icon mark
+ * rather than the full wordmark used in the header.
  *
  * All fields are localized so the footer can be authored per locale.
  * Links auto-flow into two columns in the UI when more than 5 items are added.
@@ -22,6 +23,40 @@ export const OT_FooterBlock = contentType({
   // never placed directly in a Visual Builder canvas. elementEnabled is intentionally
   // absent because the CMS disallows array/component properties on elementEnabled blocks.
   properties: {
+    // ── Logo override ─────────────────────────────────────────────────────────
+    // When set, this logo is displayed in the footer instead of the ThemeManager
+    // site logo. Editors can use a different visual weight for the footer
+    // (e.g. icon mark in the footer, full wordmark in the header).
+    footerLogo: {
+      type: 'contentReference',
+      allowedTypes: ['_image'],
+      displayName: 'Footer Logo',
+      description: 'Override the footer logo. Defaults to the site logo from ThemeManager when not set.',
+      group: 'OT_Style',
+      sortOrder: 5,
+    },
+    footerLogoSize: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Footer Logo Size',
+      description: 'Display height of the footer logo.',
+      group: 'OT_Style',
+      sortOrder: 6,
+      enum: [
+        { value: 'sm', displayName: 'Small (40px)' },
+        { value: 'md', displayName: 'Medium (56px)' },
+        { value: 'lg', displayName: 'Large (80px)' },
+        { value: 'xl', displayName: 'Extra Large (112px)' },
+      ],
+    },
+    footerLogoInvertDark: {
+      type: 'boolean',
+      displayName: 'Invert Logo in Dark Mode',
+      description: 'Applies a brightness/invert filter so a dark logo reads as white on dark backgrounds.',
+      group: 'OT_Style',
+      sortOrder: 7,
+    },
+    // ── Content ───────────────────────────────────────────────────────────────
     description: {
       type: 'richText',
       isLocalized: true,

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 444 90" width="444" height="90" role="img" aria-labelledby="title desc">
+  <title id="title">OptiTech full logo</title>
+  <desc id="desc">OptiTech wordmark in Poppins with AI/data-stream icon, using only the OptiTech brand colors.</desc>
+  <defs>
+    <linearGradient id="ot-mark-gradient" x1="0" y1="45" x2="120" y2="45" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="oklch(82% 0.19 145)"/>
+      <stop offset="0.52" stop-color="oklch(55% 0.18 195)"/>
+      <stop offset="1" stop-color="oklch(55% 0.18 195)"/>
+    </linearGradient>
+    <linearGradient id="ot-word-gradient" x1="144" y1="45" x2="444" y2="45" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="oklch(97% 0.005 195)"/>
+      <stop offset="0.38" stop-color="oklch(55% 0.18 195)"/>
+      <stop offset="0.66" stop-color="oklch(82% 0.19 145)"/>
+      <stop offset="1" stop-color="oklch(82% 0.19 145)"/>
+    </linearGradient>
+    <mask id="ot-ring-cutouts" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="90">
+      <rect width="120" height="90" fill="white"/>
+      <rect x="21" y="21" width="43" height="8" rx="4" fill="black"/>
+      <rect x="29" y="34" width="38" height="8" rx="4" fill="black"/>
+      <rect x="18" y="47" width="45" height="8" rx="4" fill="black"/>
+      <rect x="29" y="60" width="36" height="8" rx="4" fill="black"/>
+      <rect x="95" y="66" width="7" height="24" fill="black"/>
+    </mask>
+  </defs>
+  <g fill="oklch(82% 0.19 145)">
+    <circle cx="4" cy="45" r="4"/>
+    <circle cx="16" cy="31" r="4"/>
+    <circle cx="16" cy="59" r="4"/>
+    <circle cx="26" cy="18" r="4"/>
+    <circle cx="26" cy="72" r="4"/>
+    <rect x="22" y="28" width="22" height="8" rx="4"/>
+    <rect x="22" y="54" width="22" height="8" rx="4"/>
+    <rect x="32" y="15" width="30" height="8" rx="4"/>
+    <rect x="32" y="67" width="30" height="8" rx="4"/>
+    <rect x="4" y="41" width="40" height="8" rx="4"/>
+  </g>
+  <path fill="url(#ot-mark-gradient)" fill-rule="evenodd" mask="url(#ot-ring-cutouts)" d="M120 45A45 45 0 1 1 30 45A45 45 0 0 1 120 45ZM99 45A24 24 0 1 0 51 45A24 24 0 0 0 99 45Z"/>
+  <text x="144" y="67" textLength="300" lengthAdjust="spacingAndGlyphs" font-family="Poppins, Montserrat, Arial, sans-serif" font-size="62" font-weight="600" letter-spacing="-2.5" fill="url(#ot-word-gradient)">OptiTech</text>
+</svg>

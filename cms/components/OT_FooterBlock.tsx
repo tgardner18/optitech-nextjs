@@ -1,4 +1,5 @@
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import Image from 'next/image'
 import Link from 'next/link'
 
 type Props = {
@@ -14,9 +15,23 @@ type Props = {
  * This exists solely to give editors a visual preview pane in the CMS.
  */
 export default function OT_FooterBlockAdapter({ content }: Props) {
-  const { pa } = getPreviewUtils(content)
+  const { pa, src } = getPreviewUtils(content)
 
-  const descriptionHtml: string = content.description?.html ?? ''
+  const descriptionHtml: string   = content.description?.html ?? ''
+  const logoSrc:  string | null   = src(content.footerLogo) ?? null
+  const logoSize: string          = (content.footerLogoSize as string | undefined) ?? 'md'
+  const logoInvert: boolean       = content.footerLogoInvertDark === true
+
+  const LOGO_SIZE: Record<string, string> = {
+    sm: 'max-h-10 w-auto',
+    md: 'max-h-14 w-auto',
+    lg: 'max-h-20 w-auto',
+    xl: 'max-h-28 w-auto',
+  }
+  const logoClass = [
+    LOGO_SIZE[logoSize] ?? LOGO_SIZE.md,
+    logoInvert ? 'logo-invert-dark' : '',
+  ].filter(Boolean).join(' ')
 
   type FooterLink = { label: string; href: string }
   const links: FooterLink[] = Array.isArray(content.links)
@@ -32,6 +47,19 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
       {...pa(content.__composition)}
       className="bg-canvas border border-fg/10 p-lg max-w-3xl"
     >
+      {/* Logo preview */}
+      {logoSrc && (
+        <div className="mb-lg" {...pa('footerLogo')}>
+          <Image
+            src={logoSrc}
+            alt="Footer logo preview"
+            width={300}
+            height={90}
+            className={logoClass}
+          />
+        </div>
+      )}
+
       {/* Description */}
       {descriptionHtml && (
         <div
