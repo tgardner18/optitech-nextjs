@@ -275,7 +275,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3]")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3] max-h-120")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
