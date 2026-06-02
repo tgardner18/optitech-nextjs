@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_FeatureItem = contentType({
   key:         'OT_FeatureItem',
   displayName: 'Feature Item',
+  description: 'Single feature tile with headline, body, and optional CTA link.',
   baseType:    '_component',
   properties: {
     headline: {
@@ -12,6 +13,7 @@ export const OT_FeatureItem = contentType({
       displayName: 'Headline',
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     body: {
       type:        'richText',
@@ -20,6 +22,7 @@ export const OT_FeatureItem = contentType({
       description: '1–2 sentences describing this feature.',
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
     ctaLabel: {
       type:        'string',

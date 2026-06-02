@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_TabItem = contentType({
   key:         'OT_TabItem',
   displayName: 'Tab Item',
+  description: 'Single tab panel with label, icon, heading, body, and optional CTA.',
   baseType:    '_component',
   // No compositionBehaviors — only exists as an array item inside OT_TabsBlock
   properties: {
@@ -49,6 +50,7 @@ export const OT_TabItem = contentType({
       maxLength:   80,
       group:       'OT_Content',
       sortOrder:   30,
+      indexingType: 'searchable',
     },
     body: {
       type:        'richText',
@@ -57,6 +59,7 @@ export const OT_TabItem = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   40,
+      indexingType: 'searchable',
     },
     image: {
       type:         'contentReference',

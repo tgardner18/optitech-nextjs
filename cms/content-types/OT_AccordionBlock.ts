@@ -15,6 +15,7 @@ import { OT_AccordionItem } from './OT_AccordionItem'
 export const OT_AccordionBlock = contentType({
   key:                  'OT_AccordionBlock',
   displayName:          'Accordion Block',
+  description:          'Expandable FAQ section with headline and collapsible question/answer items.',
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
@@ -26,6 +27,7 @@ export const OT_AccordionBlock = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     headline: {
       type:        'string',
@@ -35,6 +37,7 @@ export const OT_AccordionBlock = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
     items: {
       type:        'array',

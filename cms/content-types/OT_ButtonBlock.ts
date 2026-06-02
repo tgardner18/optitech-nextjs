@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_ButtonBlock = contentType({
   key: 'OT_ButtonBlock',
   displayName: 'Button Block',
+  description: 'Standalone CTA button with label and destination URL.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {

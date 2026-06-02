@@ -18,6 +18,7 @@ import { OT_LogoItem } from './OT_LogoItem'
 export const OT_TrustRail = contentType({
   key:                  'OT_TrustRail',
   displayName:          'Trust Rail',
+  description:          'Logo strip for social proof with optional headline and 3–12 logos.',
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
@@ -29,6 +30,7 @@ export const OT_TrustRail = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     logos: {
       type:        'array',

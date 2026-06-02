@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_VideoBlock = contentType({
   key: 'OT_VideoBlock',
   displayName: 'Video Block',
+  description: 'Embedded YouTube or Vimeo video with title and caption.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -15,7 +16,7 @@ export const OT_VideoBlock = contentType({
       group: 'OT_Content',
       sortOrder: 10,
     },
-    title:    { type: 'string', isLocalized: true, maxLength: 120, displayName: 'Title',   group: 'OT_Content', sortOrder: 20 },
+    title:    { type: 'string', isLocalized: true, maxLength: 120, displayName: 'Title',   group: 'OT_Content', sortOrder: 20, indexingType: 'searchable' },
     caption:  { type: 'string', isLocalized: true, maxLength: 200, displayName: 'Caption', group: 'OT_Content', sortOrder: 30 },
   },
 })

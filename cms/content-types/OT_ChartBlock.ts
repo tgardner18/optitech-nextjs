@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_ChartBlock = contentType({
   key: 'OT_ChartBlock',
   displayName: 'Chart Block',
+  description: 'Data visualisation block supporting line, area, bar, and radial charts.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -14,6 +15,7 @@ export const OT_ChartBlock = contentType({
       sortOrder:   10,
       isLocalized: true,
       maxLength:   80,
+      indexingType: 'searchable',
     },
     subtext: {
       type:        'string',
@@ -23,6 +25,7 @@ export const OT_ChartBlock = contentType({
       sortOrder:   20,
       isLocalized: true,
       maxLength:   120,
+      indexingType: 'searchable',
     },
     chartType: {
       type:        'string',

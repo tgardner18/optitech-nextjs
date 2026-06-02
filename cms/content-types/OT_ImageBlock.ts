@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_ImageBlock = contentType({
   key: 'OT_ImageBlock',
   displayName: 'Image Block',
+  description: 'Single image with alt text and optional caption.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {

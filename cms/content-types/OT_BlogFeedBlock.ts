@@ -19,6 +19,7 @@ import { BlankExperience } from './BlankExperience'
 export const OT_BlogFeedBlock = contentType({
   key:         'OT_BlogFeedBlock',
   displayName: 'Blog Feed',
+  description: 'Filterable, paginated list of blog posts with optional topic lock.',
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -30,6 +31,7 @@ export const OT_BlogFeedBlock = contentType({
       description: 'Optional heading displayed above the blog grid. Localised so each language can carry a distinct label.',
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     articleRoot: {
       type:         'contentReference',

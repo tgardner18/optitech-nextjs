@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_ResourceLibraryBlock = contentType({
   key:         'OT_ResourceLibraryBlock',
   displayName: 'Resource Library',
+  description: 'Downloadable asset list powered by a DAM collection anchor.',
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -14,6 +15,7 @@ export const OT_ResourceLibraryBlock = contentType({
       sortOrder:   10,
       isLocalized: true,
       maxLength:   60,
+      indexingType: 'searchable',
     },
     title: {
       type:        'string',
@@ -23,6 +25,7 @@ export const OT_ResourceLibraryBlock = contentType({
       sortOrder:   20,
       isLocalized: true,
       maxLength:   80,
+      indexingType: 'searchable',
     },
     // The editor clicks "Browse DAM" and picks any single asset from the target
     // collection. The front-end uses this asset's collectionId to query all

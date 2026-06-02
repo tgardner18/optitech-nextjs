@@ -4,6 +4,7 @@ import { OT_TabItem }  from './OT_TabItem'
 export const OT_TabsBlock = contentType({
   key:                  'OT_TabsBlock',
   displayName:          'Tabs Block',
+  description:          'Tabbed content block with optional heading and 2–6 tab panels.',
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
@@ -15,6 +16,7 @@ export const OT_TabsBlock = contentType({
       maxLength:   50,
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     heading: {
       type:        'string',
@@ -24,6 +26,7 @@ export const OT_TabsBlock = contentType({
       maxLength:   80,
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
     tabs: {
       type:        'array',

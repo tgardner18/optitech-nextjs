@@ -11,6 +11,7 @@ import { OT_StatItem }  from './OT_StatItem'
 export const OT_StatBlock = contentType({
   key:                  'OT_StatBlock',
   displayName:          'Stat Block',
+  description:          'Row of up to 4 metric callouts, each with a value, label, and context.',
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
