@@ -41,8 +41,8 @@ export default async function DraftBlockPage({ params, searchParams }: Props) {
   if (!content) notFound()
 
   return (
-    <div className="min-h-screen flex items-start justify-center p-8">
-      <div className="w-full max-w-4xl">
+    <div className="flex items-start justify-center p-8">
+      <div className="w-full max-w-4xl h-auto">
         <BlockRenderer content={content} contentKey={key} />
       </div>
       <PreviewComponent />
