@@ -522,6 +522,218 @@ body {
       oklch(from var(--ot-brand) calc(l - 0.41) calc(c * 0.30) h / 0.13);
 }
 
+/* ── ot-depth-* : Comic heading depth variants ───────────────────────────────
+ *
+ *   extrude  — solid fill, hard 5-layer 45° offset shadow (retro 3D).
+ *              Uses @property --ot-extrude-offset so the depth can be
+ *              animated on entrance and deepened on hover.
+ *
+ *   liquid   — animated gradient sweep (brand ↔ accent) via background-clip:
+ *              text. Reduced motion: gradient frozen at midpoint.
+ *
+ *   outline  — hollow letterforms with brand -webkit-text-stroke and a
+ *              drop-shadow filter that breathes on a 3s ease-in-out loop.
+ *              Dark bg: pronounced glow. Light bg: subtle. Brand bg: accent
+ *              stroke for contrast.
+ *
+ * All color values use CSS custom property tokens — no hardcoded literals.
+ * All animations are wrapped in prefers-reduced-motion: no-preference.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Registered property: animatable extrude offset multiplier ─────────────── */
+@property --ot-extrude-offset {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes otExtrudeArrive {
+  from { --ot-extrude-offset: 0; }
+  to   { --ot-extrude-offset: 1; }
+}
+
+@keyframes otLiquidShift {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes otOutlinePulseDark {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.30))
+      drop-shadow(0 0 0.30em oklch(from var(--ot-brand) l c h / 0.12));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 0.24em oklch(from var(--ot-brand) l c h / 0.72))
+      drop-shadow(0 0 0.56em oklch(from var(--ot-brand) l c h / 0.26));
+  }
+}
+
+@keyframes otOutlinePulseLight {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 0.06em oklch(from var(--ot-brand) l c h / 0.18))
+      drop-shadow(0 0 0.16em oklch(from var(--ot-brand) l c h / 0.08));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 0.14em oklch(from var(--ot-brand) l c h / 0.42))
+      drop-shadow(0 0 0.32em oklch(from var(--ot-brand) l c h / 0.16));
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* EXTRUDE                                                                     */
+/* Dark mode default: near-white face, brand shadow layers graduating deeper. */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-extrude {
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(from var(--ot-brand) l c h),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(from var(--ot-brand) calc(l * 0.82) c h),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(from var(--ot-brand) calc(l * 0.62) c h),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.42) c h),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h / 0.82);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-extrude {
+    animation: otExtrudeArrive 0.65s var(--ot-ease-kinetic) both;
+    transition: --ot-extrude-offset 280ms var(--ot-ease-kinetic);
+  }
+  .ot-depth-extrude:hover {
+    --ot-extrude-offset: 1.4;
+  }
+}
+
+/* Light mode: brand teal face, neutral grey shadow stack that fades out */
+[data-theme="light"] .ot-depth-extrude {
+  color: var(--ot-brand);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(55% 0.006 195),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(45% 0.005 195),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(34% 0.004 195),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(26% 0.003 195 / 0.80),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(18% 0.002 195 / 0.45);
+}
+
+/* Brand background: fg-on-brand face, accent-colored shadow stack */
+.bg-brand-fill .ot-depth-extrude {
+  color: var(--ot-fg-on-brand);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(from var(--ot-accent) l c h),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(from var(--ot-accent) calc(l * 0.82) c h),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(from var(--ot-accent) calc(l * 0.62) c h),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(from var(--ot-accent) calc(l * 0.42) c h),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(from var(--ot-accent) calc(l * 0.22) calc(c * 0.80) h / 0.78);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* LIQUID                                                                      */
+/* Brand → accent → brand gradient sweeps through letterforms via             */
+/* background-clip:text. Reduced motion: frozen at midpoint.                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-liquid {
+  background: linear-gradient(
+    90deg,
+    var(--ot-brand)                                               0%,
+    var(--ot-accent)                                              22%,
+    oklch(from var(--ot-brand) calc(l + 0.08) calc(c * 0.90) h)  44%,
+    var(--ot-accent)                                              66%,
+    var(--ot-brand)                                               88%,
+    var(--ot-accent)                                             100%
+  );
+  background-size: 300% auto;
+  background-position: 0% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-liquid { animation: otLiquidShift 5s linear infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ot-depth-liquid { background-position: 50% center; }
+}
+
+/* Brand background: fg-on-brand ↔ accent sweep for visibility against brand fill */
+.bg-brand-fill .ot-depth-liquid {
+  background: linear-gradient(
+    90deg,
+    var(--ot-fg-on-brand)                                                  0%,
+    var(--ot-accent)                                                        22%,
+    oklch(from var(--ot-fg-on-brand) calc(l - 0.10) c h)                   44%,
+    var(--ot-accent)                                                        66%,
+    var(--ot-fg-on-brand)                                                   88%,
+    var(--ot-accent)                                                       100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* OUTLINE                                                                     */
+/* Hollow letterforms, brand stroke, drop-shadow glow breathes on 3s loop.   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-outline {
+  color: transparent;
+  -webkit-text-stroke: 0.04em var(--ot-brand);
+  paint-order: stroke fill;
+  /* Resting state — reduced-motion users see a static glow at the midpoint */
+  filter:
+    drop-shadow(0 0 0.16em oklch(from var(--ot-brand) l c h / 0.50))
+    drop-shadow(0 0 0.40em oklch(from var(--ot-brand) l c h / 0.18));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-outline { animation: otOutlinePulseDark 3s ease-in-out infinite; }
+}
+
+/* Light mode: same stroke, substantially softer glow */
+[data-theme="light"] .ot-depth-outline {
+  filter:
+    drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.24))
+    drop-shadow(0 0 0.22em oklch(from var(--ot-brand) l c h / 0.10));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="light"] .ot-depth-outline {
+    animation: otOutlinePulseLight 3s ease-in-out infinite;
+  }
+}
+
+/* Brand background: accent stroke so hollow text contrasts against the fill */
+.bg-brand-fill .ot-depth-outline {
+  -webkit-text-stroke: 0.04em var(--ot-accent);
+  filter:
+    drop-shadow(0 0 0.16em oklch(from var(--ot-accent) l c h / 0.50))
+    drop-shadow(0 0 0.40em oklch(from var(--ot-accent) l c h / 0.18));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bg-brand-fill .ot-depth-outline { animation: otOutlinePulseDark 3s ease-in-out infinite; }
+}
+
 /* ── Card isometric tilt ──────────────────────────────────────────────────────
  * Solid two-layer offset shadow creates a visible isometric "back face" at rest
  * (depth is always present, not just on hover). On hover, perspective rotation

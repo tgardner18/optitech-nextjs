@@ -50,5 +50,16 @@ export const OT_PrimaryTextDefault = displayTemplate({
         extrude:  { displayName: 'Extrude (Isometric Depth)',  sortOrder: 60 },
       },
     },
+    depth: {
+      displayName: 'Heading depth effect',
+      editor: 'select',
+      sortOrder: 50,
+      choices: {
+        none:    { displayName: 'None (Default)',          sortOrder: 10 },
+        extrude: { displayName: 'Comic Extrude',           sortOrder: 20 },
+        liquid:  { displayName: 'Liquid Fill',             sortOrder: 30 },
+        outline: { displayName: 'Chromatic Outline Pulse', sortOrder: 40 },
+      },
+    },
   },
 })
