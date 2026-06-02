@@ -34,7 +34,7 @@ export type CardBlockProps = {
   heading:       string;
   headingLevel?: "h2" | "h3" | "h4";
   eyebrow?:      string;
-  description?:  string;
+  description?:  string | null;
   image?:        { src: string; alt: string };
   cta?:          { label: string; href: string };
   className?:    string;
@@ -320,7 +320,7 @@ export default function CardBlock({
         <div className={cn("relative z-2 flex flex-col flex-1 justify-end gap-sm", padding)}>
           {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
           <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-          {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+          {description && <div className={T.description[s]} dangerouslySetInnerHTML={{ __html: description }} {...pa('Description')} />}
           {cta && (
             <div className="pt-xs" {...pa('ctaLabel')}>
               <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
@@ -333,7 +333,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+            {description && <div className={T.description[s]} dangerouslySetInnerHTML={{ __html: description }} {...pa('Description')} />}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>
@@ -347,7 +347,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+            {description && <div className={T.description[s]} dangerouslySetInnerHTML={{ __html: description }} {...pa('Description')} />}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>
