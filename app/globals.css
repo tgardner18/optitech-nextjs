@@ -379,6 +379,7 @@ body {
   .display-gradient-warm,
   .display-gradient-luminous,
   .display-gradient-ember,
+  .display-gradient-mono,
   .display-extrude {
     animation: depth-arrive 0.9s var(--ot-ease-kinetic) both;
   }
@@ -430,6 +431,31 @@ body {
       oklch(from var(--ot-accent) calc(l * 0.54) calc(c * 0.9) calc(h * 0.5)),
     calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
       oklch(from var(--ot-accent) calc(l * 0.33) calc(c * 0.75) calc(h * 0.25) / 0.75);
+}
+
+/* Mono · dark mode: near-white face, greyscale shadow stack (silver chrome effect).
+ * Chroma is zeroed on all shadows so no brand hue bleeds through.
+ * Light-mode override swaps to a charcoal face with darkening grey shadows. */
+.display-gradient-mono {
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(0.68 0 0),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(0.44 0 0),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(0.25 0 0 / 0.75);
+}
+
+[data-theme="light"] .display-gradient-mono {
+  color: oklch(0.35 0 0);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(0.24 0 0),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(0.16 0 0),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(0.10 0 0 / 0.75);
 }
 
 /* Extrude · fg (near-white) face + accent rim stroke + 12-layer 45° isometric shadow stack.

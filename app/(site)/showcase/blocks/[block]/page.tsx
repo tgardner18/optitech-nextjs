@@ -363,11 +363,12 @@ function PrimaryTextShowcase() {
   ]
 
   const depths = [
-    { content: { eyebrow: 'Brand',    headline: 'Kinetic by design.'     }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'brand'    } },
-    { content: { eyebrow: 'Warm',     headline: 'Heat meets precision.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'warm'     } },
-    { content: { eyebrow: 'Luminous', headline: 'Lit from within.'       }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'luminous' } },
-    { content: { eyebrow: 'Ember',    headline: 'Burn bright.'           }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'ember'    } },
-    { content: { eyebrow: 'Extrude',  headline: 'Depth is a statement.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'left',   gradient: 'extrude'  } },
+    { content: { eyebrow: 'Brand — Primary',             headline: 'Kinetic by design.'     }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'brand'    } },
+    { content: { eyebrow: 'Brand — Extended',            headline: 'Heat meets precision.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'warm'     } },
+    { content: { eyebrow: 'Luminous — Carved from Light',headline: 'Lit from within.'       }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'luminous' } },
+    { content: { eyebrow: 'Accent — Ember',              headline: 'Burn bright.'           }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'ember'    } },
+    { content: { eyebrow: 'Brand — Isometric Extrude',   headline: 'Depth is a statement.'  }, displaySettings: { size: 'display', color: 'canvas', alignment: 'left',   gradient: 'extrude'  } },
+    { content: { eyebrow: 'Mono — Silver & Fog',         headline: 'Pure signal.'           }, displaySettings: { size: 'display', color: 'canvas', alignment: 'center', gradient: 'mono'     } },
   ]
 
   return (
@@ -390,7 +391,7 @@ function PrimaryTextShowcase() {
         </div>
       ))}
 
-      <VariantGroup label="Display depth · display · center · canvas" note='Depth treatment fires only when size is "display" — enforced by CVA compound variant.' />
+      <VariantGroup label="Display gradients · display scale only · canvas" note='Gradient fires only when size is "display" — enforced by CVA compound variant. Mono: silver chrome in dark mode, charcoal in light mode.' />
       {depths.map((item, i) => (
         <div key={i} className="border-t border-fg/5">
           <VariantLabel label={`gradient: "${item.displaySettings.gradient}"`} />

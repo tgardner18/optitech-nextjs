@@ -13,8 +13,14 @@ export type PrimaryTextStyleOptions = {
    * Gradient fill for the heading.
    * Only takes effect when size is "display"; ignored at all other scales.
    * Dark canvas background required (see DESIGN.md §6).
+   *   brand    — brand teal face + brand shadow stack (Brand — Primary)
+   *   warm     — accent face + brand shadows (Brand — Extended)
+   *   luminous — fg/near-white face + brand-tinted shadows (Luminous — Carved from Light)
+   *   ember    — accent face + hue-shifted ember shadows (Accent — Ember)
+   *   extrude  — fg face + accent rim + 12-layer brand isometric shadows
+   *   mono     — fg face + greyscale shadows; dark mode=silver, light mode=charcoal
    */
-  gradient?: "none" | "brand" | "warm" | "luminous" | "ember" | "extrude";
+  gradient?: "none" | "brand" | "warm" | "luminous" | "ember" | "extrude" | "mono";
   /**
    * Depth effect applied to the heading letterforms.
    * Works at any scale; most impactful at display/headline.
@@ -97,6 +103,7 @@ const headlineCva = cva("text-balance", {
       luminous: "",
       ember:    "",
       extrude:  "",
+      mono:     "",
     },
     depth: {
       none:    "",
@@ -111,6 +118,7 @@ const headlineCva = cva("text-balance", {
     { size: "display", gradient: "luminous", class: "display-gradient-luminous" },
     { size: "display", gradient: "ember",    class: "display-gradient-ember" },
     { size: "display", gradient: "extrude",  class: "display-extrude" },
+    { size: "display", gradient: "mono",     class: "display-gradient-mono" },
     { depth: "extrude", class: "ot-depth-extrude" },
     { depth: "liquid",  class: "ot-depth-liquid" },
     { depth: "outline", class: "ot-depth-outline" },
