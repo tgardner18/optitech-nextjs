@@ -18,28 +18,28 @@ const STATUS_CONFIG: Record<StatusKey, {
   Published: {
     label:         'Published',
     chipCls:       'bg-emerald-50 text-emerald-700 border-emerald-200',
-    pillCls:       'border-fg/[0.10] text-fg-muted hover:border-fg/20 hover:text-fg',
+    pillCls:       'border-fg/10 text-fg-muted hover:border-fg/20 hover:text-fg',
     pillActiveCls: 'bg-emerald-50 border-emerald-300 text-emerald-700',
     dotCls:        'bg-emerald-400',
   },
   Scheduled: {
     label:         'Scheduled',
-    chipCls:       'bg-brand/[0.09] text-brand border-brand/[0.18]',
-    pillCls:       'border-fg/[0.10] text-fg-muted hover:border-fg/20 hover:text-fg',
-    pillActiveCls: 'bg-brand/[0.08] border-brand/30 text-brand',
+    chipCls:       'bg-brand/9 text-brand border-brand/18',
+    pillCls:       'border-fg/10 text-fg-muted hover:border-fg/20 hover:text-fg',
+    pillActiveCls: 'bg-brand/8 border-brand/30 text-brand',
     dotCls:        'bg-brand',
   },
   Previous: {
     label:         'Previous',
-    chipCls:       'bg-fg/[0.05] text-fg-muted/80 border-fg/8',
-    pillCls:       'border-fg/[0.10] text-fg-muted hover:border-fg/20 hover:text-fg',
-    pillActiveCls: 'bg-fg/[0.06] border-fg/20 text-fg-muted',
+    chipCls:       'bg-fg/5 text-fg-muted/80 border-fg/8',
+    pillCls:       'border-fg/10 text-fg-muted hover:border-fg/20 hover:text-fg',
+    pillActiveCls: 'bg-fg/6 border-fg/20 text-fg-muted',
     dotCls:        'bg-fg-muted/40',
   },
   Draft: {
     label:         'Draft',
     chipCls:       'bg-amber-50 text-amber-700 border-amber-200',
-    pillCls:       'border-fg/[0.10] text-fg-muted hover:border-fg/20 hover:text-fg',
+    pillCls:       'border-fg/10 text-fg-muted hover:border-fg/20 hover:text-fg',
     pillActiveCls: 'bg-amber-50 border-amber-300 text-amber-700',
     dotCls:        'bg-amber-400',
   },
@@ -89,16 +89,127 @@ function typeLabel(type: string): string {
   return type === 'blog' ? 'Blog Post' : 'Experience'
 }
 
-// ─── Calendar chip (visual only — interaction is on the date number) ──────────
+// ─── Calendar chip ────────────────────────────────────────────────────────────
 
-function CalendarChip({ item }: { item: CalendarItem }) {
+function CalendarChip({ item, onClick }: { item: CalendarItem; onClick: (item: CalendarItem) => void }) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => onClick(item)}
       title={item.displayName}
-      className={`w-full px-1.25 py-0.5 text-[0.65rem] font-semibold leading-tight truncate border ${chipCls(item.status)}`}
+      className={`w-full text-left px-2 py-1 text-[0.75rem] font-semibold leading-tight truncate border transition-opacity duration-100 hover:opacity-70 ${chipCls(item.status)}`}
     >
       {item.displayName || 'Untitled'}
-    </div>
+    </button>
+  )
+}
+
+// ─── Item detail panel ────────────────────────────────────────────────────────
+
+function ItemDetailPanel({ item, onClose }: { item: CalendarItem; onClose: () => void }) {
+  const published = item.published ? new Date(item.published) : null
+  const dateStr   = published
+    ? published.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : null
+
+  const statusKey = normalizeStatus(item.status)
+  const statusCls = statusKey ? STATUS_CONFIG[statusKey].chipCls : STATUS_CONFIG.Draft.chipCls
+
+  const path = item.url ? item.url.replace(/^https?:\/\/[^/]+/, '') || '/' : null
+  const host = item.baseUrl ? item.baseUrl.replace(/^https?:\/\//, '') : null
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
+      <div
+        role="complementary"
+        aria-label={`Details: ${item.displayName || 'Untitled'}`}
+        className="oa-day-panel fixed top-0 right-0 h-full w-85 z-50 flex flex-col bg-surface border-l border-fg/8"
+        style={{ boxShadow: '-8px 0 40px oklch(13% 0.012 170 / 0.12)' }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-md py-3.5 border-b border-fg/8 shrink-0">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-0.75">
+              Content
+            </p>
+            <p className="text-[1rem] font-semibold text-fg leading-snug">
+              {item.displayName || 'Untitled'}
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="text-fg-muted/40 hover:text-fg-muted transition-colors duration-100 p-1 mt-0.5 shrink-0"
+          >
+            <X size={15} strokeWidth={1.75} />
+          </button>
+        </div>
+
+        {/* Details */}
+        <div className="flex-1 overflow-y-auto flex flex-col gap-5 px-md py-md">
+          {/* Status + Type + Locale row */}
+          <div className="flex items-start gap-lg flex-wrap">
+            <div>
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Status</p>
+              <span className={`text-[0.7rem] font-semibold px-1.5 py-0.5 border ${statusCls}`}>
+                {item.status ?? 'Unknown'}
+              </span>
+            </div>
+            <div>
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Type</p>
+              <span className="text-[0.8125rem] font-medium text-fg">{typeLabel(item.type)}</span>
+            </div>
+            {item.locale && (
+              <div>
+                <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Language</p>
+                <span className="text-[0.8125rem] font-semibold text-fg uppercase">{item.locale}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Published */}
+          {dateStr && (
+            <div>
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Published</p>
+              <p className="text-[0.875rem] text-fg-muted">{dateStr}</p>
+            </div>
+          )}
+
+          {/* Path */}
+          {path && (
+            <div>
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Path</p>
+              <p className="text-[0.8125rem] text-fg-muted font-mono break-all">{path}</p>
+            </div>
+          )}
+
+          {/* Site */}
+          {host && (
+            <div>
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-fg-muted/50 mb-1.5">Site</p>
+              <span className="inline-flex items-center text-[0.6875rem] font-medium px-2.5 py-0.5 bg-accent text-white">
+                {host}
+              </span>
+            </div>
+          )}
+
+          {/* View link */}
+          {item.url && (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[0.8125rem] font-semibold text-brand hover:text-brand-hover transition-colors duration-150 mt-auto"
+            >
+              <ExternalLink size={13} strokeWidth={2} aria-hidden="true" />
+              View page
+            </a>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -108,12 +219,13 @@ function DayPanel({
   date,
   items,
   onClose,
+  onSelectItem,
 }: {
-  date:    string
-  items:   CalendarItem[]
-  onClose: () => void
+  date:         string
+  items:        CalendarItem[]
+  onClose:      () => void
+  onSelectItem: (item: CalendarItem) => void
 }) {
-  // Parse without timezone shift
   const [yr, mo, dy] = date.split('-').map(Number)
   const d = new Date(yr, mo - 1, dy)
   const weekday   = d.toLocaleDateString('en-US', { weekday: 'long' })
@@ -121,13 +233,7 @@ function DayPanel({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      {/* Slide-in panel */}
+      <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
       <div
         role="complementary"
         aria-label={`Content for ${weekday}, ${dateLabel}`}
@@ -144,7 +250,7 @@ function DayPanel({
               {dateLabel}
             </p>
             <p className="text-[0.75rem] text-fg-muted mt-0.5">
-              {items.length} item{items.length !== 1 ? 's' : ''}
+              {items.length} item{items.length !== 1 ? 's' : ''} — click to view details
             </p>
           </div>
           <button
@@ -163,9 +269,11 @@ function DayPanel({
             const key       = normalizeStatus(item.status)
             const statusCls = key ? STATUS_CONFIG[key].chipCls : STATUS_CONFIG.Draft.chipCls
             return (
-              <div
+              <button
                 key={item.key}
-                className="flex flex-col gap-1.5 px-md py-3.5 border-b border-fg/5 last:border-none"
+                type="button"
+                onClick={() => onSelectItem(item)}
+                className="w-full text-left flex flex-col gap-1.5 px-md py-3.5 border-b border-fg/5 last:border-none hover:bg-fg/2.5 transition-colors duration-100"
               >
                 <p className="text-[0.875rem] font-semibold text-fg leading-snug">
                   {item.displayName || 'Untitled'}
@@ -183,18 +291,7 @@ function DayPanel({
                     </span>
                   )}
                 </div>
-                {item.url && (
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.25 text-[0.75rem] font-semibold text-brand hover:text-brand-hover transition-colors duration-150 w-fit"
-                  >
-                    <ExternalLink size={12} strokeWidth={2} aria-hidden="true" />
-                    View page
-                  </a>
-                )}
-              </div>
+              </button>
             )
           })}
         </div>
@@ -210,19 +307,35 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
   const [year,           setYear]           = useState(today.getFullYear())
   const [month,          setMonth]          = useState(today.getMonth())
   const [selectedDate,   setSelectedDate]   = useState<string | null>(null)
+  const [selectedItem,   setSelectedItem]   = useState<CalendarItem | null>(null)
   const [activeStatuses, setActiveStatuses] = useState<Set<StatusKey>>(new Set(ALL_STATUSES))
 
-  const prevMonth = useCallback(() => {
+  const closePanels = useCallback(() => {
     setSelectedDate(null)
+    setSelectedItem(null)
+  }, [])
+
+  function openItem(item: CalendarItem) {
+    setSelectedItem(item)
+    setSelectedDate(null)
+  }
+
+  function openDay(dateKey: string) {
+    setSelectedDate(dateKey)
+    setSelectedItem(null)
+  }
+
+  const prevMonth = useCallback(() => {
+    closePanels()
     if (month === 0) { setYear(y => y - 1); setMonth(11) }
     else              { setMonth(m => m - 1) }
-  }, [month])
+  }, [month, closePanels])
 
   const nextMonth = useCallback(() => {
-    setSelectedDate(null)
+    closePanels()
     if (month === 11) { setYear(y => y + 1); setMonth(0) }
     else               { setMonth(m => m + 1) }
-  }, [month])
+  }, [month, closePanels])
 
   function toggleStatus(key: StatusKey) {
     setActiveStatuses(prev => {
@@ -287,7 +400,7 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
               onClick={() => toggleStatus(key)}
               className={[
                 'flex items-center gap-1.5 px-sm py-1 text-[0.75rem] font-semibold border',
-                'transition-[color,background-color,border-color] duration-120',
+                'transition-[color,background-color,border-color] duration-100',
                 active ? cfg.pillActiveCls : cfg.pillCls,
               ].join(' ')}
               aria-pressed={active}
@@ -301,7 +414,7 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
           <button
             type="button"
             onClick={() => setActiveStatuses(new Set(ALL_STATUSES))}
-            className="text-[0.75rem] font-medium text-fg-muted/50 hover:text-fg-muted transition-colors duration-120 ml-xs"
+            className="text-[0.75rem] font-medium text-fg-muted/50 hover:text-fg-muted transition-colors duration-100 ml-xs"
           >
             Show all
           </button>
@@ -337,7 +450,7 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
         {/* Weekday headers */}
         <div className="grid grid-cols-7 border-b border-fg/8 bg-fg/1.5">
           {WEEKDAYS.map(d => (
-            <div key={d} className="py-2 text-center text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-fg-muted/60">
+            <div key={d} className="py-2.5 text-center text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-fg-muted/60">
               {d}
             </div>
           ))}
@@ -349,7 +462,7 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
             {row.map((cell, ci) => {
               if (!cell) {
                 return (
-                  <div key={ci} className="min-h-22 p-1.25 border-r border-fg/5 last:border-none bg-fg/[0.012]" />
+                  <div key={ci} className="min-h-36 p-2 border-r border-fg/5 last:border-none bg-fg/[0.012]" />
                 )
               }
 
@@ -363,18 +476,18 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
                 <div
                   key={key}
                   className={[
-                    'min-h-22 p-1.25 border-r border-fg/5 last:border-none flex flex-col gap-0.75',
+                    'min-h-36 p-2 border-r border-fg/5 last:border-none flex flex-col gap-1',
                     isPast && !isToday ? 'bg-fg/[0.008]' : '',
                   ].join(' ')}
                 >
                   {/* Date number — clickable when there are items */}
                   <button
                     type="button"
-                    onClick={hasItems ? () => setSelectedDate(key) : undefined}
+                    onClick={hasItems ? () => openDay(key) : undefined}
                     disabled={!hasItems}
                     aria-label={hasItems ? `${dayItems.length} item${dayItems.length !== 1 ? 's' : ''} on ${cell.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}` : undefined}
                     className={[
-                      'text-[0.75rem] font-semibold mb-0.5 w-5.5 h-5.5 flex items-center justify-center shrink-0 transition-colors duration-100',
+                      'text-[0.875rem] font-semibold mb-0.5 w-7 h-7 flex items-center justify-center shrink-0 transition-colors duration-100',
                       hasItems && !isToday ? 'hover:bg-brand/12 hover:text-brand cursor-pointer' : '',
                       !hasItems ? 'cursor-default' : '',
                       isToday  ? 'bg-brand text-fg-on-brand' :
@@ -386,13 +499,13 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
                   </button>
 
                   {dayItems.slice(0, 3).map(item => (
-                    <CalendarChip key={item.key} item={item} />
+                    <CalendarChip key={item.key} item={item} onClick={openItem} />
                   ))}
                   {dayItems.length > 3 && (
                     <button
                       type="button"
-                      onClick={() => setSelectedDate(key)}
-                      className="text-[0.65rem] text-fg-muted/60 font-medium px-1.25 hover:text-brand transition-colors duration-100 text-left"
+                      onClick={() => openDay(key)}
+                      className="text-[0.75rem] text-fg-muted/60 font-medium px-2 hover:text-brand transition-colors duration-100 text-left"
                     >
                       +{dayItems.length - 3} more
                     </button>
@@ -407,12 +520,12 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
       {/* Legend */}
       <div className="flex items-center gap-md mt-sm flex-wrap">
         {ALL_STATUSES.map(key => (
-          <div key={key} className="flex items-center gap-1.25">
+          <div key={key} className="flex items-center gap-1.5">
             <span className={`w-2 h-2 shrink-0 ${STATUS_CONFIG[key].dotCls}`} aria-hidden="true" />
             <span className="text-[0.75rem] text-fg-muted">{STATUS_CONFIG[key].label}</span>
           </div>
         ))}
-        <p className="text-[0.7rem] text-fg-muted/40 ml-auto italic">Click a date to see all items</p>
+        <p className="text-[0.7rem] text-fg-muted/40 ml-auto italic">Click an item or date number to view details</p>
       </div>
 
       {items.length === 0 && (
@@ -422,12 +535,18 @@ export default function ContentCalendarClient({ items }: { items: CalendarItem[]
         </div>
       )}
 
-      {/* Day flyout */}
+      {/* Item detail panel */}
+      {selectedItem && (
+        <ItemDetailPanel item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+
+      {/* Day list panel */}
       {selectedDate && selectedDayItems && (
         <DayPanel
           date={selectedDate}
           items={selectedDayItems}
           onClose={() => setSelectedDate(null)}
+          onSelectItem={openItem}
         />
       )}
     </div>
