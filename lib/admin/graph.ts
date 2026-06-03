@@ -143,13 +143,15 @@ async function getPageTypeInstances(typeKey: string): Promise<ComponentUsageResu
 
   try {
     do {
-      const query = PAGE_TYPE_QUERY(typeKey)
-      const data  = await getClient().request(query, { cursor }) as Record<string, unknown>
+      const query  = PAGE_TYPE_QUERY(typeKey)
+      const data   = await getClient().request(query, { cursor }) as Record<string, unknown>
       const result = data[typeKey] as { cursor: string | null; items: Record<string, unknown>[] } | undefined
       if (!result) break
+      const items  = result.items ?? []
+      if (items.length === 0) break   // Graph may return a non-null cursor on the last page
       cursor = result.cursor ?? null
 
-      for (const item of result.items) {
+      for (const item of items) {
         const meta = (item._metadata ?? {}) as Record<string, unknown>
         const key  = String(meta.key ?? '')
         if (!key || seen.has(key)) continue
@@ -183,9 +185,11 @@ async function getBlockTypeUsage(contentTypeKey: string): Promise<ComponentUsage
       const data       = await getClient().request(COMPOSITION_QUERY, { cursor }) as Record<string, unknown>
       const experience = data._Experience as { cursor: string | null; items: Record<string, unknown>[] } | undefined
       if (!experience) break
+      const items = experience.items ?? []
+      if (items.length === 0) break   // Guard against non-null cursor on last page
       cursor = experience.cursor ?? null
 
-      for (const item of experience.items) {
+      for (const item of items) {
         const meta = (item._metadata ?? {}) as Record<string, unknown>
         const key  = String(meta.key ?? '')
         if (!key || seen.has(key)) continue
@@ -259,9 +263,11 @@ export async function getCalendarItems(): Promise<CalendarItem[]> {
       const data   = await getClient().request(CALENDAR_QUERY, { cursor }) as Record<string, unknown>
       const result = data._Page as { cursor: string | null; items: Record<string, unknown>[] } | undefined
       if (!result) break
+      const items  = result.items ?? []
+      if (items.length === 0) break   // Guard against non-null cursor on last page
       cursor = result.cursor ?? null
 
-      for (const item of result.items) {
+      for (const item of items) {
         const meta  = (item._metadata ?? {}) as Record<string, unknown>
         const key   = String(meta.key ?? '')
         if (!key || seen.has(key)) continue
