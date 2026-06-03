@@ -20,10 +20,10 @@ function StatusChip({ status }: { status: string | null }) {
   const cls =
     s === 'published' ? 'text-accent bg-accent/[0.10]' :
     s === 'scheduled' ? 'text-brand bg-brand/[0.10]'  :
-    s === 'previous'  ? 'text-fg-muted bg-fg/[0.06]'  :
+    s === 'previous'  ? 'text-fg-muted bg-fg/6'  :
                         'text-fg-muted/60 bg-fg/[0.04]'
   return (
-    <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.05em] px-[5px] py-[2px] ${cls}`}>
+    <span className={`text-[0.65rem] font-semibold uppercase tracking-[0.05em] px-1.25 py-0.5 ${cls}`}>
       {status ?? '—'}
     </span>
   )
@@ -34,27 +34,37 @@ function PageRow({ page }: { page: PageUsage }) {
     ? page.url.replace(/^https?:\/\/[^/]+/, '') || '/'
     : null
 
-  // Show the site host if there are results from multiple sites
   const host = page.baseUrl
     ? page.baseUrl.replace(/^https?:\/\//, '')
     : null
 
+  const publishedDate = page.published
+    ? new Date(page.published).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
+
   return (
-    <li className="border-b border-fg/[0.06] last:border-none">
-      <div className="flex items-center gap-md px-lg py-[10px] hover:bg-fg/[0.025] transition-colors duration-100">
-        {/* Title + URL */}
+    <li className="border-b border-fg/6 last:border-none">
+      <div className="flex items-center gap-md px-lg py-3 hover:bg-fg/2.5 transition-colors duration-100">
+        {/* Title + path + site pill */}
         <div className="flex-1 min-w-0">
-          <p className="text-[0.875rem] font-medium text-fg truncate">
+          <p className="text-[0.875rem] font-semibold text-fg leading-snug truncate">
             {page.displayName || displayUrl || page.pageKey}
           </p>
-          <div className="flex items-center gap-xs mt-[2px] flex-wrap">
+          <div className="flex items-center gap-2 mt-0.75 flex-wrap">
             {displayUrl && (
-              <span className="text-[0.75rem] text-fg-muted truncate">{displayUrl}</span>
+              <span className="text-[0.75rem] text-fg-muted font-mono truncate">{displayUrl}</span>
             )}
             {host && (
-              <span className="text-[0.65rem] text-fg-muted/40 font-mono">{host}</span>
+              <span className="inline-flex items-center text-[0.6rem] font-mono px-1.25 py-px bg-fg/6 text-fg-muted/70 border border-fg/8 shrink-0">
+                {host}
+              </span>
             )}
           </div>
+          {publishedDate && (
+            <p className="text-[0.7rem] text-fg-muted/45 mt-0.75">
+              Published {publishedDate}
+            </p>
+          )}
         </div>
 
         {/* Locale */}
@@ -72,17 +82,19 @@ function PageRow({ page }: { page: PageUsage }) {
           <CountBadge count={page.count} />
         </div>
 
-        {/* External link */}
-        {page.url && (
+        {/* Open button */}
+        {page.url ? (
           <a
             href={page.url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Open ${page.displayName} in new tab`}
-            className="shrink-0 text-fg-muted/40 hover:text-brand transition-colors duration-100"
+            aria-label={`Open ${page.displayName || 'page'} in new tab`}
+            className="shrink-0 flex items-center justify-center w-7 h-7 text-fg-muted/50 hover:text-brand hover:bg-brand/10 transition-colors duration-100"
           >
-            <ExternalLink size={13} strokeWidth={1.75} />
+            <ExternalLink size={14} strokeWidth={2} />
           </a>
+        ) : (
+          <div className="w-7 shrink-0" />
         )}
       </div>
     </li>
