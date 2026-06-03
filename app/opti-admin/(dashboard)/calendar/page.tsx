@@ -1,0 +1,27 @@
+import type { Metadata } from 'next'
+import { getCalendarItems } from '@/lib/admin/graph'
+import ContentCalendarClient from '@/components/admin/ContentCalendarClient'
+
+export const metadata: Metadata = { title: 'Content Calendar — OptiAdmin' }
+
+export default async function CalendarPage() {
+  const items = await getCalendarItems()
+
+  return (
+    <div className="px-xl py-xl max-w-[1300px]">
+      {/* ── Page header ── */}
+      <div className="mb-xl">
+        <h1 className="text-[1.5rem] font-semibold text-fg tracking-[-0.02em] leading-tight">
+          Content Calendar
+        </h1>
+        <p className="text-[0.9375rem] text-fg-muted mt-xs leading-relaxed">
+          Published and scheduled content across experiences and blog posts.
+        </p>
+      </div>
+
+      <div className="border-t border-fg/[0.07] pt-xl">
+        <ContentCalendarClient items={items} />
+      </div>
+    </div>
+  )
+}
