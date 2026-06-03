@@ -1,4 +1,4 @@
-import { Settings2 } from 'lucide-react'
+import Image from 'next/image'
 import AdminNav from './AdminNav'
 import LogoutButton from './LogoutButton'
 import AdminHeaderTitle from './AdminHeaderTitle'
@@ -18,22 +18,24 @@ export default async function AdminShell({ children }: { children: React.ReactNo
       <aside className="oa-sidebar w-[220px] shrink-0 flex flex-col border-r">
         {/* Wordmark */}
         <div className="oa-wordmark-border h-[58px] flex items-center gap-[10px] px-md border-b shrink-0">
-          <div
-            className="w-7 h-7 flex items-center justify-center shrink-0"
-            style={{ background: 'oklch(50% 0.12 248)', boxShadow: '0 2px 8px oklch(50% 0.12 248 / 0.40)' }}
-          >
-            <Settings2 size={14} strokeWidth={2.25} style={{ color: 'oklch(96% 0.004 252)' }} aria-hidden="true" />
-          </div>
-          <div className="flex flex-col leading-none gap-[1px]">
+          <Image
+            src="/brand/logo/optitech-icon.svg"
+            alt="OptiTech"
+            width={36}
+            height={27}
+            className="shrink-0"
+            priority
+          />
+          <div className="flex flex-col leading-none gap-0.5">
             <span
               className="text-[0.6875rem] font-bold tracking-[0.12em] uppercase leading-none"
-              style={{ color: 'oklch(82% 0.008 252)' }}
+              style={{ color: 'oklch(84% 0.010 175)' }}
             >
-              Opti
+              OptiTech
             </span>
             <span
               className="text-[0.6875rem] font-bold tracking-[0.12em] uppercase leading-none"
-              style={{ color: 'oklch(72% 0.10 248)' }}
+              style={{ color: 'oklch(68% 0.13 155)' }}
             >
               Admin
             </span>

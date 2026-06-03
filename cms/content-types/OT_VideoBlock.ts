@@ -11,7 +11,7 @@ export const OT_VideoBlock = contentType({
       type: 'string',
       displayName: 'Video URL (YouTube or Vimeo)',
       description: 'Paste a full YouTube (youtube.com/watch?v= or youtu.be/) or Vimeo (vimeo.com/) URL.',
-      pattern: '^https?://(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/|vimeo\\.com/)[^\\s]+$',
+      pattern: '^https?://(www\\.)?(youtube\\.com/(watch|shorts|embed)|youtu\\.be/|vimeo\\.com/)[^\\s]+$',
       maxLength: 300,
       group: 'OT_Content',
       sortOrder: 10,

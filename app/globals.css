@@ -2006,50 +2006,50 @@ body {
 .oa-sidebar {
   background: linear-gradient(
     168deg,
-    oklch(21% 0.026 252) 0%,
-    oklch(15.5% 0.018 252) 100%
+    oklch(19% 0.030 175) 0%,
+    oklch(13.5% 0.020 175) 100%
   );
-  border-right-color: oklch(27% 0.022 252);
+  border-right-color: oklch(25% 0.026 175);
   box-shadow:
-    1px 0 0 oklch(30% 0.022 252 / 0.4),
-    6px 0 24px oklch(8% 0.010 252 / 0.45);
+    1px 0 0 oklch(28% 0.026 175 / 0.4),
+    6px 0 24px oklch(6% 0.012 175 / 0.50);
 }
 
 /* Wordmark area border */
 .oa-sidebar .oa-wordmark-border {
-  border-bottom-color: oklch(27% 0.022 252);
+  border-bottom-color: oklch(25% 0.026 175);
 }
 
 /* Section label */
 .oa-sidebar .oa-section-label {
-  color: oklch(36% 0.012 252);
+  color: oklch(34% 0.018 175);
 }
 
 /* Nav items */
 .oa-sb-nav-item {
-  color: oklch(56% 0.012 252);
+  color: oklch(54% 0.018 175);
   transition: color 120ms ease, background-color 120ms ease;
 }
 .oa-sb-nav-item:hover {
-  color: oklch(82% 0.009 252);
+  color: oklch(80% 0.012 165);
   background-color: oklch(100% 0 0 / 0.07);
 }
 .oa-sb-nav-item.oa-active {
-  color: oklch(83% 0.075 248);
-  background-color: oklch(50% 0.12 248 / 0.22);
+  color: oklch(80% 0.14 155);
+  background-color: oklch(51% 0.16 158 / 0.22);
   font-weight: 600;
 }
 
 /* Sidebar footer */
 .oa-sidebar .oa-sb-divider {
-  border-top-color: oklch(27% 0.022 252);
+  border-top-color: oklch(25% 0.026 175);
 }
 .oa-sb-logout {
-  color: oklch(44% 0.010 252);
+  color: oklch(42% 0.014 175);
   transition: color 120ms ease, background-color 120ms ease;
 }
 .oa-sb-logout:hover {
-  color: oklch(72% 0.010 252);
+  color: oklch(70% 0.012 165);
   background-color: oklch(100% 0 0 / 0.07);
 }
 
@@ -2084,20 +2084,35 @@ body {
  * ──────────────────────────────────────────────────────────────────────────── */
 .opti-admin {
   /* Grounds */
-  --ot-canvas:  oklch(98.5% 0.003 252); /* page background — clean near-white  */
-  --ot-surface: oklch(95.0% 0.006 252); /* sidebar, elevated panel surfaces    */
+  --ot-canvas:  oklch(98.5% 0.003 170); /* page background — clean near-white, faint teal tint */
+  --ot-surface: oklch(96.0% 0.006 170); /* elevated panel surfaces                             */
 
   /* Text */
-  --ot-fg:          oklch(13%   0.012 252); /* primary — near-black, max contrast  */
-  --ot-fg-muted:    oklch(44%   0.018 252); /* secondary — labels, metadata        */
-  --ot-fg-on-brand: oklch(98.5% 0.003 252); /* text on filled action surfaces      */
+  --ot-fg:          oklch(13%   0.012 170); /* primary — near-black, max contrast  */
+  --ot-fg-muted:    oklch(44%   0.018 170); /* secondary — labels, metadata        */
+  --ot-fg-on-brand: oklch(98.5% 0.003 170); /* text on filled action surfaces      */
 
-  /* Primary accent: calm slate-blue replaces the marketing teal */
-  --ot-brand:       oklch(50% 0.12 248); /* interactive: active nav, CTA fills  */
-  --ot-brand-hover: oklch(38% 0.10 248); /* deeper state: hover / pressed       */
+  /* Primary accent: OptiTech green-teal — matches brand icon palette */
+  --ot-brand:       oklch(51% 0.16 158); /* interactive: active nav, CTA fills  */
+  --ot-brand-hover: oklch(40% 0.14 158); /* deeper state: hover / pressed       */
 
-  /* Status green: dampened from the vivid signal green for table legibility   */
-  --ot-accent:       oklch(54% 0.13 145);
-  --ot-accent-hover: oklch(42% 0.11 145);
-  --ot-fg-on-accent: oklch(13% 0.012 252);
+  /* Status green: same hue family, slightly brighter for chip legibility      */
+  --ot-accent:       oklch(56% 0.17 145);
+  --ot-accent-hover: oklch(44% 0.14 145);
+  --ot-fg-on-accent: oklch(13% 0.012 170);
+}
+
+/* ── OptiAdmin day-panel slide-in ────────────────────────────────────────────
+ * Fixed overlay panel used by the calendar day flyout.
+ * prefers-reduced-motion: panel appears instantly without translation.
+ * ──────────────────────────────────────────────────────────────────────────── */
+@keyframes oa-slide-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .oa-day-panel {
+    animation: oa-slide-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
