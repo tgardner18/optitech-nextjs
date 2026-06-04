@@ -56,70 +56,89 @@ export function buildJsonLd(
     url:     origin || undefined,
   }
 
-  // ── Early return when no page-specific schema is requested ─────────────────
-  if (!page.schemaType || page.schemaType === 'none') {
-    return { '@context': 'https://schema.org', '@graph': [organizationNode, webSiteNode] }
+  // ── Base graph (always emitted) ────────────────────────────────────────────
+  const graph: unknown[] = [organizationNode, webSiteNode]
+
+  // ── Page-specific schema node ──────────────────────────────────────────────
+  // schemaType selects the semantic type of the page itself (WebPage, Article,
+  // Product, etc.). 'FAQPage' here means the *entire* page is a FAQ page — a
+  // legitimate but uncommon choice. In most cases pages that happen to contain
+  // an accordion should use their natural type (WebPage, Product, etc.) and
+  // let the FAQ node be added automatically below.
+  if (page.schemaType && page.schemaType !== 'none') {
+    let pageNode: Record<string, unknown>
+
+    switch (page.schemaType) {
+      case 'WebPage':
+        pageNode = {
+          '@type': 'WebPage',
+          name:    page.seoTitle ?? undefined,
+          description: page.pageAnswer ?? page.seoDescription ?? undefined,
+          url: pageUrl,
+        }
+        break
+
+      case 'Article':
+        pageNode = {
+          '@type': 'Article',
+          headline: page.seoTitle ?? undefined,
+          description: page.pageAnswer ?? page.seoDescription ?? undefined,
+          url: pageUrl,
+        }
+        break
+
+      case 'FAQPage':
+        // Explicitly selected — skip the automatic FAQ node below (no duplicate).
+        graph.push({
+          '@type': 'FAQPage',
+          name: page.seoTitle ?? undefined,
+          url:  pageUrl,
+          mainEntity: buildFaqMainEntity(page.faqItems),
+        })
+        break
+
+      case 'Product':
+        pageNode = {
+          '@type': 'Product',
+          name:    page.seoTitle ?? undefined,
+          description: page.pageAnswer ?? page.seoDescription ?? undefined,
+          url: pageUrl,
+        }
+        break
+
+      case 'Event':
+        pageNode = {
+          '@type': 'Event',
+          name:    page.seoTitle ?? undefined,
+          description: page.pageAnswer ?? page.seoDescription ?? undefined,
+          url: pageUrl,
+        }
+        break
+
+      default:
+        pageNode = undefined as unknown as Record<string, unknown>
+    }
+
+    if (pageNode!) graph.push(pageNode)
   }
 
-  // ── Page-specific node ─────────────────────────────────────────────────────
-  let pageNode: Record<string, unknown>
-
-  switch (page.schemaType) {
-    case 'WebPage':
-      pageNode = {
-        '@type': 'WebPage',
-        name:    page.seoTitle ?? undefined,
-        description: page.pageAnswer ?? page.seoDescription ?? undefined,
-        url: pageUrl,
-      }
-      break
-
-    case 'Article':
-      pageNode = {
-        '@type': 'Article',
-        headline: page.seoTitle ?? undefined,
-        description: page.pageAnswer ?? page.seoDescription ?? undefined,
-        url: pageUrl,
-      }
-      break
-
-    case 'FAQPage':
-      pageNode = {
-        '@type': 'FAQPage',
-        name: page.seoTitle ?? undefined,
-        url:  pageUrl,
-        // TODO: mainEntity will be populated by AccordionBlock in a future
-        // enhancement when schemaType === 'FAQPage' and the block emits
-        // Question/Answer pairs into the page's structured data context.
-        mainEntity: [],
-      }
-      break
-
-    case 'Product':
-      pageNode = {
-        '@type': 'Product',
-        name:    page.seoTitle ?? undefined,
-        description: page.pageAnswer ?? page.seoDescription ?? undefined,
-        url: pageUrl,
-      }
-      break
-
-    case 'Event':
-      pageNode = {
-        '@type': 'Event',
-        name:    page.seoTitle ?? undefined,
-        description: page.pageAnswer ?? page.seoDescription ?? undefined,
-        url: pageUrl,
-      }
-      break
-
-    default:
-      // Unknown schemaType — emit only Organization node.
-      return { '@context': 'https://schema.org', '@graph': [organizationNode, webSiteNode] }
+  // ── Auto FAQ node ──────────────────────────────────────────────────────────
+  // When accordion blocks are present on the page AND the editor has not
+  // explicitly selected 'FAQPage' as the schema type, add a FAQPage node
+  // to the graph automatically. This means a product page, landing page, or
+  // service page that happens to include an FAQ accordion gets both its
+  // natural schema type AND the FAQPage rich-result eligibility — without
+  // the editor needing to choose between them.
+  if (
+    page.schemaType !== 'FAQPage' &&
+    page.faqItems?.length
+  ) {
+    graph.push({
+      '@type': 'FAQPage',
+      url:  pageUrl,
+      mainEntity: buildFaqMainEntity(page.faqItems),
+    })
   }
-
-  // ── Base graph ─────────────────────────────────────────────────────────────
-  const graph: unknown[] = [organizationNode, webSiteNode, pageNode]
 
   // ── Merge customSchemaJson ─────────────────────────────────────────────────
   if (page.customSchemaJson && page.customSchemaJson.trim()) {
@@ -129,7 +148,6 @@ export function buildJsonLd(
         graph.push(parsed)
       }
     } catch {
-      // Invalid JSON — log a warning but never throw or break the page.
       console.warn(
         '[structured-data] customSchemaJson contains invalid JSON and will be ignored.',
         page.customSchemaJson,
@@ -138,4 +156,16 @@ export function buildJsonLd(
   }
 
   return { '@context': 'https://schema.org', '@graph': graph }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function buildFaqMainEntity(
+  items: PageSeoFields['faqItems'],
+): unknown[] {
+  return (items ?? []).map(item => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: { '@type': 'Answer', text: item.answer },
+  }))
 }

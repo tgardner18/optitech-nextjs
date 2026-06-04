@@ -49,6 +49,38 @@ function toPathname(raw: string | null | undefined): string | null {
   }
 }
 
+// Recursively walks a Visual Builder composition tree and collects all
+// OT_AccordionBlock question/answer pairs. Used to populate FAQPage
+// JSON-LD when the editor sets schemaType = 'FAQPage' on the experience.
+//
+// Node shapes in the tree:
+//   CompositionComponentNode  → { __typename: 'CompositionComponentNode', component: { __typename, items, ... } }
+//   Structure nodes (section/row/column) → { nodes: [...children] }
+function extractAccordionFaqs(
+  nodes: any[],
+): Array<{ question: string; answer: string }> {
+  const faqs: Array<{ question: string; answer: string }> = []
+
+  function traverse(list: any[]) {
+    for (const node of list ?? []) {
+      if (
+        node.__typename === 'CompositionComponentNode' &&
+        node.component?.__typename === 'OT_AccordionBlock'
+      ) {
+        for (const item of node.component.items ?? []) {
+          const q = item.question as string | null | undefined
+          const a = item.answer   as string | null | undefined
+          if (q && a) faqs.push({ question: q, answer: a })
+        }
+      }
+      if (node.nodes?.length) traverse(node.nodes)
+    }
+  }
+
+  traverse(nodes)
+  return faqs
+}
+
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -234,7 +266,17 @@ async function CmsPage({ params, searchParams }: Props) {
     notFound()
   }
 
-  const expJsonLd = buildJsonLd(exp as PageSeoFields, settings ?? {}, fullPageUrl)
+  // Always extract accordion items — buildJsonLd decides whether to emit them
+  // based on whether any are present, independent of schemaType.
+  const faqItems = exp?.composition?.nodes
+    ? extractAccordionFaqs(exp.composition.nodes)
+    : undefined
+
+  const expJsonLd = buildJsonLd(
+    { ...(exp as PageSeoFields), faqItems } as PageSeoFields,
+    settings ?? {},
+    fullPageUrl,
+  )
 
   return (
     <>

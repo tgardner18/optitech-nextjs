@@ -244,7 +244,7 @@ export default function BannerBlock({
             alt=""
             fill
             sizes="100vw"
-            priority={false}
+            priority
             quality={85}
             className="object-cover object-center"
           />

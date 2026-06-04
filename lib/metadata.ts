@@ -25,6 +25,9 @@ export type PageSeoFields = {
   schemaType?:       string | null
   noIndex?:          boolean | null
   customSchemaJson?: string | null
+  /** Extracted at render time when schemaType === 'FAQPage' — populated by
+   *  traversing the composition tree for OT_AccordionBlock items. */
+  faqItems?:         Array<{ question: string; answer: string }> | null
 }
 
 /**
