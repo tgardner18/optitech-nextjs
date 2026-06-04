@@ -162,27 +162,33 @@ async function CmsPage({ params, searchParams }: Props) {
     try {
       exp = await getClient().getPreviewContent(previewParams, { cache: false })
     } catch {
-      // The SDK auto-generates a preview query that fails for page types using
-      // content-area arrays (type:'content' items) because the preview API
-      // resolves those fields differently than the public Content Graph.
-      // Fall back to a minimal identification query so we can still route to
-      // the correct page component and fetch the published content normally.
+      exp = null
+    }
+
+    // getPreviewContent fails for page types with content-area arrays (type:'content'
+    // items) — the SDK auto-generates inline fragments the preview API can't resolve,
+    // causing it to either return null OR return partial data with __typename:'_Page'
+    // (the base type) rather than the specific content type.
+    // In either case, try a minimal type-identification query to recover routing.
+    // Only overwrite exp if the fallback actually finds a campaign page, so that
+    // non-campaign-page previews that happen to fail aren't affected.
+    const previewResolveFailed = !exp || exp.__typename === '_Page'
+    if (previewResolveFailed && sp_str('key')) {
       const fallbackKey = sp_str('key')
-      if (fallbackKey) {
-        try {
-          const fallback = await getClient().request(
-            `query FallbackPreview($key: String!) {
-               OT_CampaignPage(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
-                 items { __typename _metadata { key url { default } } }
-               }
-             }`,
-            { key: fallbackKey },
-          )
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          exp = (fallback as any)?.OT_CampaignPage?.items?.[0] ?? null
-        } catch {
-          exp = null
-        }
+      try {
+        const fallback = await getClient().request(
+          `query FallbackPreview($key: String!) {
+             OT_CampaignPage(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
+               items { __typename _metadata { key url { default } } }
+             }
+           }`,
+          { key: fallbackKey },
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const campaignExp = (fallback as any)?.OT_CampaignPage?.items?.[0] ?? null
+        if (campaignExp) exp = campaignExp
+      } catch {
+        // fallback failed — leave exp as-is (null or _Page partial)
       }
     }
   } else {
