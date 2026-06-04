@@ -159,20 +159,17 @@ async function CmsPage({ params, searchParams }: Props) {
       ver:           sp_str('ver'),
       loc:           previewLocale,
     }
+    console.log('[preview] key=%s ver=%s loc=%s path=%s', sp_str('key'), sp_str('ver'), previewLocale, path)
     try {
       exp = await getClient().getPreviewContent(previewParams, { cache: false })
-    } catch {
+      console.log('[preview] getPreviewContent __typename=%s', exp?.__typename)
+    } catch (err) {
+      console.log('[preview] getPreviewContent threw:', (err as Error)?.message)
       exp = null
     }
 
-    // getPreviewContent fails for page types with content-area arrays (type:'content'
-    // items) — the SDK auto-generates inline fragments the preview API can't resolve,
-    // causing it to either return null OR return partial data with __typename:'_Page'
-    // (the base type) rather than the specific content type.
-    // In either case, try a minimal type-identification query to recover routing.
-    // Only overwrite exp if the fallback actually finds a campaign page, so that
-    // non-campaign-page previews that happen to fail aren't affected.
     const previewResolveFailed = !exp || exp.__typename === '_Page'
+    console.log('[preview] previewResolveFailed=%s exp.__typename=%s', previewResolveFailed, exp?.__typename)
     if (previewResolveFailed && sp_str('key')) {
       const fallbackKey = sp_str('key')
       try {
@@ -186,11 +183,13 @@ async function CmsPage({ params, searchParams }: Props) {
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const campaignExp = (fallback as any)?.OT_CampaignPage?.items?.[0] ?? null
+        console.log('[preview] fallback campaignExp.__typename=%s', campaignExp?.__typename)
         if (campaignExp) exp = campaignExp
-      } catch {
-        // fallback failed — leave exp as-is (null or _Page partial)
+      } catch (err) {
+        console.log('[preview] fallback threw:', (err as Error)?.message)
       }
     }
+    console.log('[preview] final exp.__typename=%s key=%s', exp?.__typename, exp?._metadata?.key)
   } else {
     // Shared cache with generateMetadata when both run in the same render.
     exp = await fetchPageContent(path, locale, baseUrl)
@@ -296,8 +295,10 @@ async function CmsPage({ params, searchParams }: Props) {
 
     // Campaign page — three-slot landing page type
     if (exp?.__typename === 'OT_CampaignPage') {
+      console.log('[campaign] rendering campaign page key=%s isDraft=%s', exp._metadata?.key, dm.isEnabled)
       const contentKey = exp._metadata?.key as string | undefined
       const campaignContent = contentKey ? await getCampaignPage(contentKey) : null
+      console.log('[campaign] getCampaignPage returned=%s', campaignContent ? 'content' : 'null')
       if (!campaignContent) return notFound()
 
       const campaignJsonLd = buildJsonLd(
