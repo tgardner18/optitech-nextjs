@@ -1801,13 +1801,15 @@ body {
  *   100% opaque, var(--ls-settled-color), no glow
  *
  * --ls-settled-color (registered as <color>, inherits: true):
- *   default   → oklch(55% 0.18 195)  brand teal
- *   brand bg  → oklch(97% 0.005 195) near-white
+ *   default   → var(--ot-brand)       theme primary color
+ *   brand bg  → var(--ot-fg-on-brand) on-brand foreground (near-white for dark brand surfaces)
  *
  * prefers-reduced-motion → data-static: all characters visible instantly.
  * ─────────────────────────────────────────────────────────────────────────── */
 
-/* Registered so lsCharWrite can animate color back to the inherited value */
+/* Registered so lsCharWrite can animate color back to the inherited value.
+ * initial-value must be a concrete color — CSS @property does not accept var().
+ * The actual value is always overridden by .ls-wrap below. */
 @property --ls-settled-color {
   syntax: '<color>';
   initial-value: oklch(55% 0.18 195);
@@ -1817,23 +1819,23 @@ body {
 /* ── Wrapper ── */
 .ls-wrap {
   display: block;
-  --ls-settled-color: oklch(55% 0.18 195); /* default: brand teal */
+  --ls-settled-color: var(--ot-brand); /* follows theme primary color */
 }
 .ls-wrap--brand {
-  --ls-settled-color: oklch(97% 0.005 195); /* on brand bg: near-white */
+  --ls-settled-color: var(--ot-fg-on-brand); /* on brand bg: use on-brand foreground */
 }
 
 /* ── Separator rule: 1px scores before signature starts ── */
 .ls-rule {
   display: block;
   height: 1px;
-  background: oklch(55% 0.18 195 / 0.22);
+  background: oklch(from var(--ot-brand) l c h / 0.22);
   transform-origin: left;
   transform: scaleX(0);
   margin-bottom: clamp(0.75rem, 1.5vw, 1.125rem);
 }
 .ls-wrap--brand .ls-rule {
-  background: oklch(97% 0.005 195 / 0.22);
+  background: oklch(from var(--ot-fg-on-brand) l c h / 0.22);
 }
 
 /* ── Signature container — Caveat 400, large handwriting scale ── */
@@ -1887,19 +1889,21 @@ body {
     text-shadow: none;
   }
   8% {
+    /* mid-heat: +0.21 lightness, -0.05 chroma — warming up toward white-hot */
     opacity: 0.55;
-    color: oklch(76% 0.13 190);
+    color: oklch(from var(--ot-brand) calc(l + 0.21) calc(c - 0.05) h);
     text-shadow:
-      0 0  4px oklch(55% 0.18 195 / 0.45),
-      0 0 12px oklch(55% 0.18 195 / 0.20);
+      0 0  4px oklch(from var(--ot-brand) l c h / 0.45),
+      0 0 12px oklch(from var(--ot-brand) l c h / 0.20);
   }
   22% {
+    /* near-white-hot: +0.37 lightness, -0.14 chroma — laser peak temperature */
     opacity: 1;
-    color: oklch(92% 0.04 182); /* near-white-hot — laser temperature */
+    color: oklch(from var(--ot-brand) calc(l + 0.37) calc(c - 0.14) h);
     text-shadow:
-      0 0  5px oklch(55% 0.18 195 / 1.00),
-      0 0 14px oklch(55% 0.18 195 / 0.65),
-      0 0 30px oklch(55% 0.18 195 / 0.30);
+      0 0  5px oklch(from var(--ot-brand) l c h / 1.00),
+      0 0 14px oklch(from var(--ot-brand) l c h / 0.65),
+      0 0 30px oklch(from var(--ot-brand) l c h / 0.30);
   }
   100% {
     opacity: 1;

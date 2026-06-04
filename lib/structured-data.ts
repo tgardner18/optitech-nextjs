@@ -38,17 +38,27 @@ export function buildJsonLd(
     // pageUrl may be relative or empty in edge cases — leave origin blank.
   }
 
+  const logoUrl = site.logo?.url?.default ?? undefined
+
   // ── Organization node (always emitted) ─────────────────────────────────────
   const organizationNode: Record<string, unknown> = {
     '@type': 'Organization',
     name:    site.siteName ?? undefined,
     url:     origin || undefined,
     description: site.organizationDescription ?? undefined,
+    ...(logoUrl ? { logo: { '@type': 'ImageObject', url: logoUrl } } : {}),
+  }
+
+  // ── WebSite node (always emitted) ──────────────────────────────────────────
+  const webSiteNode: Record<string, unknown> = {
+    '@type': 'WebSite',
+    name:    site.siteName ?? undefined,
+    url:     origin || undefined,
   }
 
   // ── Early return when no page-specific schema is requested ─────────────────
   if (!page.schemaType || page.schemaType === 'none') {
-    return { '@context': 'https://schema.org', '@graph': [organizationNode] }
+    return { '@context': 'https://schema.org', '@graph': [organizationNode, webSiteNode] }
   }
 
   // ── Page-specific node ─────────────────────────────────────────────────────
@@ -105,11 +115,11 @@ export function buildJsonLd(
 
     default:
       // Unknown schemaType — emit only Organization node.
-      return { '@context': 'https://schema.org', '@graph': [organizationNode] }
+      return { '@context': 'https://schema.org', '@graph': [organizationNode, webSiteNode] }
   }
 
   // ── Base graph ─────────────────────────────────────────────────────────────
-  const graph: unknown[] = [organizationNode, pageNode]
+  const graph: unknown[] = [organizationNode, webSiteNode, pageNode]
 
   // ── Merge customSchemaJson ─────────────────────────────────────────────────
   if (page.customSchemaJson && page.customSchemaJson.trim()) {

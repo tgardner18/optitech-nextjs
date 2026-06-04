@@ -37,6 +37,8 @@ export type SiteMetaSettings = {
   defaultSocialImage?:     { url?: { default?: string | null } | null } | null
   twitterHandle?:          string | null
   organizationDescription?: string | null
+  /** Logo from the ThemeManager logo field — used in Organization JSON-LD */
+  logo?:                   { url?: { default?: string | null } | null } | null
 }
 
 // ── Builder ───────────────────────────────────────────────────────────────────
