@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_PrimaryTextBlock as OT_PrimaryTextBlockContentType } from '@/cms/content-types/OT_PrimaryTextBlock'
 import { getPrimaryTextStyles } from '@/cms/styling/OT_PrimaryTextBlock.styling'
 import PrimaryTextBlock from '@/components/blocks/PrimaryTextBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_PrimaryTextBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -16,6 +18,7 @@ export default function OT_PrimaryTextBlock({ content, displaySettings = {} }: P
       <PrimaryTextBlock
         eyebrow={content.eyebrow ?? undefined}
         headline={content.headline ?? ''}
+        body={content.body?.json ?? undefined}
         styleOptions={styleOptions}
         pa={pa}
       />

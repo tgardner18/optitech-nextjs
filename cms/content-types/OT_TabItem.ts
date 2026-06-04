@@ -3,6 +3,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_TabItem = contentType({
   key:         'OT_TabItem',
   displayName: 'Tab Item',
+  description: 'Single tab panel with label, icon, heading, body, and optional CTA.',
   baseType:    '_component',
   // No compositionBehaviors — only exists as an array item inside OT_TabsBlock
   properties: {
@@ -49,15 +50,16 @@ export const OT_TabItem = contentType({
       maxLength:   80,
       group:       'OT_Content',
       sortOrder:   30,
+      indexingType: 'searchable',
     },
     body: {
-      type:        'string',
+      type:        'richText',
       displayName: 'Panel Body',
-      description: 'Primary panel content. Plain text — keep concise. Tabs are not the place for long-form prose.',
+      description: 'Primary panel content. Supports bold, italic, links, and lists.',
       isLocalized: true,
-      maxLength:   400,
       group:       'OT_Content',
       sortOrder:   40,
+      indexingType: 'searchable',
     },
     image: {
       type:         'contentReference',

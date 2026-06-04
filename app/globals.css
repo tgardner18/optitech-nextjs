@@ -96,9 +96,12 @@
 
 /* Logo dark-mode invert — converts any dark/black logo to white.
  * Applied by Header/Footer when ThemeManager.logoInvertDark is true.
- * Removed in light mode so the original logo shows on the light canvas. */
+ * Removed in light mode so the original logo shows on the light canvas.
+ * The third rule re-asserts inversion when a dark-themed element (e.g. the
+ * footer with data-theme="dark") sits inside a light-mode page. */
 .logo-invert-dark { filter: brightness(0) invert(1); }
 [data-theme="light"] .logo-invert-dark { filter: none; }
+[data-theme="light"] [data-theme="dark"] .logo-invert-dark { filter: brightness(0) invert(1); }
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -120,6 +123,72 @@
   .animate-stat-pulse {
     animation: statPulse 0.26s var(--ot-ease-quick) forwards;
   }
+}
+
+/* ── ScrollToTop ─────────────────────────────────────────────────────────────
+ *
+ * .scroll-top-btn
+ *   Hidden by default (opacity 0, translated down, pointer-events none).
+ *   [data-visible="true"] triggers the entrance: translate up + opacity in.
+ *   Transition uses kinetic ease-out for enter, ease-in for exit.
+ *
+ * .animate-scroll-top-orbit
+ *   Rotates the comet arc ring continuously at 4s/revolution.
+ *   Applied with motion-safe: in the component so it only runs when the
+ *   user has not requested reduced motion.
+ *
+ * Hover acceleration: [data-visible="true"]:hover .animate-scroll-top-orbit
+ *   shortens animation-duration to 1.2s for a kinetic speed-up.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes scrollTopOrbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.scroll-top-btn {
+  opacity: 0;
+  transform: translateY(0.75rem);
+  pointer-events: none;
+  /* Enter: kinetic expo-out; exit: quart-in (faster) */
+  transition:
+    opacity     350ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform   350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-top-btn[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition:
+    opacity   350ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Exit is faster than entrance */
+.scroll-top-btn[data-visible="false"] {
+  transition:
+    opacity   220ms cubic-bezier(0.7, 0, 0.84, 0),
+    transform 220ms cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* prefers-reduced-motion: entrance is opacity-only, no translate */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-top-btn,
+  .scroll-top-btn[data-visible="true"],
+  .scroll-top-btn[data-visible="false"] {
+    transform: none;
+    transition: opacity 200ms linear;
+  }
+}
+
+.animate-scroll-top-orbit {
+  animation: scrollTopOrbit 4s linear infinite;
+}
+
+/* On hover the arc accelerates — kinetic snap */
+.scroll-top-btn[data-visible="true"]:hover .animate-scroll-top-orbit {
+  animation-duration: 1.2s;
 }
 
 /* ── TrustRail marquee ────────────────────────────────────────────────────────
@@ -280,34 +349,448 @@ body {
     4px 4px 0 oklch(from var(--ot-accent) calc(l * 0.35) c h / 0.65);
 }
 
-/* Display gradient fills — use once per composition, display scale only.
-   Stops are defined in tokens.css and adapt to the active theme. */
+/* ── Display depth treatments ────────────────────────────────────────────────
+ * Prismatic letterpress depth: solid color face + layered text-shadow stack
+ * that uses OKLCH relative color to derive progressively darker/hue-shifted
+ * tones from the face color. Uses calc() on a @property number so the depth
+ * offset animates smoothly on entrance (flat → full depth).
+ *
+ * CSS class names are kept as display-gradient-* for backwards compatibility
+ * with the CMS display template values (brand/warm/luminous/ember).
+ *
+ * text-shadow offsets use em units so depth scales with font size.
+ * @property initial-value:1 means reduced-motion users see full depth
+ * immediately without any animation.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@property --display-depth {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@keyframes depth-arrive {
+  from { --display-depth: 0; }
+  to   { --display-depth: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .display-gradient-brand,
+  .display-gradient-warm,
+  .display-gradient-luminous,
+  .display-gradient-ember,
+  .display-gradient-mono,
+  .display-extrude {
+    animation: depth-arrive 0.9s var(--ot-ease-kinetic) both;
+  }
+}
+
+/* Brand · teal face, teal shadow stack — the committed brand statement */
 .display-gradient-brand {
-  background: var(--ot-gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-brand);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.72) c h),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.48) c h),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.27) calc(c * 0.8) h / 0.75);
 }
 
+/* Warm · accent face (signal green), brand-toned shadow — cross-spectrum offset */
 .display-gradient-warm {
-  background: var(--ot-gradient-signal);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ot-accent);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.85) c h),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.55) c h),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.3) calc(c * 0.7) h / 0.75);
 }
 
+/* Luminous · fg (near-white) face, brand-tinted shadow — carved from light */
 .display-gradient-luminous {
-  background: var(--ot-gradient-luminous);
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 0.95) calc(c * 0.4) h / 0.5),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-brand) calc(l * 0.62) calc(c * 0.6) h / 0.45),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.33) calc(c * 0.5) h / 0.4);
+}
+
+/* Ember · accent face, shadow hue shifts from green → amber through depth layers */
+.display-gradient-ember {
+  color: var(--ot-accent);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-accent) calc(l * 0.78) c calc(h * 0.75)),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(from var(--ot-accent) calc(l * 0.54) calc(c * 0.9) calc(h * 0.5)),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(from var(--ot-accent) calc(l * 0.33) calc(c * 0.75) calc(h * 0.25) / 0.75);
+}
+
+/* Mono · dark mode: near-white face, greyscale shadow stack (silver chrome effect).
+ * Chroma is zeroed on all shadows so no brand hue bleeds through.
+ * Light-mode override swaps to a charcoal face with darkening grey shadows. */
+.display-gradient-mono {
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(0.68 0 0),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(0.44 0 0),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(0.25 0 0 / 0.75);
+}
+
+[data-theme="light"] .display-gradient-mono {
+  color: oklch(0.35 0 0);
+  text-shadow:
+    calc(var(--display-depth) * 0.025em) calc(var(--display-depth) * 0.04em) 0
+      oklch(0.24 0 0),
+    calc(var(--display-depth) * 0.055em) calc(var(--display-depth) * 0.09em) 0
+      oklch(0.16 0 0),
+    calc(var(--display-depth) * 0.1em)   calc(var(--display-depth) * 0.16em) 0
+      oklch(0.10 0 0 / 0.75);
+}
+
+/* Extrude · fg (near-white) face + accent rim stroke + 12-layer 45° isometric shadow stack.
+ * Shadow progresses: accent-lit near-edge → full brand → darkening brand → near-black trailing.
+ * Direction: bottom-right (equal x/y offsets = true 45° isometric axis).
+ * Uses the same --display-depth @property animation as the other display depth classes. */
+.display-extrude {
+  color: var(--ot-fg);
+  -webkit-text-stroke: 1.5px oklch(from var(--ot-accent) l c h / 0.50);
+  paint-order: stroke fill;
+  text-shadow:
+    /* Accent glow bloom — the rim-light halo at origin */
+    0 0 0.6em oklch(from var(--ot-accent) l c h / 0.18),
+    /* Layers 1–2: accent-lit near-edge transition into brand */
+    calc(var(--display-depth) * 0.02em) calc(var(--display-depth) * 0.02em) 0
+      oklch(from var(--ot-accent) calc(l * 0.78) calc(c * 0.9) h),
+    calc(var(--display-depth) * 0.04em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l * 1.12) c h),
+    /* Layers 3–5: brand at full saturation, slightly darkening */
+    calc(var(--display-depth) * 0.07em) calc(var(--display-depth) * 0.07em) 0
+      oklch(from var(--ot-brand) l c h),
+    calc(var(--display-depth) * 0.10em) calc(var(--display-depth) * 0.10em) 0
+      oklch(from var(--ot-brand) calc(l * 0.88) c h),
+    calc(var(--display-depth) * 0.13em) calc(var(--display-depth) * 0.13em) 0
+      oklch(from var(--ot-brand) calc(l * 0.76) c h),
+    /* Layers 6–8: mid-dark brand */
+    calc(var(--display-depth) * 0.17em) calc(var(--display-depth) * 0.17em) 0
+      oklch(from var(--ot-brand) calc(l * 0.63) c h),
+    calc(var(--display-depth) * 0.21em) calc(var(--display-depth) * 0.21em) 0
+      oklch(from var(--ot-brand) calc(l * 0.51) c h),
+    calc(var(--display-depth) * 0.25em) calc(var(--display-depth) * 0.25em) 0
+      oklch(from var(--ot-brand) calc(l * 0.40) c h),
+    /* Layers 9–10: deep brand, chroma slightly pulls back */
+    calc(var(--display-depth) * 0.30em) calc(var(--display-depth) * 0.30em) 0
+      oklch(from var(--ot-brand) calc(l * 0.30) calc(c * 0.85) h / 0.92),
+    calc(var(--display-depth) * 0.34em) calc(var(--display-depth) * 0.34em) 0
+      oklch(from var(--ot-brand) calc(l * 0.20) calc(c * 0.70) h / 0.82),
+    /* Layers 11–12: near-black trailing, fading to invisible */
+    calc(var(--display-depth) * 0.38em) calc(var(--display-depth) * 0.38em) 0
+      oklch(from var(--ot-brand) calc(l * 0.13) calc(c * 0.55) h / 0.65),
+    calc(var(--display-depth) * 0.42em) calc(var(--display-depth) * 0.42em) 0
+      oklch(from var(--ot-brand) calc(l * 0.08) calc(c * 0.40) h / 0.40);
+}
+
+/* ── display-extrude: light-mode override ────────────────────────────────────
+ * In dark mode the near-white face + near-black shadow stack reads as a clean
+ * deep extrusion against the dark canvas. On a light canvas the same treatment
+ * is heavy — near-black text with near-black shadows at full opacity looks like
+ * a stacked-pixel mess.
+ *
+ * Light-mode fix: brand-teal face so each shadow step is just a progressively
+ * darker version of the same hue. The contrast between steps is gentle rather
+ * than jarring, and the teal extrusion reads as a confident brand moment rather
+ * than a clipped shadow error.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="light"] .display-extrude {
+  color: var(--ot-brand);
+  -webkit-text-stroke: 1px oklch(from var(--ot-brand) calc(l - 0.18) c h / 0.28);
+  paint-order: stroke fill;
+  text-shadow:
+    /* Soft brand halo — keeps the face from feeling flat on a light ground */
+    0 0 0.5em oklch(from var(--ot-brand) l c h / 0.10),
+    /* Layers 1–3: brand deepening toward brand-hover */
+    calc(var(--display-depth) * 0.02em) calc(var(--display-depth) * 0.02em) 0
+      oklch(from var(--ot-brand) calc(l - 0.06) c h),
+    calc(var(--display-depth) * 0.04em) calc(var(--display-depth) * 0.04em) 0
+      oklch(from var(--ot-brand) calc(l - 0.12) c h),
+    calc(var(--display-depth) * 0.07em) calc(var(--display-depth) * 0.07em) 0
+      oklch(from var(--ot-brand) calc(l - 0.17) c h),
+    /* Layers 4–6: mid-dark brand */
+    calc(var(--display-depth) * 0.10em) calc(var(--display-depth) * 0.10em) 0
+      oklch(from var(--ot-brand) calc(l - 0.21) c h),
+    calc(var(--display-depth) * 0.13em) calc(var(--display-depth) * 0.13em) 0
+      oklch(from var(--ot-brand) calc(l - 0.25) c h),
+    calc(var(--display-depth) * 0.17em) calc(var(--display-depth) * 0.17em) 0
+      oklch(from var(--ot-brand) calc(l - 0.28) c h),
+    /* Layers 7–9: deep brand, chroma pulls back */
+    calc(var(--display-depth) * 0.21em) calc(var(--display-depth) * 0.21em) 0
+      oklch(from var(--ot-brand) calc(l - 0.30) calc(c * 0.95) h / 0.92),
+    calc(var(--display-depth) * 0.25em) calc(var(--display-depth) * 0.25em) 0
+      oklch(from var(--ot-brand) calc(l - 0.32) calc(c * 0.85) h / 0.80),
+    calc(var(--display-depth) * 0.30em) calc(var(--display-depth) * 0.30em) 0
+      oklch(from var(--ot-brand) calc(l - 0.34) calc(c * 0.75) h / 0.65),
+    /* Layers 10–12: trailing fade to near-transparent */
+    calc(var(--display-depth) * 0.34em) calc(var(--display-depth) * 0.34em) 0
+      oklch(from var(--ot-brand) calc(l - 0.37) calc(c * 0.60) h / 0.45),
+    calc(var(--display-depth) * 0.38em) calc(var(--display-depth) * 0.38em) 0
+      oklch(from var(--ot-brand) calc(l - 0.39) calc(c * 0.45) h / 0.28),
+    calc(var(--display-depth) * 0.42em) calc(var(--display-depth) * 0.42em) 0
+      oklch(from var(--ot-brand) calc(l - 0.41) calc(c * 0.30) h / 0.13);
+}
+
+/* ── ot-depth-* : Comic heading depth variants ───────────────────────────────
+ *
+ *   extrude  — solid fill, hard 5-layer 45° offset shadow (retro 3D).
+ *              Uses @property --ot-extrude-offset so the depth can be
+ *              animated on entrance and deepened on hover.
+ *
+ *   liquid   — animated gradient sweep (brand ↔ accent) via background-clip:
+ *              text. Reduced motion: gradient frozen at midpoint.
+ *
+ *   outline  — hollow letterforms with brand -webkit-text-stroke and a
+ *              drop-shadow filter that breathes on a 3s ease-in-out loop.
+ *              Dark bg: pronounced glow. Light bg: subtle. Brand bg: accent
+ *              stroke for contrast.
+ *
+ * All color values use CSS custom property tokens — no hardcoded literals.
+ * All animations are wrapped in prefers-reduced-motion: no-preference.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Registered property: animatable extrude offset multiplier ─────────────── */
+@property --ot-extrude-offset {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes otExtrudeArrive {
+  from { --ot-extrude-offset: 0; }
+  to   { --ot-extrude-offset: 1; }
+}
+
+@keyframes otLiquidShift {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes otOutlinePulseDark {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.30))
+      drop-shadow(0 0 0.30em oklch(from var(--ot-brand) l c h / 0.12));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 0.24em oklch(from var(--ot-brand) l c h / 0.72))
+      drop-shadow(0 0 0.56em oklch(from var(--ot-brand) l c h / 0.26));
+  }
+}
+
+@keyframes otOutlinePulseLight {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 0.06em oklch(from var(--ot-brand) l c h / 0.18))
+      drop-shadow(0 0 0.16em oklch(from var(--ot-brand) l c h / 0.08));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 0.14em oklch(from var(--ot-brand) l c h / 0.42))
+      drop-shadow(0 0 0.32em oklch(from var(--ot-brand) l c h / 0.16));
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* EXTRUDE                                                                     */
+/* Dark mode default: near-white face, brand shadow layers graduating deeper. */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-extrude {
+  color: var(--ot-fg);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(from var(--ot-brand) l c h),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(from var(--ot-brand) calc(l * 0.82) c h),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(from var(--ot-brand) calc(l * 0.62) c h),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(from var(--ot-brand) calc(l * 0.42) c h),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h / 0.82);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-extrude {
+    animation: otExtrudeArrive 0.65s var(--ot-ease-kinetic) both;
+    transition: --ot-extrude-offset 280ms var(--ot-ease-kinetic);
+  }
+  .ot-depth-extrude:hover {
+    --ot-extrude-offset: 1.4;
+  }
+}
+
+/* Light mode: brand teal face, neutral grey shadow stack that fades out */
+[data-theme="light"] .ot-depth-extrude {
+  color: var(--ot-brand);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(55% 0.006 195),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(45% 0.005 195),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(34% 0.004 195),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(26% 0.003 195 / 0.80),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(18% 0.002 195 / 0.45);
+}
+
+/* Brand background: fg-on-brand face, accent-colored shadow stack */
+.bg-brand-fill .ot-depth-extrude {
+  color: var(--ot-fg-on-brand);
+  text-shadow:
+    calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
+      oklch(from var(--ot-accent) l c h),
+    calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
+      oklch(from var(--ot-accent) calc(l * 0.82) c h),
+    calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
+      oklch(from var(--ot-accent) calc(l * 0.62) c h),
+    calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
+      oklch(from var(--ot-accent) calc(l * 0.42) c h),
+    calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
+      oklch(from var(--ot-accent) calc(l * 0.22) calc(c * 0.80) h / 0.78);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* LIQUID                                                                      */
+/* Brand → accent → brand gradient sweeps through letterforms via             */
+/* background-clip:text. Reduced motion: frozen at midpoint.                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-liquid {
+  background: linear-gradient(
+    90deg,
+    var(--ot-brand)                                               0%,
+    var(--ot-accent)                                              22%,
+    oklch(from var(--ot-brand) calc(l + 0.08) calc(c * 0.90) h)  44%,
+    var(--ot-accent)                                              66%,
+    var(--ot-brand)                                               88%,
+    var(--ot-accent)                                             100%
+  );
+  background-size: 300% auto;
+  background-position: 0% center;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.display-gradient-ember {
-  background: var(--ot-gradient-electric);
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-liquid { animation: otLiquidShift 5s linear infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ot-depth-liquid { background-position: 50% center; }
+}
+
+/* Brand background: fg-on-brand ↔ accent sweep for visibility against brand fill */
+.bg-brand-fill .ot-depth-liquid {
+  background: linear-gradient(
+    90deg,
+    var(--ot-fg-on-brand)                                                  0%,
+    var(--ot-accent)                                                        22%,
+    oklch(from var(--ot-fg-on-brand) calc(l - 0.10) c h)                   44%,
+    var(--ot-accent)                                                        66%,
+    var(--ot-fg-on-brand)                                                   88%,
+    var(--ot-accent)                                                       100%
+  );
+  background-size: 300% auto;
   -webkit-background-clip: text;
   background-clip: text;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* OUTLINE                                                                     */
+/* Hollow letterforms, brand stroke, drop-shadow glow breathes on 3s loop.   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-depth-outline {
   color: transparent;
+  -webkit-text-stroke: 0.04em var(--ot-brand);
+  paint-order: stroke fill;
+  /* Resting state — reduced-motion users see a static glow at the midpoint */
+  filter:
+    drop-shadow(0 0 0.16em oklch(from var(--ot-brand) l c h / 0.50))
+    drop-shadow(0 0 0.40em oklch(from var(--ot-brand) l c h / 0.18));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ot-depth-outline { animation: otOutlinePulseDark 3s ease-in-out infinite; }
+}
+
+/* Light mode: same stroke, substantially softer glow */
+[data-theme="light"] .ot-depth-outline {
+  filter:
+    drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.24))
+    drop-shadow(0 0 0.22em oklch(from var(--ot-brand) l c h / 0.10));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="light"] .ot-depth-outline {
+    animation: otOutlinePulseLight 3s ease-in-out infinite;
+  }
+}
+
+/* Brand background: accent stroke so hollow text contrasts against the fill */
+.bg-brand-fill .ot-depth-outline {
+  -webkit-text-stroke: 0.04em var(--ot-accent);
+  filter:
+    drop-shadow(0 0 0.16em oklch(from var(--ot-accent) l c h / 0.50))
+    drop-shadow(0 0 0.40em oklch(from var(--ot-accent) l c h / 0.18));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bg-brand-fill .ot-depth-outline { animation: otOutlinePulseDark 3s ease-in-out infinite; }
+}
+
+/* ── Card isometric tilt ──────────────────────────────────────────────────────
+ * Solid two-layer offset shadow creates a visible isometric "back face" at rest
+ * (depth is always present, not just on hover). On hover, perspective rotation
+ * activates and the shadow deepens. prefers-reduced-motion: skip the transform,
+ * shadow still signals the raised state. ────────────────────────────────────── */
+.card-hover-tilt {
+  box-shadow:
+    4px 4px 0 var(--ot-brand-hover),
+    7px 7px 0 oklch(from var(--ot-brand-hover) calc(l * 0.58) c h / 0.65),
+    0 8px 28px var(--ot-bloom-brand-faint);
+  transition: transform 280ms var(--ot-ease-quick), box-shadow 280ms var(--ot-ease-quick);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-hover-tilt:hover {
+    transform: perspective(900px) rotateX(-3deg) rotateY(5deg) translateY(-3px);
+    box-shadow:
+      8px 8px 0 var(--ot-brand-hover),
+      14px 14px 0 oklch(from var(--ot-brand-hover) calc(l * 0.52) c h / 0.70),
+      0 16px 44px var(--ot-bloom-brand-faint),
+      0 6px 16px var(--ot-bloom-accent-faint);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-hover-tilt:hover {
+    box-shadow:
+      6px 6px 0 var(--ot-brand-hover),
+      10px 10px 0 oklch(from var(--ot-brand-hover) calc(l * 0.52) c h / 0.70),
+      0 12px 36px var(--ot-bloom-brand-faint);
+  }
 }
 
 /* ── Rich Text Prose ─────────────────────────────────────────────────────────
@@ -510,6 +993,33 @@ body {
   border-top-color: oklch(97% 0.005 195 / 0.2);
 }
 
+/* ── Color: glass (dark surface, white text) ── */
+[data-rich-text][data-color="glass"] p,
+[data-rich-text][data-color="glass"] li {
+  color: oklch(97% 0.005 195 / 0.75);
+}
+[data-rich-text][data-color="glass"] h1,
+[data-rich-text][data-color="glass"] h2,
+[data-rich-text][data-color="glass"] h3,
+[data-rich-text][data-color="glass"] h4 {
+  color: oklch(97% 0.005 195 / 0.95);
+}
+[data-rich-text][data-color="glass"] a {
+  color: oklch(97% 0.005 195 / 0.9);
+  text-decoration-color: oklch(97% 0.005 195 / 0.4);
+}
+[data-rich-text][data-color="glass"] a:hover {
+  color: #fff;
+  text-decoration-color: #fff;
+}
+[data-rich-text][data-color="glass"] code {
+  background: oklch(97% 0.005 195 / 0.12);
+  color: oklch(97% 0.005 195 / 0.9);
+}
+[data-rich-text][data-color="glass"] hr {
+  border-top-color: oklch(97% 0.005 195 / 0.2);
+}
+
 /* ── Size: compact ── */
 [data-rich-text][data-size="compact"] p {
   font-size: 0.9375rem;
@@ -539,31 +1049,98 @@ body {
   font-size: 1rem;
 }
 
-/* ── Treatment: lead — first paragraph as editorial deck ── */
-[data-rich-text][data-treatment="lead"] > p:first-child {
-  font-size: 1.25rem;
-  line-height: 1.5;
-  color: var(--ot-fg-muted);
-  font-weight: 400;
-  letter-spacing: -0.005em;
-  margin-bottom: var(--ot-space-lg);
-}
-[data-rich-text][data-color="brand"][data-treatment="lead"] > p:first-child {
-  color: oklch(97% 0.005 195 / 0.75);
+/* ── Treatment: lead — intro section (first heading + first paragraph) ──────
+ *
+ * Three selectors cover every content opening pattern:
+ *
+ *   h:first-child        opening heading gets the lead tint; keeps its own
+ *                        size and weight so it reads as the section title.
+ *
+ *   p:first-child        content that opens directly with body text —
+ *                        full deck treatment (size, weight, color).
+ *
+ *   h:first-child + p    the paragraph immediately following the opening
+ *                        heading — full deck treatment.
+ *
+ * Together, heading + first paragraph are treated as one "intro section":
+ * the heading stays bold/large but is tinted, the paragraph becomes the
+ * editorial deck (enlarged, light weight, same tint).
+ *
+ * Light mode: color flips to dark teal so the tint reads on near-white canvas.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Opening heading — tinted, no top margin */
+[data-rich-text][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child {
+  color: oklch(92% 0.075 195);
+  margin-top: 0;
 }
 
-/* ── Treatment: dropcap — brand-teal first letter, floated ── */
-[data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter {
-  color: var(--ot-brand);
-  float: left;
-  font-size: 3.75em;
-  font-weight: 800;
-  line-height: 0.82;
-  margin-right: 0.08em;
-  letter-spacing: -0.03em;
+/* Opening paragraph (standalone, or directly after the opening heading) */
+[data-rich-text][data-treatment="lead"] > p:first-child,
+[data-rich-text][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child + p {
+  font-size: clamp(1.375rem, 2.8vw, 1.75rem);
+  font-weight: 300;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: oklch(92% 0.075 195);
+  margin-bottom: var(--ot-space-lg);
+  text-wrap: balance;
 }
-[data-rich-text][data-color="brand"][data-treatment="dropcap"] > p:first-child::first-letter {
+
+/* Light mode */
+[data-theme="light"] [data-rich-text][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child,
+[data-theme="light"] [data-rich-text][data-treatment="lead"] > p:first-child,
+[data-theme="light"] [data-rich-text][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child + p {
+  color: oklch(36% 0.15 195);
+}
+
+/* Brand background */
+[data-rich-text][data-color="brand"][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child,
+[data-rich-text][data-color="brand"][data-treatment="lead"] > p:first-child,
+[data-rich-text][data-color="brand"][data-treatment="lead"] > :is(h1, h2, h3, h4, h5, h6):first-child + p {
+  color: oklch(97% 0.005 195 / 0.80);
+}
+
+/* ── Treatment: dropcap — oversized accent initial ──────────────────────────
+ *
+ * Drop caps belong on body text, not headings. Applying ::first-letter to a
+ * heading creates an orphaned letter beside the heading text.
+ *
+ * Selectors target only paragraphs:
+ *   p:first-child         content that opens directly with a paragraph
+ *   h:first-child + p     first paragraph after an opening heading
+ *
+ * Uses solid accent color (signal green) for the fill — guaranteed visible on
+ * both dark canvas and light backgrounds. The diffused text-shadow glow works
+ * because text-shadow follows the fill color, not a stroke.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter,
+[data-rich-text][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
+  color: var(--ot-accent);
+  float: left;
+  font-size: clamp(4rem, 9vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.80;
+  margin-right: 0.10em;
+  margin-top: 0.05em;
+  letter-spacing: -0.04em;
+  /* Glow: two-layer accent bloom — wide diffuse + tight halo */
+  text-shadow:
+    0 0 1.2em oklch(from var(--ot-accent) l c h / 0.45),
+    0 0 0.3em oklch(from var(--ot-accent) l c h / 0.20);
+}
+
+/* Light mode: no glow needed, accent reads clearly on near-white canvas */
+[data-theme="light"] [data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter,
+[data-theme="light"] [data-rich-text][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
+  text-shadow: none;
+}
+
+/* Brand background: use fg-on-brand (near-white) so the initial shows on teal */
+[data-rich-text][data-color="brand"][data-treatment="dropcap"] > p:first-child::first-letter,
+[data-rich-text][data-color="brand"][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
   color: var(--ot-fg-on-brand);
+  text-shadow: 0 0 1em oklch(97% 0.005 195 / 0.20);
 }
 
 /* ── Ruled headings — 1px teal top-border as chapter divider ── */
@@ -662,6 +1239,61 @@ body {
     0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
 }
 
+/* ── Resource Library grid card ───────────────────────────────────────────────
+ * Chromatic lift on hover (translateY + shadow intensification) plus a bottom-
+ * to-top fill on the brand band that deepens to brand-hover. The fill uses
+ * scaleY(0→1) on a ::before overlay, never animating layout properties.
+ * Reduced-motion: shadow deepens + band transitions background-color directly.
+ * Bloom tokens follow CMS theme overrides automatically.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.resource-card {
+  box-shadow: 0 2px 18px var(--ot-bloom-brand-faint);
+  transition:
+    transform 300ms var(--ot-ease-quick),
+    box-shadow 300ms var(--ot-ease-quick);
+}
+.resource-card:hover {
+  box-shadow:
+    0 12px 40px var(--ot-bloom-brand-faint),
+    0 4px 16px var(--ot-bloom-accent-faint);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .resource-card:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* Header band — ::before overlay fills upward on card hover */
+.resource-card-band {
+  position: relative;
+  overflow: hidden;
+}
+.resource-card-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--ot-brand-hover);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .resource-card-band::before {
+    transition: transform 320ms var(--ot-ease-kinetic);
+  }
+  .resource-card:hover .resource-card-band::before {
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resource-card-band {
+    transition: background-color 200ms var(--ot-ease-quick);
+  }
+  .resource-card:hover .resource-card-band {
+    background-color: var(--ot-brand-hover);
+  }
+}
+
 /* ── Glass panel — true frosted-glass overlay for rows, sections, and stat panels
  * True glassmorphism: backdrop-filter is the frost — the background MUST be
  * near-transparent so blur of whatever is behind shows through.
@@ -709,6 +1341,156 @@ body {
     var(--ot-brand) 50%,
     oklch(from var(--ot-brand) calc(l - 0.15) c h) 100%
   );
+}
+
+/* ── HeroBlock — atmospheric text panel depth system ────────────────────────
+ *
+ * Three-layer depth applied to the text panel via .hero-atmos:
+ *
+ *   ::before  Edge-lit radial gradient — a diffuse light source positioned at
+ *             the panel's edge that faces the image, as if ambient light from
+ *             the visual panel spills into the text panel. Adapts to layout
+ *             direction (imageRight / imageLeft / full-width).
+ *
+ *   ::after   Micro-grain texture — SVG feTurbulence noise at 3% opacity.
+ *             Barely visible, but breaks the "digital flat panel" flatness.
+ *
+ * canvas/surface panels: the glow breathes slowly on a 9s alternate cycle,
+ * creating a subconscious sense that the surface is alive. Brand panel is
+ * static — .bg-brand-fill already provides rich gradient depth.
+ *
+ * All gradient stops use CSS Relative Color Syntax from --ot-brand, so they
+ * follow CMS theme overrides automatically.
+ *
+ * Legibility: the gradient sits entirely behind the text (z-index 0 vs z-10).
+ * Brand color at these opacity levels does not compromise WCAG AA contrast.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* --hero-glow-a drives the animated opacity of the light gradient.
+ * Registered as <number> so it can be interpolated in keyframes. */
+@property --hero-glow-a {
+  syntax: '<number>';
+  initial-value: 0.18;
+  inherits: false;
+}
+
+.hero-atmos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-atmos::before,
+.hero-atmos::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Brand panel: reinforce bg-brand-fill with directional depth ──
+ * A brighter spot from the image-adjacent edge (warmth from the visual)
+ * and a deeper shadow at the far corner (dimensionality). */
+.hero-atmos[data-color="brand"][data-layout="imageRight"]::before {
+  /* Image on right → light spills from right edge */
+  background:
+    radial-gradient(ellipse 65% 80% at 108% 28%,
+      oklch(from var(--ot-brand) calc(l + 0.25) c h / 0.30) 0%,
+      transparent 58%
+    ),
+    radial-gradient(ellipse 45% 50% at -5% 82%,
+      oklch(from var(--ot-brand) calc(l - 0.22) c h / 0.35) 0%,
+      transparent 52%
+    );
+}
+.hero-atmos[data-color="brand"][data-layout="imageLeft"]::before {
+  /* Image on left → light spills from left edge */
+  background:
+    radial-gradient(ellipse 65% 80% at -8% 28%,
+      oklch(from var(--ot-brand) calc(l + 0.25) c h / 0.30) 0%,
+      transparent 58%
+    ),
+    radial-gradient(ellipse 45% 50% at 105% 82%,
+      oklch(from var(--ot-brand) calc(l - 0.22) c h / 0.35) 0%,
+      transparent 52%
+    );
+}
+.hero-atmos[data-color="brand"][data-layout="full"]::before {
+  /* Full-width: overhead-center wash */
+  background: radial-gradient(ellipse 75% 55% at 30% -5%,
+    oklch(from var(--ot-brand) calc(l + 0.20) c h / 0.22) 0%,
+    transparent 60%
+  );
+}
+
+/* ── Canvas panel: brand-tinted ambient glow; breathes slowly ──
+ * The glow is not centred — it drifts from the image-adjacent edge,
+ * reinforcing that the two panels are part of one composition. */
+.hero-atmos[data-color="canvas"][data-layout="imageRight"]::before {
+  background: radial-gradient(ellipse 75% 78% at 110% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="canvas"][data-layout="imageLeft"]::before {
+  background: radial-gradient(ellipse 75% 78% at -10% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="canvas"][data-layout="full"]::before {
+  background: radial-gradient(ellipse 82% 65% at 25% -5%,
+    oklch(from var(--ot-brand) calc(l - 0.08) c h / var(--hero-glow-a)) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Surface panel: same intent as canvas, slightly stronger presence ──
+ * Surface is one tone above canvas, so the brand glow can be a touch warmer. */
+.hero-atmos[data-color="surface"][data-layout="imageRight"]::before {
+  background: radial-gradient(ellipse 75% 78% at 110% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="surface"][data-layout="imageLeft"]::before {
+  background: radial-gradient(ellipse 75% 78% at -10% 22%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 62%
+  );
+}
+.hero-atmos[data-color="surface"][data-layout="full"]::before {
+  background: radial-gradient(ellipse 82% 65% at 25% -5%,
+    oklch(from var(--ot-brand) calc(l - 0.02) c h / var(--hero-glow-a)) 0%,
+    transparent 65%
+  );
+}
+
+/* ── Micro-grain texture overlay ──
+ * SVG fractalNoise rendered as a greyscale tile, tiled at 250px.
+ * At 3% opacity it adds micro-texture without being consciously visible.
+ * Applied to all variants — brand, canvas, and surface all benefit. */
+.hero-atmos::after {
+  /* stylelint-disable-next-line function-url-quotes */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 250px 250px;
+  opacity: 0.03;
+}
+
+/* ── Ambient breathing — canvas and surface panels only ──
+ * The glow gently intensifies and recedes on a 9-second alternate cycle.
+ * Designed to be perceived subliminally: present but never distracting.
+ * Uses a near-linear ease (0.45, 0, 0.55, 1) to feel breath-like, not mechanical. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-atmos[data-color="canvas"]::before,
+  .hero-atmos[data-color="surface"]::before {
+    animation: heroPanelBreathe 9s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  }
+}
+
+@keyframes heroPanelBreathe {
+  from { --hero-glow-a: 0.11; }
+  to   { --hero-glow-a: 0.28; }
 }
 
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
@@ -998,5 +1780,339 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .animate-dropdown-in {
     animation: dropdownIn 180ms var(--ot-ease-kinetic) forwards;
+  }
+}
+
+/* ── LaserSignature — character-by-character signature etch ─────────────────
+ *
+ * Each letter appears as though a laser is etching it: invisible → white-hot
+ * flash with teal glow → cools to the settled brand color. Characters stagger
+ * left to right, 110ms apart, so the name writes itself sequentially.
+ *
+ * Sequence (triggered by IntersectionObserver → data-active on .ls-wrap):
+ *
+ *   0ms    Separator rule scores left→right (180ms scaleX, ease-out)
+ *   200ms  First character etches in — flash → cool (500ms ease-out)
+ *   +110ms Each subsequent character follows with 110ms stagger
+ *
+ * Per-character keyframe (lsCharWrite, 500ms):
+ *   0%   invisible, settled color
+ *   18%  opaque, near-white-hot (oklch 92%), teal glow text-shadow
+ *   100% opaque, var(--ls-settled-color), no glow
+ *
+ * --ls-settled-color (registered as <color>, inherits: true):
+ *   default   → oklch(55% 0.18 195)  brand teal
+ *   brand bg  → oklch(97% 0.005 195) near-white
+ *
+ * prefers-reduced-motion → data-static: all characters visible instantly.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Registered so lsCharWrite can animate color back to the inherited value */
+@property --ls-settled-color {
+  syntax: '<color>';
+  initial-value: oklch(55% 0.18 195);
+  inherits: true;
+}
+
+/* ── Wrapper ── */
+.ls-wrap {
+  display: block;
+  --ls-settled-color: oklch(55% 0.18 195); /* default: brand teal */
+}
+.ls-wrap--brand {
+  --ls-settled-color: oklch(97% 0.005 195); /* on brand bg: near-white */
+}
+
+/* ── Separator rule: 1px scores before signature starts ── */
+.ls-rule {
+  display: block;
+  height: 1px;
+  background: oklch(55% 0.18 195 / 0.22);
+  transform-origin: left;
+  transform: scaleX(0);
+  margin-bottom: clamp(0.75rem, 1.5vw, 1.125rem);
+}
+.ls-wrap--brand .ls-rule {
+  background: oklch(97% 0.005 195 / 0.22);
+}
+
+/* ── Signature container — Caveat 400, large handwriting scale ── */
+/* Caveat 400 has naturally thin strokes; the large size keeps it legible */
+.ls-sig {
+  font-family: var(--ot-font-signature);
+  font-size: clamp(3.2rem, 6.5vw, 5rem);
+  font-weight: 400;
+  display: block;
+  line-height: 1.15;
+}
+
+/* ── Individual characters: hidden until active ── */
+.ls-char {
+  display: inline-block;
+  opacity: 0;
+  color: var(--ls-settled-color);
+}
+
+/* ── Static fallback (prefers-reduced-motion or no JS) ── */
+.ls-wrap[data-static] .ls-rule {
+  transform: scaleX(1);
+}
+.ls-wrap[data-static] .ls-char {
+  opacity: 1;
+}
+
+/* ── Active: trigger the sequential signing animation ── */
+@media (prefers-reduced-motion: no-preference) {
+  .ls-wrap[data-active] .ls-rule {
+    animation: lsRuleDraw 180ms ease-out forwards;
+  }
+
+  .ls-wrap[data-active] .ls-char {
+    animation: lsCharWrite 500ms calc(var(--ls-char-delay, 200ms)) ease-out both;
+  }
+}
+
+@keyframes lsRuleDraw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Character etch: invisible → white-hot flash → cool to settled brand color.
+ * The 18% peak mimics a laser cutting point: instantly full brightness, then
+ * the heat dissipates as the beam moves on to the next letterform. */
+@keyframes lsCharWrite {
+  0% {
+    opacity: 0;
+    color: var(--ls-settled-color);
+    text-shadow: none;
+  }
+  8% {
+    opacity: 0.55;
+    color: oklch(76% 0.13 190);
+    text-shadow:
+      0 0  4px oklch(55% 0.18 195 / 0.45),
+      0 0 12px oklch(55% 0.18 195 / 0.20);
+  }
+  22% {
+    opacity: 1;
+    color: oklch(92% 0.04 182); /* near-white-hot — laser temperature */
+    text-shadow:
+      0 0  5px oklch(55% 0.18 195 / 1.00),
+      0 0 14px oklch(55% 0.18 195 / 0.65),
+      0 0 30px oklch(55% 0.18 195 / 0.30);
+  }
+  100% {
+    opacity: 1;
+    color: var(--ls-settled-color);
+    text-shadow: none;
+  }
+}
+
+/* ── BannerBlock ──────────────────────────────────────────────────────────────
+ *
+ * Background image + scrim block with two rendering modes:
+ *
+ *   scrim    — full-bleed color scrim over the image; text sits directly on it
+ *   glass    — lighter scrim; content is placed inside a frosted glass panel
+ *
+ * Scrim is implemented as Tailwind opacity classes applied inline (see
+ * BannerBlock.tsx). These CSS rules handle the decorative layers and entrance.
+ *
+ * Entrance (IntersectionObserver → data-active on .banner-wrap, threshold 0.25):
+ *   0ms    Eyebrow fades in
+ *   120ms  Heading slides up
+ *   240ms  Body slides up (only in large size)
+ *   340ms  CTA group slides up
+ *
+ * prefers-reduced-motion → data-static: all elements visible instantly.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Vignette: radial corner darkening draws focus to center content ── */
+.banner-vignette {
+  background: radial-gradient(
+    ellipse 130% 140% at 50% 50%,
+    transparent 30%,
+    oklch(from var(--ot-canvas) l c h / 0.22) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Brand bloom: soft warm halo behind content on brand-colored banners ── */
+.banner-brand-bloom {
+  background: radial-gradient(
+    ellipse 50% 55% at 50% 50%,
+    oklch(from var(--ot-brand) l c h / 0.15) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ── Glass panels: dark-tinted frost for scrim=glass treatment ── */
+.banner-glass {
+  background: oklch(from var(--ot-canvas) l c h / 0.75);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.10);
+  box-shadow: 0 8px 40px oklch(from var(--ot-canvas) l c h / 0.50);
+}
+
+/* Brand-tinted glass: used when color=brand + treatment=glass */
+.banner-glass-brand {
+  background: oklch(from var(--ot-brand) l c h / 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(from var(--ot-brand) l c h / 0.25);
+  box-shadow: 0 8px 40px var(--ot-bloom-brand-faint);
+}
+
+/* ── Entrance: elements start invisible, animated to visible on data-active ── */
+.banner-eyebrow,
+.banner-heading,
+.banner-body,
+.banner-ctas {
+  opacity: 0;
+}
+
+/* Static fallback: prefers-reduced-motion or no JS */
+.banner-wrap[data-static] .banner-eyebrow,
+.banner-wrap[data-static] .banner-heading,
+.banner-wrap[data-static] .banner-body,
+.banner-wrap[data-static] .banner-ctas {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .banner-wrap[data-active] .banner-eyebrow {
+    animation: fadeIn  0.4s   0ms var(--ot-ease-kinetic) both;
+  }
+  .banner-wrap[data-active] .banner-heading {
+    animation: slideUp 0.6s 120ms var(--ot-ease-kinetic) both;
+  }
+  .banner-wrap[data-active] .banner-body {
+    animation: slideUp 0.5s 240ms var(--ot-ease-kinetic) both;
+  }
+  .banner-wrap[data-active] .banner-ctas {
+    animation: slideUp 0.5s 340ms var(--ot-ease-kinetic) both;
+  }
+}
+
+/* ── OptiAdmin sidebar dark panel ────────────────────────────────────────────
+ * Class-based styles targeting components within the dark sidebar.
+ * The sidebar uses .oa-sidebar on the <aside> and passes dark context to child
+ * components through CSS class targeting, avoiding prop drilling.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/* Sidebar container */
+.oa-sidebar {
+  background: linear-gradient(
+    168deg,
+    oklch(19% 0.030 175) 0%,
+    oklch(13.5% 0.020 175) 100%
+  );
+  border-right-color: oklch(25% 0.026 175);
+  box-shadow:
+    1px 0 0 oklch(28% 0.026 175 / 0.4),
+    6px 0 24px oklch(6% 0.012 175 / 0.50);
+}
+
+/* Wordmark area border */
+.oa-sidebar .oa-wordmark-border {
+  border-bottom-color: oklch(25% 0.026 175);
+}
+
+/* Section label */
+.oa-sidebar .oa-section-label {
+  color: oklch(34% 0.018 175);
+}
+
+/* Nav items */
+.oa-sb-nav-item {
+  color: oklch(54% 0.018 175);
+  transition: color 120ms ease, background-color 120ms ease;
+}
+.oa-sb-nav-item:hover {
+  color: oklch(80% 0.012 165);
+  background-color: oklch(100% 0 0 / 0.07);
+}
+.oa-sb-nav-item.oa-active {
+  color: oklch(80% 0.14 155);
+  background-color: oklch(51% 0.16 158 / 0.22);
+  font-weight: 600;
+}
+
+/* Sidebar footer */
+.oa-sidebar .oa-sb-divider {
+  border-top-color: oklch(25% 0.026 175);
+}
+.oa-sb-logout {
+  color: oklch(42% 0.014 175);
+  transition: color 120ms ease, background-color 120ms ease;
+}
+.oa-sb-logout:hover {
+  color: oklch(70% 0.012 165);
+  background-color: oklch(100% 0 0 / 0.07);
+}
+
+/* Top-bar header */
+.oa-topbar {
+  box-shadow:
+    0 1px 0 oklch(0% 0 0 / 0.07),
+    0 2px 8px oklch(0% 0 0 / 0.04);
+}
+
+/* Site badge in the header */
+.oa-site-badge {
+  color: oklch(44% 0.016 252);
+  background: oklch(94% 0.007 252);
+  border: 1px solid oklch(88% 0.008 252);
+}
+
+/* ── OptiAdmin shell — independent neutral token scope ───────────────────────
+ * Applied via class="opti-admin" on the admin layout root. Overrides the
+ * marketing site tokens so the admin palette is fully decoupled from whatever
+ * brand color is active in the CMS ThemeManager.
+ *
+ * Color strategy: Restrained.
+ *   Grounds:  near-white with a barely-perceptible 252° slate tint (chroma ≤0.006).
+ *   Accent:   calm slate-blue at reduced chroma (0.12) — replaces the marketing teal.
+ *   Semantic: muted green for Published, same slate-blue for Scheduled — both
+ *             softened to suit dense data tables and inline status chips.
+ *
+ * Bloom/shadow tokens (--ot-bloom-brand-*) auto-derive from --ot-brand via CSS
+ * relative color syntax — they recalculate to blue-tinted values within this scope
+ * without any explicit override.
+ * ──────────────────────────────────────────────────────────────────────────── */
+.opti-admin {
+  /* Grounds */
+  --ot-canvas:  oklch(98.5% 0.003 170); /* page background — clean near-white, faint teal tint */
+  --ot-surface: oklch(96.0% 0.006 170); /* elevated panel surfaces                             */
+
+  /* Text */
+  --ot-fg:          oklch(13%   0.012 170); /* primary — near-black, max contrast  */
+  --ot-fg-muted:    oklch(44%   0.018 170); /* secondary — labels, metadata        */
+  --ot-fg-on-brand: oklch(98.5% 0.003 170); /* text on filled action surfaces      */
+
+  /* Primary accent: OptiTech green-teal — matches brand icon palette */
+  --ot-brand:       oklch(51% 0.16 158); /* interactive: active nav, CTA fills  */
+  --ot-brand-hover: oklch(40% 0.14 158); /* deeper state: hover / pressed       */
+
+  /* Status green: same hue family, slightly brighter for chip legibility      */
+  --ot-accent:       oklch(56% 0.17 145);
+  --ot-accent-hover: oklch(44% 0.14 145);
+  --ot-fg-on-accent: oklch(13% 0.012 170);
+}
+
+/* ── OptiAdmin day-panel slide-in ────────────────────────────────────────────
+ * Fixed overlay panel used by the calendar day flyout.
+ * prefers-reduced-motion: panel appears instantly without translation.
+ * ──────────────────────────────────────────────────────────────────────────── */
+@keyframes oa-slide-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .oa-day-panel {
+    animation: oa-slide-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }

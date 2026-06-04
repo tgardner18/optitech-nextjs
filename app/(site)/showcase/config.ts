@@ -1,46 +1,74 @@
 // ─── Shared showcase navigation config ───────────────────────────────────────
-// Single source of truth for type tabs and per-section component lists.
-// Consumed by both the desktop sidebar (nav.tsx) and mobile strip (MobileNav.tsx).
 
-export type NavSection = { id: string; label: string }
+export type ShowcaseItem = { label: string; slug: string }
 
-export const TYPE_TABS = [
-  { label: 'Overview', href: '/showcase',        match: '/showcase',        exact: true  },
-  { label: 'Blocks',   href: '/showcase/blocks', match: '/showcase/blocks', exact: false },
-  { label: 'Pages',    href: '/showcase/pages',  match: '/showcase/pages',  exact: false },
-  { label: 'Tokens',   href: '/showcase/tokens', match: '/showcase/tokens', exact: false },
-  { label: 'Theme',    href: '/showcase/theme',  match: '/showcase/theme',  exact: false },
-] as const
+export type ShowcaseCategory = {
+  label: string
+  slug: string
+  match: string  // pathname prefix for active detection
+  href: string   // where the category tab navigates to
+  items: ShowcaseItem[]
+}
 
-/** Matches the section `id=` attributes in app/(site)/showcase/blocks/page.tsx */
-export const BLOCK_SECTIONS: NavSection[] = [
-  { id: 'button',             label: 'Button' },
-  { id: 'button-block',       label: 'Button Block' },
-  { id: 'hero-block',         label: 'Hero' },
-  { id: 'primary-text-block', label: 'Primary Text' },
-  { id: 'rich-text-block',    label: 'Rich Text' },
-  { id: 'quote-block',        label: 'Quote' },
-  { id: 'image-block',        label: 'Image' },
-  { id: 'video-block',        label: 'Video' },
-  { id: 'card-block',         label: 'Card' },
-  { id: 'stat-block',         label: 'Stat Block' },
-  { id: 'feature-grid-block', label: 'Feature Grid' },
-  { id: 'accordion-block',    label: 'Accordion' },
+export const CATEGORIES: ShowcaseCategory[] = [
+  {
+    label: 'Blocks',
+    slug:  'blocks',
+    match: '/showcase/blocks',
+    href:  '/showcase/blocks/hero',
+    items: [
+      { label: 'Hero',         slug: 'hero'         },
+      { label: 'Card',         slug: 'card'         },
+      { label: 'Primary Text', slug: 'primary-text' },
+      { label: 'Quote',        slug: 'quote'        },
+      { label: 'Rich Text',    slug: 'rich-text'    },
+      { label: 'Image',        slug: 'image'        },
+      { label: 'Video',        slug: 'video'        },
+      { label: 'Stat',         slug: 'stat'         },
+      { label: 'Feature Grid', slug: 'feature-grid' },
+      { label: 'Trust Rail',   slug: 'trust-rail'   },
+      { label: 'Accordion',    slug: 'accordion'    },
+      { label: 'Tabs',         slug: 'tabs'         },
+      { label: 'Blog Feed',    slug: 'blog-feed'    },
+      { label: 'Button',       slug: 'button'       },
+      { label: 'Chart',        slug: 'chart'        },
+      { label: 'Banner',            slug: 'banner'           },
+      { label: 'Resource Library', slug: 'resource-library' },
+    ],
+  },
+  {
+    label: 'Pages',
+    slug:  'pages',
+    match: '/showcase/pages',
+    href:  '/showcase/pages/blog',
+    items: [
+      { label: 'Blog',   slug: 'blog'   },
+      { label: 'Folder', slug: 'folder' },
+    ],
+  },
+  {
+    label: 'Theme',
+    slug:  'theme',
+    match: '/showcase/theme',
+    href:  '/showcase/theme',
+    items: [],
+  },
+  {
+    label: 'Tokens',
+    slug:  'tokens',
+    match: '/showcase/tokens',
+    href:  '/showcase/tokens/colors',
+    items: [
+      { label: 'Colors',        slug: 'colors'     },
+      { label: 'Typography',    slug: 'typography' },
+      { label: 'Buttons',       slug: 'buttons'    },
+      { label: 'Form Elements', slug: 'inputs'     },
+      { label: 'Spacing',       slug: 'spacing'    },
+      { label: 'Motion',        slug: 'motion'     },
+    ],
+  },
 ]
 
-/** Matches the section `id=` attributes in app/(site)/showcase/tokens/page.tsx */
-export const TOKEN_SECTIONS: NavSection[] = [
-  { id: 'colors',     label: 'Colors' },
-  { id: 'typography', label: 'Typography' },
-  { id: 'buttons',    label: 'Buttons' },
-  { id: 'inputs',     label: 'Form Elements' },
-  { id: 'spacing',    label: 'Spacing' },
-  { id: 'motion',     label: 'Motion' },
-]
-
-/** Returns the correct section list for the given pathname. */
-export function getSectionsForPath(pathname: string): NavSection[] {
-  if (pathname.startsWith('/showcase/blocks')) return BLOCK_SECTIONS
-  if (pathname.startsWith('/showcase/tokens')) return TOKEN_SECTIONS
-  return []
+export function getCategoryForPath(pathname: string): ShowcaseCategory | null {
+  return CATEGORIES.find(c => pathname.startsWith(c.match)) ?? null
 }

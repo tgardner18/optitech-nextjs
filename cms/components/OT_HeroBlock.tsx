@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_HeroBlock as OT_HeroBlockContentType } from '@/cms/content-types/OT_HeroBlock'
 import { getHeroStyles } from '@/cms/styling/OT_HeroBlock.styling'
 import HeroBlock from '@/components/blocks/HeroBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_HeroBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 

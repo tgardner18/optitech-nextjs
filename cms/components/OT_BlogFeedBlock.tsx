@@ -1,4 +1,6 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_BlogFeedBlock as OT_BlogFeedBlockContentType } from '@/cms/content-types/OT_BlogFeedBlock'
 import { getRequestLocale, getRequestBaseUrl } from '@/lib/optimizely'
 import { getBlogFeedPosts }  from '@/lib/blogFeed'
 import BlogFeedBlock         from '@/components/blocks/BlogFeedBlock'
@@ -7,7 +9,7 @@ import type { BlogFeedColor, BlogFeedColumns, BlogFeedHeadingSize } from '@/comp
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_BlogFeedBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -39,18 +41,26 @@ export default async function OT_BlogFeedBlockAdapter({
   // The SDK's generated fragment includes _metadata.url.hierarchical for
   // contentReference fields, so we can read it directly from content.articleRoot.
   const articleRootPath: string | null =
-    content.articleRoot?._metadata?.url?.hierarchical ?? null
+    content.articleRoot?.url?.hierarchical ?? null
 
   // ── Page size ─────────────────────────────────────────────────────────────
-  const rawPageSize = content.pageSize
+  const rawPageSize = content.pageSize ?? 0
   const pageSize    = Number.isInteger(rawPageSize) && rawPageSize >= 1
     ? Math.min(rawPageSize, 24)
     : 9
 
+  // ── Topic filter ─────────────────────────────────────────────────────────
+  // When the editor chooses a topic in the CMS, the feed is locked to that
+  // topic at render time. Null means "no filter — show all topics".
+  const topicFilter: string | null =
+    typeof content.topicFilter === 'string' && content.topicFilter
+      ? content.topicFilter
+      : null
+
   // ── Fetch posts ───────────────────────────────────────────────────────────
   // React cache() dedups this call if multiple Blog Feed blocks appear on the
-  // same page with the same locale + root (e.g. the same locale + no root).
-  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, siteBaseUrl || null)
+  // same page with the same locale + root + filter combination.
+  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, siteBaseUrl || null, topicFilter)
 
   // ── Display settings ──────────────────────────────────────────────────────
   const color       = String(displaySettings.color       ?? 'canvas')  as BlogFeedColor
@@ -60,7 +70,7 @@ export default async function OT_BlogFeedBlockAdapter({
   // ── Heading — localised field ─────────────────────────────────────────────
   // The heading property has isLocalized: true. The SDK resolves the correct
   // locale variant and exposes it as a plain string on content.heading.
-  const heading = content.heading ? String(content.heading) : undefined
+  const heading = content.heading ?? undefined
 
   return (
     <div {...pa(content.__composition)} className="w-full">
@@ -69,6 +79,7 @@ export default async function OT_BlogFeedBlockAdapter({
         posts={posts}
         topics={topics}
         pageSize={pageSize}
+        topicFilter={topicFilter}
         styleOptions={{ color, columns, headingSize }}
         pa={pa}
       />

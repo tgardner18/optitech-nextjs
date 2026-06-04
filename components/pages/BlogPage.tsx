@@ -206,7 +206,7 @@ function AtmosphericHeader({
   return (
     <header
       data-theme="dark"
-      className="relative overflow-hidden flex flex-col justify-end min-h-[55vh] lg:min-h-[68vh]"
+      className="relative overflow-hidden flex flex-col justify-end min-h-[clamp(350px,55vh,600px)] lg:min-h-[clamp(450px,68vh,700px)]"
       style={{ backgroundColor: 'oklch(38% 0.16 195)' }}
     >
       {/* Hardcoded brand-hover base — ensures a recognisable branded background

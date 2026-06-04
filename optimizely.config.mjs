@@ -9,8 +9,9 @@ export default {
     '!cms/content-types/OptiForms*.ts',
   ],
   propertyGroups: [
-    { key: 'OT_Content', displayName: 'Content',          sortOrder: 100 },
-    { key: 'OT_Theme',   displayName: 'Theme',             sortOrder: 200 },
-    { key: 'OT_SEO',     displayName: 'Search & Discovery', sortOrder: 300 },
+    { key: 'OT_Content',      displayName: 'Content',          sortOrder: 100 },
+    { key: 'OT_Theme',        displayName: 'Theme',             sortOrder: 200 },
+    { key: 'OT_SEO',          displayName: 'Search & Discovery', sortOrder: 300 },
+    { key: 'OT_Integrations', displayName: 'Integrations',      sortOrder: 400 },
   ],
 }

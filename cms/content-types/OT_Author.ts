@@ -19,6 +19,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_Author = contentType({
   key: 'OT_Author',
   displayName: 'Author',
+  description: 'Author profile with name, bio, photo, and social links.',
   baseType: '_component',
   // elementEnabled — allows this block to be added to VB experiences, which is what
   // enables the CMS preview pane when editing a shared Author item.
@@ -31,6 +32,7 @@ export const OT_Author = contentType({
       displayName: 'Full Name',
       group: 'OT_Content',
       sortOrder: 10,
+      indexingType: 'searchable',
     },
     role: {
       type: 'string',
@@ -39,6 +41,7 @@ export const OT_Author = contentType({
       displayName: 'Role / Title',
       group: 'OT_Content',
       sortOrder: 20,
+      indexingType: 'searchable',
     },
     bio: {
       type: 'richText',
@@ -46,6 +49,7 @@ export const OT_Author = contentType({
       displayName: 'Bio',
       group: 'OT_Content',
       sortOrder: 30,
+      indexingType: 'searchable',
     },
     photo: {
       type: 'contentReference',

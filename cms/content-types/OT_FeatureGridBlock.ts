@@ -11,6 +11,7 @@ import { OT_FeatureItem } from './OT_FeatureItem'
 export const OT_FeatureGridBlock = contentType({
   key:                  'OT_FeatureGridBlock',
   displayName:          'Feature Grid Block',
+  description:          'Icon-feature grid with section heading and up to 6 feature tiles.',
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
@@ -22,6 +23,7 @@ export const OT_FeatureGridBlock = contentType({
       description: 'Small label above the heading e.g. "Why OptiTech"',
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     heading: {
       type:        'string',
@@ -30,6 +32,7 @@ export const OT_FeatureGridBlock = contentType({
       displayName: 'Heading',
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
     subheading: {
       type:        'string',
@@ -39,6 +42,7 @@ export const OT_FeatureGridBlock = contentType({
       description: 'One sentence of supporting context below the heading.',
       group:       'OT_Content',
       sortOrder:   30,
+      indexingType: 'searchable',
     },
     features: {
       type:        'array',

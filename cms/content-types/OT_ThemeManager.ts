@@ -146,5 +146,17 @@ export const OT_ThemeManager = contentType({
       group: 'OT_SEO',
       sortOrder: 50,
     },
+
+    // ── Integrations ──────────────────────────────────────────────────────────
+    // Third-party script IDs resolved per-domain so different deployments can
+    // target different accounts without environment variable changes.
+    webExperimentationProjectId: {
+      type: 'string',
+      maxLength: 20,
+      displayName: 'Optimizely Web Experimentation Project ID',
+      description: 'Numeric project ID from your Optimizely Web Experimentation account (e.g. 12345678). When set, the Optimizely Web snippet is injected as a blocking script in <head> for this domain.',
+      group: 'OT_Integrations',
+      sortOrder: 10,
+    },
   },
 })

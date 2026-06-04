@@ -12,6 +12,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_StatItem = contentType({
   key:         'OT_StatItem',
   displayName: 'Stat Item',
+  description: 'Single metric tile used inside a Stat Block.',
   baseType:    '_component',
   properties: {
     value: {
@@ -30,6 +31,7 @@ export const OT_StatItem = contentType({
       description: 'Short descriptor shown below the value. e.g. "Faster deployment"',
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
     context: {
       type:        'string',
@@ -39,6 +41,7 @@ export const OT_StatItem = contentType({
       description: 'Optional supporting line. e.g. "vs. industry average"',
       group:       'OT_Content',
       sortOrder:   30,
+      indexingType: 'searchable',
     },
   },
 })

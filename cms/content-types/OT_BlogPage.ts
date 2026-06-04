@@ -25,8 +25,8 @@ export const OT_BlogPage = contentType({
         { value: 'impact',      displayName: 'Impact (Display Type)' },
       ],
     },
-    headline:     { type: 'string', isLocalized: true, maxLength: 120, displayName: 'Headline',      group: 'OT_Content', sortOrder: 10 },
-    subHeadline:  { type: 'string', isLocalized: true, maxLength: 200, displayName: 'Sub-headline',  group: 'OT_Content', sortOrder: 20 },
+    headline:     { type: 'string', isLocalized: true, maxLength: 120, displayName: 'Headline',      group: 'OT_Content', sortOrder: 10, indexingType: 'searchable' },
+    subHeadline:  { type: 'string', isLocalized: true, maxLength: 200, displayName: 'Sub-headline',  group: 'OT_Content', sortOrder: 20, indexingType: 'searchable' },
     topic: {
       type: 'string',
       format: 'selectOne',
@@ -46,7 +46,7 @@ export const OT_BlogPage = contentType({
     },
     featuredImage: { type: 'contentReference', allowedTypes: ['_image'], displayName: 'Featured Image', group: 'OT_Content', sortOrder: 40 },
     featuredVideo: { type: 'contentReference', allowedTypes: ['_video'], displayName: 'Featured Video', group: 'OT_Content', sortOrder: 50 },
-    body:          { type: 'richText', isLocalized: true, displayName: 'Body', group: 'OT_Content', sortOrder: 60 },
+    body:          { type: 'richText', isLocalized: true, displayName: 'Body', group: 'OT_Content', sortOrder: 60, indexingType: 'searchable' },
     authorRef: {
       type: 'contentReference',
       allowedTypes: [OT_Author],
@@ -64,6 +64,7 @@ export const OT_BlogPage = contentType({
       description: 'Appears in the browser tab and search results. Recommended 50–60 characters. Falls back to Site Name if blank.',
       group: 'OT_SEO',
       sortOrder: 10,
+      indexingType: 'searchable',
     },
     seoDescription: {
       type: 'string',
@@ -71,6 +72,7 @@ export const OT_BlogPage = contentType({
       description: 'Appears in search engine result snippets. Recommended 120–160 characters. Falls back to the site-level Default Meta Description.',
       group: 'OT_SEO',
       sortOrder: 20,
+      indexingType: 'searchable',
     },
     canonicalUrl: {
       type: 'url',
@@ -93,6 +95,7 @@ export const OT_BlogPage = contentType({
       description: 'A 1–3 sentence plain-language answer to the primary question this page addresses. Used in structured data and as a direct signal to AI answer engines (Perplexity, ChatGPT Browsing, Gemini). Write as if answering the question directly — no marketing language.',
       group: 'OT_SEO',
       sortOrder: 50,
+      indexingType: 'searchable',
     },
     schemaType: {
       type: 'string',

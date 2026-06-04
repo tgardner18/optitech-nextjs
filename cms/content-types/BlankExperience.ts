@@ -4,6 +4,7 @@ export const BlankExperience = contentType({
   key: 'BlankExperience',
   displayName: 'Blank Experience',
   baseType: '_experience',
+  mayContainTypes: ['_self', 'OT_BlogPage', 'OT_FolderPage'],
   properties: {
     // ── SEO / Search & Discovery ──────────────────────────────────────────────
     // Identical field keys to OT_BlogPage so lib/metadata.ts has one code path.

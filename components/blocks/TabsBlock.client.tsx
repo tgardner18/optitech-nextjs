@@ -5,6 +5,7 @@ import { cn }       from '@/lib/utils'
 import Button       from '@/components/ui/Button'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import { ArrowRight } from 'lucide-react'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 import {
   useCallback,
   useEffect,
@@ -21,7 +22,7 @@ export type TabItemData = {
   tabLabel:  string
   tabIcon?:  string
   heading?:  string
-  body?:     string
+  body?:     Parameters<typeof RichText>[0]['content'] | null
   imageSrc?: string
   imageAlt?: string
   ctaLabel?: string
@@ -387,7 +388,7 @@ function TriggerButton({
         onClick={() => onSelect(index)}
         className={cn(
           baseClass,
-          'px-lg py-sm text-label font-semibold tracking-label uppercase',
+          'px-lg py-md text-base font-semibold',
           triggerTextClass(color, isActive ? 'active' : 'inactive'),
           // Glass active: frosted bg
           isActive && color === 'glass' && [
@@ -494,7 +495,7 @@ function TriggerButton({
         onClick={() => onSelect(index)}
         className={cn(
           baseClass,
-          'px-md py-sm text-label font-semibold tracking-label uppercase',
+          'px-md py-sm text-sm font-semibold tracking-label uppercase',
           isActive ? pillActive : pillInactive,
         )}
       >
@@ -545,7 +546,7 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'px-md py-sm text-label font-semibold tracking-label uppercase',
+        'px-md py-sm text-sm font-semibold tracking-label uppercase',
         separatorClass,
         isSide && 'md:w-full md:text-left md:border-r-0 md:border-b last:md:border-b-0',
         isSide && (color === 'glass' || color === 'brand') ? 'md:border-white/20' : isSide ? 'md:border-fg/15' : '',
@@ -581,14 +582,14 @@ type PanelContentProps = {
 function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
 
   const headingClass = cn(
-    'text-title font-semibold leading-title tracking-title text-balance',
+    'text-[clamp(1.5rem,3vw,2rem)] font-bold leading-[1.1] tracking-[-0.02em] text-balance',
     color === 'brand'  ? 'text-fg-on-brand'
     : color === 'glass' ? 'text-white'
     : 'text-fg',
   )
 
   const bodyClass = cn(
-    'text-body leading-body text-pretty max-w-[65ch]',
+    'text-body leading-body text-pretty',
     color === 'brand'  ? 'text-fg-on-brand/80'
     : color === 'glass' ? 'text-white/75'
     : 'text-fg-muted',
@@ -599,10 +600,26 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
   // Fall back to textOnly if the active tab has no image
   const resolvedLayout = hasImage ? contentLayout : 'textOnly'
 
+  const eyebrowClass = cn(
+    'text-label tracking-label uppercase font-semibold',
+    color === 'brand'  ? 'text-fg-on-brand/70'
+    : color === 'glass' ? 'text-white/60'
+    : 'text-brand',
+  )
+
   const textContent = (
     <div className="flex flex-col gap-sm flex-1">
+      <p className={eyebrowClass}>{tab.tabLabel}</p>
       {tab.heading && <h3 className={headingClass}>{tab.heading}</h3>}
-      {tab.body    && <p  className={bodyClass}>{tab.body}</p>}
+      {tab.body    && (
+        <div
+          data-rich-text=""
+          data-color={color === 'brand' ? 'brand' : color === 'glass' ? 'glass' : undefined}
+          className={bodyClass}
+        >
+          <RichText content={tab.body} />
+        </div>
+      )}
       {tab.ctaLabel && tab.ctaUrl && (
         <div className="mt-sm">
           <Button
@@ -627,7 +644,7 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
   return (
     <div className={cn(
       'flex flex-col gap-lg',
-      resolvedLayout === 'imageRight' ? 'md:flex-row'         : 'md:flex-row-reverse',
+      resolvedLayout === 'imageRight' ? 'md:flex-row md:items-center' : 'md:flex-row-reverse md:items-center',
     )}>
       <div className="flex-1 md:basis-[55%] md:max-w-[55%] min-w-0">
         {textContent}

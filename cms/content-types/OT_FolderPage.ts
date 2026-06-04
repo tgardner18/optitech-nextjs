@@ -14,6 +14,7 @@ export const OT_FolderPage = contentType({
   key:         'OT_FolderPage',
   displayName: 'Folder',
   baseType:    '_page',
+  mayContainTypes: ['_self', 'BlankExperience', 'OT_BlogPage'],
   properties: {
     notes: {
       type:        'string',

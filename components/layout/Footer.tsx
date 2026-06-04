@@ -2,43 +2,29 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 
-/**
- * Footer — driven by OT_FooterBlock via ThemeManager.footerRef.
- *
- * Structure:
- *   [brand accent bar]
- *   [description zone — mission statement as editorial statement]
- *   [logo + navigation zone]
- *   [year mark]
- *
- * Logo is sourced from ThemeManager (same as header — single source of truth).
- * Description and links come from the referenced OT_FooterBlock.
- * Both are independently optional. Graceful null state when footerRef is absent.
- *
- * Link auto-column: ≤5 links → 1 column. 6–10 links → 2 columns (desktop+).
- */
 export default async function Footer() {
   const settings = await getSiteSettings(await getRequestDomain(), await getRequestLocale())
 
-  // ── Logo (from ThemeManager — identical source to header) ──────────────────
-  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
-  const logoAlt        = settings?.logoAlt ?? 'OptiTech'
-  const logoFit        = (settings?.logoFit as string | undefined) ?? 'full'
-  const logoInvertDark = settings?.logoInvertDark === true
+  const themeLogoSrc    = settings?.logo?.url?.default ?? '/brand/logo/optitech-icon.svg'
+  const logoAlt         = settings?.logoAlt ?? 'OptiTech'
+  const themeLogoInvert = settings?.logoInvertDark === true
 
-  const LOGO_IMG_CLASS: Record<string, string> = {
-    full:    'max-h-9 w-auto',
-    icon:    'h-9 w-9 object-contain',
-    compact: 'max-h-7 w-auto max-w-[120px]',
+  const footerRef          = (settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
+  const footerLogoOverride = footerRef?.footerLogo?.url?.default as string | undefined
+  const footerLogoSrc      = footerLogoOverride ?? themeLogoSrc
+  const footerLogoInvert   = footerLogoOverride !== undefined
+                               ? footerRef?.footerLogoInvertDark === true
+                               : themeLogoInvert
+  const footerLogoSize     = (footerRef?.footerLogoSize as string | undefined) ?? 'md'
+
+  const FOOTER_LOGO_SIZE: Record<string, string> = {
+    sm: 'max-h-8 w-auto',
+    md: 'max-h-10 w-auto',
+    lg: 'max-h-14 w-auto',
+    xl: 'max-h-20 w-auto',
   }
-  const logoImgClass = [
-    LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full,
-    logoInvertDark ? 'logo-invert-dark' : '',
-  ].filter(Boolean).join(' ')
+  const logoSizeClass = FOOTER_LOGO_SIZE[footerLogoSize] ?? FOOTER_LOGO_SIZE.md
 
-  // ── Footer block data (from OT_FooterBlock via contentReference) ───────────
-  // footerRef is a ContentReference — the actual block data lives in .item
-  const footerRef       = (settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
   const descriptionHtml = (footerRef?.description?.html as string | undefined) ?? null
 
   type FooterLink = { label: string; href: string }
@@ -46,140 +32,148 @@ export default async function Footer() {
     ? (footerRef.links as any[])
         .map(l => ({ label: (l.label as string) ?? '', href: (l.url?.default as string) ?? '#' }))
         .filter(l => l.label)
-        .slice(0, 10)
+        .slice(0, 5)
     : []
-
-  const hasContent     = !!descriptionHtml || links.length > 0
-  const twoColumnLinks = links.length > 5
 
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative overflow-hidden isolate bg-surface border-t border-fg/10">
+    <footer className="relative overflow-hidden isolate" data-theme="dark">
 
-      {/* ── Background depth layer ───────────────────────────────────────────
-           Soft brand bloom from bottom-right: gives the footer a light-source
-           quality without pattern clutter. Static — no motion concern. ────── */}
+      {/* Top gradient bar */}
       <div
-        className="absolute inset-0 pointer-events-none select-none"
-        aria-hidden="true"
-        style={{
-          zIndex: -1,
-          backgroundImage:
-            'radial-gradient(ellipse 60% 80% at 95% 110%, var(--ot-bloom-brand-faint) 0%, transparent 65%)',
-        }}
-      />
-
-      {/* ── Accent bar — 2 px gradient horizon: brand ➜ accent ──────────────
-           At 1 px the gradient disappeared entirely. 2 px makes it readable. */}
-      <div
-        className="h-0.5"
-        aria-hidden="true"
+        aria-hidden
+        className="h-px"
         style={{
           background: 'linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent)',
         }}
       />
 
-      {hasContent ? (
-        <div className="px-md lg:px-lg">
+      {/* ── Background layers (absolute, stacked) ──────────────────────────────
+       *
+       * z-0  brand-hover fills everything (right side base)
+       * z-1  canvas panel: clip-path extends past the mist zone; CSS mask creates
+       *      a soft angled right edge that dissolves into the brand colour below.
+       *      drop-shadow renders on the masked alpha edge → diffused depth shadow.
+       * z-2  accent rim — thin crisp parallelogram at the diagonal spine
+       * z-3  right-side elevation — subtle top-lit gradient makes the brand panel
+       *      appear slightly raised above the canvas side
+       * z-4  ambient brand bloom
+       *
+       * ─────────────────────────────────────────────────────────────────────── */}
 
-          {/* ── Main content row — description left, nav right ────────────────
-               Description fills the remaining horizontal space so it doesn't
-               leave a column of dead whitespace on wide viewports. Nav links
-               shrink to their content on the right edge. ─────────────────── */}
-          <div className="pt-xl pb-lg border-b border-fg/8 flex flex-col gap-xl sm:flex-row sm:items-start sm:gap-2xl">
+      {/* z-0 */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ zIndex: 0, background: 'var(--ot-brand-hover)' }}
+      />
 
-            {/* Description — flexible, fills available space */}
-            {descriptionHtml && (
-              <div
-                className="
-                  flex-1 min-w-0
-                  text-[1.0625rem] font-medium leading-[1.65] text-fg
-                  [&_p]:m-0
-                  [&_p+p]:mt-[0.75em]
-                  [&_strong]:font-semibold
-                  [&_em]:not-italic [&_em]:text-accent
-                  [&_a]:text-fg-muted [&_a]:underline [&_a]:decoration-fg/20
-                  [&_a:hover]:text-fg [&_a:hover]:decoration-fg/50
-                "
-                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-              />
-            )}
+      {/* z-1: Canvas panel — masked right edge creates the mist/dissolve blend */}
+      <div
+        aria-hidden
+        className="hidden lg:block absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 1,
+          background: 'var(--ot-canvas)',
+          /* Clip to a polygon wider than the visual diagonal so the mask has room to fade */
+          clipPath: 'polygon(0 0, 74% 0, calc(74% - 5rem) 100%, 0 100%)',
+          /* Mask gradient: solid canvas → soft dissolve into brand side */
+          WebkitMaskImage:
+            'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.80) 57%, rgba(0,0,0,0.50) 63%, rgba(0,0,0,0.18) 68%, transparent 73%)',
+          maskImage:
+            'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.80) 57%, rgba(0,0,0,0.50) 63%, rgba(0,0,0,0.18) 68%, transparent 73%)',
+          /* drop-shadow follows the mask's alpha edge — produces a soft depth shadow on the brand side */
+          filter: 'drop-shadow(12px 0 44px oklch(4% 0.005 195 / 0.65))',
+        }}
+      />
 
-            {/* Navigation links — pinned to the right, shrink to content */}
-            {links.length > 0 && (
-              <nav aria-label="Footer navigation" className="shrink-0">
-                <ul
-                  className={`
-                    grid grid-cols-1 gap-x-xl gap-y-xs
-                    ${twoColumnLinks ? 'sm:grid-cols-2' : ''}
-                  `}
-                >
-                  {links.map(link => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="
-                          text-label tracking-label uppercase
-                          text-fg-muted hover:text-fg
-                          transition-colors duration-150 ease-quick
-                        "
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
-          </div>
+      {/* z-3: Right-column elevation — lighter top edge, makes brand side look raised */}
+      <div
+        aria-hidden
+        className="hidden lg:block absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 3,
+          background:
+            'linear-gradient(to bottom, oklch(from var(--ot-brand-hover) calc(l + 0.10) c h / 0.50) 0%, transparent 60%)',
+          clipPath: 'polygon(61% 0, 100% 0, 100% 100%, calc(61% - 5rem) 100%)',
+        }}
+      />
 
-          {/* ── Logo strip ────────────────────────────────────────────────── */}
-          <div className="py-lg">
-            <Link
-              href="/"
-              aria-label={`${logoAlt} — Home`}
-              className="
-                inline-flex items-center h-9
-                opacity-70 hover:opacity-100
-                transition-opacity duration-200 ease-quick
-              "
-            >
-              <Image
-                src={logoSrc}
-                alt={logoAlt}
-                width={140}
-                height={36}
-                className={logoImgClass}
-              />
-            </Link>
-          </div>
+      {/* z-4: Ambient bloom on brand side */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 4,
+          backgroundImage:
+            'radial-gradient(ellipse 50% 80% at 90% 115%, var(--ot-bloom-brand-faint) 0%, transparent 65%)',
+        }}
+      />
 
-        </div>
-      ) : (
-        /* ── Null state — no footer block configured ─────────────────────── */
-        <div className="px-md lg:px-lg py-xl flex items-center justify-start">
+      {/* ── Main content ──────────────────────────────────────────────────────── */}
+      {/*
+       * Mobile: columns stack vertically, each carries its own background colour.
+       * Desktop (lg:): both columns are transparent — the absolute panels above
+       * show through. Left column naturally sits over the canvas region;
+       * right column sits over the brand-hover region.
+       */}
+      <div className="relative flex flex-col lg:flex-row" style={{ zIndex: 10 }}>
+
+        {/* ── Left: canvas — logo + description + copyright ──────────────────── */}
+        <div className="bg-canvas lg:bg-transparent lg:w-[62%] flex flex-col justify-center px-md py-md lg:px-lg lg:py-lg lg:pr-20">
+
           <Link
             href="/"
             aria-label={`${logoAlt} — Home`}
-            className="opacity-40 hover:opacity-70 transition-opacity duration-200 ease-quick"
+            className="inline-flex items-center hover:opacity-80 transition-opacity duration-200 ease-quick"
+            style={{ filter: 'drop-shadow(0 4px 16px var(--ot-bloom-brand-faint))' }}
           >
             <Image
-              src={logoSrc}
+              src={footerLogoSrc}
               alt={logoAlt}
-              width={120}
-              height={30}
-              className={logoImgClass}
+              width={444}
+              height={90}
+              className={logoSizeClass}
+              style={footerLogoInvert ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
           </Link>
-        </div>
-      )}
 
-      {/* ── Year mark — label in brand color, quiet but present ──────────────── */}
-      <div className="border-t border-fg/5 px-md lg:px-lg py-sm">
-        <p className="text-label text-brand/50 tracking-label uppercase">
-          {year}
-        </p>
+          {descriptionHtml && (
+            <div
+              className="mt-sm max-w-[58ch] text-[0.875rem] leading-relaxed text-fg-muted [&_p]:m-0 [&_p+p]:mt-[0.5em] [&_strong]:font-semibold [&_strong]:text-fg [&_em]:not-italic [&_em]:text-accent [&_a]:text-fg-muted [&_a]:underline [&_a]:decoration-fg/20 [&_a:hover]:text-fg [&_a:hover]:decoration-fg/50 transition-colors duration-150"
+              dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+            />
+          )}
+
+          <p className="text-label tracking-label uppercase text-fg-muted/60 mt-sm">
+            © {year}
+          </p>
+
+        </div>
+
+        {/* ── Right: brand — nav links, right-aligned ─────────────────────────── */}
+        <div className="bg-brand-hover lg:bg-transparent lg:w-[38%] flex flex-col justify-center items-end px-md py-md lg:px-lg lg:py-lg border-t border-accent/20 lg:border-t-0">
+
+          {links.length > 0 && (
+            <nav aria-label="Footer navigation">
+              <ul className="flex flex-col gap-y-3 items-end">
+                {links.map(link => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-[0.875rem] font-medium text-fg-on-brand/80 underline-offset-2 hover:text-fg-on-brand hover:underline decoration-fg-on-brand/30 transition-all duration-200 ease-quick"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
+        </div>
+
       </div>
 
     </footer>

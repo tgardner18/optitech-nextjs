@@ -6,5 +6,6 @@ export function getPrimaryTextStyles(s: Record<string, string | boolean>): Prima
     color:     (s.color     ?? 'canvas')   as PrimaryTextStyleOptions['color'],
     size:      (s.size      ?? 'headline') as PrimaryTextStyleOptions['size'],
     gradient:  (s.gradient  ?? 'none')     as PrimaryTextStyleOptions['gradient'],
+    depth:     (s.depth     ?? 'none')     as PrimaryTextStyleOptions['depth'],
   }
 }

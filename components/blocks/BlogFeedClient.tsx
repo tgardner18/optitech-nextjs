@@ -127,7 +127,7 @@ function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }
       )}
 
       {/* Topic column — desktop only */}
-      <div className="hidden sm:flex items-center gap-xs w-[130px] shrink-0">
+      <div className="hidden sm:flex items-center gap-xs w-32.5 shrink-0">
         {topic ? (
           <>
             <span className="block w-1.5 h-1.5 bg-accent flex-none" aria-hidden />
@@ -335,6 +335,12 @@ export type BlogFeedClientProps = {
   topics:   string[]
   /** Max posts per paginated page — defaults to 9 */
   pageSize: number
+  /**
+   * When the CMS editor has locked the feed to a single topic, this prop
+   * carries that value. Posts are already filtered server-side; this flag
+   * suppresses the topic chip UI so visitors cannot override the editor's intent.
+   */
+  topicFilter?: string | null
   /** Grid column count in card view: 2 or 3 */
   columns:  2 | 3
   /** True when the parent section has brand background (adjusts chip/text colours) */
@@ -349,6 +355,7 @@ export default function BlogFeedClient({
   posts,
   topics,
   pageSize,
+  topicFilter = null,
   columns,
   onBrand,
   anchorId,
@@ -396,24 +403,32 @@ export default function BlogFeedClient({
       {/* ── Controls bar ────────────────────────────────────────────────────── */}
       <div className={`flex flex-wrap items-center justify-between gap-sm pb-lg mb-lg border-b ${dividerClass}`}>
 
-        {/* Topic filter chips */}
-        <div className="flex flex-wrap items-center gap-xs" role="group" aria-label="Filter by topic">
-          <TopicChip
-            label="All"
-            active={activeTopic === null}
-            onBrand={onBrand}
-            onClick={() => changeTopic(null)}
-          />
-          {topics.map(t => (
+        {/* Topic filter chips — hidden when the CMS has locked the feed to a single topic */}
+        {!topicFilter && (
+          <div className="flex flex-wrap items-center gap-xs" role="group" aria-label="Filter by topic">
             <TopicChip
-              key={t}
-              label={topicLabel(t)}
-              active={activeTopic === t}
+              label="All"
+              active={activeTopic === null}
               onBrand={onBrand}
-              onClick={() => changeTopic(activeTopic === t ? null : t)}
+              onClick={() => changeTopic(null)}
             />
-          ))}
-        </div>
+            {topics.map(t => (
+              <TopicChip
+                key={t}
+                label={topicLabel(t)}
+                active={activeTopic === t}
+                onBrand={onBrand}
+                onClick={() => changeTopic(activeTopic === t ? null : t)}
+              />
+            ))}
+          </div>
+        )}
+        {/* When topic-locked: show the active topic as a static label */}
+        {topicFilter && (
+          <p className={`text-label tracking-label uppercase font-semibold ${onBrand ? 'text-fg-on-brand/60' : 'text-fg-muted'}`}>
+            {topicLabel(topicFilter)}
+          </p>
+        )}
 
         {/* View toggle */}
         <div className="flex items-center gap-0.5" role="group" aria-label="View mode">

@@ -73,11 +73,16 @@ const BLOG_FEED_QUERY = `
  *                        "https://example.vercel.app"). Used to filter out
  *                        posts from other sites sharing the same Graph index.
  *                        Pass null/undefined to skip site filtering.
+ * @param topicFilter     When provided, only posts whose `topic` field equals
+ *                        this value are included. Mirrors the CMS topicFilter
+ *                        property so the feed can be locked to a single topic
+ *                        at authoring time. Pass null/undefined for no filter.
  */
 export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
   locale: string,
   articleRootPath: string | null,
   siteBaseUrl?: string | null,
+  topicFilter?: string | null,
 ): Promise<BlogFeedResult> {
   try {
     const data = await getClient().request(BLOG_FEED_QUERY, { locale })
@@ -136,6 +141,12 @@ export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
         const h = p._metadata?.url?.hierarchical
         return typeof h === 'string' && h.startsWith(prefix)
       })
+    }
+
+    // Topic filter — when the CMS editor has locked the feed to a single topic,
+    // apply it server-side so the client receives only matching posts.
+    if (topicFilter) {
+      posts = posts.filter(p => p.topic === topicFilter)
     }
 
     // Collect unique topics in the order they first appear (already sorted DESC

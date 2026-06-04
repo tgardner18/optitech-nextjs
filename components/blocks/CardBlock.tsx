@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 // ─── Style option types ───────────────────────────────────────────────────────
 
@@ -8,7 +9,7 @@ export type CardFill       = "ghost" | "surface" | "brand" | "light" | "glass";
 export type CardBorder     = "none" | "subtle" | "brand";
 export type CardImageStyle = "top" | "background" | "side" | "float";
 export type CardImageSide  = "left" | "right";
-export type CardHover      = "none" | "lift" | "glow";
+export type CardHover      = "none" | "lift" | "glow" | "tilt";
 export type CardDensity    = "compact" | "default" | "spacious";
 
 export type CardAspectRatio      = "auto" | "square" | "portrait" | "landscape" | "wide" | "cinema";
@@ -34,7 +35,7 @@ export type CardBlockProps = {
   heading:       string;
   headingLevel?: "h2" | "h3" | "h4";
   eyebrow?:      string;
-  description?:  string;
+  description?:  Parameters<typeof RichText>[0]['content'] | null;
   image?:        { src: string; alt: string };
   cta?:          { label: string; href: string };
   className?:    string;
@@ -117,6 +118,7 @@ const HOVER_CLASS: Record<CardHover, string> = {
   none: "",
   lift: "card-hover-lift",
   glow: "card-hover-glow",
+  tilt: "card-hover-tilt",
 };
 
 // ─── Density ─────────────────────────────────────────────────────────────────
@@ -274,7 +276,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3]")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3] max-h-120")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -319,7 +321,7 @@ export default function CardBlock({
         <div className={cn("relative z-2 flex flex-col flex-1 justify-end gap-sm", padding)}>
           {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
           <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-          {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+          {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
           {cta && (
             <div className="pt-xs" {...pa('ctaLabel')}>
               <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
@@ -332,7 +334,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+            {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>
@@ -346,7 +348,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <p className={T.description[s]} {...pa('Description')}>{description}</p>}
+            {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>

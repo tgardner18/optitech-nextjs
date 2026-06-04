@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const attr = document.documentElement.getAttribute("data-theme");
-    if (attr === "dark" || attr === "light") setTheme(attr);
+    setTheme(attr === "light" ? "light" : "dark");
   }, []);
 
   const toggle = useCallback(() => {

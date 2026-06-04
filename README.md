@@ -46,9 +46,9 @@ If your CMS instance has more than one application (site) defined, you **must** 
 To set the default:
 
 1. Log in to the Optimizely CMS admin.
-2. Go to **Settings → Applications** (or **Channels**, depending on your CMS version).
+2. Go to **Settings → Applications**.
 3. Select the application that corresponds to this Vercel deployment.
-4. Enable the **Default application** (or **Default channel**) toggle.
+4. Enable the **Default application** toggle.
 
 Once set, shared block previews will load in the Visual Builder iframe using this site's preview URL.
 

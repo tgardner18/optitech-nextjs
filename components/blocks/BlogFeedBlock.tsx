@@ -19,6 +19,11 @@ export type BlogFeedBlockProps = {
   posts:         BlogFeedPost[]
   topics:        string[]
   pageSize?:     number
+  /**
+   * When set by the CMS editor, the feed is locked to this topic. Posts are
+   * already filtered server-side; the topic chip UI is hidden in the client.
+   */
+  topicFilter?:  string | null
   styleOptions?: BlogFeedStyleOptions
   /** Preview-attribute factory from getPreviewUtils — only available in server context */
   pa?:           (prop: string) => Record<string, unknown>
@@ -47,6 +52,7 @@ export default function BlogFeedBlock({
   posts,
   topics,
   pageSize     = 9,
+  topicFilter  = null,
   styleOptions = {},
   pa           = () => ({}),
 }: BlogFeedBlockProps) {
@@ -91,6 +97,7 @@ export default function BlogFeedBlock({
           posts={posts}
           topics={topics}
           pageSize={pageSize}
+          topicFilter={topicFilter}
           columns={colCount}
           onBrand={onBrand}
           anchorId={anchorId}

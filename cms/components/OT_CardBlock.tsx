@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_CardBlock as OT_CardBlockContentType } from '@/cms/content-types/OT_CardBlock'
 import { getCardStyles } from '@/cms/styling/OT_CardBlock.styling'
 import CardBlock from '@/components/blocks/CardBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_CardBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -16,7 +18,7 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
       <CardBlock
         heading={content.Heading ?? ''}
         eyebrow={content.Eyebrow ?? undefined}
-        description={content.Description ?? undefined}
+        description={content.Description?.json ?? undefined}
         image={
           content.image
             ? { src: src(content.image) ?? '', alt: content.imageAlt ?? '' }

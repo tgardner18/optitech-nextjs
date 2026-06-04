@@ -10,6 +10,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_AccordionItem = contentType({
   key:         'OT_AccordionItem',
   displayName: 'Accordion Item',
+  description: 'Single question/answer pair within an Accordion Block.',
   baseType:    '_component',
   properties: {
     question: {
@@ -20,6 +21,7 @@ export const OT_AccordionItem = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   10,
+      indexingType: 'searchable',
     },
     answer: {
       type:        'string',
@@ -29,6 +31,7 @@ export const OT_AccordionItem = contentType({
       isLocalized: true,
       group:       'OT_Content',
       sortOrder:   20,
+      indexingType: 'searchable',
     },
   },
 })

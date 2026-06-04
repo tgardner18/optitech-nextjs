@@ -1,8 +1,12 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
+import { OT_FooterBlock as OT_FooterBlockContentType } from '@/cms/content-types/OT_FooterBlock'
+import Image from 'next/image'
 import Link from 'next/link'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_FooterBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -14,9 +18,23 @@ type Props = {
  * This exists solely to give editors a visual preview pane in the CMS.
  */
 export default function OT_FooterBlockAdapter({ content }: Props) {
-  const { pa } = getPreviewUtils(content)
+  const { pa, src } = getPreviewUtils(content)
 
-  const descriptionHtml: string = content.description?.html ?? ''
+  const descriptionJson            = content.description?.json ?? undefined
+  const logoSrc:  string | null   = src(content.footerLogo) ?? null
+  const logoSize: string          = (content.footerLogoSize as string | undefined) ?? 'md'
+  const logoInvert: boolean       = content.footerLogoInvertDark === true
+
+  const LOGO_SIZE: Record<string, string> = {
+    sm: 'max-h-10 w-auto',
+    md: 'max-h-14 w-auto',
+    lg: 'max-h-20 w-auto',
+    xl: 'max-h-28 w-auto',
+  }
+  const logoClass = [
+    LOGO_SIZE[logoSize] ?? LOGO_SIZE.md,
+    logoInvert ? 'logo-invert-dark' : '',
+  ].filter(Boolean).join(' ')
 
   type FooterLink = { label: string; href: string }
   const links: FooterLink[] = Array.isArray(content.links)
@@ -30,10 +48,23 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
   return (
     <div
       {...pa(content.__composition)}
-      className="bg-canvas border border-fg/10 p-lg max-w-2xl"
+      className="bg-canvas border border-fg/10 p-lg max-w-3xl"
     >
+      {/* Logo preview */}
+      {logoSrc && (
+        <div className="mb-lg" {...pa('footerLogo')}>
+          <Image
+            src={logoSrc}
+            alt="Footer logo preview"
+            width={300}
+            height={90}
+            className={logoClass}
+          />
+        </div>
+      )}
+
       {/* Description */}
-      {descriptionHtml && (
+      {descriptionJson && (
         <div
           className="
             text-[1rem] font-medium leading-[1.65] text-fg
@@ -42,8 +73,9 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
             [&_strong]:font-semibold
             [&_em]:not-italic [&_em]:text-accent
           "
-          dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-        />
+        >
+          <RichText content={descriptionJson} />
+        </div>
       )}
 
       {/* Links grid */}
@@ -68,7 +100,7 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
         </nav>
       )}
 
-      {!descriptionHtml && links.length === 0 && (
+      {!descriptionJson && links.length === 0 && (
         <p className="text-sm text-fg-muted/60 italic">
           Add a description or links to preview the footer.
         </p>

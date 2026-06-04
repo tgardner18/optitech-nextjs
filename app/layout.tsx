@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Geist_Mono, Poppins, Syne } from "next/font/google";
+import { Caveat, Geist_Mono, Poppins, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
@@ -23,6 +23,15 @@ const syne = Syne({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Signature font — Caveat 400: thin, handwriting feel, less calligraphic than
+// script fonts. Used exclusively by LaserSignature on the QuoteBlock.
+const caveat = Caveat({
+  variable: "--font-signature",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
 });
 
 // Dynamic metadata from the CMS ThemeManager.
@@ -64,13 +73,26 @@ export default async function RootLayout({
   const themeCSS    = buildThemeCSS(settings)
   const defaultMode = (settings?.defaultMode as string | undefined) === 'light' ? 'light' : 'dark'
 
+  // Optimizely Web Experimentation — only inject when the project ID is a
+  // non-empty numeric string. Must run blocking before React hydrates so
+  // experiment activation logic fires before first paint (no flicker).
+  const rawWebExpId = (settings?.webExperimentationProjectId as string | null | undefined)?.trim()
+  const webExpProjectId = rawWebExpId && /^\d+$/.test(rawWebExpId) ? rawWebExpId : null
+
   return (
     <html
       lang={locale}
       // Consumed by /public/scripts/theme-init.js which runs before React hydration.
       // The script sets data-theme = localStorage value || this attribute || 'dark'.
+      // data-theme is also declared here so React tracks it as a managed prop — if
+      // Optimizely causes a hydration mismatch (error #418) and React falls back to a
+      // full client re-render, React would otherwise strip data-theme (it only removes
+      // attributes it doesn't know about), leaving the CSS tokens without a theme
+      // anchor and falling back to dark. suppressHydrationWarning silences the
+      // client/server diff when localStorage overrides the CMS default.
       data-default-theme={defaultMode}
-      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
+      data-theme={defaultMode}
+      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${caveat.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -91,6 +113,10 @@ export default async function RootLayout({
         */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/scripts/theme-init.js" suppressHydrationWarning />
+        {webExpProjectId && (
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script src={`https://cdn.optimizely.com/js/${webExpProjectId}.js`} suppressHydrationWarning />
+        )}
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>

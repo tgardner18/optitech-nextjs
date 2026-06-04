@@ -1,5 +1,5 @@
 /**
- * Next.js proxy — locale detection and URL normalisation.
+ * Next.js proxy — locale detection, URL normalisation, and admin auth.
  * (Next.js 16+ renames "middleware" → "proxy"; same concept, new file name.)
  *
  * Why custom instead of next-intl's createMiddleware:
@@ -15,12 +15,13 @@
  *   showcase page — causing everything to 404.
  *
  * What this proxy does:
- *   1. Detects locale from URL prefix (/es/about → locale=es, path=/about)
- *   2. Strips the locale prefix via NextResponse.rewrite so the app router sees
+ *   1. Guards /opti-admin/* routes with an env-var session cookie check.
+ *   2. Detects locale from URL prefix (/es/about → locale=es, path=/about)
+ *   3. Strips the locale prefix via NextResponse.rewrite so the app router sees
  *      the clean path (/es/showcase → internally serves /showcase)
- *   3. Sets X-NEXT-INTL-LOCALE request header so next-intl's getLocale() and
+ *   4. Sets X-NEXT-INTL-LOCALE request header so next-intl's getLocale() and
  *      getRequestConfig() receive the correct locale in server components.
- *   4. For non-prefixed URLs (/showcase, /), reads the NEXT_LOCALE cookie so
+ *   5. For non-prefixed URLs (/showcase, /), reads the NEXT_LOCALE cookie so
  *      the locale persists across navigation (set by LocaleSelector on switch).
  *
  * Strategy (mirrors localePrefix: 'as-needed'):
@@ -37,6 +38,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
+import { computeSessionToken, SESSION_COOKIE } from '@/lib/admin/auth'
 
 /** Header name used by next-intl server APIs (getLocale, getRequestConfig). */
 const LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
@@ -44,8 +46,40 @@ const LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
 /** Cookie name used by LocaleSelector to persist locale preference. */
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
-export default function proxy(request: NextRequest) {
+// ── Admin helpers ─────────────────────────────────────────────────────────────
+
+function redirectToLogin(request: NextRequest, from: string): NextResponse {
+  const url = request.nextUrl.clone()
+  url.pathname = '/opti-admin/login'
+  url.search   = ''
+  if (from !== '/opti-admin' && from !== '/opti-admin/') {
+    url.searchParams.set('from', from)
+  }
+  return NextResponse.redirect(url)
+}
+
+// ── Main proxy ────────────────────────────────────────────────────────────────
+
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // ── Admin route protection ────────────────────────────────────────────────
+  // All /opti-admin/* routes require a valid session cookie, except the login
+  // page itself. The session token is SHA-256(OPTI_ADMIN_USER:OPTI_ADMIN_PASSWORD)
+  // so changing either env var immediately invalidates all sessions.
+  if (pathname.startsWith('/opti-admin')) {
+    if (pathname !== '/opti-admin/login') {
+      const session = request.cookies.get(SESSION_COOKIE)?.value
+      if (!session) {
+        return redirectToLogin(request, pathname)
+      }
+      const expected = await computeSessionToken()
+      if (session !== expected) {
+        return redirectToLogin(request, pathname)
+      }
+    }
+    return NextResponse.next()
+  }
 
   // ── 1. Detect locale from URL prefix ──────────────────────────────────────
   // Check whether the first path segment is a supported non-default locale.

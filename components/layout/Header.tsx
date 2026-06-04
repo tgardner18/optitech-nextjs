@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import Image from 'next/image'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Button from '@/components/ui/Button'
@@ -70,7 +69,7 @@ export default async function Header() {
   const locale   = await getRequestLocale()
   const settings = await getSiteSettings(domain, locale)
 
-  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
+  const logoSrc        = settings?.logo?.url?.default ?? '/brand/logo/OptiTech-Logo.svg'
   const logoAlt        = settings?.logoAlt       ?? 'OptiTech'
   const logoFit        = (settings?.logoFit as string | undefined) ?? 'full'
   const logoInvertDark = settings?.logoInvertDark === true
@@ -120,16 +119,16 @@ export default async function Header() {
       <header className="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-fg/5">
         <div className="flex items-center justify-between px-md py-md lg:px-lg">
 
-          <Link href={localizedHref('/', locale)} aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`} className="flex items-center h-12">
+          <a href={localizedHref('/', locale)} aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`} className="flex items-center h-12">
             <Image
               src={logoSrc}
               alt={logoAlt}
-              width={200}
-              height={40}
+              width={444}
+              height={90}
               className={logoImgClass}
               priority
             />
-          </Link>
+          </a>
 
           <DesktopNav navItems={navItems} />
 

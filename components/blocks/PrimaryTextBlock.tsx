@@ -1,4 +1,5 @@
 import { cva } from "class-variance-authority";
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
@@ -13,8 +14,22 @@ export type PrimaryTextStyleOptions = {
    * Gradient fill for the heading.
    * Only takes effect when size is "display"; ignored at all other scales.
    * Dark canvas background required (see DESIGN.md §6).
+   *   brand    — brand teal face + brand shadow stack (Brand — Primary)
+   *   warm     — accent face + brand shadows (Brand — Extended)
+   *   luminous — fg/near-white face + brand-tinted shadows (Luminous — Carved from Light)
+   *   ember    — accent face + hue-shifted ember shadows (Accent — Ember)
+   *   extrude  — fg face + accent rim + 12-layer brand isometric shadows
+   *   mono     — fg face + greyscale shadows; dark mode=silver, light mode=charcoal
    */
-  gradient?: "none" | "brand" | "warm" | "luminous" | "ember";
+  gradient?: "none" | "brand" | "warm" | "luminous" | "ember" | "extrude" | "mono";
+  /**
+   * Depth effect applied to the heading letterforms.
+   * Works at any scale; most impactful at display/headline.
+   *   extrude — comic 3D offset shadow (dark: white face; light: brand face + grey shadows)
+   *   liquid  — animated brand↔accent gradient sweep via background-clip:text
+   *   outline — hollow letterforms with brand stroke + breathing glow pulse
+   */
+  depth?: "none" | "extrude" | "liquid" | "outline";
 };
 
 // ─── CVA variant configs ─────────────────────────────────────────────────────
@@ -66,11 +81,12 @@ const eyebrowCva = cva("text-label tracking-label uppercase font-semibold", {
  * Heading: scale carries weight, tracking, and line-height.
  * Gradient compound variants fire only when size === "display" — enforced here,
  * not by the caller.
+ * Depth compound variants apply at any scale; CSS handles theme + bg overrides.
  */
 const headlineCva = cva("text-balance", {
   variants: {
     size: {
-      display:  "text-display leading-display tracking-display font-extrabold",
+      display:  "text-display leading-[1.15] tracking-display font-extrabold",
       headline: "text-headline leading-headline tracking-headline font-bold",
       title:    "text-title leading-title tracking-title font-semibold",
       label:    "text-label tracking-label uppercase font-semibold",
@@ -87,6 +103,14 @@ const headlineCva = cva("text-balance", {
       warm:     "",
       luminous: "",
       ember:    "",
+      extrude:  "",
+      mono:     "",
+    },
+    depth: {
+      none:    "",
+      extrude: "",
+      liquid:  "",
+      outline: "",
     },
   },
   compoundVariants: [
@@ -94,8 +118,13 @@ const headlineCva = cva("text-balance", {
     { size: "display", gradient: "warm",     class: "display-gradient-warm" },
     { size: "display", gradient: "luminous", class: "display-gradient-luminous" },
     { size: "display", gradient: "ember",    class: "display-gradient-ember" },
+    { size: "display", gradient: "extrude",  class: "display-extrude" },
+    { size: "display", gradient: "mono",     class: "display-gradient-mono" },
+    { depth: "extrude", class: "ot-depth-extrude" },
+    { depth: "liquid",  class: "ot-depth-liquid" },
+    { depth: "outline", class: "ot-depth-outline" },
   ],
-  defaultVariants: { size: "headline", color: "canvas", gradient: "none" },
+  defaultVariants: { size: "headline", color: "canvas", gradient: "none", depth: "none" },
 });
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -103,6 +132,7 @@ const headlineCva = cva("text-balance", {
 export type PrimaryTextBlockProps = {
   eyebrow?: string;
   headline: string;
+  body?: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: PrimaryTextStyleOptions;
   pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
@@ -110,6 +140,7 @@ export type PrimaryTextBlockProps = {
 export default function PrimaryTextBlock({
   eyebrow,
   headline,
+  body,
   styleOptions = {},
   pa = () => ({}),
 }: PrimaryTextBlockProps) {
@@ -118,6 +149,7 @@ export default function PrimaryTextBlock({
     color     = "canvas",
     size      = "headline",
     gradient  = "none",
+    depth     = "none",
   } = styleOptions;
 
   return (
@@ -127,9 +159,18 @@ export default function PrimaryTextBlock({
           {eyebrow && (
             <p className={eyebrowCva({ color })} {...pa('eyebrow')}>{eyebrow}</p>
           )}
-          <h2 className={headlineCva({ size, color, gradient })} {...pa('headline')}>
+          <h2 className={headlineCva({ size, color, gradient, depth })} {...pa('headline')}>
             {headline}
           </h2>
+          {body && (
+            <div
+              data-rich-text=""
+              data-color={color}
+              {...pa('body')}
+            >
+              <RichText content={body} />
+            </div>
+          )}
         </div>
       </div>
     </section>

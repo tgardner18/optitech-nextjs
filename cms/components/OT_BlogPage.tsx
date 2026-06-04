@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_BlogPage as OT_BlogPageContentType } from '@/cms/content-types/OT_BlogPage'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import BlogPage from '@/components/pages/BlogPage'
 
-type Props = { content: any }
+type Props = { content: ContentProps<typeof OT_BlogPageContentType> }
 
 // CMS Visual Editor adapter for OT_BlogPage.
 // Renders the full blog page (with Header/Footer) so the editor preview shows
@@ -19,7 +21,7 @@ export default async function OT_BlogPageAdapter({ content }: Props) {
     <>
       <Header />
       <main className="flex-1" {...pa(content.__composition)}>
-        <BlogPage content={content} latestPosts={[]} pa={pa} />
+        <BlogPage content={content as any} latestPosts={[]} pa={pa} />
       </main>
       <Footer />
     </>

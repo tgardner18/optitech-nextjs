@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }              from '@optimizely/cms-sdk/react/server'
+import { OT_StatBlock as OT_StatBlockContentType } from '@/cms/content-types/OT_StatBlock'
 import { getStatBlockStyles, getStatBlockIcons } from '@/cms/styling/OT_StatBlock.styling'
 import StatBlock, { type StatItem }     from '@/components/blocks/StatBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_StatBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -16,21 +18,10 @@ type Props = {
  *   2. Items array: content.items[]   — showcase / testing format
  *   3. Flat props:  content.stat1Value … stat4Value — legacy fallback
  */
-function buildStats(content: any): Omit<StatItem, 'icon'>[] {
-  // Format 1: CMS array property (OT_StatItem components)
+function buildStats(content: any): StatItem[] {
+  // CMS array property (OT_StatItem components)
   if (Array.isArray(content.stats)) {
     return (content.stats as any[])
-      .filter(item => item?.value && item?.label)
-      .map(item => ({
-        value:   String(item.value),
-        label:   String(item.label),
-        context: item.context ? String(item.context) : undefined,
-      }))
-  }
-
-  // Format 2: items array (showcase / test) — keeps icon if present
-  if (Array.isArray(content.items)) {
-    return (content.items as any[])
       .filter(item => item?.value && item?.label)
       .map(item => ({
         value:   String(item.value),
@@ -41,7 +32,7 @@ function buildStats(content: any): Omit<StatItem, 'icon'>[] {
   }
 
   // Format 3: flat CMS properties (legacy — stat1Value … stat4Value)
-  const stats: Omit<StatItem, 'icon'>[] = []
+  const stats: StatItem[] = []
   for (let n = 1; n <= 4; n++) {
     const v = content[`stat${n}Value`]
     const l = content[`stat${n}Label`]
@@ -61,10 +52,10 @@ export default function OT_StatBlockAdapter({ content, displaySettings = {} }: P
   const styleOptions = getStatBlockStyles(displaySettings)
   const slotIcons    = getStatBlockIcons(displaySettings)
 
-  // Merge per-slot icons (from display settings) into each stat
+  // Slot icons (display settings) take precedence; content icon is the fallback
   const stats: StatItem[] = buildStats(content).map((stat, i) => ({
     ...stat,
-    icon: slotIcons[i],
+    icon: slotIcons[i] ?? stat.icon,
   }))
 
   return (
