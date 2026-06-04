@@ -52,6 +52,7 @@ import { OT_FooterColumn }      from '@/cms/content-types/OT_FooterColumn'
 import { OT_Author }            from '@/cms/content-types/OT_Author'
 import { OT_FooterBlock }       from '@/cms/content-types/OT_FooterBlock'
 import { OT_BlogPage }          from '@/cms/content-types/OT_BlogPage'
+import { OT_CampaignPage }      from '@/cms/content-types/OT_CampaignPage'
 import { OT_FolderPage }        from '@/cms/content-types/OT_FolderPage'
 import { ImageMedia }           from '@/cms/content-types/ImageMedia'
 import { OT_BlogFeedBlock }     from '@/cms/content-types/OT_BlogFeedBlock'
@@ -170,6 +171,7 @@ initContentTypeRegistry([
   OT_Author,
   OT_FooterBlock,
   OT_BlogPage,
+  OT_CampaignPage,
   OT_FolderPage,
   ImageMedia,
   OT_BlogFeedBlock,

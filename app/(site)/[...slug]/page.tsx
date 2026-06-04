@@ -12,11 +12,13 @@ import {
   setRequestContext,
 } from '@/lib/optimizely'
 import { getBlogPage, getLatestBlogPosts, getAuthorName } from '@/lib/blog'
+import { getCampaignPage, getCampaignPageMeta } from '@/lib/campaign'
 import { withAppContext }       from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent }    from '@optimizely/cms-sdk/react/client'
 import type { PreviewParams }  from '@optimizely/cms-sdk'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import BlogPage                from '@/components/pages/BlogPage'
+import CampaignPage            from '@/components/pages/CampaignPage'
 import Script                  from 'next/script'
 import { DraftStateBanner }    from '@/components/preview/DraftStateBanner'
 import { ExternalPreviewLinkPanel } from '@/components/preview/ExternalPreviewLinkPanel'
@@ -100,6 +102,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const blogContent = await getBlogPage(exp._metadata.key as string, locale)
     return buildPageMetadata(
       (blogContent ?? {}) as PageSeoFields,
+      settings ?? {},
+      path,
+    )
+  }
+
+  // Campaign page — fetch SEO fields only (slots not needed for metadata)
+  if (exp?.__typename === 'OT_CampaignPage' && exp?._metadata?.key) {
+    const campaignMeta = await getCampaignPageMeta(exp._metadata.key as string)
+    return buildPageMetadata(
+      (campaignMeta ?? {}) as PageSeoFields,
       settings ?? {},
       path,
     )
@@ -249,6 +261,34 @@ async function CmsPage({ params, searchParams }: Props) {
           </>
         )
       }
+    }
+
+    // Campaign page — three-slot landing page type
+    if (exp?.__typename === 'OT_CampaignPage') {
+      const contentKey = exp._metadata?.key as string | undefined
+      const campaignContent = contentKey ? await getCampaignPage(contentKey) : null
+      if (!campaignContent) return notFound()
+
+      const campaignJsonLd = buildJsonLd(
+        campaignContent as PageSeoFields,
+        settings ?? {},
+        fullPageUrl,
+      )
+
+      return (
+        <>
+          <JsonLd data={campaignJsonLd} />
+          {dm.isEnabled && cmsUrl && (
+            <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
+          )}
+          {dm.isEnabled && <PreviewComponent />}
+          <CampaignPage
+            heroSection={campaignContent.heroSection ?? undefined}
+            bodySection={campaignContent.bodySection ?? undefined}
+            closingSection={campaignContent.closingSection ?? undefined}
+          />
+        </>
+      )
     }
 
     // Standalone block content (not an experience) — send to the isolated preview route

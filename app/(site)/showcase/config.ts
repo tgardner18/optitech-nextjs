@@ -42,8 +42,9 @@ export const CATEGORIES: ShowcaseCategory[] = [
     match: '/showcase/pages',
     href:  '/showcase/pages/blog',
     items: [
-      { label: 'Blog',   slug: 'blog'   },
-      { label: 'Folder', slug: 'folder' },
+      { label: 'Blog',          slug: 'blog'          },
+      { label: 'Folder',        slug: 'folder'        },
+      { label: 'Campaign Page', slug: 'campaign-page' },
     ],
   },
   {
