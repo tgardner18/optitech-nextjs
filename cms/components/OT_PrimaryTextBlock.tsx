@@ -18,6 +18,7 @@ export default function OT_PrimaryTextBlock({ content, displaySettings = {} }: P
       <PrimaryTextBlock
         eyebrow={content.eyebrow ?? undefined}
         headline={content.headline ?? ''}
+        headingLevel={(content.headingLevel as 'h1' | 'h2' | undefined) ?? 'h2'}
         body={content.body?.json ?? undefined}
         styleOptions={styleOptions}
         pa={pa}

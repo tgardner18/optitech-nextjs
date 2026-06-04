@@ -400,6 +400,17 @@ function PrimaryTextShowcase() {
           <OT_PrimaryTextBlock content={item.content as any} displaySettings={item.displaySettings} />
         </div>
       ))}
+
+      <VariantGroup label="Heading level · H1 vs H2" note="Set headingLevel to H1 when this block is the primary heading on the page. Visually identical — the semantic tag changes for SEO and accessibility." />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='headingLevel: "h2" (default)' />
+        <OT_PrimaryTextBlock content={{ eyebrow: 'The platform', headline: 'Speed that compounds into advantage.' } as any} displaySettings={{ size: 'headline', color: 'canvas', alignment: 'left' }} />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='headingLevel: "h1" — page title' />
+        <OT_PrimaryTextBlock content={{ eyebrow: 'The platform', headline: 'Speed that compounds into advantage.', headingLevel: 'h1' } as any} displaySettings={{ size: 'headline', color: 'canvas', alignment: 'left' }} />
+      </div>
+
       <div className="pb-xl" />
     </>
   )
@@ -1457,6 +1468,16 @@ function BannerShowcase() {
           <OT_BannerBlock content={item.content as any} displaySettings={item.displaySettings} />
         </div>
       ))}
+
+      <VariantGroup label="Heading level · H1 vs H2" note="Set headingLevel to H1 when the banner is the first and only heading on the page (e.g. a campaign landing page). Visually identical — only the semantic tag changes." />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='headingLevel: "h2" (default)' />
+        <OT_BannerBlock content={{ heading: 'Move at the speed of certainty.', eyebrow: 'Section heading', backgroundImage: BANNER_IMG_A, primaryCtaLabel: 'Book a demo', primaryCtaUrl: { default: '#' } } as any} displaySettings={{ color: 'canvas', treatment: 'scrim', alignment: 'center', size: 'large', imageBlend: 'overlay' }} />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='headingLevel: "h1" — page title' />
+        <OT_BannerBlock content={{ heading: 'Move at the speed of certainty.', eyebrow: 'Page title', headingLevel: 'h1', backgroundImage: BANNER_IMG_A, primaryCtaLabel: 'Book a demo', primaryCtaUrl: { default: '#' } } as any} displaySettings={{ color: 'canvas', treatment: 'scrim', alignment: 'center', size: 'large', imageBlend: 'overlay' }} />
+      </div>
 
       <div className="pb-xl" />
     </>

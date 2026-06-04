@@ -8,6 +8,10 @@ export const OT_BannerBlock = contentType({
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
     heading:           { type: 'string',           displayName: 'Heading',             group: 'OT_Content', sortOrder: 10, isLocalized: true, maxLength: 120, indexingType: 'searchable' },
+    headingLevel:      { type: 'string',           displayName: 'Heading Level',       group: 'OT_Content', sortOrder: 15, format: 'selectOne', enum: [
+      { value: 'h2', displayName: 'H2 – Section heading (default)' },
+      { value: 'h1', displayName: 'H1 – Page title' },
+    ] },
     eyebrow:           { type: 'string',           displayName: 'Eyebrow Label',       group: 'OT_Content', sortOrder: 20, isLocalized: true, maxLength: 60,  indexingType: 'searchable' },
     body:              { type: 'richText',          displayName: 'Body Text',           group: 'OT_Content', sortOrder: 30, isLocalized: true,                 indexingType: 'searchable' },
     backgroundImage:   { type: 'contentReference', displayName: 'Background Image',    group: 'OT_Content', sortOrder: 40, allowedTypes: ['_image']           },

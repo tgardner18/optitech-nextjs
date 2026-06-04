@@ -153,6 +153,7 @@ function getScrimClass(
 
 export type BannerBlockProps = {
   heading:       string
+  headingLevel?: 'h1' | 'h2'
   eyebrow?:      string
   body?:         Parameters<typeof RichText>[0]['content'] | null
   bgImageSrc?:   string
@@ -164,6 +165,7 @@ export type BannerBlockProps = {
 
 export default function BannerBlock({
   heading,
+  headingLevel = 'h2',
   eyebrow,
   body,
   bgImageSrc,
@@ -185,6 +187,7 @@ export default function BannerBlock({
   const isCentered = alignment === 'center'
   const hasImage   = Boolean(bgImageSrc)
   const scrimClass = getScrimClass(color, imageBlend, treatment)
+  const Heading    = headingLevel
 
   // ── Content elements (shared between scrim and glass layouts) ──────────────
   const eyebrowEl = eyebrow ? (
@@ -194,9 +197,9 @@ export default function BannerBlock({
   ) : null
 
   const headingEl = (
-    <h2 className={cn('banner-heading', headingCva({ color, size }))} {...pa('heading')}>
+    <Heading className={cn('banner-heading', headingCva({ color, size }))} {...pa('heading')}>
       {heading}
-    </h2>
+    </Heading>
   )
 
   const bodyEl = body ? (

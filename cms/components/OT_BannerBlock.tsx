@@ -17,6 +17,7 @@ export default function OT_BannerBlock({ content, displaySettings = {} }: Props)
     <div {...pa(content.__composition)}>
       <BannerBlock
         heading={content.heading ?? ''}
+        headingLevel={(content.headingLevel as 'h1' | 'h2' | undefined) ?? 'h2'}
         eyebrow={content.eyebrow ?? undefined}
         body={content.body?.json ?? undefined}
         bgImageSrc={src(content.backgroundImage) ?? undefined}

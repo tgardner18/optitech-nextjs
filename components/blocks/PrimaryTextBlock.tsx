@@ -132,6 +132,7 @@ const headlineCva = cva("text-balance", {
 export type PrimaryTextBlockProps = {
   eyebrow?: string;
   headline: string;
+  headingLevel?: 'h1' | 'h2';
   body?: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: PrimaryTextStyleOptions;
   pa?: (prop: string) => { "data-epi-property-name"?: string };
@@ -140,6 +141,7 @@ export type PrimaryTextBlockProps = {
 export default function PrimaryTextBlock({
   eyebrow,
   headline,
+  headingLevel = 'h2',
   body,
   styleOptions = {},
   pa = () => ({}),
@@ -152,6 +154,8 @@ export default function PrimaryTextBlock({
     depth     = "none",
   } = styleOptions;
 
+  const Heading = headingLevel
+
   return (
     <section className={sectionCva({ color, size })}>
       <div className={innerCva({ alignment })}>
@@ -159,9 +163,9 @@ export default function PrimaryTextBlock({
           {eyebrow && (
             <p className={eyebrowCva({ color })} {...pa('eyebrow')}>{eyebrow}</p>
           )}
-          <h2 className={headlineCva({ size, color, gradient, depth })} {...pa('headline')}>
+          <Heading className={headlineCva({ size, color, gradient, depth })} {...pa('headline')}>
             {headline}
-          </h2>
+          </Heading>
           {body && (
             <div
               data-rich-text=""
