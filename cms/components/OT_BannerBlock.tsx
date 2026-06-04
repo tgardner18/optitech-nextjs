@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }        from '@optimizely/cms-sdk/react/server'
+import { OT_BannerBlock } from '@/cms/content-types/OT_BannerBlock'
 import { getBannerStyles }        from '@/cms/styling/OT_BannerBlock.styling'
 import BannerBlock                from '@/components/blocks/BannerBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_BannerBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -16,7 +18,7 @@ export default function OT_BannerBlock({ content, displaySettings = {} }: Props)
       <BannerBlock
         heading={content.heading ?? ''}
         eyebrow={content.eyebrow ?? undefined}
-        body={content.body?.html ?? undefined}
+        body={content.body?.json ?? undefined}
         bgImageSrc={src(content.backgroundImage) ?? undefined}
         primaryCta={
           content.primaryCtaLabel

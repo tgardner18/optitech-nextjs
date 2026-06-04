@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_ChartBlock } from '@/cms/content-types/OT_ChartBlock'
 import { getChartStyles } from '@/cms/styling/OT_ChartBlock.styling'
 import ChartBlock from '@/components/blocks/ChartBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_ChartBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

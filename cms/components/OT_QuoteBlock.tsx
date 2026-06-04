@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_QuoteBlock } from '@/cms/content-types/OT_QuoteBlock'
 import { getQuoteStyles } from '@/cms/styling/OT_QuoteBlock.styling'
 import QuoteBlock from '@/components/blocks/QuoteBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_QuoteBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

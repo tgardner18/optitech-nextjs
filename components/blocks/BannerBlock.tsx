@@ -2,6 +2,7 @@ import Image    from 'next/image'
 import Link     from 'next/link'
 import { cva } from 'class-variance-authority'
 import { cn }  from '@/lib/utils'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 import BannerEntrance from './BannerEntrance'
 
 // ─── Style option types ───────────────────────────────────────────────────────
@@ -153,7 +154,7 @@ function getScrimClass(
 export type BannerBlockProps = {
   heading:       string
   eyebrow?:      string
-  body?:         string | null
+  body?:         Parameters<typeof RichText>[0]['content'] | null
   bgImageSrc?:   string
   primaryCta?:   { label: string; href: string }
   secondaryCta?: { label: string; href: string }
@@ -201,9 +202,10 @@ export default function BannerBlock({
   const bodyEl = body ? (
     <div
       className={cn('banner-body', bodyCva({ color }))}
-      dangerouslySetInnerHTML={{ __html: body }}
       {...pa('body')}
-    />
+    >
+      <RichText content={body} />
+    </div>
   ) : null
 
   const ctasEl = (primaryCta || secondaryCta) ? (

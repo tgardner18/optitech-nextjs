@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_ButtonBlock } from '@/cms/content-types/OT_ButtonBlock'
 import { getButtonStyles } from '@/cms/styling/OT_ButtonBlock.styling'
 import ButtonBlock from '@/components/blocks/ButtonBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_ButtonBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

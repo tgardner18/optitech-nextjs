@@ -1,4 +1,5 @@
 import { cva } from "class-variance-authority";
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
@@ -131,7 +132,7 @@ const headlineCva = cva("text-balance", {
 export type PrimaryTextBlockProps = {
   eyebrow?: string;
   headline: string;
-  body?: string;
+  body?: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: PrimaryTextStyleOptions;
   pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
@@ -166,8 +167,9 @@ export default function PrimaryTextBlock({
               data-rich-text=""
               data-color={color}
               {...pa('body')}
-              dangerouslySetInnerHTML={{ __html: body }}
-            />
+            >
+              <RichText content={body} />
+            </div>
           )}
         </div>
       </div>

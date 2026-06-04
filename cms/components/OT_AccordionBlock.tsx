@@ -1,11 +1,13 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_AccordionBlock } from '@/cms/content-types/OT_AccordionBlock'
 import AccordionBlock, {
   type AccordionItem,
   type AccordionBlockStyleOptions,
 } from '@/components/blocks/AccordionBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_AccordionBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

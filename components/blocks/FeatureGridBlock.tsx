@@ -5,6 +5,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
 import { ArrowUpRight } from 'lucide-react'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 // ─── Icon lookup ──────────────────────────────────────────────────────────────
 const ICONS: Record<string, LucideIcon> = { ...ICON_REGISTRY }
@@ -13,7 +14,7 @@ const ICONS: Record<string, LucideIcon> = { ...ICON_REGISTRY }
 
 export type FeatureItem = {
   headline:  string
-  body?:     string   // HTML string from CMS richText
+  body?:     Parameters<typeof RichText>[0]['content'] | null
   ctaLabel?: string
   ctaUrl?:   string
   icon?:     string   // icon key from display settings
@@ -313,10 +314,9 @@ export default function FeatureGridBlock({
 
               {/* ── Body (rich text HTML) ────────────────────────────── */}
               {feature.body && (
-                <div
-                  className={featureBodyCva({ color })}
-                  dangerouslySetInnerHTML={{ __html: feature.body }}
-                />
+                <div className={featureBodyCva({ color })}>
+                  <RichText content={feature.body} />
+                </div>
               )}
 
               {/* ── Per-feature CTA ──────────────────────────────────── */}

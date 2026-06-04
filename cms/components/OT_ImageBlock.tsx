@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_ImageBlock } from '@/cms/content-types/OT_ImageBlock'
 import { getImageStyles } from '@/cms/styling/OT_ImageBlock.styling'
 import ImageBlock from '@/components/blocks/ImageBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_ImageBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

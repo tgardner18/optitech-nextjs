@@ -1,4 +1,5 @@
 import { cva } from "class-variance-authority";
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
@@ -59,7 +60,7 @@ const innerCva = cva("w-full", {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export type RichTextBlockProps = {
-  content: string;
+  content: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: RichTextStyleOptions;
   pa?: (prop: string) => { "data-epi-property-name"?: string };
 };
@@ -81,7 +82,6 @@ export default function RichTextBlock({
 
   return (
     <section className={sectionCva({ color, size })}>
-      {/* Content is CMS-managed TinyMCE output — not user-generated input */}
       <div
         data-rich-text=""
         data-color={color}
@@ -92,8 +92,9 @@ export default function RichTextBlock({
         data-weight={textWeight !== "regular" ? textWeight : undefined}
         className={innerCva({ alignment, size })}
         {...pa('content')}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
+      >
+        <RichText content={content ?? undefined} />
+      </div>
     </section>
   );
 }

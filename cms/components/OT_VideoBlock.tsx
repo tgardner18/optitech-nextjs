@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_VideoBlock } from '@/cms/content-types/OT_VideoBlock'
 import { getVideoStyles } from '@/cms/styling/OT_VideoBlock.styling'
 import VideoBlock from '@/components/blocks/VideoBlock'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_VideoBlock>
   displaySettings?: Record<string, string | boolean>
 }
 

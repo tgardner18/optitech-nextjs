@@ -1,6 +1,8 @@
+import { ContentProps } from '@optimizely/cms-sdk'
+import { OT_FolderPage } from '@/cms/content-types/OT_FolderPage'
 import { FolderOpen, Info } from 'lucide-react'
 
-type Props = { content: any }
+type Props = { content: ContentProps<typeof OT_FolderPage> }
 
 /**
  * CMS editor preview for OT_FolderPage.

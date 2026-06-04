@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_BlogPage } from '@/cms/content-types/OT_BlogPage'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import BlogPage from '@/components/pages/BlogPage'
 
-type Props = { content: any }
+type Props = { content: ContentProps<typeof OT_BlogPage> }
 
 // CMS Visual Editor adapter for OT_BlogPage.
 // Renders the full blog page (with Header/Footer) so the editor preview shows

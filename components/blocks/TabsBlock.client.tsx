@@ -5,6 +5,7 @@ import { cn }       from '@/lib/utils'
 import Button       from '@/components/ui/Button'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import { ArrowRight } from 'lucide-react'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
 import {
   useCallback,
   useEffect,
@@ -21,7 +22,7 @@ export type TabItemData = {
   tabLabel:  string
   tabIcon?:  string
   heading?:  string
-  body?:     string
+  body?:     Parameters<typeof RichText>[0]['content'] | null
   imageSrc?: string
   imageAlt?: string
   ctaLabel?: string
@@ -615,8 +616,9 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
           data-rich-text=""
           data-color={color === 'brand' ? 'brand' : color === 'glass' ? 'glass' : undefined}
           className={bodyClass}
-          dangerouslySetInnerHTML={{ __html: tab.body }}
-        />
+        >
+          <RichText content={tab.body} />
+        </div>
       )}
       {tab.ctaLabel && tab.ctaUrl && (
         <div className="mt-sm">

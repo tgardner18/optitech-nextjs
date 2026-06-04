@@ -1,9 +1,12 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
+import { OT_FooterBlock } from '@/cms/content-types/OT_FooterBlock'
 import Image from 'next/image'
 import Link from 'next/link'
 
 type Props = {
-  content: any
+  content: ContentProps<typeof OT_FooterBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -17,7 +20,7 @@ type Props = {
 export default function OT_FooterBlockAdapter({ content }: Props) {
   const { pa, src } = getPreviewUtils(content)
 
-  const descriptionHtml: string   = content.description?.html ?? ''
+  const descriptionJson            = content.description?.json ?? undefined
   const logoSrc:  string | null   = src(content.footerLogo) ?? null
   const logoSize: string          = (content.footerLogoSize as string | undefined) ?? 'md'
   const logoInvert: boolean       = content.footerLogoInvertDark === true
@@ -61,7 +64,7 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
       )}
 
       {/* Description */}
-      {descriptionHtml && (
+      {descriptionJson && (
         <div
           className="
             text-[1rem] font-medium leading-[1.65] text-fg
@@ -70,8 +73,9 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
             [&_strong]:font-semibold
             [&_em]:not-italic [&_em]:text-accent
           "
-          dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-        />
+        >
+          <RichText content={descriptionJson} />
+        </div>
       )}
 
       {/* Links grid */}
@@ -96,7 +100,7 @@ export default function OT_FooterBlockAdapter({ content }: Props) {
         </nav>
       )}
 
-      {!descriptionHtml && links.length === 0 && (
+      {!descriptionJson && links.length === 0 && (
         <p className="text-sm text-fg-muted/60 italic">
           Add a description or links to preview the footer.
         </p>

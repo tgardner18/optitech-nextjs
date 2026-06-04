@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }                                from '@optimizely/cms-sdk/react/server'
+import { OT_FeatureGridBlock } from '@/cms/content-types/OT_FeatureGridBlock'
 import { getFeatureGridStyles, getFeatureGridIcons }      from '@/cms/styling/OT_FeatureGridBlock.styling'
 import FeatureGridBlock, { type FeatureItem }             from '@/components/blocks/FeatureGridBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_FeatureGridBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -29,11 +31,7 @@ function buildFeatures(content: any): Omit<FeatureItem, 'icon'>[] {
       .filter(item => item?.headline)
       .map(item => ({
         headline: String(item.headline),
-        body:     item.body?.html
-                    ? String(item.body.html)
-                    : item.body
-                      ? String(item.body)
-                      : undefined,
+        body:     item.body?.json ?? undefined,
         ctaLabel: item.ctaLabel ? String(item.ctaLabel) : undefined,
         ctaUrl:   resolveUrl(item.ctaUrl),
       }))
@@ -68,10 +66,10 @@ export default function OT_FeatureGridBlockAdapter({ content, displaySettings = 
     <div {...pa(content.__composition)} className="w-full">
       <FeatureGridBlock
         features={features}
-        eyebrow={content.eyebrow    ? String(content.eyebrow)    : undefined}
-        heading={content.heading    ? String(content.heading)    : undefined}
-        subheading={content.subheading ? String(content.subheading) : undefined}
-        ctaLabel={content.ctaLabel  ? String(content.ctaLabel)  : undefined}
+        eyebrow={content.eyebrow    ?? undefined}
+        heading={content.heading    ?? undefined}
+        subheading={content.subheading ?? undefined}
+        ctaLabel={content.ctaLabel  ?? undefined}
         ctaUrl={resolveUrl(content.ctaUrl)}
         styleOptions={styleOptions}
       />

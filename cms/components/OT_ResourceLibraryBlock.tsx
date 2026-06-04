@@ -1,10 +1,12 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }             from '@optimizely/cms-sdk/react/server'
+import { OT_ResourceLibraryBlock } from '@/cms/content-types/OT_ResourceLibraryBlock'
 import { getResourceLibraryStyles }    from '@/cms/styling/OT_ResourceLibraryBlock.styling'
 import { getResourceLibraryAssets }    from '@/lib/resourceLibrary'
 import ResourceLibraryBlock, { ErrorState } from '@/components/blocks/ResourceLibraryBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_ResourceLibraryBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -27,8 +29,8 @@ export default async function OT_ResourceLibraryBlockAdapter({
   const styleOptions   = getResourceLibraryStyles(displaySettings)
 
   // Extract text fields
-  const eyebrow = content.eyebrow ? String(content.eyebrow) : undefined
-  const title   = content.title   ? String(content.title)   : undefined
+  const eyebrow = content.eyebrow ?? undefined
+  const title   = content.title   ?? undefined
 
   // Extract the anchor asset key from the CMS content reference.
   // ContentReference objects expose `key` at the top level.

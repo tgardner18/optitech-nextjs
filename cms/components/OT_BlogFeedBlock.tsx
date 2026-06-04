@@ -1,4 +1,6 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { OT_BlogFeedBlock } from '@/cms/content-types/OT_BlogFeedBlock'
 import { getRequestLocale, getRequestBaseUrl } from '@/lib/optimizely'
 import { getBlogFeedPosts }  from '@/lib/blogFeed'
 import BlogFeedBlock         from '@/components/blocks/BlogFeedBlock'
@@ -7,7 +9,7 @@ import type { BlogFeedColor, BlogFeedColumns, BlogFeedHeadingSize } from '@/comp
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_BlogFeedBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
@@ -68,7 +70,7 @@ export default async function OT_BlogFeedBlockAdapter({
   // ── Heading — localised field ─────────────────────────────────────────────
   // The heading property has isLocalized: true. The SDK resolves the correct
   // locale variant and exposes it as a plain string on content.heading.
-  const heading = content.heading ? String(content.heading) : undefined
+  const heading = content.heading ?? undefined
 
   return (
     <div {...pa(content.__composition)} className="w-full">

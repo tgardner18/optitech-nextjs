@@ -141,7 +141,9 @@ These are non-obvious SDK constraints. Getting them wrong causes TypeScript buil
 | Localization flag | `isLocalized: true` | `localized: true` — wrong key |
 | `required` field | Not supported by SDK types — omit | `required: true` — causes TS error |
 | Rich text type | `type: 'richText'` | `type: 'xhtml'` — not a valid SDK type |
-| Rich text GraphQL shape | Returns `{ html, json }` — access via `.html` in adapter | Treating it as a plain string |
+| Rich text GraphQL shape | Returns `{ html, json }` — render via `<RichText content={content.body?.json} />` | Treating it as a plain string, or using `.html` with `dangerouslySetInnerHTML` |
+| Link type shape | `type: 'link'` returns `{ url, text, title, target }` — render each field explicitly | Treating it as a plain string URL |
+| URL vs link | `type: 'url'` is a plain string; `type: 'link'` has metadata | Using `.url` on a `'url'` type property |
 | `mayContainTypes` | Available on `_page`, `_experience`, `_folder` base types | Not available on `_component` |
 | Child type self-reference | Use `'_self'` string | Circular import of the same file |
 ```
@@ -189,28 +191,103 @@ export const OT_YourSectionTemplate = displayTemplate({
 
 ### CMS adapter — block
 
+Use `ContentProps` for type-safe access to content and display settings. Always use optional chaining (`?.`) on all content property access — draft content may have unset properties.
+
 ```tsx
 // cms/components/OT_YourBlock.tsx — server component
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { RichText } from '@optimizely/cms-sdk/react/richText'
+import { OT_YourBlock } from '@/cms/content-types/OT_YourBlock'
+import { OT_YourBlockDefault } from '@/cms/display-templates/OT_YourBlockDefault'
 import YourBlock from '@/components/blocks/YourBlock'
 
-type Props = { content: any; displaySettings?: Record<string, string | boolean> }
+type Props = {
+  content: ContentProps<typeof OT_YourBlock>
+  displaySettings?: ContentProps<typeof OT_YourBlockDefault>
+}
 
-export default function OT_YourBlockAdapter({ content, displaySettings = {} }: Props) {
+export default function OT_YourBlockAdapter({ content, displaySettings }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  const color = String(displaySettings.color ?? 'canvas')
+  const color = displaySettings?.color ?? 'canvas'
 
   return (
     <div {...pa(content.__composition)}>   {/* pa(__composition) for blocks */}
       <YourBlock
         heading={content.heading ?? ''}
-        body={content.body ?? undefined}
+        body={content.body?.json ?? undefined}
         color={color as 'canvas' | 'surface' | 'brand'}
       />
     </div>
   )
 }
+```
+
+**Granular click-to-edit (preview mode):** The container-level `pa(content.__composition)` enables block selection in Visual Builder. For field-level click-to-edit, the adapter must render those elements directly rather than delegating them to the UI component:
+
+```tsx
+// When individual fields need click-to-edit highlight, render them in the adapter:
+return (
+  <div {...pa(content.__composition)}>
+    <h2 {...pa('heading')}>{content.heading ?? ''}</h2>
+    <RichText content={content.body?.json ?? undefined} />
+    {/* Delegate remaining layout/styling to the UI component if needed */}
+  </div>
+)
+```
+
+**Rich text rendering:** Always use `<RichText>` from `@optimizely/cms-sdk/react/richText` with the `.json` field — never `dangerouslySetInnerHTML` with `.html`.
+
+```tsx
+import { RichText } from '@optimizely/cms-sdk/react/richText'
+<RichText content={content.body?.json ?? undefined} />
+```
+
+**Image handling:** Use `damAssets` and `src` from `getPreviewUtils` for contentReference image properties:
+
+```tsx
+import { damAssets } from '@optimizely/cms-sdk'
+import Image from 'next/image'
+
+const { pa, src } = getPreviewUtils(content)
+const { getSrcset, getAlt } = damAssets(content)
+const imageUrl = src(content.image)
+
+{imageUrl && (
+  <Image
+    src={imageUrl}
+    srcSet={getSrcset(content.image)}
+    sizes="(max-width: 768px) 100vw, 50vw"
+    alt={getAlt(content.image, '')}
+    fill
+  />
+)}
+```
+
+**Link type rendering:** `type: 'link'` returns an object with `url`, `text`, `title`, and `target` — always add `rel="noopener noreferrer"` for `_blank` links:
+
+```tsx
+{content.ctaLink && (
+  <a
+    href={content.ctaLink.url}
+    target={content.ctaLink.target}
+    title={content.ctaLink.title}
+    rel={content.ctaLink.target === '_blank' ? 'noopener noreferrer' : undefined}
+  >
+    {content.ctaLink.text || 'Learn more'}
+  </a>
+)}
+```
+
+**Arrays of components/references:** Put `pa()` on the container, not on each item. Prefer `_metadata?.key` over array index for stable React keys:
+
+```tsx
+<div {...pa('items')}>
+  {(content.items ?? []).map((item) => (
+    <OptimizelyComponent key={item._metadata?.key ?? item.id} content={item} />
+  ))}
+</div>
 ```
 
 ### CMS adapter — composition section
@@ -264,8 +341,10 @@ initReactComponentRegistry({
 
 | Element type | Spread on |
 |---|---|
-| Block / element | `{...pa(content.__composition)}` |
+| Block / element — container | `{...pa(content.__composition)}` on the outer wrapper div in the adapter |
+| Block / element — individual field | `{...pa('fieldName')}` on the element that renders the field (enables click-to-edit highlight) |
 | Section / page | `{...pa(content)}` |
+| Array container | `{...pa('arrayFieldName')}` on the wrapping element; never on individual items |
 
 ### Adding a CMS-driven page route
 

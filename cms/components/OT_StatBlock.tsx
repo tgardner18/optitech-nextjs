@@ -1,9 +1,11 @@
+import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }              from '@optimizely/cms-sdk/react/server'
+import { OT_StatBlock } from '@/cms/content-types/OT_StatBlock'
 import { getStatBlockStyles, getStatBlockIcons } from '@/cms/styling/OT_StatBlock.styling'
 import StatBlock, { type StatItem }     from '@/components/blocks/StatBlock'
 
 type Props = {
-  content:          any
+  content:          ContentProps<typeof OT_StatBlock>
   displaySettings?: Record<string, string | boolean>
 }
 
