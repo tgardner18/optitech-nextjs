@@ -6,6 +6,7 @@ import { OT_TabsBlock }        from './OT_TabsBlock'
 import { OT_QuoteBlock }       from './OT_QuoteBlock'
 import { OT_VideoBlock }       from './OT_VideoBlock'
 import { OT_ImageBlock }       from './OT_ImageBlock'
+import { OT_BannerBlock }      from './OT_BannerBlock'
 
 export const OT_CampaignPage = contentType({
   key:             'OT_CampaignPage',
@@ -48,7 +49,7 @@ export const OT_CampaignPage = contentType({
       sortOrder:   30,
       items: {
         type:         'content',
-        allowedTypes: [OT_QuoteBlock, OT_VideoBlock, OT_ImageBlock],
+        allowedTypes: [OT_QuoteBlock, OT_BannerBlock, OT_VideoBlock, OT_ImageBlock],
       },
     },
 

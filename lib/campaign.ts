@@ -61,6 +61,18 @@ export type CampaignClosingItem =
       attributionTitle?: string | null
     }
   | {
+      __typename:        'OT_BannerBlock'
+      heading:           string
+      headingLevel?:     string | null
+      eyebrow?:          string | null
+      body?:             any | null
+      bgImageSrc?:       string | null
+      primaryCtaLabel?:  string | null
+      primaryCtaUrl?:    string | null
+      secondaryCtaLabel?: string | null
+      secondaryCtaUrl?:  string | null
+    }
+  | {
       __typename: 'OT_VideoBlock'
       src:       string
       title:     string
@@ -178,6 +190,17 @@ const PAGE_QUERY = `
             quote
             attributionName
             attributionTitle
+          }
+          ... on OT_BannerBlock {
+            heading
+            headingLevel
+            eyebrow
+            body { json }
+            backgroundImage { url { default } }
+            primaryCtaLabel
+            primaryCtaUrl
+            secondaryCtaLabel
+            secondaryCtaUrl
           }
           ... on OT_VideoBlock {
             videoUrl
@@ -304,6 +327,19 @@ function mapClosingItem(raw: any): CampaignClosingItem {
         quote:            raw.quote            ?? '',
         attributionName:  raw.attributionName  ?? null,
         attributionTitle: raw.attributionTitle ?? null,
+      }
+    case 'OT_BannerBlock':
+      return {
+        __typename:        'OT_BannerBlock',
+        heading:           raw.heading           ?? '',
+        headingLevel:      raw.headingLevel       ?? null,
+        eyebrow:           raw.eyebrow            ?? null,
+        body:              raw.body?.json          ?? null,
+        bgImageSrc:        raw.backgroundImage?.url?.default ?? null,
+        primaryCtaLabel:   raw.primaryCtaLabel    ?? null,
+        primaryCtaUrl:     raw.primaryCtaUrl       ?? null,
+        secondaryCtaLabel: raw.secondaryCtaLabel   ?? null,
+        secondaryCtaUrl:   raw.secondaryCtaUrl     ?? null,
       }
     case 'OT_VideoBlock':
       return {

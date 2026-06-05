@@ -4,6 +4,7 @@ import PrimaryTextBlock from '@/components/blocks/PrimaryTextBlock'
 import FeatureGridBlock from '@/components/blocks/FeatureGridBlock'
 import TabsBlock        from '@/components/blocks/TabsBlock'
 import QuoteBlock       from '@/components/blocks/QuoteBlock'
+import BannerBlock      from '@/components/blocks/BannerBlock'
 import VideoBlock       from '@/components/blocks/VideoBlock'
 import ImageBlock       from '@/components/blocks/ImageBlock'
 import { RichText }     from '@optimizely/cms-sdk/react/richText'
@@ -16,7 +17,7 @@ const DEFAULT_TABS_STYLE: TabsStyleOptions = {
   tabPosition:      'top',
   color:            'surface',
   contentLayout:    'textOnly',
-  triggerAlign:     'center',
+  triggerAlign:     'left',
   autoPlay:         true,
   autoPlayDuration: 5,
 }
@@ -125,6 +126,29 @@ function renderClosingItem(item: CampaignClosingItem, index: number) {
         />
       )
 
+    case 'OT_BannerBlock':
+      return (
+        <BannerBlock
+          key={index}
+          heading={item.heading}
+          headingLevel={(item.headingLevel as 'h1' | 'h2') ?? 'h2'}
+          eyebrow={item.eyebrow ?? undefined}
+          body={item.body ?? null}
+          bgImageSrc={item.bgImageSrc ?? undefined}
+          primaryCta={
+            item.primaryCtaUrl
+              ? { label: item.primaryCtaLabel ?? 'Learn more', href: item.primaryCtaUrl }
+              : undefined
+          }
+          secondaryCta={
+            item.secondaryCtaUrl
+              ? { label: item.secondaryCtaLabel ?? 'Learn more', href: item.secondaryCtaUrl }
+              : undefined
+          }
+          styleOptions={{ color: 'canvas', treatment: 'scrim', alignment: 'center', size: 'compact', imageBlend: 'overlay' }}
+        />
+      )
+
     case 'OT_VideoBlock': {
       const hasEditorial = Boolean(item.eyebrow || item.heading || item.body || item.ctaUrl)
       const mediaEl = (
@@ -136,11 +160,11 @@ function renderClosingItem(item: CampaignClosingItem, index: number) {
         />
       )
       if (!hasEditorial) {
-        return <div key={index} className="w-full">{mediaEl}</div>
+        return <div key={index} className="px-lg w-full">{mediaEl}</div>
       }
       return (
-        <div key={index} className="w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
-          <div className="min-w-0 order-1 pl-lg flex flex-col gap-md">
+        <div key={index} className="px-lg w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
+          <div className="min-w-0 order-1 flex flex-col gap-md">
             {item.eyebrow && <span className="text-label uppercase tracking-wide text-brand font-semibold">{item.eyebrow}</span>}
             {item.heading && <h2 className="text-headline font-bold text-fg text-wrap-balance leading-tight">{item.heading}</h2>}
             {item.body    && <div className="text-body text-fg-muted leading-relaxed max-w-[60ch]"><RichText content={item.body} /></div>}
@@ -168,11 +192,11 @@ function renderClosingItem(item: CampaignClosingItem, index: number) {
         />
       )
       if (!hasEditorial) {
-        return <div key={index} className="w-full">{mediaEl}</div>
+        return <div key={index} className="px-lg w-full">{mediaEl}</div>
       }
       return (
-        <div key={index} className="w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
-          <div className="min-w-0 order-1 pl-lg flex flex-col gap-md">
+        <div key={index} className="px-lg w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
+          <div className="min-w-0 order-1 flex flex-col gap-md">
             {item.eyebrow && <span className="text-label uppercase tracking-wide text-brand font-semibold">{item.eyebrow}</span>}
             {item.heading && <h2 className="text-headline font-bold text-fg text-wrap-balance leading-tight">{item.heading}</h2>}
             {item.body    && <div className="text-body text-fg-muted leading-relaxed max-w-[60ch]"><RichText content={item.body} /></div>}
@@ -254,9 +278,7 @@ export default function CampaignPage({
           aria-label="Closing"
           className="bg-surface/50 py-xl"
         >
-          <div className="px-lg">
-            {closingSection.map((item, i) => renderClosingItem(item, i))}
-          </div>
+          {closingSection.map((item, i) => renderClosingItem(item, i))}
         </section>
       )}
     </div>
