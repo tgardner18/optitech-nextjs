@@ -74,6 +74,7 @@ async function PreviewPage({ searchParams }: Props) {
 
   if (isPageType) {
     const fallbackKey = sp('key')
+    let pageRedirectUrl: string | null = null
     if (fallbackKey) {
       try {
         const fallback = await getClient().request(
@@ -96,12 +97,15 @@ async function PreviewPage({ searchParams }: Props) {
             loc:           sp('loc'),
             ctx:           pageUrl,
           })
-          redirect(`${baseUrl}/api/draft?${qs}`)
+          pageRedirectUrl = `${baseUrl}/api/draft?${qs}`
         }
       } catch {
-        // Fallback failed — fall through to the error display below
+        // Fallback query failed — fall through to the error display below
       }
     }
+    // redirect() throws a special Next.js error — must be called outside try/catch
+    // so it isn't accidentally swallowed by the catch block above.
+    if (pageRedirectUrl) redirect(pageRedirectUrl)
   }
 
   if (lastErr || !content) {
