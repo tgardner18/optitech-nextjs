@@ -31,8 +31,8 @@ const sectionCva = cva("px-md lg:px-lg", {
 const figureCva = cva("", {
   variants: {
     alignment: {
-      left:   "max-w-screen-lg",
-      center: "mx-auto max-w-screen-md",
+      left:   "max-w-[64rem]",
+      center: "mx-auto max-w-[48rem]",
     },
   },
   defaultVariants: { alignment: "center" },
