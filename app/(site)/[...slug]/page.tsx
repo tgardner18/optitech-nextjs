@@ -293,8 +293,12 @@ async function CmsPage({ params, searchParams }: Props) {
 
       // In preview mode, map the preview response first. getPreviewContent may
       // not fully resolve slot items for unpublished content (they're not yet
-      // indexed in Content Graph), so fall back to the published page query when
-      // the preview mapping yields no sections.
+      // indexed in Content Graph), so try the published page query as a fallback
+      // when the preview mapping yields no sections.
+      // IMPORTANT: only replace campaignContent with the published result if it
+      // is non-null — a brand-new unsaved page has no published record yet and
+      // getCampaignPage returns null. In that case we keep the (empty) preview
+      // content so the editor sees the page shell rather than a 404.
       let campaignContent = dm.isEnabled ? mapCampaignPageRaw(exp) : null
       const previewHasContent = !!(
         campaignContent?.heroSection ||
@@ -302,7 +306,8 @@ async function CmsPage({ params, searchParams }: Props) {
         (campaignContent?.closingSection?.length ?? 0) > 0
       )
       if (!previewHasContent && contentKey) {
-        campaignContent = await getCampaignPage(contentKey)
+        const published = await getCampaignPage(contentKey)
+        if (published) campaignContent = published
       }
       if (!campaignContent) return notFound()
 
