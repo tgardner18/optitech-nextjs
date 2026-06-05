@@ -178,7 +178,7 @@ export default function QuoteBlock({
           {/* ── Signature & attribution ─────────────────────────────────── */}
           <figcaption className={cn(
             "mt-lg",
-            alignment === "center" && "ml-16 flex flex-col items-center"
+            alignment === "center" && "flex flex-col items-center"
           )}>
             <LaserSignature
               name={attribution.name}
