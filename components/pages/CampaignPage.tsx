@@ -208,7 +208,9 @@ export default function CampaignPage({
           aria-label="Closing"
           className="bg-surface/50 py-xl"
         >
-          {closingSection.map((item, i) => renderClosingItem(item, i))}
+          <div className="px-lg">
+            {closingSection.map((item, i) => renderClosingItem(item, i))}
+          </div>
         </section>
       )}
     </div>

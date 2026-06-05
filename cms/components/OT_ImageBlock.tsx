@@ -61,6 +61,9 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const textOrder =
     mediaSide === 'right' ? 'order-1' : 'order-1 md:order-2'
 
+  const textEdgePadding =
+    mediaSide === 'right' ? 'pl-lg' : 'pr-lg'
+
   return (
     <div
       {...pa(content.__composition)}
@@ -70,7 +73,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         {mediaEl}
       </div>
 
-      <div className={`min-w-0 flex flex-col gap-md ${textOrder}`}>
+      <div className={`min-w-0 flex flex-col gap-md ${textOrder} ${textEdgePadding}`}>
         {content.eyebrow && (
           <span
             {...pa('eyebrow')}
