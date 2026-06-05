@@ -159,17 +159,13 @@ async function CmsPage({ params, searchParams }: Props) {
       ver:           sp_str('ver'),
       loc:           previewLocale,
     }
-    console.log('[preview] key=%s ver=%s loc=%s path=%s', sp_str('key'), sp_str('ver'), previewLocale, path)
     try {
       exp = await getClient().getPreviewContent(previewParams, { cache: false })
-      console.log('[preview] getPreviewContent __typename=%s', exp?.__typename)
-    } catch (err) {
-      console.log('[preview] getPreviewContent threw:', (err as Error)?.message)
+    } catch {
       exp = null
     }
 
     const previewResolveFailed = !exp || exp.__typename === '_Page'
-    console.log('[preview] previewResolveFailed=%s exp.__typename=%s', previewResolveFailed, exp?.__typename)
     if (previewResolveFailed && sp_str('key')) {
       const fallbackKey = sp_str('key')
       try {
@@ -183,13 +179,11 @@ async function CmsPage({ params, searchParams }: Props) {
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const campaignExp = (fallback as any)?.OT_CampaignPage?.items?.[0] ?? null
-        console.log('[preview] fallback campaignExp.__typename=%s', campaignExp?.__typename)
         if (campaignExp) exp = campaignExp
-      } catch (err) {
-        console.log('[preview] fallback threw:', (err as Error)?.message)
+      } catch {
+        // fallback failed — leave exp as-is
       }
     }
-    console.log('[preview] final exp.__typename=%s key=%s', exp?.__typename, exp?._metadata?.key)
   } else {
     // Shared cache with generateMetadata when both run in the same render.
     exp = await fetchPageContent(path, locale, baseUrl)
@@ -295,10 +289,8 @@ async function CmsPage({ params, searchParams }: Props) {
 
     // Campaign page — three-slot landing page type
     if (exp?.__typename === 'OT_CampaignPage') {
-      console.log('[campaign] rendering campaign page key=%s isDraft=%s', exp._metadata?.key, dm.isEnabled)
       const contentKey = exp._metadata?.key as string | undefined
       const campaignContent = contentKey ? await getCampaignPage(contentKey) : null
-      console.log('[campaign] getCampaignPage returned=%s', campaignContent ? 'content' : 'null')
       if (!campaignContent) return notFound()
 
       const campaignJsonLd = buildJsonLd(
