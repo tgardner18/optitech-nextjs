@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { Maximize2, X } from "lucide-react";
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
@@ -30,6 +31,12 @@ export type ImageStyleOptions = {
    * appears to float above a chromatic halo. Isolation keeps it inside the figure.
    */
   shadow?: boolean;
+  /**
+   * Click-to-expand lightbox: shows the image full-screen with backdrop blur.
+   * Ideal for architecture diagrams, detailed screenshots, or any image where
+   * the small rendition is hard to read.
+   */
+  lightbox?: boolean;
 };
 
 export type ImageBlockProps = {
@@ -74,10 +81,12 @@ export default function ImageBlock({
     animate         = false,
     captionPosition = "inset",
     shadow          = false,
+    lightbox        = false,
   } = styleOptions;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     if (!animate) return;
@@ -102,6 +111,17 @@ export default function ImageBlock({
     observer.observe(el);
     return () => observer.disconnect();
   }, [animate]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxOpen]);
 
   const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
   const maxHClass   = MAX_H_CLASS[maxHeight];
@@ -163,80 +183,129 @@ export default function ImageBlock({
       }
     : {};
 
-  return (
-    <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
+  // ── Core image markup (shared between normal and lightbox-trigger modes) ────
 
-      {/* Chromatic shadow bloom — teal left, signal green right */}
-      {shadow && <div aria-hidden="true" style={shadowStyle} />}
-
-      {/*
-        * Offset frame: outer wrapper adds 12px of space on the right and bottom.
-        * A teal backing block sits at (12px, 12px), creating a bold editorial
-        * mounting-board effect — the image floats above a teal backing.
-        */}
-      <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
-        {frame === "offset" && (
+  const imageContainerEl = (
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
+      style={glowStyle}
+      {...(previewAttrs?.image ?? {})}
+    >
+      {animate && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-brand z-20 pointer-events-none"
+          style={barStyle}
+        />
+      )}
+      <div className="absolute inset-0" style={imageRevealStyle}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className="object-cover"
+          sizes="(min-width: 1280px) 1200px, 100vw"
+        />
+        {overlay && (
           <div
             aria-hidden="true"
-            className="absolute top-3 left-3 right-0 bottom-0 bg-brand"
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "var(--ot-brand)", opacity: 0.4, mixBlendMode: "multiply" }}
           />
         )}
+        {hasInsetCaption && (
+          <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
+            <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+          </figcaption>
+        )}
+      </div>
 
-        {/* Image container — glow applies here as an inline box-shadow */}
+      {/* Expand hint — visible on hover when lightbox is enabled */}
+      {lightbox && (
         <div
-          ref={containerRef}
-          className={`relative overflow-hidden ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
-          style={glowStyle}
-          {...(previewAttrs?.image ?? {})}
+          aria-hidden="true"
+          className="absolute top-2 right-2 z-30 p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
         >
-          {/* Teal bar — leads the reveal, exits right before image appears */}
-          {animate && (
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-brand z-20 pointer-events-none"
-              style={barStyle}
-            />
+          <Maximize2 className="w-4 h-4" />
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
+
+        {shadow && <div aria-hidden="true" style={shadowStyle} />}
+
+        <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+          {frame === "offset" && (
+            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand" />
           )}
 
-          {/* Image + overlay + inset caption — all clip together during reveal */}
-          <div className="absolute inset-0" style={imageRevealStyle}>
+          {lightbox ? (
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              aria-label={`View full size${alt ? `: ${alt}` : ''}`}
+              className="block w-full text-left group cursor-zoom-in"
+            >
+              {imageContainerEl}
+            </button>
+          ) : (
+            imageContainerEl
+          )}
+        </div>
+
+        {hasBelowCaption && (
+          <figcaption className="mt-sm">
+            <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+          </figcaption>
+        )}
+      </figure>
+
+      {/* ── Lightbox overlay ────────────────────────────────────────────────── */}
+      {lightbox && lightboxOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={alt || 'Full size image'}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-canvas/92 backdrop-blur-md"
+          style={{ animation: 'fadeIn 0.15s cubic-bezier(0.16,1,0.3,1) both' }}
+          onClick={() => setLightboxOpen(false)}
+        >
+          {/* Image — click stops propagation so only backdrop click closes */}
+          <div
+            className="relative max-w-[92vw] max-h-[92vh]"
+            onClick={e => e.stopPropagation()}
+          >
             <Image
               src={src}
               alt={alt}
-              fill
-              className="object-cover"
-              sizes="(min-width: 1280px) 1200px, 100vw"
+              width={0}
+              height={0}
+              sizes="92vw"
+              quality={95}
+              className="w-auto h-auto max-w-[92vw] max-h-[92vh] object-contain"
+              style={{ width: 'auto', height: 'auto' }}
             />
-
-            {/* Teal brand wash — multiply blend works best on light-toned imagery */}
-            {overlay && (
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: "var(--ot-brand)",
-                  opacity: 0.4,
-                  mixBlendMode: "multiply",
-                }}
-              />
-            )}
-
-            {/* Inset caption badge — floats over bottom-left */}
-            {hasInsetCaption && (
-              <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
-                <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
-              </figcaption>
+            {caption && (
+              <p className="mt-sm text-label text-fg-muted text-center">{caption}</p>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Below caption — label-scale text under image */}
-      {hasBelowCaption && (
-        <figcaption className="mt-sm">
-          <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
-        </figcaption>
+          {/* Close button — top-right of overlay */}
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close full size image"
+            className="absolute top-4 right-4 p-2 bg-surface/80 hover:bg-surface text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       )}
-    </figure>
+    </>
   );
 }

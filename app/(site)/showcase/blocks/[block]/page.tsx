@@ -683,6 +683,30 @@ function ImageShowcase() {
           />
         </div>
       </div>
+
+      <VariantGroup label="Lightbox · click to expand" note="A zoom cursor and expand icon appear on hover. Clicking opens a full-screen modal with backdrop blur. Ideal for architecture diagrams and detail-rich images. Closes on Escape, backdrop click, or the × button." />
+      <div className="px-md pb-xl lg:px-lg grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div>
+          <div className="flex flex-wrap items-baseline gap-x-sm gap-y-xs mb-md">
+            <span className="text-label tracking-label uppercase text-brand font-semibold">Lightbox + glow</span>
+            <span className="text-label text-fg-muted/60">lightbox: true · frame: glow · ratio: 16:9</span>
+          </div>
+          <OT_ImageBlock
+            content={{ image: IMG_SRC, alt: 'OptiTech agentic pipeline architecture diagram', caption: 'Click to view at full resolution' } as any}
+            displaySettings={{ ratio: 'r16_9', frame: 'glow', shadow: true, captionPosition: 'below', lightbox: true }}
+          />
+        </div>
+        <div>
+          <div className="flex flex-wrap items-baseline gap-x-sm gap-y-xs mb-md">
+            <span className="text-label tracking-label uppercase text-brand font-semibold">Lightbox + animate</span>
+            <span className="text-label text-fg-muted/60">lightbox: true · animate: true · ratio: 16:9</span>
+          </div>
+          <OT_ImageBlock
+            content={{ image: IMG_SRC, alt: 'Content pipeline performance metrics', caption: 'Scroll to reveal, click to zoom' } as any}
+            displaySettings={{ ratio: 'r16_9', animate: true, captionPosition: 'below', lightbox: true }}
+          />
+        </div>
+      </div>
     </>
   )
 }

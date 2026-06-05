@@ -85,5 +85,14 @@ export const OT_ImageDefault = displayTemplate({
         true:  { displayName: 'Chromatic bloom',      sortOrder: 20 },
       },
     },
+    lightbox: {
+      displayName: 'Click to expand',
+      editor: 'select',
+      sortOrder: 70,
+      choices: {
+        false: { displayName: 'Off (Default)',                              sortOrder: 10 },
+        true:  { displayName: 'Lightbox — click image to view full screen', sortOrder: 20 },
+      },
+    },
   },
 })

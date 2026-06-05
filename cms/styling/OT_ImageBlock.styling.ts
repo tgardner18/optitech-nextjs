@@ -16,5 +16,6 @@ export function getImageStyles(s: Record<string, string | boolean>): ImageStyleO
     animate:         s.animate === 'true' || s.animate === true,
     captionPosition: (s.captionPosition ?? 'below') as ImageStyleOptions['captionPosition'],
     shadow:          s.shadow === 'true' || s.shadow === true,
+    lightbox:        s.lightbox === 'true' || s.lightbox === true,
   }
 }
