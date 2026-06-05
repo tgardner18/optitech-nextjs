@@ -72,7 +72,13 @@ async function PreviewPage({ searchParams }: Props) {
     content?._metadata?.types?.includes('_Page') ||
     (lastErr && !content)
 
-  if (isPageType) {
+  // Only redirect page types that have a dedicated handler in the slug route.
+  // Other _page types (OT_FolderPage, etc.) must NOT be redirected there or they
+  // create an infinite loop: slug route → /preview → slug route → …
+  const SLUG_HANDLED_TYPES = new Set(['OT_CampaignPage', 'OT_BlogPage'])
+  const isSlugHandledPage = isPageType && SLUG_HANDLED_TYPES.has(content?.__typename ?? '')
+
+  if (isSlugHandledPage) {
     const fallbackKey = sp('key')
     let pageRedirectUrl: string | null = null
     if (fallbackKey) {
