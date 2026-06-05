@@ -12,7 +12,7 @@ import {
   setRequestContext,
 } from '@/lib/optimizely'
 import { getBlogPage, getLatestBlogPosts, getAuthorName } from '@/lib/blog'
-import { getCampaignPage, getCampaignPageMeta } from '@/lib/campaign'
+import { getCampaignPage, getCampaignPageMeta, mapCampaignPageRaw } from '@/lib/campaign'
 import { withAppContext }       from '@optimizely/cms-sdk/react/server'
 import { PreviewComponent }    from '@optimizely/cms-sdk/react/client'
 import type { PreviewParams }  from '@optimizely/cms-sdk'
@@ -290,7 +290,12 @@ async function CmsPage({ params, searchParams }: Props) {
     // Campaign page — three-slot landing page type
     if (exp?.__typename === 'OT_CampaignPage') {
       const contentKey = exp._metadata?.key as string | undefined
-      const campaignContent = contentKey ? await getCampaignPage(contentKey) : null
+      // In preview/draft mode, exp was already fetched with the preview client
+      // (cache:false, draft-aware). Map it directly instead of re-fetching via
+      // the public cached client, which only sees published content.
+      const campaignContent = dm.isEnabled
+        ? mapCampaignPageRaw(exp)
+        : (contentKey ? await getCampaignPage(contentKey) : null)
       if (!campaignContent) return notFound()
 
       const campaignJsonLd = buildJsonLd(

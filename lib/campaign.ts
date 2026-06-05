@@ -62,15 +62,25 @@ export type CampaignClosingItem =
     }
   | {
       __typename: 'OT_VideoBlock'
-      src:      string
-      title:    string
-      caption?: string | null
+      src:       string
+      title:     string
+      caption?:  string | null
+      eyebrow?:  string | null
+      heading?:  string | null
+      body?:     any | null
+      ctaLabel?: string | null
+      ctaUrl?:   string | null
     }
   | {
       __typename: 'OT_ImageBlock'
-      src:      string
-      alt:      string
-      caption?: string | null
+      src:       string
+      alt:       string
+      caption?:  string | null
+      eyebrow?:  string | null
+      heading?:  string | null
+      body?:     any | null
+      ctaLabel?: string | null
+      ctaUrl?:   string | null
     }
   | { __typename: '__unknown__'; typeName: string }
 
@@ -173,11 +183,21 @@ const PAGE_QUERY = `
             videoUrl
             title
             caption
+            eyebrow
+            heading
+            body { json }
+            ctaLabel
+            ctaUrl { default }
           }
           ... on OT_ImageBlock {
             image { url { default } }
             alt
             caption
+            eyebrow
+            heading
+            body { json }
+            ctaLabel
+            ctaUrl { default }
           }
         }
         seoTitle
@@ -290,14 +310,24 @@ function mapClosingItem(raw: any): CampaignClosingItem {
         __typename: 'OT_VideoBlock',
         src:        raw.videoUrl ?? '',
         title:      raw.title   ?? '',
-        caption:    raw.caption ?? null,
+        caption:    raw.caption  ?? null,
+        eyebrow:    raw.eyebrow  ?? null,
+        heading:    raw.heading  ?? null,
+        body:       raw.body?.json ?? null,
+        ctaLabel:   raw.ctaLabel ?? null,
+        ctaUrl:     raw.ctaUrl?.default ?? null,
       }
     case 'OT_ImageBlock':
       return {
         __typename: 'OT_ImageBlock',
         src:        raw.image?.url?.default ?? '',
         alt:        raw.alt     ?? '',
-        caption:    raw.caption ?? null,
+        caption:    raw.caption  ?? null,
+        eyebrow:    raw.eyebrow  ?? null,
+        heading:    raw.heading  ?? null,
+        body:       raw.body?.json ?? null,
+        ctaLabel:   raw.ctaLabel ?? null,
+        ctaUrl:     raw.ctaUrl?.default ?? null,
       }
     default:
       return { __typename: '__unknown__', typeName: raw.__typename ?? 'Unknown' }
@@ -306,6 +336,17 @@ function mapClosingItem(raw: any): CampaignClosingItem {
 
 // ─── Data access ──────────────────────────────────────────────────────────────
 
+// Maps a raw CMS item (from either the public client or getPreviewContent) to
+// a typed CampaignPageContent. Exported so the preview render path in the slug
+// route can map the already-fetched preview exp directly instead of re-fetching.
+export function mapCampaignPageRaw(item: any): CampaignPageContent | null {
+  if (!item) return null
+  const heroSection    = mapHeroItem((item.heroSection ?? [])[0] ?? null)
+  const bodySection    = (item.bodySection    ?? []).map(mapBodyItem)    as CampaignBodyItem[]
+  const closingSection = (item.closingSection ?? []).map(mapClosingItem) as CampaignClosingItem[]
+  return { ...item, heroSection, bodySection, closingSection }
+}
+
 export const getCampaignPage = cache(async function getCampaignPage(
   key: string,
 ): Promise<CampaignPageContent | null> {
@@ -313,23 +354,7 @@ export const getCampaignPage = cache(async function getCampaignPage(
   try {
     const data = await getClient().request(PAGE_QUERY, { key })
     const item = (data as any)?.OT_CampaignPage?.items?.[0] ?? null
-    if (!item) return null
-
-    // heroSection is an array with maxItems: 1 — take the first element
-    const heroSection = mapHeroItem((item.heroSection ?? [])[0] ?? null)
-
-    const bodySection: CampaignBodyItem[] =
-      (item.bodySection ?? []).map(mapBodyItem)
-
-    const closingSection: CampaignClosingItem[] =
-      (item.closingSection ?? []).map(mapClosingItem)
-
-    return {
-      ...item,
-      heroSection,
-      bodySection,
-      closingSection,
-    }
+    return mapCampaignPageRaw(item)
   } catch {
     return null
   }

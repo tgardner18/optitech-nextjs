@@ -6,17 +6,18 @@ import TabsBlock        from '@/components/blocks/TabsBlock'
 import QuoteBlock       from '@/components/blocks/QuoteBlock'
 import VideoBlock       from '@/components/blocks/VideoBlock'
 import ImageBlock       from '@/components/blocks/ImageBlock'
+import { RichText }     from '@optimizely/cms-sdk/react/richText'
 import type { TabsStyleOptions } from '@/cms/styling/OT_TabsBlock.styling'
 
-// ─── Default TabsBlock style when used as a campaign body slot ────────────────
+// ─── Default styles for blocks used in campaign slots ────────────────────────
 
 const DEFAULT_TABS_STYLE: TabsStyleOptions = {
-  tabStyle:         'underline',
+  tabStyle:         'pill',
   tabPosition:      'top',
-  color:            'canvas',
+  color:            'surface',
   contentLayout:    'textOnly',
-  triggerAlign:     'left',
-  autoPlay:         false,
+  triggerAlign:     'center',
+  autoPlay:         true,
   autoPlayDuration: 5,
 }
 
@@ -120,28 +121,73 @@ function renderClosingItem(item: CampaignClosingItem, index: number) {
             name:  item.attributionName  ?? '',
             title: item.attributionTitle ?? undefined,
           }}
+          styleOptions={{ color: 'brand', alignment: 'center', size: 'large' }}
         />
       )
 
-    case 'OT_VideoBlock':
-      return (
+    case 'OT_VideoBlock': {
+      const hasEditorial = Boolean(item.eyebrow || item.heading || item.body || item.ctaUrl)
+      const mediaEl = (
         <VideoBlock
-          key={index}
           src={item.src}
           title={item.title}
           caption={item.caption ?? undefined}
+          styleOptions={{ frame: 'glow', shadow: true, captionPosition: 'below' }}
         />
       )
-
-    case 'OT_ImageBlock':
+      if (!hasEditorial) {
+        return <div key={index} className="w-full">{mediaEl}</div>
+      }
       return (
+        <div key={index} className="w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
+          <div className="min-w-0 order-1 pl-lg flex flex-col gap-md">
+            {item.eyebrow && <span className="text-label uppercase tracking-wide text-brand font-semibold">{item.eyebrow}</span>}
+            {item.heading && <h2 className="text-headline font-bold text-fg text-wrap-balance leading-tight">{item.heading}</h2>}
+            {item.body    && <div className="text-body text-fg-muted leading-relaxed max-w-[60ch]"><RichText content={item.body} /></div>}
+            {item.ctaUrl  && (
+              <div className="mt-sm">
+                <a href={item.ctaUrl} className="inline-flex items-center gap-sm px-lg py-sm bg-brand text-fg-on-brand text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick">
+                  {item.ctaLabel || 'Learn more'}
+                </a>
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 order-2">{mediaEl}</div>
+        </div>
+      )
+    }
+
+    case 'OT_ImageBlock': {
+      const hasEditorial = Boolean(item.eyebrow || item.heading || item.body || item.ctaUrl)
+      const mediaEl = (
         <ImageBlock
-          key={index}
           src={item.src}
           alt={item.alt}
           caption={item.caption ?? undefined}
+          styleOptions={{ ratio: '16:9', frame: 'glow', animate: true, shadow: true, captionPosition: 'below' }}
         />
       )
+      if (!hasEditorial) {
+        return <div key={index} className="w-full">{mediaEl}</div>
+      }
+      return (
+        <div key={index} className="w-full grid grid-cols-1 md:grid-cols-[45fr_55fr] gap-lg md:gap-xl items-center">
+          <div className="min-w-0 order-1 pl-lg flex flex-col gap-md">
+            {item.eyebrow && <span className="text-label uppercase tracking-wide text-brand font-semibold">{item.eyebrow}</span>}
+            {item.heading && <h2 className="text-headline font-bold text-fg text-wrap-balance leading-tight">{item.heading}</h2>}
+            {item.body    && <div className="text-body text-fg-muted leading-relaxed max-w-[60ch]"><RichText content={item.body} /></div>}
+            {item.ctaUrl  && (
+              <div className="mt-sm">
+                <a href={item.ctaUrl} className="inline-flex items-center gap-sm px-lg py-sm bg-brand text-fg-on-brand text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick">
+                  {item.ctaLabel || 'Learn more'}
+                </a>
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 order-2">{mediaEl}</div>
+        </div>
+      )
+    }
 
     case '__unknown__':
       return (
