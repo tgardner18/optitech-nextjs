@@ -295,19 +295,6 @@ function CardShowcase() {
         </div>
       </div>
 
-      <VariantGroup label="fill:glass · dark glass panels over imagery" note="Dark glass requires something interesting beneath it — imagery, a teal section, a layered background." />
-      <div className="relative overflow-hidden">
-        <Image src={CARD_IMG_A} alt="" fill className="object-cover object-center" sizes="100vw" aria-hidden />
-        <div className="absolute inset-0 bg-canvas/40" />
-        <div className="relative z-10 px-md py-xl lg:px-lg">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-            <OT_CardBlock content={{ Heading: 'Edges computed at the edge.', Eyebrow: 'Edge Network', Description: 'OptiTech routes intelligence to where your users are — 200ms becomes 20ms without changing a line of application code.', ctaLabel: 'See coverage', ctaUrl: { default: '#' } } as any} displaySettings={{ fill: 'glass', hover: 'glow' }} />
-            <OT_CardBlock content={{ Heading: 'Flags ship features safely.', Eyebrow: 'Feature Flags', Description: 'Controlled rollouts, instant kill-switches, and audience targeting — all without a deployment cycle.', ctaLabel: 'Read the docs', ctaUrl: { default: '#' } } as any} displaySettings={{ fill: 'glass', hover: 'glow' }} />
-            <OT_CardBlock content={{ Heading: 'Every experiment tells a story.', Eyebrow: 'Experimentation', Description: 'Statistical rigor built in. Run A/B tests and multivariate experiments with automatic significance detection.', ctaLabel: 'Start experimenting', ctaUrl: { default: '#' } } as any} displaySettings={{ fill: 'glass', hover: 'glow' }} />
-          </div>
-        </div>
-      </div>
-
       <VariantGroup label="image:float · content slides up over the image bottom" note="Content box overlaps the lower portion of the image with the card's fill background." />
       <div className="px-md pb-xl lg:px-lg">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
