@@ -109,6 +109,12 @@ function buildExperienceQuery(withDomain: boolean): string {
   `
 }
 
+function withTrackAuth(url: string | null | undefined): string | null {
+  if (!url) return null
+  const key = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY
+  return key ? `${url}&auth=${key}` : null
+}
+
 const SETTINGS_TYPES = new Set([
   'OT_SiteSettings',
   'OT_ThemeManager',
@@ -187,7 +193,7 @@ export async function GET(req: NextRequest) {
           published: item._metadata.published || undefined,
           excerpt,
           imageUrl:  item.featuredImage?.url?.default || undefined,
-          _track:    item._track || null,
+          _track:    withTrackAuth(item._track),
         })
       }
     } catch (err) {
@@ -212,7 +218,7 @@ export async function GET(req: NextRequest) {
           title:  item.name ?? 'Untitled',
           url:    item._metadata.url.default,
           type:   'Page',
-          _track: item._track || null,
+          _track: withTrackAuth(item._track),
         })
       }
     } catch {
@@ -230,7 +236,7 @@ export async function GET(req: NextRequest) {
           title:  item.name ?? 'Untitled',
           url:    item._metadata.url.default,
           type:   'Page',
-          _track: item._track || null,
+          _track: withTrackAuth(item._track),
         })
       }
     } catch {
