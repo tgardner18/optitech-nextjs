@@ -28,9 +28,7 @@ const sectionCva = cva("px-md lg:px-lg", {
   defaultVariants: { color: "brand", size: "large" },
 });
 
-// Central container — constrains width and keeps content off the screen edge.
-// Left: wide with comfortable left-alignment headroom.
-// Center: narrower to keep centered prose tight and readable.
+// Outer container — constrains width and centers the whole block on the page.
 const containerCva = cva("mx-auto w-full", {
   variants: {
     alignment: {
@@ -41,30 +39,24 @@ const containerCva = cva("mx-auto w-full", {
   defaultVariants: { alignment: "center" },
 });
 
-// Figure: center mode stacks everything as a centered flex column.
-const figureCva = cva("relative", {
+// Blockquote — carries the mark as an absolutely positioned child.
+// `pl-[3rem]` creates the gutter the mark sits in; both modes use the same indent.
+// Center: `mx-auto max-w-[65ch]` centers the reading block, text is left-aligned
+// so `left: 0` on the mark is always immediately left of the first letter.
+const blockquoteCva = cva("relative pl-12", {
   variants: {
     alignment: {
-      left:   "",
-      center: "flex flex-col items-center",
+      left:   "max-w-[65ch]",
+      center: "max-w-[65ch] mx-auto",
     },
   },
   defaultVariants: { alignment: "center" },
 });
 
-// Blockquote: left indents past the quote mark glyph; center applies text-center.
-const blockquoteCva = cva("relative z-10", {
-  variants: {
-    alignment: {
-      left:   "pl-[3.25rem]",
-      center: "text-center w-full",
-    },
-  },
-  defaultVariants: { alignment: "center" },
-});
-
+// Quote text — no per-line centering; that makes the mark's anchor unpredictable.
+// The reading block itself is centered via blockquoteCva mx-auto.
 const quoteTextCva = cva(
-  "font-sans font-light text-pretty max-w-[65ch] leading-[1.75] tracking-[0.003em]",
+  "font-sans font-light text-pretty leading-[1.75] tracking-[0.003em]",
   {
     variants: {
       color: {
@@ -77,24 +69,21 @@ const quoteTextCva = cva(
         large: "text-[1.375rem]",
         small: "text-[1.1rem]",
       },
-      alignment: {
-        left:   "",
-        center: "mx-auto",
-      },
     },
-    defaultVariants: { color: "canvas", size: "large", alignment: "left" },
+    defaultVariants: { color: "canvas", size: "large" },
   }
 );
 
-const quoteMarkBgCva = cva(
-  "absolute select-none pointer-events-none font-syne font-bold leading-none z-0",
+// Quote mark — more visible than before (0.30 / 0.35 vs the old 0.12 / 0.18).
+const quoteMarkCva = cva(
+  "absolute select-none pointer-events-none font-syne font-bold leading-none",
   {
     variants: {
       color: {
-        none:    "text-brand/[0.12]",
-        brand:   "text-fg-on-brand/[0.18]",
-        canvas:  "text-brand/[0.12]",
-        surface: "text-brand/[0.12]",
+        none:    "text-brand/[0.30]",
+        brand:   "text-fg-on-brand/[0.35]",
+        canvas:  "text-brand/[0.30]",
+        surface: "text-brand/[0.30]",
       },
     },
     defaultVariants: { color: "canvas" },
@@ -141,41 +130,41 @@ export default function QuoteBlock({
     ? "clamp(7rem, 13vw, 10rem)"
     : "clamp(5rem, 10vw, 7.5rem)";
 
-  // Quote mark position:
-  //   left   — top-left of figure, blockquote indents past it with pl-[3.25rem]
-  //   center — horizontally centered at the top, text sits below and overlaps
-  const markPositionClass = alignment === "left"
-    ? "top-[-0.15em] left-[-0.05em]"
-    : "top-[-0.15em] left-1/2 -translate-x-1/2";
-
   return (
     <section className={sectionCva({ color, size })}>
       <div className={containerCva({ alignment })}>
-        <figure className={figureCva({ alignment })}>
+        <figure className={cn(
+          "relative",
+          alignment === "center" && "flex flex-col items-center"
+        )}>
 
-          {/* Background quote mark — decorative watermark behind content */}
-          <span
-            aria-hidden="true"
-            className={cn(quoteMarkBgCva({ color }), markPositionClass)}
-            style={{ fontSize: bgMarkSize }}
-          >
-            &ldquo;
-          </span>
-
-          {/* Quote body */}
+          {/* Quote body — mark is inside so it anchors to the text left edge */}
           <blockquote className={blockquoteCva({ alignment })}>
+
+            {/* Mark: absolute at left-0, sits in the pl-[3rem] gutter just
+                left of the first letter. z-0 so it recedes behind the text
+                on long lines; opacity is high enough to read clearly. */}
+            <span
+              aria-hidden="true"
+              className={cn(quoteMarkCva({ color }), "top-[-0.2em] left-0 z-0")}
+              style={{ fontSize: bgMarkSize }}
+            >
+              &ldquo;
+            </span>
+
             <p
-              className={quoteTextCva({ color, size, alignment })}
+              className={cn(quoteTextCva({ color, size }), "relative z-10")}
               {...pa('quote')}
             >
               {quote}
             </p>
+
           </blockquote>
 
           {/* Signature & attribution */}
           <figcaption className={cn(
             "mt-lg",
-            alignment === "center" && "flex flex-col items-center"
+            alignment === "center" ? "flex flex-col items-center" : "pl-12"
           )}>
             <LaserSignature
               name={attribution.name}
