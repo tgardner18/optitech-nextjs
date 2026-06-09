@@ -169,8 +169,10 @@ function ImpactHeader({
                   <div className="flex-none w-9 h-9 overflow-hidden bg-surface flex items-center justify-center">
                     {authorPhotoUrl ? (
                       <img src={authorPhotoUrl} alt={authorName} className="w-full h-full object-cover" />
-                    ) : (
+                    ) : initials ? (
                       <span className="text-label font-semibold text-fg-muted">{initials}</span>
+                    ) : (
+                      <div className="w-full h-full bg-fg/5" aria-hidden />
                     )}
                   </div>
                 )}
@@ -264,8 +266,10 @@ function AtmosphericHeader({
                   <div className="flex-none w-8 h-8 overflow-hidden bg-surface flex items-center justify-center">
                     {authorPhotoUrl ? (
                       <img src={authorPhotoUrl} alt={authorName} className="w-full h-full object-cover" />
-                    ) : (
+                    ) : initials ? (
                       <span className="text-label font-semibold text-fg-muted">{initials}</span>
+                    ) : (
+                      <div className="w-full h-full bg-fg/5" aria-hidden />
                     )}
                   </div>
                 )}
@@ -327,8 +331,10 @@ function EditorialHeader({
                     <div className="flex-none w-8 h-8 bg-canvas overflow-hidden flex items-center justify-center">
                       {authorPhotoUrl ? (
                         <img src={authorPhotoUrl} alt={authorName} className="w-full h-full object-cover" />
-                      ) : (
+                      ) : initials ? (
                         <span className="text-label font-semibold text-fg-muted">{initials}</span>
+                      ) : (
+                        <div className="w-full h-full bg-fg/5" aria-hidden />
                       )}
                     </div>
                     <div>
@@ -377,7 +383,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
   const mediaType      = videoUrl ? 'video' : imageUrl ? 'image' : null
   const authorName     = authorRef?.name
   const authorRole     = authorRef?.role
-  const authorPhotoUrl = authorRef?.photo?.url?.default ?? null
+  const authorPhotoUrl = authorRef?.photo?.url?.default || null
   const initials       = authorName ? authorInitials(authorName) : ''
 
   const headerProps: HeaderProps = {
@@ -443,24 +449,26 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
             <div className="mx-auto max-w-5xl px-md">
               <div className="grid grid-cols-1 sm:grid-cols-[3.5rem_1fr] gap-lg items-start">
 
-                {/* Photo — square crop, brand-tinted fallback monogram */}
+                {/* Photo — square crop; initials monogram or neutral box when absent */}
                 <div className="flex-none w-14 h-14 overflow-hidden border border-fg/10 bg-canvas">
                   {authorPhotoUrl ? (
                     <img
                       src={authorPhotoUrl}
-                      alt={authorName!}
+                      alt={authorName ?? ''}
                       className="w-full h-full object-cover"
                     />
-                  ) : (
+                  ) : initials ? (
                     <div className="w-full h-full bg-brand/20 flex items-center justify-center">
                       <span className="text-title font-bold text-fg select-none">
                         {initials}
                       </span>
                     </div>
+                  ) : (
+                    <div className="w-full h-full bg-fg/5" aria-hidden />
                   )}
                 </div>
 
-                {/* Text content */}
+                {/* Text content — always renders regardless of photo availability */}
                 <div>
                   <p className="text-label uppercase tracking-label text-fg-muted/60 mb-xs">
                     About the author

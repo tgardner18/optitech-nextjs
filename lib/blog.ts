@@ -89,13 +89,33 @@ const BLOG_PAGE_QUERY = `
  */
 const AUTHOR_QUERY = `
   query GetAuthor($key: String!) {
-    OT_Author(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
+    OT_Author(where: { _metadata: { key: { eq: $key }, status: { eq: "Published" } } }, limit: 1) {
       items {
         _metadata { key }
         name
         role
         bio  { html }
         photo    { url { default } }
+        linkedIn { default }
+        twitter  { default }
+      }
+    }
+  }
+`
+
+/**
+ * Fallback used when AUTHOR_QUERY throws — typically because the photo field
+ * was not present in the Content Graph schema when OT_Author was last pushed.
+ * Omitting photo lets name/role/bio still render with an initials avatar.
+ */
+const AUTHOR_QUERY_NO_PHOTO = `
+  query GetAuthorNoPhoto($key: String!) {
+    OT_Author(where: { _metadata: { key: { eq: $key }, status: { eq: "Published" } } }, limit: 1) {
+      items {
+        _metadata { key }
+        name
+        role
+        bio  { html }
         linkedIn { default }
         twitter  { default }
       }
@@ -152,7 +172,24 @@ async function fetchAuthorByKey(key: string): Promise<AuthorData | null> {
       twitter:  item.twitter?.default  ?? null,
     }
   } catch {
-    return null
+    // Primary query failed — most likely the photo field isn't in the Content
+    // Graph schema yet (OT_Author was pushed before photo was added). Retry
+    // without photo so name/role/bio still render with an initials avatar.
+    try {
+      const data = await getClient().request(AUTHOR_QUERY_NO_PHOTO, { key })
+      const item = (data as any)?.OT_Author?.items?.[0] ?? null
+      if (!item || !item.name) return null
+      return {
+        name:     item.name ?? '',
+        role:     item.role ?? undefined,
+        bio:      item.bio  ?? undefined,
+        photo:    undefined,
+        linkedIn: item.linkedIn?.default ?? null,
+        twitter:  item.twitter?.default  ?? null,
+      }
+    } catch {
+      return null
+    }
   }
 }
 
