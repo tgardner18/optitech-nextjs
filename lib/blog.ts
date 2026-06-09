@@ -89,7 +89,7 @@ const BLOG_PAGE_QUERY = `
  */
 const AUTHOR_QUERY = `
   query GetAuthor($key: String!) {
-    OT_Author(where: { _metadata: { key: { eq: $key }, status: { eq: "Published" } } }, limit: 1) {
+    OT_Author(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
       items {
         _metadata { key }
         name
@@ -110,7 +110,7 @@ const AUTHOR_QUERY = `
  */
 const AUTHOR_QUERY_NO_PHOTO = `
   query GetAuthorNoPhoto($key: String!) {
-    OT_Author(where: { _metadata: { key: { eq: $key }, status: { eq: "Published" } } }, limit: 1) {
+    OT_Author(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
       items {
         _metadata { key }
         name
