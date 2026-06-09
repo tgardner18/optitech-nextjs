@@ -76,8 +76,7 @@ function buildContentQuery(withDomain: boolean): string {
       ) {
         items {
           _track
-          _metadata { key url { default } types }
-          name
+          _metadata { key url { default } types displayName }
         }
       }
     }
@@ -101,8 +100,7 @@ function buildExperienceQuery(withDomain: boolean): string {
       ) {
         items {
           _track
-          _metadata { key url { default } }
-          name
+          _metadata { key url { default } displayName }
         }
       }
     }
@@ -220,14 +218,14 @@ export async function GET(req: NextRequest) {
         seen.add(item._metadata.key)
         results.push({
           id:     item._metadata.key,
-          title:  item.name ?? 'Untitled',
+          title:  item._metadata.displayName ?? 'Untitled',
           url:    item._metadata.url.default,
           type:   'Page',
           _track: withTrackAuth(item._track),
         })
       }
-    } catch {
-      // _Content may not be present in this schema version
+    } catch (err) {
+      console.error('[search] content query failed:', err)
     }
 
     try {
@@ -240,14 +238,14 @@ export async function GET(req: NextRequest) {
         seen.add(item._metadata.key)
         results.push({
           id:     item._metadata.key,
-          title:  item.name ?? 'Untitled',
+          title:  item._metadata.displayName ?? 'Untitled',
           url:    item._metadata.url.default,
           type:   'Page',
           _track: withTrackAuth(item._track),
         })
       }
-    } catch {
-      // _Experience may not be queryable in this schema version
+    } catch (err) {
+      console.error('[search] experience query failed:', err)
     }
   }
 
