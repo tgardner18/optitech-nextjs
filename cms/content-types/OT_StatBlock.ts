@@ -13,8 +13,10 @@ export const OT_StatBlock = contentType({
   displayName:          'Stat Block',
   description:          'Row of up to 4 metric callouts, each with a value, label, and context.',
   baseType:             '_component',
-  compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
+  compositionBehaviors: ['sectionEnabled'],
   properties: {
+    eyebrow: { type: 'string', isLocalized: true, maxLength: 60,  displayName: 'Eyebrow', group: 'OT_Content', sortOrder: 5, indexingType: 'searchable' },
+    heading: { type: 'string', isLocalized: true, maxLength: 120, displayName: 'Heading', group: 'OT_Content', sortOrder: 8, indexingType: 'searchable' },
     stats: {
       type:        'array',
       displayName: 'Stats',

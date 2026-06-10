@@ -148,6 +148,30 @@ const labelCva = cva('text-label tracking-label uppercase font-semibold', {
   defaultVariants: { color: 'brand' },
 })
 
+/** Block header eyebrow — small uppercase tag above the heading */
+const eyebrowCva = cva('text-label tracking-label uppercase font-semibold', {
+  variants: {
+    color: {
+      brand:   'text-fg-on-brand/70',
+      canvas:  'text-brand',
+      surface: 'text-brand',
+    },
+  },
+  defaultVariants: { color: 'brand' },
+})
+
+/** Block header heading — editorial headline above the stat row */
+const headingCva = cva('text-headline font-bold tracking-headline leading-headline text-balance', {
+  variants: {
+    color: {
+      brand:   'text-fg-on-brand',
+      canvas:  'text-fg',
+      surface: 'text-fg',
+    },
+  },
+  defaultVariants: { color: 'brand' },
+})
+
 const contextCva = cva('text-label font-normal', {
   variants: {
     color: {
@@ -186,11 +210,15 @@ const COUNT_MS   = 1400  // count-up duration
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export type StatBlockProps = {
+  eyebrow?:      string
+  heading?:      string
   stats:         StatItem[]
   styleOptions?: StatBlockStyleOptions
 }
 
 export default function StatBlock({
+  eyebrow,
+  heading,
   stats,
   styleOptions = {},
 }: StatBlockProps) {
@@ -424,6 +452,13 @@ export default function StatBlock({
   // so nested tokens (text-fg, text-fg-muted) resolve correctly on any site theme.
   const isDarkSurface = color === 'brand' || glass
 
+  const header = (eyebrow || heading) ? (
+    <header className="flex flex-col gap-xs mb-lg lg:mb-xl max-w-screen-md">
+      {eyebrow && <p className={eyebrowCva({ color })}>{eyebrow}</p>}
+      {heading && <h2 className={headingCva({ color })}>{heading}</h2>}
+    </header>
+  ) : null
+
   return (
     <section
       ref={ref}
@@ -431,6 +466,7 @@ export default function StatBlock({
       data-theme={isDarkSurface ? 'dark' : undefined}
       aria-label="Key metrics"
     >
+      {header}
       {glass ? (
         <div className={glassPanelCva({ columns })}>
           {grid}

@@ -66,6 +66,8 @@ export default function OT_StatBlockAdapter({ content, displaySettings = {} }: P
       data-stagger={entranceAnimation !== 'none' ? entranceAnimation : undefined}
     >
       <StatBlock
+        eyebrow={content.eyebrow ?? undefined}
+        heading={content.heading ?? undefined}
         stats={stats}
         styleOptions={styleOptions}
       />

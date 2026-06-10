@@ -813,6 +813,11 @@ function StatShowcase() {
     <>
       <BlockHeader slug="stat" />
 
+      <VariantGroup label="With header · brand · 4 columns" note="Optional eyebrow + heading sit above the stat row for a full editorial section. Both are optional — omit them for a bare metric row." />
+      <div className="border-t border-fg/5">
+        <OT_StatBlock content={{ eyebrow: 'By the numbers', heading: 'Built for teams that move fast.', stats: [{ value: '70%', label: 'Less time to publish', context: 'vs. their previous CMS' }, { value: '5x', label: 'More reuse of content', context: 'across channels & markets' }, { value: '40+', label: 'Locales supported', context: 'from one content model' }, { value: '99.99%', label: 'Delivery uptime', context: 'edge-distributed API' }] } as any} displaySettings={{ color: 'brand', columns: '4', animate: false }} />
+      </div>
+
       <VariantGroup label="Color schemes · 3 columns · static" note="Brand is the committed default. Canvas and surface for lighter editorial contexts." />
       {(['brand', 'canvas', 'surface'] as const).map(color => (
         <div key={color} className="border-t border-fg/5">
