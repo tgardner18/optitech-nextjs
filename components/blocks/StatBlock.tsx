@@ -89,22 +89,6 @@ const sectionCva = cva('px-md lg:px-lg', {
   defaultVariants: { color: 'brand', columns: 3 },
 })
 
-/**
- * Glass inner panel — carries the content padding when glass is enabled.
- * The outer section drops to a tighter frame gap so the bg-color peeks
- * around the edges of the glass, creating a layered, elevated look.
- */
-const glassPanelCva = cva('bg-glass rounded-none', {
-  variants: {
-    columns: {
-      2: 'px-md lg:px-xl py-sm lg:py-md',
-      3: 'px-md lg:px-xl py-sm lg:py-md',
-      4: 'px-md lg:px-lg py-xs lg:py-sm',
-    },
-  },
-  defaultVariants: { columns: 3 },
-})
-
 const gridCva = cva('grid', {
   variants: {
     columns: {
@@ -306,15 +290,15 @@ export default function StatBlock({
   const mobileBorderClass = color === 'brand' ? 'border-fg-on-brand/15' : 'border-fg/10'
   const dividerBgClass    = color === 'brand' ? 'bg-fg-on-brand/15'     : 'bg-fg/10'
 
-  // When glass is on, outer section uses tight frame padding; glass panel
-  // carries the full content padding via glassPanelCva.
-  const outerClass = cn(
-    sectionCva({ color, columns }),
-    glass && 'py-xs lg:py-sm',
-  )
+  // Extra bottom room so the stats don't sit flush against the section's
+  // bottom edge — pairs with the header's mb above the grid for balance.
+  const outerClass = cn(sectionCva({ color, columns }), 'pb-lg lg:pb-xl')
 
+  // Glass: each stat is its own frosted card separated by a gap (the section
+  // color shows through the gaps). Non-glass: a single continuous row with
+  // hairline dividers between items.
   const grid = (
-    <ul className={gridCva({ columns })} role="list">
+    <ul className={cn(gridCva({ columns }), glass && 'gap-sm md:gap-md')} role="list">
       {stats.map((stat, i) => {
         const p         = parsed[i]
         const staggerMs = i * STAGGER_MS
@@ -376,15 +360,20 @@ export default function StatBlock({
           <li
             key={i}
             className={cn(
-              'relative overflow-hidden flex flex-col py-md md:py-lg',
-              'px-md md:pl-xl md:pr-0',
-              // Mobile horizontal separator
-              `border-t ${mobileBorderClass} first:border-t-0 md:border-t-0`,
+              'relative overflow-hidden flex flex-col',
+              glass
+                // Frosted card: symmetric padding, no dividers — gaps separate them.
+                ? 'bg-glass p-md md:p-lg'
+                : [
+                    'py-md md:py-lg px-md md:pl-xl md:pr-0',
+                    // Mobile horizontal separator
+                    `border-t ${mobileBorderClass} first:border-t-0 md:border-t-0`,
+                  ],
             )}
             style={itemStyle}
           >
-            {/* ── Vertical column divider — desktop, not on first item ─── */}
-            {i > 0 && (
+            {/* ── Vertical column divider — desktop, continuous row only ─── */}
+            {!glass && i > 0 && (
               <span
                 aria-hidden="true"
                 className={cn(
@@ -453,14 +442,7 @@ export default function StatBlock({
   const isDarkSurface = color === 'brand' || glass
 
   const header = (eyebrow || heading) ? (
-    <header
-      className={cn(
-        'flex flex-col gap-xs mb-lg lg:mb-xl max-w-screen-md',
-        // Glass mode tightens the section padding to a frame gap, so add the
-        // header's own top breathing room back in.
-        glass && 'pt-md lg:pt-lg',
-      )}
-    >
+    <header className="flex flex-col gap-xs mb-lg lg:mb-xl max-w-screen-md">
       {eyebrow && <p className={eyebrowCva({ color })}>{eyebrow}</p>}
       {heading && <h2 className={headingCva({ color })}>{heading}</h2>}
     </header>
@@ -474,13 +456,7 @@ export default function StatBlock({
       aria-label="Key metrics"
     >
       {header}
-      {glass ? (
-        <div className={glassPanelCva({ columns })}>
-          {grid}
-        </div>
-      ) : (
-        grid
-      )}
+      {grid}
     </section>
   )
 }

@@ -841,6 +841,11 @@ function StatShowcase() {
         <OT_StatBlock content={{ stats: [{ value: '40%', label: 'Faster deployment', context: 'vs. baseline', icon: 'zap' }, { value: '99.99%', label: 'Uptime SLA', context: 'across all regions', icon: 'shield' }, { value: '2M+', label: 'Active users', context: 'and growing', icon: 'users' }] } as any} displaySettings={{ color: 'brand', columns: '3', showIcons: true, animate: false }} />
       </div>
 
+      <VariantGroup label="Glass · per-item cards · brand · 4 columns" note="Glass overlay frosts each stat into its own card with a gap between them — the section color shows through. Dividers are dropped in favour of the gaps." />
+      <div className="border-t border-fg/5">
+        <OT_StatBlock content={{ eyebrow: 'By the numbers', heading: 'Built for teams that move fast.', stats: [{ value: '70%', label: 'Less time to publish', context: 'vs. their previous CMS' }, { value: '5x', label: 'More reuse of content', context: 'across channels & markets' }, { value: '40+', label: 'Locales supported', context: 'from one content model' }, { value: '99.99%', label: 'Delivery uptime', context: 'edge-distributed API' }] } as any} displaySettings={{ color: 'brand', columns: '4', glass: true, animate: false }} />
+      </div>
+
       <VariantGroup label="Animated · brand · 3 columns · icons on" note="Scroll into view to trigger. Sequence: stagger slide-up → dividers draw in → numbers count 0→target over 1.4s → completion pulse." />
       <div className="border-t border-fg/5">
         <OT_StatBlock content={{ stats: [{ value: '40%', label: 'Faster deployment', context: 'vs. baseline', icon: 'zap' }, { value: '99.99%', label: 'Uptime SLA', context: 'across all regions', icon: 'shield' }, { value: '2M+', label: 'Active users', context: 'and growing', icon: 'users' }] } as any} displaySettings={{ color: 'brand', columns: '3', showIcons: true, animate: true }} />
