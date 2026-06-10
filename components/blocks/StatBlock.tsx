@@ -398,7 +398,7 @@ export default function StatBlock({
                 )}
                 style={iconWatermarkStyle}
               >
-                <Icon size={96} strokeWidth={1.25} />
+                <Icon size={64} strokeWidth={1.25} />
               </span>
             )}
 
