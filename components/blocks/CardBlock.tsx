@@ -263,12 +263,14 @@ export default function CardBlock({
               className="object-cover"
             />
           </div>
-          {/* Scrim: dense at the bottom where text lives, fades to clear at top */}
+          {/* Grounding gradient: a gentle full-card wash so the bottom edge isn't a
+              hard photo cut. The legibility floor is the .card-bg-frost panel behind
+              the text (below) — this layer just compounds with it. */}
           <div
             className="absolute inset-0 z-1"
             style={{
               background:
-                "linear-gradient(to top, oklch(12% 0.012 195 / 0.92) 0%, oklch(12% 0.012 195 / 0.5) 45%, transparent 100%)",
+                "linear-gradient(to top, oklch(12% 0.012 195 / 0.6) 0%, oklch(12% 0.012 195 / 0.22) 50%, transparent 100%)",
             }}
           />
         </>
@@ -317,16 +319,24 @@ export default function CardBlock({
 
       {/* ── Content ───────────────────────────────────────────────────────────── */}
       {isBg ? (
-        // Background: all content anchored to the bottom of the scrim
-        <div className={cn("relative z-2 flex flex-col flex-1 justify-end gap-sm", padding)}>
-          {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
-          <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-          {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
-          {cta && (
-            <div className="pt-xs" {...pa('ctaLabel')}>
-              <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
-            </div>
-          )}
+        // Background: content box sizes to its content and anchors to the bottom
+        // (mt-auto). The frost panel fills this box only — the legibility tint
+        // hugs the text, leaving the upper photo crisp. Text wrapper is relative
+        // so it paints above the frost.
+        <div className={cn("relative z-2 mt-auto flex flex-col", padding)}>
+          <div aria-hidden className="absolute inset-0 card-bg-frost" />
+          <div className="relative flex flex-col gap-sm">
+            {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
+            <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
+            {/* Brighter than the muted dark-scheme body: text sits over a photo,
+                so it needs more luminance to clear AA against the frosted floor. */}
+            {description && <div className="text-body leading-body text-fg/85" {...pa('Description')}><RichText content={description} /></div>}
+            {cta && (
+              <div className="pt-xs" {...pa('ctaLabel')}>
+                <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
+              </div>
+            )}
+          </div>
         </div>
       ) : isFloat ? (
         // Float: content box slides up over the image bottom with an explicit background

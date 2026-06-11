@@ -1252,6 +1252,46 @@ body {
     0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
 }
 
+/* ── Background-image card frost ──────────────────────────────────────────────
+ * The legibility floor behind text on imageStyle="background" cards. Sits as an
+ * absolute layer inside the bottom-anchored content box (covers only the text +
+ * its padding, never the whole card). Three jobs:
+ *   1. backdrop-filter blur — softens the busy photo detail under the text. This
+ *      is what lets the tint stay slight: readability comes from killing high-
+ *      frequency texture, not from a heavy dark bar.
+ *   2. a low mineral tint (canvas hue at low chroma — never neutral black) that
+ *      compounds with the card's grounding gradient to clear WCAG AA.
+ *   3. a mask-image feather on the top edge so the panel dissolves into the
+ *      photo instead of ending in a hard rectangle seam.
+ * Tint uses the --ot-canvas hue family so it follows CMS theme overrides. */
+.card-bg-frost {
+  background: linear-gradient(
+    to top,
+    oklch(12% 0.012 195 / 0.52) 0%,
+    oklch(12% 0.012 195 / 0.34) 55%,
+    oklch(12% 0.012 195 / 0.12) 100%
+  );
+  backdrop-filter: blur(6px) saturate(115%);
+  -webkit-backdrop-filter: blur(6px) saturate(115%);
+  -webkit-mask-image: linear-gradient(to top, #000 58%, transparent 100%);
+          mask-image: linear-gradient(to top, #000 58%, transparent 100%);
+}
+/* Kinetic deepen: the frost gains a touch more tint as the card is hovered,
+ * pulling focus to the text. Guarded so reduced-motion users see no change. */
+@media (prefers-reduced-motion: no-preference) {
+  .card-bg-frost {
+    transition: background 220ms var(--ot-ease-quick);
+  }
+  .group:hover .card-bg-frost {
+    background: linear-gradient(
+      to top,
+      oklch(12% 0.012 195 / 0.64) 0%,
+      oklch(12% 0.012 195 / 0.44) 55%,
+      oklch(12% 0.012 195 / 0.16) 100%
+    );
+  }
+}
+
 /* ── Resource Library grid card ───────────────────────────────────────────────
  * Chromatic lift on hover (translateY + shadow intensification) plus a bottom-
  * to-top fill on the brand band that deepens to brand-hover. The fill uses
