@@ -92,9 +92,9 @@ const sectionCva = cva('px-md lg:px-lg', {
 const gridCva = cva('grid', {
   variants: {
     columns: {
-      2: 'grid-cols-1 md:grid-cols-2',
-      3: 'grid-cols-1 md:grid-cols-3',
-      4: 'grid-cols-1 md:grid-cols-4',
+      2: 'grid-cols-1 sm:grid-cols-2',
+      3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+      4: 'grid-cols-2 md:grid-cols-4',
     },
   },
   defaultVariants: { columns: 3 },
@@ -102,10 +102,12 @@ const gridCva = cva('grid', {
 
 /**
  * Number typography scales per column count.
- * 2–3 columns: full display scale — heroic presence.
- * 4 columns: intermediate scale — still prominent, fits four-up.
+ * Light weight (300) at display scale — editorial inversion: large but delicate.
+ * The weight contrast between the gossamer number and the bold uppercase label
+ * is the visual moment. Slightly tighter tracking than the system default keeps
+ * the numerals crisp rather than floaty at low weight.
  */
-const valueCva = cva('font-extrabold leading-none tabular-nums', {
+const valueCva = cva('font-light leading-none tabular-nums', {
   variants: {
     color: {
       brand:   'text-fg-on-brand',
@@ -113,9 +115,9 @@ const valueCva = cva('font-extrabold leading-none tabular-nums', {
       surface: 'text-fg',
     },
     columns: {
-      2: 'text-display tracking-display',
-      3: 'text-display tracking-display',
-      4: 'text-[clamp(2rem,4.5vw,3.75rem)] tracking-[-0.025em]',
+      2: 'text-display tracking-[-0.035em]',
+      3: 'text-display tracking-[-0.035em]',
+      4: 'text-[clamp(2.5rem,5.5vw,4.75rem)] tracking-[-0.035em]',
     },
   },
   defaultVariants: { color: 'brand', columns: 3 },
@@ -167,18 +169,13 @@ const contextCva = cva('text-label font-normal', {
   defaultVariants: { color: 'brand' },
 })
 
-/**
- * Icon watermark — color only; opacity is animated via inline style.
- * Renders as an oversized ghost icon (96px, strokeWidth 0.75) positioned
- * absolutely in the cell background. Acts as atmospheric texture rather
- * than a functional label — the number is always the hero.
- */
-const iconWatermarkCva = cva('', {
+/** Icon badge — small inline marker anchored to the label row. */
+const iconBadgeCva = cva('shrink-0', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand',
-      canvas:  'text-brand',
-      surface: 'text-brand',
+      brand:   'text-fg-on-brand/60',
+      canvas:  'text-brand/70',
+      surface: 'text-brand/70',
     },
   },
   defaultVariants: { color: 'brand' },
@@ -338,20 +335,7 @@ export default function StatBlock({
             }
           : {}
 
-        // ── Watermark icon: scale-settle from enlarged + invisible ────────
-        // Fires slightly after column entrance, well before count-up completes.
-        // The scale shrink (1.15 → 1.0) gives the icon a sense of gravity —
-        // it breathes into place rather than popping in.
-        const iconWatermarkStyle: React.CSSProperties = shouldAnim
-          ? {
-              opacity:    entered ? 0.18 : 0,
-              transform:  entered ? 'none' : 'scale(1.15)',
-              transition: [
-                `opacity 1.1s var(--ot-ease-kinetic) ${staggerMs + 180}ms`,
-                `transform 1.1s var(--ot-ease-kinetic) ${staggerMs + 180}ms`,
-              ].join(', '),
-            }
-          : { opacity: 0.18 }
+        // (watermark icon removed — icons now render inline with the label)
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
         const disp = displayFor(p)
@@ -366,8 +350,11 @@ export default function StatBlock({
                 ? 'bg-glass p-md md:p-lg'
                 : [
                     'py-md md:py-lg px-md md:pl-xl md:pr-0',
-                    // Mobile horizontal separator
-                    `border-t ${mobileBorderClass} first:border-t-0 md:border-t-0`,
+                    // Mobile horizontal separator — 4-col uses 2×2 grid so suppress
+                    // the border on the 2nd item (it shares a row with item 1).
+                    columns === 4
+                      ? `border-t ${mobileBorderClass} first:border-t-0 [&:nth-child(2)]:border-t-0 md:border-t-0`
+                      : `border-t ${mobileBorderClass} first:border-t-0 md:border-t-0`,
                   ],
             )}
             style={itemStyle}
@@ -384,24 +371,6 @@ export default function StatBlock({
               />
             )}
 
-            {/* ── Watermark icon (atmospheric background texture) ──────────
-                Oversized, gossamer-thin stroke, very low opacity.
-                Breathes in from slightly enlarged — settles into place.
-                Hidden on mobile (single-column separators handle rhythm there).
-            ─────────────────────────────────────────────────────────────── */}
-            {showIcons && Icon && (
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'absolute right-md top-md pointer-events-none hidden md:block',
-                  iconWatermarkCva({ color }),
-                )}
-                style={iconWatermarkStyle}
-              >
-                <Icon size={64} strokeWidth={1.25} />
-              </span>
-            )}
-
             {/* ── Value (count-up) ──────────────────────────────────────── */}
             <p
               className={cn(
@@ -414,11 +383,29 @@ export default function StatBlock({
             </p>
             <span className="sr-only">{stat.value}</span>
 
-            {/* ── Label ─────────────────────────────────────────────────── */}
+            {/* ── Hairline separator — architectural rule between value and label group */}
+            <span
+              aria-hidden="true"
+              className={cn(
+                'block h-px w-8 mt-sm shrink-0',
+                color === 'brand' ? 'bg-fg-on-brand/20' : 'bg-brand/25',
+              )}
+              style={labelStyle}
+            />
+
+            {/* ── Label (with optional inline icon) ────────────────────── */}
             <p
-              className={cn(labelCva({ color }), 'mt-xs')}
+              className={cn(labelCva({ color }), 'mt-sm flex items-center gap-xs')}
               style={labelStyle}
             >
+              {showIcons && Icon && (
+                <Icon
+                  aria-hidden="true"
+                  className={iconBadgeCva({ color })}
+                  size={13}
+                  strokeWidth={2}
+                />
+              )}
               {stat.label}
             </p>
 
