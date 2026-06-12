@@ -96,9 +96,10 @@ export default function CalloutBlockClient({
   const role         = ariaRole(intent)
   const maxWidthWrapper = MAX_WIDTH_WRAPPER[maxWidth] ?? ''
 
-  const fg     = iVar(intent, 'fg')
-  const bg     = iVar(intent, 'bg')
-  const border = iVar(intent, 'border')
+  const fg        = iVar(intent, 'fg')
+  const bg        = iVar(intent, 'bg')
+  const border    = iVar(intent, 'border')
+  const iconColor = isBrand ? 'white' : fg
 
   // ── Dismiss animation wrappers ────────────────────────────────────────────
   // Two-phase exit: content sweeps right+fades (220ms), then height collapses (280ms).
@@ -213,7 +214,7 @@ export default function CalloutBlockClient({
         {/* Left: icon (18px inline) + heading */}
         <div className={cn('flex items-center gap-sm flex-1 min-w-0', alignment === 'center' && 'justify-center')}>
           {IconComp && (
-            <IconComp size={18} strokeWidth={1.75} aria-hidden style={{ color: fg, flexShrink: 0 }} />
+            <IconComp size={18} strokeWidth={1.75} aria-hidden style={{ color: iconColor, flexShrink: 0 }} />
           )}
           <p className={cn('text-[15px] font-semibold leading-snug', headingClass)}>{heading}</p>
         </div>
@@ -286,7 +287,7 @@ export default function CalloutBlockClient({
     >
       {/* Icon column: 32px, left-anchored, vertically centered with text column */}
       {IconComp && (
-        <div className="shrink-0 self-center" style={{ color: fg }}>
+        <div className="shrink-0 self-center" style={{ color: iconColor }}>
           <IconComp size={32} strokeWidth={1.5} aria-hidden />
         </div>
       )}
