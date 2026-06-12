@@ -344,7 +344,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <div className={cn("card-rich", T.description[s])} {...pa('Description')}><RichText content={description} /></div>}
+            {description && <div className={cn("card-rich", T.description[s])} data-scheme={s} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>
@@ -358,7 +358,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <div className={cn("card-rich", T.description[s])} {...pa('Description')}><RichText content={description} /></div>}
+            {description && <div className={cn("card-rich", T.description[s])} data-scheme={s} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { Maximize2, X } from "lucide-react";
 
@@ -266,7 +267,13 @@ export default function ImageBlock({
       </figure>
 
       {/* ── Lightbox overlay ────────────────────────────────────────────────── */}
-      {lightbox && lightboxOpen && (
+      {/* Portaled to document.body: composition columns retain a transform after
+          their stagger animation (animation-fill-mode: both holds translateY(0)),
+          and any non-none transform makes that ancestor the containing block for
+          position:fixed descendants — which would trap this overlay inside the
+          column instead of covering the viewport. The portal escapes all
+          transformed/filtered ancestors so `fixed` resolves against the viewport. */}
+      {lightbox && lightboxOpen && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -304,7 +311,8 @@ export default function ImageBlock({
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

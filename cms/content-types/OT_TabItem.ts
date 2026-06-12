@@ -1,4 +1,5 @@
 import { contentType } from '@optimizely/cms-sdk'
+import { ICON_ENUM_WITH_NONE } from '../display-templates/_shared/iconChoices'
 
 export const OT_TabItem = contentType({
   key:         'OT_TabItem',
@@ -21,23 +22,10 @@ export const OT_TabItem = contentType({
       displayName: 'Tab Icon',
       description: 'Optional icon shown alongside the tab label.',
       format:      'selectOne',
-      enum: [
-        { value: 'none',       displayName: 'None' },
-        { value: 'zap',        displayName: 'Zap' },
-        { value: 'arrowRight', displayName: 'Arrow Right' },
-        { value: 'sparkles',   displayName: 'Sparkles' },
-        { value: 'rocket',     displayName: 'Rocket' },
-        { value: 'star',       displayName: 'Star' },
-        { value: 'play',       displayName: 'Play' },
-        { value: 'users',      displayName: 'Users' },
-        { value: 'layers',     displayName: 'Layers' },
-        { value: 'settings',   displayName: 'Settings' },
-        { value: 'barChart',   displayName: 'Bar Chart' },
-        { value: 'shield',     displayName: 'Shield' },
-        { value: 'globe',      displayName: 'Globe' },
-        { value: 'code',       displayName: 'Code' },
-        { value: 'package',    displayName: 'Package' },
-      ],
+      // Full canonical icon library, alphabetically sorted — shared with the
+      // display-template icon pickers (Stat, Callout, FeatureGrid, Button) via
+      // a single source of truth so every icon selector offers the same set.
+      enum:        ICON_ENUM_WITH_NONE,
       group:     'OT_Content',
       sortOrder: 20,
       // Not localized — icon choice is structural, not language-dependent

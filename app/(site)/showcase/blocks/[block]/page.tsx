@@ -458,55 +458,92 @@ function QuoteShowcase() {
 }
 
 // ─── Rich Text ────────────────────────────────────────────────────────────────
+//
+// RichText renders Slate.js JSON ({ type:'richText', children:[…] }), NOT an HTML
+// string — passing { html } leaves the preview blank. These small builders keep
+// the dummy content readable while producing the exact node shape the SDK expects.
+// (See cms/components/OT_RichTextBlock.tsx → content.content?.json.)
 
-const RT_FULL = `
-<h2>Platform intelligence, accelerated.</h2>
-<p>OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it. We closed it.</p>
-<p>The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems.</p>
-<h3>Statistical confidence, not gut instinct</h3>
-<p>Decisions are made at the edges of your system, not in a committee room three weeks later. OptiTech gives your engineering and product teams a shared language for running experiments with <strong>statistical confidence</strong> backed by real signal.</p>
-<ul>
-  <li>Deploy changes to targeted segments in minutes, not sprints.</li>
-  <li>Run concurrent experiments without interaction effects.</li>
-  <li>Roll back any flag with a single API call.</li>
-</ul>
-<blockquote><p>We moved from quarterly experiments to continuous iteration. OptiTech is the infrastructure that made that possible.</p></blockquote>
-`
+type RTText = { text: string; bold?: boolean; italic?: boolean }
+type RTNode = { type: string; children: Array<RTNode | RTText> }
+const txt  = (text: string): RTText => ({ text })
+const bold = (text: string): RTText => ({ text, bold: true })
+const para = (...kids: Array<RTText | string>): RTNode => ({ type: 'paragraph',     children: kids.map(k => (typeof k === 'string' ? txt(k) : k)) })
+const h2   = (s: string): RTNode => ({ type: 'heading-two',   children: [txt(s)] })
+const h3   = (s: string): RTNode => ({ type: 'heading-three', children: [txt(s)] })
+const ul   = (...items: string[]): RTNode => ({ type: 'bulleted-list', children: items.map(s => ({ type: 'list-item', children: [txt(s)] })) })
+const quote = (s: string): RTNode => ({ type: 'quote', children: [{ type: 'paragraph', children: [txt(s)] }] })
+const rule = (): RTNode => ({ type: 'hr', children: [txt('')] })
+const doc  = (...nodes: RTNode[]) => ({ type: 'richText', children: nodes })
 
-const RT_PROSE = `
-<p>OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it.</p>
-<p>The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems.</p>
-<p>Decisions are made at the edges of your system. OptiTech gives your engineering and product teams a shared language for running experiments with statistical confidence backed by real signal.</p>
-`
+const RT_FULL = doc(
+  h2('Platform intelligence, accelerated.'),
+  para('OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it. We closed it.'),
+  para('The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems.'),
+  h3('Statistical confidence, not gut instinct'),
+  para('Decisions are made at the edges of your system, not in a committee room three weeks later. OptiTech gives your engineering and product teams a shared language for running experiments with ', bold('statistical confidence'), ' backed by real signal.'),
+  ul(
+    'Deploy changes to targeted segments in minutes, not sprints.',
+    'Run concurrent experiments without interaction effects.',
+    'Roll back any flag with a single API call.',
+  ),
+  quote('We moved from quarterly experiments to continuous iteration. OptiTech is the infrastructure that made that possible.'),
+)
 
-const RT_STRUCTURED = `
-<h2>Why OptiTech</h2>
-<p>Speed that compounds. The faster you can measure, the faster you can iterate.</p>
-<h3>For engineering teams</h3>
-<p>Feature flags with a full audit trail. Targeted rollouts. Statistical validity checks built into the platform.</p>
-<h3>For product teams</h3>
-<p>Experiment design tools that connect directly to your data. No more waiting three weeks for results from a release you've already moved past.</p>
-`
+const RT_PROSE = doc(
+  para('OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it.'),
+  para('The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems.'),
+  para('Decisions are made at the edges of your system. OptiTech gives your engineering and product teams a shared language for running experiments with statistical confidence backed by real signal.'),
+)
+
+const RT_STRUCTURED = doc(
+  h2('Why OptiTech'),
+  para('Speed that compounds. The faster you can measure, the faster you can iterate.'),
+  h3('For engineering teams'),
+  para('Feature flags with a full audit trail. Targeted rollouts. Statistical validity checks built into the platform.'),
+  h3('For product teams'),
+  para('Experiment design tools that connect directly to your data. No more waiting three weeks for results from a release you have already moved past.'),
+)
+
+// Long-form article: multiple chapters, a section break, a list and a quote.
+// Feeds the broadsheet-column, divider, numbered-chapter and scroll-reveal demos.
+const RT_ARTICLE = doc(
+  h2('The case for continuous experimentation'),
+  para('OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it. We closed it, then we kept closing it.'),
+  para('The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems, and it does so in language an engineer and a product lead can read the same way.'),
+  para('Decisions are made at the edges of your system, not in a committee room three weeks later. The result is a shorter loop between a hypothesis and the evidence that settles it.'),
+  rule(),
+  h2('Confidence, not gut instinct'),
+  para('Every rollout carries a full audit trail. Targeting is expressed as a query, not a checkbox, and the statistical validity checks run continuously rather than at the end of a sprint.'),
+  ul(
+    'Deploy changes to targeted segments in minutes, not sprints.',
+    'Run concurrent experiments without interaction effects.',
+    'Roll back any flag with a single API call.',
+  ),
+  quote('We moved from quarterly experiments to continuous iteration. OptiTech is the infrastructure that made that possible.'),
+  h2('Where the signal lives'),
+  para('The patterns you need are rarely in the dashboard you built last quarter. They live in the seams between deployment and behaviour, and that is exactly where OptiTech listens.'),
+)
 
 function RichTextShowcase() {
   const colorSchemes: Array<{ content: any; displaySettings: DS }> = [
-    { content: { content: { html: RT_FULL } }, displaySettings: { color: 'canvas',  size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
-    { content: { content: { html: RT_FULL } }, displaySettings: { color: 'surface', size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
-    { content: { content: { html: RT_FULL } }, displaySettings: { color: 'brand',   size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'canvas',  size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'surface', size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'brand',   size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
   ]
 
   const treatments = [
-    { label: 'Standard',           note: 'Faithful prose rendering (default)',                           content: { content: { html: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — p first',     note: 'First paragraph as editorial deck: larger, weight 300, teal',  content: { content: { html: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — h2 first',    note: 'Same treatment when content starts with a heading',            content: { content: { html: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Dropcap — p first',  note: 'Oversized first letter in brand teal with chromatic glow',     content: { content: { html: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Dropcap — h2 first', note: 'Same treatment when content starts with a heading',            content: { content: { html: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Standard',           note: 'Faithful prose rendering (default)',                           content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Lead — p first',     note: 'First paragraph as editorial deck: larger, weight 300, teal',  content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Lead — h2 first',    note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Dropcap — p first',  note: 'Oversized first letter in brand teal with chromatic glow',     content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Dropcap — h2 first', note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
   ]
 
   const options: Array<{ label: string; note: string; content: any; displaySettings: DS }> = [
-    { label: 'Ruled headings',  note: '1px teal rule above h2 and h3',                            content: { content: { html: RT_STRUCTURED } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
-    { label: 'Compact + ruled', note: 'Tighter scale for shorter sections',                        content: { content: { html: RT_STRUCTURED } }, displaySettings: { color: 'surface', size: 'compact',   ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
-    { label: 'Center aligned',  note: 'Column centred within the section, for opening statements', content: { content: { html: RT_PROSE    } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: false, alignment: 'center', treatment: 'lead'     } },
+    { label: 'Ruled headings',  note: '1px teal rule above h2 and h3',                            content: { content: { json: RT_STRUCTURED } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
+    { label: 'Compact + ruled', note: 'Tighter scale for shorter sections',                        content: { content: { json: RT_STRUCTURED } }, displaySettings: { color: 'surface', size: 'compact',   ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
+    { label: 'Center aligned',  note: 'Column centred within the section, for opening statements', content: { content: { json: RT_PROSE    } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: false, alignment: 'center', treatment: 'lead'     } },
   ]
 
   return (
@@ -542,6 +579,76 @@ function RichTextShowcase() {
           <OT_RichTextBlock content={item.content as any} displaySettings={item.displaySettings} />
         </div>
       ))}
+
+      {/* ── Reading-surface treatments: what RichText does that PrimaryText can't ── */}
+      <VariantGroup
+        label="Broadsheet columns · long-form article"
+        note="CSS multi-column flow with a tokenized rule. Justified + hyphenated; opening heading spans the full width. Collapses to one column when the measure narrows — resize the window."
+      />
+      {([
+        { label: 'columns: "dual"',   note: 'Two columns', cols: 'dual'   as const },
+        { label: 'columns: "triple"', note: 'Three columns, tighter measure', cols: 'triple' as const },
+      ]).map(item => (
+        <div key={item.cols} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { json: RT_ARTICLE } } as any}
+            displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', columns: item.cols }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Print grounds · background texture"
+        note="A ground sits behind the prose; it is texture, not a fill. Tokenized, so it recalibrates under a CMS theme override and switches to a light tint on brand."
+      />
+      {([
+        { label: 'ground: "ruled"',  note: 'Ledger baseline ruling, locked to the body rhythm', color: 'canvas'  as const, ground: 'ruled'  as const },
+        { label: 'ground: "grain"',  note: 'Halftone dot field — screenprint texture',          color: 'surface' as const, ground: 'grain'  as const },
+        { label: 'ground: "framed"', note: 'Bordered editorial page with a masthead rule',       color: 'canvas'  as const, ground: 'framed' as const },
+        { label: 'ground: "grain" · brand', note: 'On a brand fill the pattern flips to a light tint', color: 'brand' as const, ground: 'grain' as const },
+      ]).map(item => (
+        <div key={item.label} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { json: RT_PROSE } } as any}
+            displaySettings={{ color: item.color, size: 'editorial', alignment: 'left', ground: item.ground }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Editorial section breaks · numbered chapters · incipit"
+        note="Retro print register. The <hr> becomes a type ornament; h2s auto-number as chapters; the incipit sets the opening line in tracked small-caps."
+      />
+      {([
+        { label: 'dividers: "ornament"',     note: 'Fleuron (❧) replaces the rule between sections',         ds: { dividers: 'ornament' } },
+        { label: 'dividers: "asterism"',     note: 'Asterism (⁂) section break',                            ds: { dividers: 'asterism' } },
+        { label: 'numberedHeadings: true',   note: 'CSS-counter chapter numbers in tracked mono accent',     ds: { numberedHeadings: true } },
+        { label: 'ornament + numbered',      note: 'Combined — the full magazine register',                  ds: { dividers: 'ornament', numberedHeadings: true } },
+        { label: 'treatment: "incipit"',     note: 'Opening line in tracked small-caps (distinct from dropcap/lead)', ds: { treatment: 'incipit' } },
+      ] as Array<{ label: string; note: string; ds: DS }>).map(item => (
+        <div key={item.label} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { json: RT_ARTICLE } } as any}
+            displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', ...item.ds }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Scroll reveal · reading cadence"
+        note="reveal: &ldquo;cascade&rdquo; — each block rises and fades as it enters the viewport. Pure CSS (animation-timeline: view()); the scroll position is the stagger. Scroll the page to see it; reduced-motion and unsupported browsers render it static and fully visible."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='reveal: "cascade"' note="Combined here with framed ground and numbered chapters" />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_ARTICLE } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', reveal: 'cascade', ground: 'framed', numberedHeadings: true }}
+        />
+      </div>
+
       <div className="pb-xl" />
     </>
   )

@@ -1226,6 +1226,180 @@ body {
   font-weight: 600;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+ * RICH TEXT — READING-SURFACE TREATMENTS
+ *
+ * These are the moves that set RichTextBlock apart from PrimaryTextBlock: every
+ * one of them only has meaning on flowing, multi-element long-form copy. A single
+ * headline cannot pour into columns, carry a running rule between chapters, or
+ * reveal paragraph-by-paragraph on scroll. PrimaryText is the statement; this is
+ * the reading surface. All colors resolve from --ot-brand / --ot-accent / --ot-fg
+ * so they recalibrate under a CMS theme override.
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Broadsheet columns ──────────────────────────────────────────────────────
+ * column-width + column-count together: the browser shows up to N columns but
+ * never narrower than the width, so the layout collapses to one column on small
+ * measures with no breakpoint wiring. Justified + hyphenated for print authenticity.
+ * Headings/quotes/media are kept whole; an opening heading spans the full width
+ * so it reads as the article title rather than a stranded column-top. */
+[data-rich-text][data-columns="dual"],
+[data-rich-text][data-columns="triple"] {
+  column-gap: var(--ot-space-lg);
+  column-rule: 1px solid oklch(from var(--ot-brand) l c h / 0.18);
+  text-align: justify;
+  hyphens: auto;
+}
+[data-rich-text][data-columns="dual"]  { column-width: 22rem; column-count: 2; }
+[data-rich-text][data-columns="triple"] { column-width: 17rem; column-count: 3; }
+[data-rich-text][data-columns="dual"] :is(h1, h2, h3, h4, blockquote, pre, figure, img, hr),
+[data-rich-text][data-columns="triple"] :is(h1, h2, h3, h4, blockquote, pre, figure, img, hr) {
+  break-inside: avoid;
+}
+[data-rich-text][data-columns="dual"] > :is(h1, h2):first-child,
+[data-rich-text][data-columns="triple"] > :is(h1, h2):first-child {
+  column-span: all;
+}
+[data-rich-text][data-columns="dual"] li,
+[data-rich-text][data-columns="triple"] li {
+  text-align: left;
+}
+[data-rich-text][data-color="brand"][data-columns="dual"],
+[data-rich-text][data-color="brand"][data-columns="triple"] {
+  column-rule-color: oklch(97% 0.005 195 / 0.22);
+}
+
+/* ── Print grounds ───────────────────────────────────────────────────────────
+ * Background effects behind the prose. ruled = ledger baseline ruling locked to
+ * the body rhythm; grain = halftone dot field; framed = bordered editorial page
+ * with a masthead rule along the top edge (a top border, never a side stripe). */
+[data-rich-text][data-ground="ruled"] {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.65rem - 1px),
+    oklch(from var(--ot-brand) l c h / 0.08) calc(1.65rem - 1px),
+    oklch(from var(--ot-brand) l c h / 0.08) 1.65rem
+  );
+  padding: var(--ot-space-md) var(--ot-space-md);
+}
+[data-rich-text][data-ground="grain"] {
+  background-image: radial-gradient(
+    oklch(from var(--ot-brand) l c h / 0.11) 1px,
+    transparent 1.5px
+  );
+  background-size: 6px 6px;
+  padding: var(--ot-space-md) var(--ot-space-md);
+}
+[data-rich-text][data-ground="framed"] {
+  border: 1px solid oklch(from var(--ot-brand) l c h / 0.22);
+  border-top: 3px solid oklch(from var(--ot-brand) l c h / 0.50);
+  padding: var(--ot-space-lg);
+}
+/* On a brand fill the brand-tinted patterns vanish — switch to a light tint. */
+[data-rich-text][data-color="brand"][data-ground="ruled"] {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.65rem - 1px),
+    oklch(97% 0.005 195 / 0.12) calc(1.65rem - 1px),
+    oklch(97% 0.005 195 / 0.12) 1.65rem
+  );
+}
+[data-rich-text][data-color="brand"][data-ground="grain"] {
+  background-image: radial-gradient(oklch(97% 0.005 195 / 0.16) 1px, transparent 1.5px);
+}
+[data-rich-text][data-color="brand"][data-ground="framed"] {
+  border-color: oklch(97% 0.005 195 / 0.25);
+  border-top-color: oklch(97% 0.005 195 / 0.55);
+}
+
+/* ── Editorial section breaks (dividers) ─────────────────────────────────────
+ * Replace the plain rule with a centered fleuron or asterism. The <hr> becomes a
+ * type ornament: no line, a glyph drawn in brand via ::before. */
+[data-rich-text][data-dividers="ornament"] hr,
+[data-rich-text][data-dividers="asterism"] hr {
+  border: none;
+  height: auto;
+  text-align: center;
+  margin: var(--ot-space-xl) 0;
+  overflow: visible;
+}
+[data-rich-text][data-dividers="ornament"] hr::before,
+[data-rich-text][data-dividers="asterism"] hr::before {
+  display: block;
+  color: oklch(from var(--ot-brand) l c h / 0.85);
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em; /* offset the trailing letter-spacing so the glyph centers */
+}
+[data-rich-text][data-dividers="ornament"] hr::before { content: "\2767"; } /* ❧ rotated floral heart */
+[data-rich-text][data-dividers="asterism"] hr::before { content: "\2042"; } /* ⁂ asterism */
+[data-rich-text][data-color="brand"][data-dividers="ornament"] hr::before,
+[data-rich-text][data-color="brand"][data-dividers="asterism"] hr::before {
+  color: oklch(97% 0.005 195 / 0.80);
+}
+
+/* ── Numbered chapter headings ───────────────────────────────────────────────
+ * CSS counter auto-numbers h2 as "01 /" in tracked mono accent — a magazine
+ * register that only makes sense across a sequence of headings. */
+[data-rich-text][data-numbered] {
+  counter-reset: ot-chapter;
+}
+[data-rich-text][data-numbered] h2::before {
+  counter-increment: ot-chapter;
+  content: counter(ot-chapter, decimal-leading-zero) " / ";
+  font-family: var(--ot-font-mono);
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ot-accent);
+  vertical-align: 0.32em;
+  margin-right: 0.45em;
+}
+[data-theme="light"] [data-rich-text][data-numbered] h2::before {
+  color: var(--ot-accent-hover);
+}
+[data-rich-text][data-color="brand"][data-numbered] h2::before {
+  color: var(--ot-fg-on-brand);
+  opacity: 0.7;
+}
+
+/* ── Treatment: incipit — tracked small-caps opening line ─────────────────────
+ * ::first-line accepts font-variant, letter-spacing, weight and color. Distinct
+ * from dropcap (one floated letter) and lead (the whole first paragraph). */
+[data-rich-text][data-treatment="incipit"] > p:first-child::first-line,
+[data-rich-text][data-treatment="incipit"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-line {
+  font-variant-caps: small-caps;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--ot-fg);
+}
+[data-rich-text][data-color="brand"][data-treatment="incipit"] > p:first-child::first-line,
+[data-rich-text][data-color="brand"][data-treatment="incipit"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-line {
+  color: var(--ot-fg-on-brand);
+}
+
+/* ── Reading-cadence reveal ───────────────────────────────────────────────────
+ * Each top-level block rises + fades as it enters the viewport. Scroll-driven via
+ * animation-timeline: view() — the scroll position itself is the stagger, no JS.
+ * The hidden start state lives INSIDE @supports so browsers without scroll-linked
+ * animations (and reduced-motion users) render the prose static and fully visible. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-rich-text][data-reveal="cascade"] > * {
+      animation: ot-prose-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+@keyframes ot-prose-rise {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Card rich text — compact prose for CardBlock descriptions ────────────────
  * CardBlock renders RichText inside a scheme-colored wrapper (T.description).
  * Tailwind Preflight strips list markers, list indent, and paragraph margins,
@@ -1240,24 +1414,63 @@ body {
 .card-rich p:last-child {
   margin-bottom: 0;
 }
+/* Lists get symmetric breathing room from surrounding prose, top and bottom. */
 .card-rich ul,
 .card-rich ol {
-  padding-left: var(--ot-space-lg);
+  margin-top: var(--ot-space-md);
+  margin-bottom: var(--ot-space-md);
+}
+/* Unordered lists use an accent checkmark instead of a disc. The marker is
+   absolutely positioned so wrapped lines hang-indent under the text, not the
+   check. No color is set on the text itself — it inherits the card scheme. */
+.card-rich ul {
+  list-style: none;
+  padding-left: 0;
+}
+.card-rich ul li {
+  position: relative;
+  padding-left: 1.75rem;
   margin-bottom: var(--ot-space-sm);
 }
-.card-rich ul {
-  list-style-type: disc;
+.card-rich ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: inherit;
+  font-weight: 700;
+  /* Default (dark scheme in dark mode, and over-image cards which carry no
+     data-scheme): bright signal green on a dark ground. Overridden per scheme
+     and per page theme below. */
+  color: var(--ot-accent);
 }
+/* Brand fill: near-white check reads on the teal ground (and follows a CMS
+   brand override, since fg-on-brand is paired to whatever brand becomes). */
+.card-rich[data-scheme="brand"] ul li::before {
+  color: var(--ot-fg-on-brand);
+}
+/* Light fill (a light card on a dark section): the bright accent is too pale on
+   near-white, so drop to the deeper accent for contrast. */
+.card-rich[data-scheme="light"] ul li::before {
+  color: var(--ot-accent-hover);
+}
+/* Dark scheme in LIGHT page mode: surface/canvas invert to near-white, so the
+   bright accent loses contrast — drop to the deeper accent. Over-image cards
+   carry no data-scheme and a locally-pinned data-theme="dark", so they are
+   unaffected and keep the bright accent. */
+[data-theme="light"] .card-rich[data-scheme="dark"] ul li::before {
+  color: var(--ot-accent-hover);
+}
+/* Ordered lists keep numeric markers, with the same generous item spacing. */
 .card-rich ol {
+  padding-left: var(--ot-space-lg);
   list-style-type: decimal;
 }
-.card-rich li {
-  margin-bottom: var(--ot-space-xs);
+.card-rich ol li {
+  padding-left: var(--ot-space-xs);
+  margin-bottom: var(--ot-space-sm);
 }
 .card-rich li:last-child {
-  margin-bottom: 0;
-}
-.card-rich :is(ul, ol):last-child {
   margin-bottom: 0;
 }
 .card-rich strong {
