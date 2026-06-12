@@ -113,8 +113,8 @@
    * success and brand track --ot-accent / --ot-brand so ThemeManager
    * overrides automatically propagate to those intent treatments.
    *
-   * -bg      10% alpha tint — subtle fill for filled/bar variants
-   * -border  22% alpha — hairline or full border accent
+   * -bg      18% alpha tint (dark) / 10% (light) — intent color reads clearly on dark canvas
+   * -border  40% alpha (dark) / 22% (light) — visible but not aggressive
    * -fg      dark mode: brightened for visibility on dark canvas
    *          (light mode overrides in [data-theme="light"] below)
    * ──────────────────────────────────────────────────────────────────────── */
@@ -125,19 +125,19 @@
   --ot-intent-danger:  oklch(62% 0.20 15);
   --ot-intent-brand:   var(--ot-brand);
 
-  --ot-intent-neutral-bg: oklch(from var(--ot-intent-neutral) l c h / 0.10);
-  --ot-intent-info-bg:    oklch(from var(--ot-intent-info)    l c h / 0.10);
-  --ot-intent-success-bg: oklch(from var(--ot-intent-success) l c h / 0.10);
-  --ot-intent-warning-bg: oklch(from var(--ot-intent-warning) l c h / 0.10);
-  --ot-intent-danger-bg:  oklch(from var(--ot-intent-danger)  l c h / 0.10);
-  --ot-intent-brand-bg:   oklch(from var(--ot-intent-brand)   l c h / 0.10);
+  --ot-intent-neutral-bg: oklch(from var(--ot-intent-neutral) l c h / 0.18);
+  --ot-intent-info-bg:    oklch(from var(--ot-intent-info)    l c h / 0.18);
+  --ot-intent-success-bg: oklch(from var(--ot-intent-success) l c h / 0.18);
+  --ot-intent-warning-bg: oklch(from var(--ot-intent-warning) l c h / 0.18);
+  --ot-intent-danger-bg:  oklch(from var(--ot-intent-danger)  l c h / 0.18);
+  --ot-intent-brand-bg:   oklch(from var(--ot-intent-brand)   l c h / 0.18);
 
-  --ot-intent-neutral-border: oklch(from var(--ot-intent-neutral) l c h / 0.22);
-  --ot-intent-info-border:    oklch(from var(--ot-intent-info)    l c h / 0.22);
-  --ot-intent-success-border: oklch(from var(--ot-intent-success) l c h / 0.22);
-  --ot-intent-warning-border: oklch(from var(--ot-intent-warning) l c h / 0.22);
-  --ot-intent-danger-border:  oklch(from var(--ot-intent-danger)  l c h / 0.22);
-  --ot-intent-brand-border:   oklch(from var(--ot-intent-brand)   l c h / 0.22);
+  --ot-intent-neutral-border: oklch(from var(--ot-intent-neutral) l c h / 0.40);
+  --ot-intent-info-border:    oklch(from var(--ot-intent-info)    l c h / 0.40);
+  --ot-intent-success-border: oklch(from var(--ot-intent-success) l c h / 0.40);
+  --ot-intent-warning-border: oklch(from var(--ot-intent-warning) l c h / 0.40);
+  --ot-intent-danger-border:  oklch(from var(--ot-intent-danger)  l c h / 0.40);
+  --ot-intent-brand-border:   oklch(from var(--ot-intent-brand)   l c h / 0.40);
 
   --ot-intent-neutral-fg: oklch(from var(--ot-intent-neutral) calc(l + 0.14) c h);
   --ot-intent-info-fg:    oklch(from var(--ot-intent-info)    calc(l + 0.16) c h);
@@ -190,6 +190,22 @@
   --ot-fg-muted:    oklch(68% 0.06  195);
   --ot-fg-on-brand: oklch(97% 0.005 195); /* always light — defensive base for nested dark */
 
+  /* Intent -bg/-border: explicit dark values so nested [data-theme="dark"] elements
+   * inside a light-mode page recover the darker alphas. */
+  --ot-intent-neutral-bg: oklch(from var(--ot-intent-neutral) l c h / 0.18);
+  --ot-intent-info-bg:    oklch(from var(--ot-intent-info)    l c h / 0.18);
+  --ot-intent-success-bg: oklch(from var(--ot-intent-success) l c h / 0.18);
+  --ot-intent-warning-bg: oklch(from var(--ot-intent-warning) l c h / 0.18);
+  --ot-intent-danger-bg:  oklch(from var(--ot-intent-danger)  l c h / 0.18);
+  --ot-intent-brand-bg:   oklch(from var(--ot-intent-brand)   l c h / 0.18);
+
+  --ot-intent-neutral-border: oklch(from var(--ot-intent-neutral) l c h / 0.40);
+  --ot-intent-info-border:    oklch(from var(--ot-intent-info)    l c h / 0.40);
+  --ot-intent-success-border: oklch(from var(--ot-intent-success) l c h / 0.40);
+  --ot-intent-warning-border: oklch(from var(--ot-intent-warning) l c h / 0.40);
+  --ot-intent-danger-border:  oklch(from var(--ot-intent-danger)  l c h / 0.40);
+  --ot-intent-brand-border:   oklch(from var(--ot-intent-brand)   l c h / 0.40);
+
   --ot-gradient-brand: linear-gradient(135deg,
     oklch(from var(--ot-brand) calc(l + 0.17) c h)   0%,
     oklch(from var(--ot-brand) calc(l - 0.17) c h) 100%
@@ -227,6 +243,21 @@
   --ot-intent-warning-fg: oklch(from var(--ot-intent-warning) calc(l - 0.28) c h);
   --ot-intent-danger-fg:  oklch(from var(--ot-intent-danger)  calc(l - 0.02) c h);
   --ot-intent-brand-fg:   oklch(from var(--ot-intent-brand)   l c h);
+
+  /* Intent -bg/-border: lighter alphas for legibility on near-white canvas */
+  --ot-intent-neutral-bg: oklch(from var(--ot-intent-neutral) l c h / 0.10);
+  --ot-intent-info-bg:    oklch(from var(--ot-intent-info)    l c h / 0.10);
+  --ot-intent-success-bg: oklch(from var(--ot-intent-success) l c h / 0.10);
+  --ot-intent-warning-bg: oklch(from var(--ot-intent-warning) l c h / 0.10);
+  --ot-intent-danger-bg:  oklch(from var(--ot-intent-danger)  l c h / 0.10);
+  --ot-intent-brand-bg:   oklch(from var(--ot-intent-brand)   l c h / 0.10);
+
+  --ot-intent-neutral-border: oklch(from var(--ot-intent-neutral) l c h / 0.22);
+  --ot-intent-info-border:    oklch(from var(--ot-intent-info)    l c h / 0.22);
+  --ot-intent-success-border: oklch(from var(--ot-intent-success) l c h / 0.22);
+  --ot-intent-warning-border: oklch(from var(--ot-intent-warning) l c h / 0.22);
+  --ot-intent-danger-border:  oklch(from var(--ot-intent-danger)  l c h / 0.22);
+  --ot-intent-brand-border:   oklch(from var(--ot-intent-brand)   l c h / 0.22);
 
   /* Gradient stops — deeper relative offsets so text reads on near-white canvas */
   /* brand: −13% L start, −33% L / −6% C end */

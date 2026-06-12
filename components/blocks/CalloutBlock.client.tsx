@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { cn }           from '@/lib/utils'
+import { cn }            from '@/lib/utils'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import { X, ArrowRight } from 'lucide-react'
-import type { CalloutStyleOptions, CalloutIntent } from '@/cms/styling/OT_CalloutBlock.styling'
+import type { CalloutStyleOptions, CalloutIntent, CalloutMaxWidth } from '@/cms/styling/OT_CalloutBlock.styling'
 import type { CalloutBlockProps } from './CalloutBlock'
 
 // ─── Intent token helpers ─────────────────────────────────────────────────────
@@ -13,12 +13,28 @@ function iVar(intent: CalloutIntent, suffix: string): string {
   return `var(--ot-intent-${intent}-${suffix})`
 }
 
+// Derives an alpha variant directly from the base intent color.
+// Used for bar bg/border where we want a different opacity than the
+// -bg/-border tokens (which are set for filled/bordered variants).
+function iAlpha(intent: CalloutIntent, alpha: number): string {
+  return `oklch(from var(--ot-intent-${intent}) l c h / ${alpha})`
+}
+
 // ─── ARIA role ────────────────────────────────────────────────────────────────
 
 function ariaRole(intent: CalloutIntent): 'alert' | 'status' | undefined {
   if (intent === 'danger' || intent === 'warning') return 'alert'
   if (intent === 'info'   || intent === 'success') return 'status'
   return undefined
+}
+
+// ─── Max-width classes ────────────────────────────────────────────────────────
+
+const MAX_WIDTH_CLASSES: Record<CalloutMaxWidth, string> = {
+  full:    'w-full',
+  wide:    'w-full max-w-3xl mx-auto',
+  default: 'w-full max-w-xl mx-auto',
+  narrow:  'w-full max-w-sm mx-auto',
 }
 
 // ─── Dismiss phase ────────────────────────────────────────────────────────────
@@ -42,6 +58,7 @@ export default function CalloutBlockClient({
     dismissible = false,
     sticky      = false,
     icon        = 'none',
+    maxWidth    = 'full',
   } = styleOptions as CalloutStyleOptions
 
   const [phase,         setPhase]         = useState<DismissPhase>('visible')
@@ -69,10 +86,11 @@ export default function CalloutBlockClient({
 
   if (phase === 'gone') return null
 
-  const IconComp = (icon && icon !== 'none') ? ICON_REGISTRY[icon] : null
-  const isBrand  = intent === 'brand'
-  const isBar    = variant === 'bar'
-  const role     = ariaRole(intent)
+  const IconComp     = (icon && icon !== 'none') ? ICON_REGISTRY[icon] : null
+  const isBrand      = intent === 'brand'
+  const isBar        = variant === 'bar'
+  const role         = ariaRole(intent)
+  const maxWidthClass = MAX_WIDTH_CLASSES[maxWidth] ?? 'w-full'
 
   const fg     = iVar(intent, 'fg')
   const bg     = iVar(intent, 'bg')
@@ -99,27 +117,43 @@ export default function CalloutBlockClient({
   let rootStyle: React.CSSProperties = {}
   let rootClass = ''
 
-  if (variant === 'filled') {
+  if (isBar) {
+    // Bar: 4px left accent anchor + faint tint + subtle full perimeter border.
+    // bg/border use iAlpha so bar opacity is independent of the filled/bordered tokens.
+    const barBg     = iAlpha(intent, 0.07)
+    const barBorder = iAlpha(intent, 0.15)
+    if (isBrand) {
+      rootClass = 'bg-brand-fill'
+      rootStyle = {
+        borderTop:    `1px solid ${barBorder}`,
+        borderRight:  `1px solid ${barBorder}`,
+        borderBottom: `1px solid ${barBorder}`,
+        borderLeft:   `4px solid ${fg}`,
+      }
+    } else {
+      rootStyle = {
+        background:   barBg,
+        borderTop:    `1px solid ${barBorder}`,
+        borderRight:  `1px solid ${barBorder}`,
+        borderBottom: `1px solid ${barBorder}`,
+        borderLeft:   `4px solid ${fg}`,
+      }
+    }
+  } else if (variant === 'filled') {
     if (isBrand) {
       rootClass = 'bg-brand-fill'
     } else {
       rootStyle = { background: bg, border: `1px solid ${border}` }
     }
-  } else if (variant === 'bordered') {
-    rootStyle = { background: 'var(--ot-surface)', borderTop: `3px solid ${fg}` }
   } else {
-    // bar
-    if (isBrand) {
-      rootClass = 'bg-brand-fill'
-      rootStyle = { borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }
-    } else {
-      rootStyle = { background: bg, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }
-    }
+    // bordered
+    rootStyle = { background: 'var(--ot-surface)', borderTop: `3px solid ${fg}` }
   }
 
   // ── Padding ───────────────────────────────────────────────────────────────
+  // Bar uses generous py-md for enough visual mass to register during a page scan.
   const padClass = isBar
-    ? (size === 'compact' ? 'px-md py-xs' : 'px-md py-sm')
+    ? 'px-md py-md'
     : (size === 'compact' ? 'px-md py-sm' : 'px-md py-md')
 
   // ── Text colors ───────────────────────────────────────────────────────────
@@ -163,21 +197,22 @@ export default function CalloutBlockClient({
     const barContent = (
       <div
         className={cn(
-          'w-full flex items-center gap-sm',
+          'flex items-center gap-sm',
           padClass,
           rootClass,
+          maxWidthClass,
           sticky && 'fixed top-0 left-0 right-0 z-50',
         )}
         style={rootStyle}
         role={role}
         data-theme={isBrand ? 'dark' : undefined}
       >
-        {/* Left: icon + heading */}
+        {/* Left: icon (18px inline) + heading */}
         <div className={cn('flex items-center gap-sm flex-1 min-w-0', alignment === 'center' && 'justify-center')}>
           {IconComp && (
-            <IconComp size={16} strokeWidth={1.75} aria-hidden style={{ color: fg, flexShrink: 0 }} />
+            <IconComp size={18} strokeWidth={1.75} aria-hidden style={{ color: fg, flexShrink: 0 }} />
           )}
-          <p className={cn('text-label font-semibold', headingClass)}>{heading}</p>
+          <p className={cn('text-[15px] font-semibold leading-snug', headingClass)}>{heading}</p>
         </div>
         {/* Right: cta + dismiss */}
         {(ctaEl || dismissBtn) && (
@@ -200,26 +235,20 @@ export default function CalloutBlockClient({
   }
 
   // ── Filled / Bordered variants ────────────────────────────────────────────
+  // When an icon is set, it renders as a 28px left column vertically centered
+  // with the text column — a category signal, not inline text decoration.
   const isCompactRow = size === 'compact' && !body
 
   const innerContent = isCompactRow ? (
-    // Single-row compact: [icon] [heading] ·· [cta]
+    // Compact single row: [heading] ·· [cta]
     <div className={cn('flex items-center gap-sm', alignment === 'center' && 'justify-center')}>
-      {IconComp && (
-        <IconComp size={16} strokeWidth={1.75} aria-hidden style={{ color: fg, flexShrink: 0 }} />
-      )}
       <p className={cn('text-body font-semibold leading-snug flex-1', headingClass)}>{heading}</p>
       {ctaEl && <div className="ml-auto pl-sm shrink-0">{ctaEl}</div>}
     </div>
   ) : (
     // Stacked: heading, body, cta
     <div className="flex flex-col gap-xs">
-      <div className={cn('flex items-center gap-sm', alignment === 'center' && 'justify-center')}>
-        {IconComp && (
-          <IconComp size={16} strokeWidth={1.75} aria-hidden style={{ color: fg, flexShrink: 0 }} />
-        )}
-        <p className={cn('text-body font-semibold leading-snug', headingClass)}>{heading}</p>
-      </div>
+      <p className={cn('text-body font-semibold leading-snug', headingClass, alignment === 'center' && 'text-center')}>{heading}</p>
       {body && (
         <p className={cn('text-body leading-body text-pretty', bodyClass, alignment === 'center' && 'text-center')}>
           {body}
@@ -236,15 +265,22 @@ export default function CalloutBlockClient({
   const calloutContent = (
     <div
       className={cn(
-        'w-full flex gap-sm',
+        'flex gap-sm',
         padClass,
         rootClass,
+        maxWidthClass,
         isCompactRow ? 'items-center' : 'items-start',
       )}
       style={rootStyle}
       role={role}
       data-theme={isBrand ? 'dark' : undefined}
     >
+      {/* Icon column: 28px, left-anchored, vertically centered with text column */}
+      {IconComp && (
+        <div className="shrink-0 self-center" style={{ color: fg }}>
+          <IconComp size={28} strokeWidth={1.75} aria-hidden />
+        </div>
+      )}
       <div className="flex-1 min-w-0">{innerContent}</div>
       {dismissBtn && <div className={cn('shrink-0', !isCompactRow && 'mt-[2px]')}>{dismissBtn}</div>}
     </div>

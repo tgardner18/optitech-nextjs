@@ -100,5 +100,18 @@ export const OT_CalloutDefault = displayTemplate({
       },
     },
 
+    // ── Max width ────────────────────────────────────────────────────────────
+    maxWidth: {
+      displayName: 'Max Width',
+      editor:      'select',
+      sortOrder:   90,
+      choices: {
+        full:    { displayName: 'Full — spans container width (Default)', sortOrder: 10 },
+        wide:    { displayName: 'Wide — max 768px, centered',             sortOrder: 20 },
+        default: { displayName: 'Default — max 560px, centered',         sortOrder: 30 },
+        narrow:  { displayName: 'Narrow — max 400px, centered',          sortOrder: 40 },
+      },
+    },
+
   },
 })

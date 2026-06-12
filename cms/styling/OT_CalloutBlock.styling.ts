@@ -1,7 +1,8 @@
-export type CalloutIntent  = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'brand'
-export type CalloutVariant = 'filled' | 'bordered' | 'bar'
-export type CalloutSize    = 'default' | 'compact'
-export type CalloutAlign   = 'left' | 'center'
+export type CalloutIntent   = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'brand'
+export type CalloutVariant  = 'filled' | 'bordered' | 'bar'
+export type CalloutSize     = 'default' | 'compact'
+export type CalloutAlign    = 'left' | 'center'
+export type CalloutMaxWidth = 'full' | 'wide' | 'default' | 'narrow'
 
 export type CalloutStyleOptions = {
   intent:      CalloutIntent
@@ -11,6 +12,7 @@ export type CalloutStyleOptions = {
   dismissible: boolean
   sticky:      boolean
   icon:        string
+  maxWidth:    CalloutMaxWidth
 }
 
 export function getCalloutStyles(s: Record<string, string | boolean>): CalloutStyleOptions {
@@ -22,5 +24,6 @@ export function getCalloutStyles(s: Record<string, string | boolean>): CalloutSt
     dismissible: s.dismissible === 'on' || s.dismissible === true,
     sticky:      s.sticky === 'on' || s.sticky === true,
     icon:        String(s.icon ?? 'none'),
+    maxWidth:    (s.maxWidth   ?? 'full')   as CalloutMaxWidth,
   }
 }

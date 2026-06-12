@@ -1715,7 +1715,7 @@ function CalloutShowcase() {
       <BlockHeader slug="callout" />
 
       {/* ── Filled · all 6 intents ──────────────────────────────────────── */}
-      <VariantGroup label="Filled variant · all 6 intents" note="10% alpha tint + 22% alpha full border. The intent color drives icon, CTA, and border — heading/body use standard text tokens so they adapt to dark/light mode." />
+      <VariantGroup label="Filled variant · all 6 intents" note="18% alpha tint + 40% alpha full border in dark mode — each intent reads as a distinct color, not just a lighter surface. Heading and body use standard text tokens." />
       <CalloutGrid>
         {CALLOUT_INTENTS.map(intent => (
           <CalloutBlock
@@ -1740,22 +1740,8 @@ function CalloutShowcase() {
         ))}
       </CalloutGrid>
 
-      {/* ── Bar · all 6 intents ─────────────────────────────────────────── */}
-      <VariantGroup label="Bar variant · all 6 intents" note="Full-width strip — hairline top/bottom borders, compact single-row layout. Designed for system status banners and site-wide notices." />
-      <div className="flex flex-col px-md lg:px-lg pb-lg gap-xs">
-        {CALLOUT_INTENTS.map(intent => (
-          <CalloutBlock
-            key={intent}
-            heading={CALLOUT_BAR_HEADINGS[intent]}
-            ctaLabel={CALLOUT_CTAS[intent]}
-            ctaUrl="#"
-            styleOptions={{ intent, variant: 'bar' }}
-          />
-        ))}
-      </div>
-
-      {/* ── With icon + body + CTA ──────────────────────────────────────── */}
-      <VariantGroup label="With icon · filled · all 6 intents" note="Icons use the intent foreground color at 16px/1.75 stroke. Rendered inline with the heading." />
+      {/* ── Icon layout · 28px left column ──────────────────────────────── */}
+      <VariantGroup label="Icon layout · filled · all 6 intents" note="When an icon is selected, it anchors the left as a 28px category signal — vertically centered with the text column. The icon communicates semantic type at a glance rather than decorating the heading inline." />
       <CalloutGrid>
         {CALLOUT_INTENTS.map(intent => (
           <CalloutBlock
@@ -1768,6 +1754,50 @@ function CalloutShowcase() {
           />
         ))}
       </CalloutGrid>
+      <VariantGroup label="Icon layout · bordered · all 6 intents" />
+      <CalloutGrid>
+        {CALLOUT_INTENTS.map(intent => (
+          <CalloutBlock
+            key={intent}
+            heading={CALLOUT_HEADINGS[intent]}
+            body={CALLOUT_BODIES[intent]}
+            ctaLabel={CALLOUT_CTAS[intent]}
+            ctaUrl="#"
+            styleOptions={{ intent, variant: 'bordered', icon: CALLOUT_ICONS[intent] }}
+          />
+        ))}
+      </CalloutGrid>
+
+      {/* ── Bar · all 6 intents ─────────────────────────────────────────── */}
+      <VariantGroup label="Bar variant · all 6 intents" note="4px left accent anchor catches the eye during scroll; faint background tint separates the bar from the page; generous padding gives it enough mass to register at a glance. Designed for system notices and site-wide announcements." />
+      <div className="flex flex-col px-md lg:px-lg pb-lg gap-xs">
+        {CALLOUT_INTENTS.map(intent => (
+          <CalloutBlock
+            key={intent}
+            heading={CALLOUT_BAR_HEADINGS[intent]}
+            ctaLabel={CALLOUT_CTAS[intent]}
+            ctaUrl="#"
+            styleOptions={{ intent, variant: 'bar', icon: CALLOUT_ICONS[intent] }}
+          />
+        ))}
+      </div>
+
+      {/* ── Max width ────────────────────────────────────────────────────── */}
+      <VariantGroup label="Max width" note="Use Full for in-column placements. Constrain width when placing the callout as a standalone section so it does not stretch awkwardly to 1200px container width." />
+      <div className="flex flex-col px-md lg:px-lg pb-lg gap-sm">
+        {(['full', 'wide', 'default', 'narrow'] as const).map(mw => (
+          <div key={mw}>
+            <VariantLabel label={`maxWidth: "${mw}"`} />
+            <CalloutBlock
+              heading="Platform maintenance scheduled Sunday 2:00–4:00 AM UTC."
+              body="Read operations will continue without interruption. Write operations may have increased latency during this window."
+              ctaLabel="View schedule"
+              ctaUrl="#"
+              styleOptions={{ intent: 'neutral', variant: 'filled', icon: 'clock', maxWidth: mw }}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* ── Compact size ────────────────────────────────────────────────── */}
       <VariantGroup label="Compact size" note="Heading and CTA collapse to a single row when no body text is present. Reduced vertical padding for dense layouts." />
