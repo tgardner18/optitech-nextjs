@@ -20,6 +20,12 @@ const cms = cmsHostname()
 
 const nextConfig: NextConfig = {
   images: {
+    // Use a custom loader so image delivery does NOT depend on Vercel's
+    // Image Optimization quota (which returns HTTP 402 when capped). See
+    // lib/imageLoader.ts. remotePatterns below are retained as documentation
+    // of the expected source hosts; they are not consulted by a custom loader.
+    loader: "custom",
+    loaderFile: "./lib/imageLoader.ts",
     remotePatterns: [
       {
         protocol: "https",
