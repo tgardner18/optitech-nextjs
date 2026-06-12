@@ -1226,6 +1226,52 @@ body {
   font-weight: 600;
 }
 
+/* ── Card rich text — compact prose for CardBlock descriptions ────────────────
+ * CardBlock renders RichText inside a scheme-colored wrapper (T.description).
+ * Tailwind Preflight strips list markers, list indent, and paragraph margins,
+ * so a <ul>/<li> from the editor reads as unstyled run-on text. This scope
+ * restores ONLY the block structure + inline emphasis — it deliberately sets no
+ * color, so text inherits the card's dark/brand/light scheme color, and no
+ * heading/blockquote sizing (cards are compact, not articles).
+ * ─────────────────────────────────────────────────────────────────────────── */
+.card-rich p {
+  margin-bottom: var(--ot-space-sm);
+}
+.card-rich p:last-child {
+  margin-bottom: 0;
+}
+.card-rich ul,
+.card-rich ol {
+  padding-left: var(--ot-space-lg);
+  margin-bottom: var(--ot-space-sm);
+}
+.card-rich ul {
+  list-style-type: disc;
+}
+.card-rich ol {
+  list-style-type: decimal;
+}
+.card-rich li {
+  margin-bottom: var(--ot-space-xs);
+}
+.card-rich li:last-child {
+  margin-bottom: 0;
+}
+.card-rich :is(ul, ol):last-child {
+  margin-bottom: 0;
+}
+.card-rich strong {
+  font-weight: 700;
+}
+.card-rich em {
+  font-style: italic;
+}
+.card-rich a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
 /* ── Card hover interactions — lift and glow ─────────────────────────────────
  * Defined here (not as Tailwind arbitrary values) so they can reference
  * --ot-bloom-brand and --ot-bloom-accent, which follow the CMS theme override.
