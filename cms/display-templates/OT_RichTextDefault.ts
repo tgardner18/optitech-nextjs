@@ -40,9 +40,31 @@ export const OT_RichTextDefault = displayTemplate({
       editor: 'select',
       sortOrder: 40,
       choices: {
-        standard: { displayName: 'Standard (Default)',     sortOrder: 10 },
-        lead:     { displayName: 'Lead — Deck size',       sortOrder: 20 },
-        dropcap:  { displayName: 'Drop Cap',               sortOrder: 30 },
+        standard: { displayName: 'Standard (Default)',          sortOrder: 10 },
+        lead:     { displayName: 'Lead — Deck size',            sortOrder: 20 },
+        dropcap:  { displayName: 'Drop Cap',                    sortOrder: 30 },
+        incipit:  { displayName: 'Incipit — Small-caps opening', sortOrder: 40 },
+      },
+    },
+    columns: {
+      displayName: 'Column flow',
+      editor: 'select',
+      sortOrder: 45,
+      choices: {
+        single: { displayName: 'Single (Default)', sortOrder: 10 },
+        dual:   { displayName: 'Two columns',      sortOrder: 20 },
+        triple: { displayName: 'Three columns',    sortOrder: 30 },
+      },
+    },
+    ground: {
+      displayName: 'Print ground',
+      editor: 'select',
+      sortOrder: 48,
+      choices: {
+        flat:   { displayName: 'Flat (Default)',     sortOrder: 10 },
+        ruled:  { displayName: 'Ruled — ledger lines', sortOrder: 20 },
+        grain:  { displayName: 'Grain — halftone dots', sortOrder: 30 },
+        framed: { displayName: 'Framed — editorial page', sortOrder: 40 },
       },
     },
     ruledHeadings: {
@@ -52,6 +74,34 @@ export const OT_RichTextDefault = displayTemplate({
       choices: {
         false: { displayName: 'Off (Default)', sortOrder: 10 },
         true:  { displayName: 'On',            sortOrder: 20 },
+      },
+    },
+    numberedHeadings: {
+      displayName: 'Numbered chapters',
+      editor: 'select',
+      sortOrder: 52,
+      choices: {
+        false: { displayName: 'Off (Default)', sortOrder: 10 },
+        true:  { displayName: 'On',            sortOrder: 20 },
+      },
+    },
+    dividers: {
+      displayName: 'Section breaks',
+      editor: 'select',
+      sortOrder: 54,
+      choices: {
+        rule:     { displayName: 'Rule (Default)',  sortOrder: 10 },
+        ornament: { displayName: 'Fleuron (❧)',     sortOrder: 20 },
+        asterism: { displayName: 'Asterism (⁂)',    sortOrder: 30 },
+      },
+    },
+    reveal: {
+      displayName: 'Scroll reveal',
+      editor: 'select',
+      sortOrder: 56,
+      choices: {
+        none:    { displayName: 'None (Default)',       sortOrder: 10 },
+        cascade: { displayName: 'Cascade — reading flow', sortOrder: 20 },
       },
     },
     textScale: {

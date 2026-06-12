@@ -488,6 +488,26 @@ const RT_STRUCTURED = `
 <p>Experiment design tools that connect directly to your data. No more waiting three weeks for results from a release you've already moved past.</p>
 `
 
+// Long-form article: multiple chapters, a section break, a list and a quote.
+// Feeds the broadsheet-column, divider, numbered-chapter and scroll-reveal demos.
+const RT_ARTICLE = `
+<h2>The case for continuous experimentation</h2>
+<p>OptiTech was built for teams who move faster than quarterly roadmaps. We identified a gap between the pace at which modern software ships and the tools available to measure, refine, and respond to it. We closed it, then we kept closing it.</p>
+<p>The platform ingests signals from every layer of the stack: feature flags, experiment data, user behaviour telemetry, and deployment events. It surfaces the patterns that matter before they become problems, and it does so in language an engineer and a product lead can read the same way.</p>
+<p>Decisions are made at the edges of your system, not in a committee room three weeks later. The result is a shorter loop between a hypothesis and the evidence that settles it.</p>
+<hr>
+<h2>Confidence, not gut instinct</h2>
+<p>Every rollout carries a full audit trail. Targeting is expressed as a query, not a checkbox, and the statistical validity checks run continuously rather than at the end of a sprint.</p>
+<ul>
+  <li>Deploy changes to targeted segments in minutes, not sprints.</li>
+  <li>Run concurrent experiments without interaction effects.</li>
+  <li>Roll back any flag with a single API call.</li>
+</ul>
+<blockquote><p>We moved from quarterly experiments to continuous iteration. OptiTech is the infrastructure that made that possible.</p></blockquote>
+<h2>Where the signal lives</h2>
+<p>The patterns you need are rarely in the dashboard you built last quarter. They live in the seams between deployment and behaviour, and that is exactly where OptiTech listens.</p>
+`
+
 function RichTextShowcase() {
   const colorSchemes: Array<{ content: any; displaySettings: DS }> = [
     { content: { content: { html: RT_FULL } }, displaySettings: { color: 'canvas',  size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
@@ -542,6 +562,76 @@ function RichTextShowcase() {
           <OT_RichTextBlock content={item.content as any} displaySettings={item.displaySettings} />
         </div>
       ))}
+
+      {/* ── Reading-surface treatments: what RichText does that PrimaryText can't ── */}
+      <VariantGroup
+        label="Broadsheet columns · long-form article"
+        note="CSS multi-column flow with a tokenized rule. Justified + hyphenated; opening heading spans the full width. Collapses to one column when the measure narrows — resize the window."
+      />
+      {([
+        { label: 'columns: "dual"',   note: 'Two columns', cols: 'dual'   as const },
+        { label: 'columns: "triple"', note: 'Three columns, tighter measure', cols: 'triple' as const },
+      ]).map(item => (
+        <div key={item.cols} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { html: RT_ARTICLE } } as any}
+            displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', columns: item.cols }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Print grounds · background texture"
+        note="A ground sits behind the prose; it is texture, not a fill. Tokenized, so it recalibrates under a CMS theme override and switches to a light tint on brand."
+      />
+      {([
+        { label: 'ground: "ruled"',  note: 'Ledger baseline ruling, locked to the body rhythm', color: 'canvas'  as const, ground: 'ruled'  as const },
+        { label: 'ground: "grain"',  note: 'Halftone dot field — screenprint texture',          color: 'surface' as const, ground: 'grain'  as const },
+        { label: 'ground: "framed"', note: 'Bordered editorial page with a masthead rule',       color: 'canvas'  as const, ground: 'framed' as const },
+        { label: 'ground: "grain" · brand', note: 'On a brand fill the pattern flips to a light tint', color: 'brand' as const, ground: 'grain' as const },
+      ]).map(item => (
+        <div key={item.label} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { html: RT_PROSE } } as any}
+            displaySettings={{ color: item.color, size: 'editorial', alignment: 'left', ground: item.ground }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Editorial section breaks · numbered chapters · incipit"
+        note="Retro print register. The <hr> becomes a type ornament; h2s auto-number as chapters; the incipit sets the opening line in tracked small-caps."
+      />
+      {([
+        { label: 'dividers: "ornament"',     note: 'Fleuron (❧) replaces the rule between sections',         ds: { dividers: 'ornament' } },
+        { label: 'dividers: "asterism"',     note: 'Asterism (⁂) section break',                            ds: { dividers: 'asterism' } },
+        { label: 'numberedHeadings: true',   note: 'CSS-counter chapter numbers in tracked mono accent',     ds: { numberedHeadings: true } },
+        { label: 'ornament + numbered',      note: 'Combined — the full magazine register',                  ds: { dividers: 'ornament', numberedHeadings: true } },
+        { label: 'treatment: "incipit"',     note: 'Opening line in tracked small-caps (distinct from dropcap/lead)', ds: { treatment: 'incipit' } },
+      ] as Array<{ label: string; note: string; ds: DS }>).map(item => (
+        <div key={item.label} className="border-t border-fg/5">
+          <VariantLabel label={item.label} note={item.note} />
+          <OT_RichTextBlock
+            content={{ content: { html: RT_ARTICLE } } as any}
+            displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', ...item.ds }}
+          />
+        </div>
+      ))}
+
+      <VariantGroup
+        label="Scroll reveal · reading cadence"
+        note="reveal: &ldquo;cascade&rdquo; — each block rises and fades as it enters the viewport. Pure CSS (animation-timeline: view()); the scroll position is the stagger. Scroll the page to see it; reduced-motion and unsupported browsers render it static and fully visible."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='reveal: "cascade"' note="Combined here with framed ground and numbered chapters" />
+        <OT_RichTextBlock
+          content={{ content: { html: RT_ARTICLE } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', reveal: 'cascade', ground: 'framed', numberedHeadings: true }}
+        />
+      </div>
+
       <div className="pb-xl" />
     </>
   )
