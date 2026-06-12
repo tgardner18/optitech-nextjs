@@ -170,7 +170,7 @@ const contextCva = cva('text-label font-normal', {
 })
 
 /** Icon badge — sits left of the label+context column in the 2-col sub-layout. */
-const iconBadgeCva = cva('shrink-0 mt-[2px]', {
+const iconBadgeCva = cva('shrink-0', {
   variants: {
     color: {
       brand:   'text-fg-on-brand/70',
@@ -395,14 +395,14 @@ export default function StatBlock({
 
             {/* ── Label + context — icon left / text right when icon is on ── */}
             <div
-              className={cn('mt-sm flex items-start', showIcons && Icon ? 'gap-sm' : '')}
+              className={cn('mt-sm flex items-center', showIcons && Icon ? 'gap-sm' : '')}
               style={labelStyle}
             >
               {showIcons && Icon && (
                 <Icon
                   aria-hidden="true"
                   className={iconBadgeCva({ color })}
-                  size={28}
+                  size={34}
                   strokeWidth={1.5}
                 />
               )}
