@@ -28,13 +28,17 @@ function ariaRole(intent: CalloutIntent): 'alert' | 'status' | undefined {
   return undefined
 }
 
-// ─── Max-width classes ────────────────────────────────────────────────────────
+// ─── Max-width wrapper classes ────────────────────────────────────────────────
+// Applied to a separate BLOCK wrapper div (not the flex container) so that
+// mx-auto centering is reliable. Named Tailwind sizes (max-w-sm, max-w-xl) are
+// avoided because this project's @theme inline maps --spacing-sm/xl to 8px/64px,
+// making those utilities collapse to single-digit pixel widths.
 
-const MAX_WIDTH_CLASSES: Record<CalloutMaxWidth, string> = {
-  full:    'w-full',
-  wide:    'w-full max-w-3xl mx-auto',
-  default: 'w-full max-w-xl mx-auto',
-  narrow:  'w-full max-w-sm mx-auto',
+const MAX_WIDTH_WRAPPER: Record<CalloutMaxWidth, string> = {
+  full:    '',
+  wide:    'max-w-[768px] mx-auto',
+  default: 'max-w-[560px] mx-auto',
+  narrow:  'max-w-[400px] mx-auto',
 }
 
 // ─── Dismiss phase ────────────────────────────────────────────────────────────
@@ -90,7 +94,7 @@ export default function CalloutBlockClient({
   const isBrand      = intent === 'brand'
   const isBar        = variant === 'bar'
   const role         = ariaRole(intent)
-  const maxWidthClass = MAX_WIDTH_CLASSES[maxWidth] ?? 'w-full'
+  const maxWidthWrapper = MAX_WIDTH_WRAPPER[maxWidth] ?? ''
 
   const fg     = iVar(intent, 'fg')
   const bg     = iVar(intent, 'bg')
@@ -194,13 +198,12 @@ export default function CalloutBlockClient({
 
   // ── Bar variant ───────────────────────────────────────────────────────────
   if (isBar) {
-    const barContent = (
+    const barInner = (
       <div
         className={cn(
-          'flex items-center gap-sm',
+          'w-full flex items-center gap-sm',
           padClass,
           rootClass,
-          maxWidthClass,
           sticky && 'fixed top-0 left-0 right-0 z-50',
         )}
         style={rootStyle}
@@ -222,6 +225,11 @@ export default function CalloutBlockClient({
           </div>
         )}
       </div>
+    )
+
+    // Outer block wrapper handles max-width centering (separate from sticky flex container)
+    const barContent = (
+      <div className={cn('w-full', maxWidthWrapper)}>{barInner}</div>
     )
 
     if (!dismissible) return barContent
@@ -262,28 +270,33 @@ export default function CalloutBlockClient({
     </div>
   )
 
-  const calloutContent = (
+  // Outer block wrapper handles max-width centering separately from the flex container
+  // so that mx-auto is reliable regardless of the parent's layout context.
+  const calloutInner = (
     <div
       className={cn(
-        'flex gap-sm',
+        'w-full flex gap-md',
         padClass,
         rootClass,
-        maxWidthClass,
         isCompactRow ? 'items-center' : 'items-start',
       )}
       style={rootStyle}
       role={role}
       data-theme={isBrand ? 'dark' : undefined}
     >
-      {/* Icon column: 28px, left-anchored, vertically centered with text column */}
+      {/* Icon column: 32px, left-anchored, vertically centered with text column */}
       {IconComp && (
         <div className="shrink-0 self-center" style={{ color: fg }}>
-          <IconComp size={28} strokeWidth={1.75} aria-hidden />
+          <IconComp size={32} strokeWidth={1.5} aria-hidden />
         </div>
       )}
       <div className="flex-1 min-w-0">{innerContent}</div>
       {dismissBtn && <div className={cn('shrink-0', !isCompactRow && 'mt-[2px]')}>{dismissBtn}</div>}
     </div>
+  )
+
+  const calloutContent = (
+    <div className={cn('w-full', maxWidthWrapper)}>{calloutInner}</div>
   )
 
   if (!dismissible) return calloutContent
