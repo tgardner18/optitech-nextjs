@@ -330,7 +330,7 @@ export default function CardBlock({
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
             {/* Brighter than the muted dark-scheme body: text sits over a photo,
                 so it needs more luminance to clear AA against the frosted floor. */}
-            {description && <div className="text-body leading-body text-fg/85" {...pa('Description')}><RichText content={description} /></div>}
+            {description && <div className="card-rich text-body leading-body text-fg/85" {...pa('Description')}><RichText content={description} /></div>}
             {cta && (
               <div className="pt-xs" {...pa('ctaLabel')}>
                 <Button variant={T.cta[s]} size="sm" href={cta.href}>{cta.label}</Button>
@@ -344,7 +344,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
+            {description && <div className={cn("card-rich", T.description[s])} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>
@@ -358,7 +358,7 @@ export default function CardBlock({
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
-            {description && <div className={T.description[s]} {...pa('Description')}><RichText content={description} /></div>}
+            {description && <div className={cn("card-rich", T.description[s])} {...pa('Description')}><RichText content={description} /></div>}
           </div>
           {cta && (
             <div className="mt-md" {...pa('ctaLabel')}>

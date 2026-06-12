@@ -65,7 +65,7 @@ const innerCva = cva("", {
   variants: {
     alignment: {
       left:   "",
-      center: "mx-auto max-w-screen-md",
+      center: "mx-auto max-w-5xl",
     },
   },
   defaultVariants: { alignment: "left" },

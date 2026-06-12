@@ -174,6 +174,23 @@ Dark mode is the default. `data-theme="dark"` on `<html>` is set before first pa
 - Never use Syne on body copy or below headline scale.
 - Never on light backgrounds with Accent color — insufficient contrast.
 
+### Retro display headers
+
+A sanctioned 70s/80s editorial register for **display-scale headers only**. This is not a departure from the Kinetic Editorial north star — it's the poster-confidence end of it. Two flavors are approved; both must obey the constraints below.
+
+**Editorial / poster** — chunky extruded or isometric display type with hard 45° shadow stacks and depth. The existing `.display-extrude` (§9) and `.card-hover-tilt` are the canonical tools. Concert-poster scale and weight; commit to the depth.
+
+**Chromatic / print** — offset channel-split (faux CMYK misregistration), halftone dot texture, and screenprint-style overprint on display headers. The "channels" are derived from the brand and accent tokens (e.g. a brand-tinted layer offset from an accent-tinted layer), never from cyan/magenta/yellow literals.
+
+**Constraints (non-negotiable):**
+- **Display scale only** — `text-display`, and at most once per composition (same budget rule as `display-gradient-*`). Never on headline, title, body, or label.
+- **Tinted grounds, never pure black.** Retro treatments sit on `--ot-canvas`/`--ot-surface` (which carry brand hue at low chroma). Pure `#000` + neon is the banned synthwave look — that's the line.
+- **Tokens only.** Every color in the effect resolves from `--ot-brand` / `--ot-accent` / `--ot-fg` (or their bloom derivatives). No color literals — the effect must recalibrate under a CMS theme override like everything else.
+- **Legibility holds.** The underlying letterforms must still meet WCAG 2.1 AA against their ground; offset/halftone layers are decoration on top of a legible base, not a replacement for it.
+- **Motion-safe.** Any animated entrance (e.g. the `--display-depth` ramp on `.display-extrude`) degrades under `prefers-reduced-motion: reduce`.
+
+When impeccable introduces a new retro treatment (a halftone overlay utility, a channel-split class), document it as a named global utility in §9 and add it to the relevant block's display-template settings vocabulary so editors can control it.
+
 ---
 
 ## 5. Elevation and Depth
@@ -358,6 +375,7 @@ When impeccable introduces a new effect, document it here under the relevant com
 - **Do** tint every neutral toward the brand hue when implementing custom themes.
 - **Do** meet WCAG 2.1 AA on all text and interactive states, including body copy on surface/canvas backgrounds.
 - **Do** use `transform` and `opacity` only for animated properties. Never animate `width`, `height`, `top`, `left`.
+- **Do** lean into 70s/80s **retro display treatments** at display scale — extruded/isometric poster type (`.display-extrude`), warm multi-tone fills, and chromatic/print effects (offset channel split, halftone, screenprint misregistration). These are part of the Kinetic Editorial voice, not a violation of the Web3 ban — provided they stay on tinted grounds (never pure black), derive every color from brand/accent/fg tokens, hold WCAG 2.1 AA, and appear at display scale only. See §4 *Retro display headers* for the full constraint set.
 
 ### Don't
 
@@ -365,7 +383,7 @@ When impeccable introduces a new effect, document it here under the relevant com
 - **Don't** use light frosted glass (white/near-white `backdrop-blur` on light backgrounds). OptiTech's glass is dark-tinted. If it looks like an iOS popover, it's wrong.
 - **Don't** use neutral grey shadows (`rgba(0,0,0,0.2)` etc.). Shadows carry the brand hue via bloom tokens.
 - **Don't** use the SaaS cream aesthetic: off-white cards, pastel gradient blobs, rounded pill buttons, floating feature icon grids.
-- **Don't** use corporate navy or neon-on-black / Web3 energy in custom themes or new components.
+- **Don't** use corporate navy, or the synthwave/crypto look: neon-bright literals glowing on pure black (`#000`), laser grids receding into a void, chrome-and-magenta "Web3 energy." The ban is on *that specific aesthetic* — neon-on-true-black with token-bypassing color literals — **not** on a retro feel in general. Retro editorial display treatments are explicitly sanctioned (see the Do below and §4 *Retro display headers*); the line they must not cross is leaving the tinted-ground / semantic-token system.
 - **Don't** use side-stripe borders (a colored `border-left` or `border-right` > 1px as a decorative accent). Use background tints, full borders, or nothing.
 - **Don't** use Syne below headline scale, at weight above 525, or more than once per viewport.
 - **Don't** use display gradient fills (`display-gradient-*`) on sub-display type or more than once per composition.
