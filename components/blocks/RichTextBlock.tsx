@@ -1,6 +1,18 @@
 import { cva } from "class-variance-authority";
 import { RichText } from '@optimizely/cms-sdk/react/richText'
 
+// The SDK's default element map has no horizontal-rule entry, so an editor's
+// section break renders as an empty <span>. Register an <hr> renderer (under the
+// type names the editor/Slate may emit) so breaks render — and so the `dividers`
+// treatment below has something to style.
+const Hr = () => <hr />;
+const richTextElements = {
+  hr: Hr,
+  'horizontal-rule': Hr,
+  'thematic-break': Hr,
+  divider: Hr,
+};
+
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type RichTextStyleOptions = {
@@ -140,7 +152,7 @@ export default function RichTextBlock({
         className={innerCva({ alignment, size })}
         {...pa('content')}
       >
-        <RichText content={content ?? undefined} />
+        <RichText content={content ?? undefined} elements={richTextElements} />
       </div>
     </section>
   );

@@ -69,3 +69,25 @@ export const ICON_CHOICES_WITH_NONE = {
   none: { displayName: 'None (Default)', sortOrder: 5 },
   ...BASE_CHOICES,
 } as const
+
+/**
+ * Content-type `selectOne` enum form of the same icon set.
+ *
+ * Content-type string properties (e.g. OT_TabItem.tabIcon) take an array of
+ * { value, displayName } rather than the keyed record the display-template
+ * `choices` editor uses. Deriving it from BASE_CHOICES here keeps the
+ * content-property pickers in lockstep with the display-template pickers — one
+ * source of truth, one alphabetical order, the full library everywhere.
+ *
+ * Object.entries preserves BASE_CHOICES' insertion order, which is already
+ * alphabetical by displayName.
+ */
+export const ICON_ENUM = Object.entries(BASE_CHOICES).map(
+  ([value, { displayName }]) => ({ value, displayName }),
+)
+
+/** Icon enum with a leading "None (Default)" option — use when icon is optional. */
+export const ICON_ENUM_WITH_NONE = [
+  { value: 'none', displayName: 'None (Default)' },
+  ...ICON_ENUM,
+]
