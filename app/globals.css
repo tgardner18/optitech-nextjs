@@ -1114,46 +1114,48 @@ body {
   color: oklch(97% 0.005 195 / 0.80);
 }
 
-/* ── Treatment: dropcap — oversized accent initial ──────────────────────────
+/* ── Treatment: toc — section navigator ─────────────────────────────────────
  *
- * Drop caps belong on body text, not headings. Applying ::first-letter to a
- * heading creates an orphaned letter beside the heading text.
- *
- * Selectors target only paragraphs:
- *   p:first-child         content that opens directly with a paragraph
- *   h:first-child + p     first paragraph after an opening heading
- *
- * Uses solid accent color (signal green) for the fill — guaranteed visible on
- * both dark canvas and light backgrounds. The diffused text-shadow glow works
- * because text-shadow follows the fill color, not a stroke.
+ * h2s become flex rows: text content in a spanning child, back-to-nav link
+ * at the right edge. text-wrap: balance is moved onto the text span since
+ * flex containers don't support it directly.
  * ─────────────────────────────────────────────────────────────────────────── */
-[data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter,
-[data-rich-text][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
-  color: var(--ot-accent);
-  float: left;
-  font-size: clamp(4rem, 9vw, 5.5rem);
-  font-weight: 800;
-  line-height: 0.80;
-  margin-right: 0.10em;
-  margin-top: 0.05em;
-  letter-spacing: -0.04em;
-  /* Glow: two-layer accent bloom — wide diffuse + tight halo */
-  text-shadow:
-    0 0 1.2em oklch(from var(--ot-accent) l c h / 0.45),
-    0 0 0.3em oklch(from var(--ot-accent) l c h / 0.20);
+[data-rich-text][data-treatment="toc"] h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--ot-space-md);
+  text-wrap: auto;
 }
-
-/* Light mode: no glow needed, accent reads clearly on near-white canvas */
-[data-theme="light"] [data-rich-text][data-treatment="dropcap"] > p:first-child::first-letter,
-[data-theme="light"] [data-rich-text][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
-  text-shadow: none;
+[data-rich-text][data-treatment="toc"] h2 > span:first-child {
+  flex: 1;
+  min-width: 0;
+  text-wrap: balance;
 }
-
-/* Brand background: use fg-on-brand (near-white) so the initial shows on teal */
-[data-rich-text][data-color="brand"][data-treatment="dropcap"] > p:first-child::first-letter,
-[data-rich-text][data-color="brand"][data-treatment="dropcap"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-letter {
-  color: var(--ot-fg-on-brand);
-  text-shadow: 0 0 1em oklch(97% 0.005 195 / 0.20);
+/* Back-to-contents anchor — subtle at rest, brand-colored on hover */
+[data-rich-text][data-treatment="toc"] h2 > a {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--ot-fg-muted);
+  opacity: 0.30;
+  text-decoration: none;
+  transition:
+    opacity 150ms var(--ot-ease-quick),
+    color 150ms var(--ot-ease-quick);
+}
+[data-rich-text][data-treatment="toc"] h2:hover > a,
+[data-rich-text][data-treatment="toc"] h2 > a:hover,
+[data-rich-text][data-treatment="toc"] h2 > a:focus-visible {
+  opacity: 1;
+  color: var(--ot-brand);
+}
+/* Reset the global [data-rich-text] a styles inside the nav panel */
+[data-rich-text] nav#article-toc a {
+  color: inherit;
+  text-decoration: none;
+}
+[data-rich-text] nav#article-toc a:hover {
+  text-decoration: none;
 }
 
 /* ── Ruled headings — 1px teal top-border as chapter divider ── */
@@ -1366,20 +1368,6 @@ body {
   opacity: 0.7;
 }
 
-/* ── Treatment: incipit — tracked small-caps opening line ─────────────────────
- * ::first-line accepts font-variant, letter-spacing, weight and color. Distinct
- * from dropcap (one floated letter) and lead (the whole first paragraph). */
-[data-rich-text][data-treatment="incipit"] > p:first-child::first-line,
-[data-rich-text][data-treatment="incipit"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-line {
-  font-variant-caps: small-caps;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  color: var(--ot-fg);
-}
-[data-rich-text][data-color="brand"][data-treatment="incipit"] > p:first-child::first-line,
-[data-rich-text][data-color="brand"][data-treatment="incipit"] > :is(h1, h2, h3, h4, h5, h6):first-child + p::first-line {
-  color: var(--ot-fg-on-brand);
-}
 
 /* ── Reading-cadence reveal ───────────────────────────────────────────────────
  * Each top-level block rises + fades as it enters the viewport. Scroll-driven via

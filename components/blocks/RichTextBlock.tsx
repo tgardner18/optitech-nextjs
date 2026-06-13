@@ -1,19 +1,20 @@
 import { cva } from "class-variance-authority";
 import { RichText } from '@optimizely/cms-sdk/react/richText'
+import { ArrowUp } from 'lucide-react'
 
 // The SDK's default element map has no horizontal-rule entry, so an editor's
 // section break renders as an empty <span>. Register an <hr> renderer (under the
 // type names the editor/Slate may emit) so breaks render — and so the `dividers`
 // treatment below has something to style.
 const Hr = () => <hr />;
-const richTextElements = {
+const baseElements = {
   hr: Hr,
   'horizontal-rule': Hr,
   'thematic-break': Hr,
   divider: Hr,
 };
 
-// ─── Style option types (map 1:1 to CMS content properties) ─────────────────
+// ─── Style option types (map 1:1 to CMS display settings) ───────────────────
 
 export type RichTextStyleOptions = {
   /** Background color of the block — "none" is transparent, inheriting the row/section background */
@@ -23,41 +24,36 @@ export type RichTextStyleOptions = {
   /** Type scale and vertical rhythm: editorial for long-form prose, compact for shorter sections */
   size?: "editorial" | "compact";
   /**
-   * First-paragraph treatment.
+   * First-paragraph / block-level treatment.
    * - standard: faithful prose rendering
-   * - lead: first paragraph promoted to deck size in Blueprint color
-   * - dropcap: first letter enlarged in brand teal, floated left
-   * - incipit: first line of the opening paragraph set in tracked small-caps —
-   *   the classic editorial incipit. Distinct from dropcap (one letter) and
-   *   lead (whole paragraph).
+   * - lead: first paragraph promoted to deck size in brand color
+   * - toc: auto-generated section navigator from h2 headings, inserted after first heading
    */
-  treatment?: "standard" | "lead" | "dropcap" | "incipit";
-  /** Adds a 1px teal rule above h2 and h3 headings — editorial chapter dividers */
+  treatment?: "standard" | "lead" | "toc";
+  /** Adds a 1px brand rule above h2 and h3 headings — editorial chapter dividers */
   ruledHeadings?: boolean;
   /** Prose font size tier: body (default), large, lead, or statement callout */
   textScale?: "body" | "large" | "lead" | "statement";
   /** Prose font weight: regular (default), medium, or semibold */
   textWeight?: "regular" | "medium" | "semibold";
   /**
-   * Broadsheet column flow — the long-form move a single headline cannot make.
-   * Uses CSS multi-column with a tokenized column rule; collapses to a single
-   * column automatically when the measure gets too narrow.
+   * Broadsheet column flow.
    *   single — one column (default)
    *   dual   — two columns, justified + hyphenated
    *   triple — three columns, tighter measure
    */
   columns?: "single" | "dual" | "triple";
   /**
-   * Print ground behind the prose — a background effect, not a fill.
-   *   flat   — no texture (default), inherits the section background
-   *   ruled  — faint baseline ruling, ledger/manuscript register
-   *   grain  — halftone dot field, screenprint texture
-   *   framed — bordered editorial "page" with a masthead rule along the top
+   * Print ground behind the prose.
+   *   flat   — no texture (default)
+   *   ruled  — faint baseline ruling
+   *   grain  — halftone dot field
+   *   framed — bordered editorial "page"
    */
   ground?: "flat" | "ruled" | "grain" | "framed";
   /**
    * Section break (<hr>) treatment.
-   *   rule     — 1px teal line (default)
+   *   rule     — 1px brand line (default)
    *   ornament — centered fleuron (❧)
    *   asterism — centered asterism (⁂)
    */
@@ -66,13 +62,71 @@ export type RichTextStyleOptions = {
   numberedHeadings?: boolean;
   /**
    * Reading-cadence motion: each block rises + fades as it scrolls into view.
-   * Pure CSS scroll-driven (animation-timeline: view()); degrades to static
-   * for unsupported browsers and reduced-motion users.
    *   none    — static (default)
-   *   cascade — staggered scroll reveal down the column
+   *   cascade — staggered scroll reveal
    */
   reveal?: "none" | "cascade";
 };
+
+// ─── TOC utilities ───────────────────────────────────────────────────────────
+
+type HeadingEntry = { text: string; id: string };
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function extractNodeText(node: any): string {
+  if (typeof node.text === 'string') return node.text;
+  if (Array.isArray(node.children)) return node.children.map(extractNodeText).join('');
+  return '';
+}
+
+function extractHeadings(content: any): HeadingEntry[] {
+  const nodes: any[] = content?.children ?? [];
+  return nodes
+    .filter(n => n.type === 'heading-two')
+    .map(n => {
+      const text = extractNodeText(n);
+      return { text, id: slugify(text) };
+    });
+}
+
+// ─── ArticleToc panel ────────────────────────────────────────────────────────
+
+function ArticleToc({ headings }: { headings: HeadingEntry[] }) {
+  if (headings.length === 0) return null;
+  return (
+    <nav id="article-toc" aria-label="Article contents" className="my-lg">
+      <div className="border border-[var(--ot-bloom-brand-border)] bg-surface">
+        <div className="px-md pt-md pb-sm border-b border-[var(--ot-bloom-brand-border)]">
+          <span className="text-label tracking-label uppercase text-fg-muted font-semibold">
+            Contents
+          </span>
+        </div>
+        <ol className="px-md py-sm">
+          {headings.map((heading, i) => (
+            <li key={heading.id} className="list-none">
+              <a href={`#${heading.id}`} className="group/entry flex items-baseline gap-3 py-1">
+                <span className="font-mono text-brand text-xs tabular-nums flex-shrink-0 transition-colors duration-150">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="text-sm text-fg-muted leading-snug group-hover/entry:text-fg group-hover/entry:translate-x-[3px] transition-all duration-150 ease-out">
+                  {heading.text}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </nav>
+  );
+}
 
 // ─── CVA variant configs ─────────────────────────────────────────────────────
 
@@ -134,6 +188,43 @@ export default function RichTextBlock({
     reveal           = "none",
   } = styleOptions;
 
+  // Build element map for toc treatment. A closure flag tracks the first heading
+  // rendered in document order so the nav panel is inserted exactly once, after it.
+  let firstHeadingRendered = false;
+  const headings = treatment === 'toc' ? extractHeadings(content) : [];
+
+  const elements = treatment === 'toc' ? {
+    ...baseElements,
+    'heading-one': ({ children }: any) => {
+      const isFirst = !firstHeadingRendered;
+      firstHeadingRendered = true;
+      return (
+        <>
+          <h1>{children}</h1>
+          {isFirst && <ArticleToc headings={headings} />}
+        </>
+      );
+    },
+    'heading-two': ({ text, children }: any) => {
+      const id = slugify(text);
+      const isFirst = !firstHeadingRendered;
+      firstHeadingRendered = true;
+      return (
+        <>
+          <h2 id={id}>
+            <span>{children}</span>
+            {!isFirst && headings.length > 0 && (
+              <a href="#article-toc" aria-label="Back to contents">
+                <ArrowUp size={12} strokeWidth={2} aria-hidden="true" />
+              </a>
+            )}
+          </h2>
+          {isFirst && <ArticleToc headings={headings} />}
+        </>
+      );
+    },
+  } : baseElements;
+
   return (
     <section className={sectionCva({ color, size })}>
       <div
@@ -152,7 +243,7 @@ export default function RichTextBlock({
         className={innerCva({ alignment, size })}
         {...pa('content')}
       >
-        <RichText content={content ?? undefined} elements={richTextElements} />
+        <RichText content={content ?? undefined} elements={elements} />
       </div>
     </section>
   );
