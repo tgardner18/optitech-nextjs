@@ -27,6 +27,7 @@ import { OT_ChartDefault }           from '@/cms/display-templates/OT_ChartDefau
 import { OT_BannerBlockDefault }     from '@/cms/display-templates/OT_BannerBlockDefault'
 import { OT_ResourceLibraryDefault } from '@/cms/display-templates/OT_ResourceLibraryDefault'
 import { OT_CalloutDefault }         from '@/cms/display-templates/OT_CalloutDefault'
+import { OT_DividerBlockDefault }    from '@/cms/display-templates/OT_DividerBlockDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -65,6 +66,7 @@ import { OT_ChartBlock }       from '@/cms/content-types/OT_ChartBlock'
 import { OT_BannerBlock }           from '@/cms/content-types/OT_BannerBlock'
 import { OT_ResourceLibraryBlock }  from '@/cms/content-types/OT_ResourceLibraryBlock'
 import { OT_CalloutBlock }          from '@/cms/content-types/OT_CalloutBlock'
+import { OT_DividerBlock }          from '@/cms/content-types/OT_DividerBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -105,6 +107,7 @@ import OT_ChartBlockAdapter      from '@/cms/components/OT_ChartBlock'
 import OT_BannerBlockAdapter           from '@/cms/components/OT_BannerBlock'
 import OT_ResourceLibraryBlockAdapter  from '@/cms/components/OT_ResourceLibraryBlock'
 import OT_CalloutBlockAdapter          from '@/cms/components/OT_CalloutBlock'
+import OT_DividerBlockAdapter          from '@/cms/components/OT_DividerBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -149,6 +152,7 @@ initDisplayTemplateRegistry([
   OT_BannerBlockDefault,
   OT_ResourceLibraryDefault,
   OT_CalloutDefault,
+  OT_DividerBlockDefault,
 ])
 
 initContentTypeRegistry([
@@ -187,6 +191,7 @@ initContentTypeRegistry([
   OT_BannerBlock,
   OT_ResourceLibraryBlock,
   OT_CalloutBlock,
+  OT_DividerBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -229,6 +234,7 @@ initReactComponentRegistry({
     OT_BannerBlock:           OT_BannerBlockAdapter,
     OT_ResourceLibraryBlock:  OT_ResourceLibraryBlockAdapter,
     OT_CalloutBlock:          OT_CalloutBlockAdapter,
+    OT_DividerBlock:          OT_DividerBlockAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;
     // '_Row' and '_Column' are the fixed registry keys OptimizelyGridSection resolves.
     BlankSection:       BlankSectionAdapter,

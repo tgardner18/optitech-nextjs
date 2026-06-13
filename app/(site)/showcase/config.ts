@@ -35,6 +35,7 @@ export const CATEGORIES: ShowcaseCategory[] = [
       { label: 'Banner',            slug: 'banner'           },
       { label: 'Resource Library', slug: 'resource-library' },
       { label: 'Callout',          slug: 'callout'          },
+      { label: 'Divider',          slug: 'divider'          },
     ],
   },
   {

@@ -341,6 +341,31 @@
   [data-stagger][data-in] > *:nth-child(4) { animation-delay: 360ms; }
 }
 
+/* ── DividerBlock "draw" reveal ──────────────────────────────────────────────
+ * Rides the same MotionObserver as the row stagger above (data-stagger="draw").
+ * Line-based styles (slope, mark) draw out from their transform-origin; the
+ * gradient bleed fades up. The mark label fades in just behind its rules.
+ * The [data-stagger="draw"] value is outside the slide/fade/parallax set, so
+ * the generic "> *" rules above never touch it — these scoped rules own it.
+ * All wrapped in prefers-reduced-motion: no-preference, so reduced-motion users
+ * see the final state with no animation and no layout shift.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes otDividerDraw  { from { transform: scaleX(0); }                  to { transform: scaleX(1); } }
+@keyframes otDividerMark  { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes otDividerBleed { from { opacity: 0; transform: scaleX(0.82); }    to { opacity: 1; transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hold the pre-animation state once the scroll system is ready */
+  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-line  { transform: scaleX(0); }
+  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-mark  { opacity: 0; }
+  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-bleed { opacity: 0; }
+
+  /* Draw / fade in when the divider enters the viewport */
+  [data-stagger="draw"][data-in] .ot-divider-line  { animation: otDividerDraw  0.7s var(--ot-ease-kinetic) both; }
+  [data-stagger="draw"][data-in] .ot-divider-mark  { animation: otDividerMark  0.5s var(--ot-ease-kinetic) both; animation-delay: 260ms; }
+  [data-stagger="draw"][data-in] .ot-divider-bleed { animation: otDividerBleed 0.9s var(--ot-ease-kinetic) both; }
+}
+
 body {
   background: var(--ot-canvas);
   color: var(--ot-fg);

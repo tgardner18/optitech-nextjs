@@ -18,6 +18,7 @@ import OT_ChartBlock                 from '@/cms/components/OT_ChartBlock'
 import OT_BannerBlock                from '@/cms/components/OT_BannerBlock'
 import ResourceLibraryBlock         from '@/components/blocks/ResourceLibraryBlock'
 import CalloutBlock                  from '@/components/blocks/CalloutBlock'
+import OT_DividerBlock               from '@/cms/components/OT_DividerBlock'
 import JsonCopyBlock                 from '@/components/blocks/chart/JsonCopyBlock'
 import TrustRail                     from '@/components/blocks/TrustRail'
 import Button                        from '@/components/ui/Button'
@@ -34,7 +35,7 @@ const BLOCK_SLUGS = [
   'hero', 'card', 'primary-text', 'quote', 'rich-text',
   'image', 'video', 'stat', 'feature-grid', 'trust-rail',
   'accordion', 'tabs', 'blog-feed', 'button', 'chart', 'banner', 'resource-library',
-  'callout',
+  'callout', 'divider',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -58,6 +59,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'banner':           { label: 'BannerBlock',          cmsKey: 'OT_BannerBlock',          description: 'Full-bleed background image with layered content: eyebrow, headline, optional body, and up to two CTAs. Two overlay modes: scrim (color overlay over the image) and glass (content inside a frosted panel). Three color variants, two alignment options, two height sizes, and two image blend modes.' },
   'resource-library': { label: 'ResourceLibraryBlock', cmsKey: 'OT_ResourceLibraryBlock', description: 'DAM-connected asset download list. The editor picks a single DAM asset as a collection anchor; the block fetches all assets in that collection via Optimizely Graph and renders them as a dense list or card grid with Lucide file-type iconography and native download links.' },
   'callout':          { label: 'CalloutBlock',          cmsKey: 'OT_CalloutBlock',          description: 'Compact semantic inline notification. Six intent types: neutral, info, success, warning, danger, brand. Three variants: filled, bordered, bar. Dismissible with a two-phase kinetic exit — content sweeps right and fades, then the container height collapses.' },
+  'divider':          { label: 'DividerBlock',          cmsKey: 'OT_DividerBlock',          description: 'Structural section divider that opens deliberate breathing room between stacked sections. Three treatments: angled slope (a token-driven diagonal hairline with an optional bloom wedge), centered text mark (a hairline broken by an editable label or an editorial ornament), and gradient bleed (a soft bloom band, no hard line). Editor-controlled spacing, tone, and an optional draw-in reveal that rides the shared scroll observer.' },
 }
 
 export function generateStaticParams() {
@@ -2021,6 +2023,105 @@ function CalloutShowcase() {
   )
 }
 
+// ─── Divider ────────────────────────────────────────────────────────────────────
+
+// A faux content band, so the divider can be read for what it is: the deliberate
+// breath between two sections, not a line floating in isolation.
+function SectionBand({ eyebrow, children, ground = 'canvas' }: { eyebrow: string; children: string; ground?: 'canvas' | 'surface' }) {
+  return (
+    <div className={ground === 'surface' ? 'bg-surface' : 'bg-canvas'}>
+      <div className="px-md lg:px-lg py-lg max-w-[65ch]">
+        <p className="text-label tracking-label uppercase text-fg-muted font-semibold mb-xs">{eyebrow}</p>
+        <p className="text-body leading-body text-fg text-pretty">{children}</p>
+      </div>
+    </div>
+  )
+}
+
+function DividerShowcase() {
+  return (
+    <>
+      <BlockHeader slug="divider" />
+
+      {/* ── In context ──────────────────────────────────────────────────── */}
+      <VariantGroup
+        label="In context · between two sections"
+        note="The divider's job: open a measured gap so one section reads as finished and the next as a fresh start. Placed in its own full-width row in Visual Builder."
+      />
+      <SectionBand eyebrow="The platform" ground="surface">
+        OptiTech gives engineering teams the infrastructure to ship incrementally, measure precisely, and respond in real time. Every flag carries an audit trail; every rollout is reversible.
+      </SectionBand>
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'brand', slant: 'rise', space: 'lg' }} />
+      <SectionBand eyebrow="The method">
+        Decisions are made at the edges of your system, not in a committee room three weeks later. The result is a shorter loop between a hypothesis and the evidence that settles it.
+      </SectionBand>
+
+      {/* ── The three styles ────────────────────────────────────────────── */}
+      <VariantGroup label="Styles · default tone · large spacing" note="Angled slope, centered text mark, gradient bleed — the same spacing scale and token system behind each." />
+
+      <VariantLabel label='style: "slope"' note="A token-driven diagonal hairline. Brand / accent tones add a soft bloom wedge beneath the line." />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'neutral', slant: 'rise', space: 'lg' }} />
+
+      <VariantLabel label='style: "mark"' note="A hairline broken by an editable label or an editorial ornament." />
+      <OT_DividerBlock content={{ label: 'Continue' } as any} displaySettings={{ style: 'mark', tone: 'neutral', ornament: 'pendant', space: 'lg' }} />
+
+      <VariantLabel label='style: "bleed"' note="A soft bloom band derived from the bloom tokens. No hard line — the seam simply fades." />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'bleed', tone: 'brand', space: 'lg' }} />
+
+      {/* ── Slope · tone + slant ────────────────────────────────────────── */}
+      <VariantGroup label="Angled slope · tone and slant" note="Neutral stays a pure hairline; brand and accent add the bloom wedge. Slant sets the diagonal direction." />
+      <VariantLabel label='tone: "neutral" · slant: "rise"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'neutral', slant: 'rise', space: 'md' }} />
+      <VariantLabel label='tone: "brand" · slant: "rise"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'brand', slant: 'rise', space: 'md' }} />
+      <VariantLabel label='tone: "accent" · slant: "fall"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'accent', slant: 'fall', space: 'md' }} />
+
+      {/* ── Text mark · label + ornaments ───────────────────────────────── */}
+      <VariantGroup label="Centered text mark · label and ornaments" note="A label takes precedence; with no label the mark falls back to the chosen ornament, never a broken gap." />
+      <VariantLabel label='label: "New chapter" · tone: "brand"' />
+      <OT_DividerBlock content={{ label: 'New chapter' } as any} displaySettings={{ style: 'mark', tone: 'brand', ornament: 'pendant', space: 'md' }} />
+      <VariantLabel label='ornament: "pendant" ❧ · no label' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'mark', tone: 'neutral', ornament: 'pendant', space: 'md' }} />
+      <VariantLabel label='ornament: "asterism" ⁂ · tone: "accent"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'mark', tone: 'accent', ornament: 'asterism', space: 'md' }} />
+      <VariantLabel label='ornament: "dot" • · no label' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'mark', tone: 'neutral', ornament: 'dot', space: 'md' }} />
+
+      {/* ── Gradient bleed · tones ──────────────────────────────────────── */}
+      <VariantGroup label="Gradient bleed · tones" note="Bloom-token band, brightest at center. Neutral fades a faint light seam; brand and accent carry their hue." />
+      <VariantLabel label='tone: "neutral"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'bleed', tone: 'neutral', space: 'sm' }} />
+      <VariantLabel label='tone: "brand"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'bleed', tone: 'brand', space: 'sm' }} />
+      <VariantLabel label='tone: "accent"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'bleed', tone: 'accent', space: 'sm' }} />
+
+      {/* ── Spacing scale ───────────────────────────────────────────────── */}
+      <VariantGroup label="Spacing scale · sm → xl" note="Symmetric vertical padding, clamped so it scales down on narrow viewports. Bands above and below mark the gap each value opens." />
+      {(['sm', 'md', 'lg', 'xl'] as const).map(space => (
+        <div key={space}>
+          <VariantLabel label={`space: "${space}"`} />
+          <SectionBand eyebrow="Above" ground="surface">The section before the break.</SectionBand>
+          <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'mark', tone: 'neutral', ornament: 'dot', space }} />
+          <SectionBand eyebrow="Below">The section after the break.</SectionBand>
+        </div>
+      ))}
+
+      {/* ── Reveal ──────────────────────────────────────────────────────── */}
+      <VariantGroup label="Reveal on scroll · draw in" note="reveal: draw rides the shared MotionObserver. Lines draw out from center, the mark label fades just behind, the bleed fades up. Scroll each into view to retrigger. prefers-reduced-motion: renders the final state instantly, no shift." />
+      <VariantLabel label='style: "slope" · reveal: "draw"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'slope', tone: 'brand', slant: 'rise', space: 'md', reveal: 'draw' }} />
+      <VariantLabel label='style: "mark" · reveal: "draw"' />
+      <OT_DividerBlock content={{ label: 'Drawn in' } as any} displaySettings={{ style: 'mark', tone: 'accent', ornament: 'pendant', space: 'md', reveal: 'draw' }} />
+      <VariantLabel label='style: "bleed" · reveal: "draw"' />
+      <OT_DividerBlock content={{ label: '' } as any} displaySettings={{ style: 'bleed', tone: 'brand', space: 'md', reveal: 'draw' }} />
+
+      <div className="pb-xl" />
+    </>
+  )
+}
+
 export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
@@ -2043,6 +2144,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'banner':            return <BannerShowcase />
     case 'resource-library': return <ResourceLibraryShowcase />
     case 'callout':          return <CalloutShowcase />
+    case 'divider':          return <DividerShowcase />
     default:                 return notFound()
   }
 }
