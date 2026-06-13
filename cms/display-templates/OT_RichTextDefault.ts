@@ -36,14 +36,13 @@ export const OT_RichTextDefault = displayTemplate({
       },
     },
     treatment: {
-      displayName: 'First paragraph',
+      displayName: 'Treatment',
       editor: 'select',
       sortOrder: 40,
       choices: {
-        standard: { displayName: 'Standard (Default)',          sortOrder: 10 },
-        lead:     { displayName: 'Lead — Deck size',            sortOrder: 20 },
-        dropcap:  { displayName: 'Drop Cap',                    sortOrder: 30 },
-        incipit:  { displayName: 'Incipit — Small-caps opening', sortOrder: 40 },
+        standard: { displayName: 'Standard (Default)',              sortOrder: 10 },
+        lead:     { displayName: 'Lead — Deck size',                sortOrder: 20 },
+        toc:      { displayName: 'Contents — section navigator',    sortOrder: 30 },
       },
     },
     columns: {

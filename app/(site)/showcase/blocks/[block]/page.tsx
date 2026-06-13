@@ -469,6 +469,7 @@ type RTNode = { type: string; children: Array<RTNode | RTText> }
 const txt  = (text: string): RTText => ({ text })
 const bold = (text: string): RTText => ({ text, bold: true })
 const para = (...kids: Array<RTText | string>): RTNode => ({ type: 'paragraph',     children: kids.map(k => (typeof k === 'string' ? txt(k) : k)) })
+const h1   = (s: string): RTNode => ({ type: 'heading-one',   children: [txt(s)] })
 const h2   = (s: string): RTNode => ({ type: 'heading-two',   children: [txt(s)] })
 const h3   = (s: string): RTNode => ({ type: 'heading-three', children: [txt(s)] })
 const ul   = (...items: string[]): RTNode => ({ type: 'bulleted-list', children: items.map(s => ({ type: 'list-item', children: [txt(s)] })) })
@@ -505,6 +506,27 @@ const RT_STRUCTURED = doc(
   para('Experiment design tools that connect directly to your data. No more waiting three weeks for results from a release you have already moved past.'),
 )
 
+// Long-form article with H1 title — feeds the TOC treatment demo.
+// The TOC panel auto-inserts after the first heading (Option B).
+const RT_TOC_ARTICLE = doc(
+  h1('A Technical Guide to Feature Flags'),
+  para('Feature flags give engineering teams granular control over what ships and when. This guide covers the patterns, tradeoffs, and tooling decisions that matter most at scale.'),
+  h2('What are feature flags?'),
+  para('A feature flag is a conditional branch in your application code, controlled by a runtime configuration value rather than a deployment. The code ships; the behavior waits. You toggle the value in the platform, and the change propagates without a redeploy.'),
+  para('At their simplest, they are ', bold('if statements with remote config'), '. At scale, they become the primitives for targeted rollouts, gradual traffic migration, A/B experiments, and kill switches.'),
+  h2('Targeting and segmentation'),
+  para('The power of flags comes from targeting — the ability to expose a feature to a specific audience before the full population. Targeting rules evaluate against user attributes, device properties, or custom context you pass at evaluation time.'),
+  para('Segments are reusable groupings of targeting rules: "internal users", "beta cohort", "EU traffic." Once defined, the same segment appears across all flags in your project, keeping rollout logic consistent.'),
+  h2('Experimentation and statistical validity'),
+  para('Flags are the delivery mechanism for A/B tests. A control bucket and a treatment bucket run concurrently, each receiving a deterministic slice of traffic based on a consistent hashing function applied to the user identifier.'),
+  para('Statistical validity requires a minimum sample size before you can read results. Ship early, let traffic accumulate, and resist the urge to call a winner before the power threshold is met.'),
+  h2('Rollout strategies'),
+  para('A gradual rollout starts at a small traffic percentage and expands as confidence grows. The OptiTech platform lets you set percentage targets with a slider and update them in real time — no deploys, no code reviews.'),
+  para('Canary deployments pair a flag with a version gate: traffic assigned to the treatment cohort also receives the new deployment artifact. The flag becomes the rollback mechanism.'),
+  h2('Kill switches and incident response'),
+  para('Every flag is implicitly a kill switch. If a feature is causing elevated error rates, disable the flag: the behavior is removed from production in under a second without a revert commit, a code freeze, or an on-call escalation chain.'),
+)
+
 // Long-form article: multiple chapters, a section break, a list and a quote.
 // Feeds the broadsheet-column, divider, numbered-chapter and scroll-reveal demos.
 const RT_ARTICLE = doc(
@@ -533,11 +555,9 @@ function RichTextShowcase() {
   ]
 
   const treatments = [
-    { label: 'Standard',           note: 'Faithful prose rendering (default)',                           content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — p first',     note: 'First paragraph as editorial deck: larger, weight 300, teal',  content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — h2 first',    note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Dropcap — p first',  note: 'Oversized first letter in brand teal with chromatic glow',     content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Dropcap — h2 first', note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'dropcap',  size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Standard',        note: 'Faithful prose rendering (default)',                           content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Lead — p first',  note: 'First paragraph as editorial deck: larger, weight 300, brand', content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
+    { label: 'Lead — h2 first', note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
   ]
 
   const options: Array<{ label: string; note: string; content: any; displaySettings: DS }> = [
@@ -618,15 +638,14 @@ function RichTextShowcase() {
       ))}
 
       <VariantGroup
-        label="Editorial section breaks · numbered chapters · incipit"
-        note="Retro print register. The <hr> becomes a type ornament; h2s auto-number as chapters; the incipit sets the opening line in tracked small-caps."
+        label="Editorial section breaks · numbered chapters"
+        note="Retro print register. The <hr> becomes a type ornament; h2s auto-number as chapters."
       />
       {([
-        { label: 'dividers: "ornament"',     note: 'Fleuron (❧) replaces the rule between sections',         ds: { dividers: 'ornament' } },
-        { label: 'dividers: "asterism"',     note: 'Asterism (⁂) section break',                            ds: { dividers: 'asterism' } },
-        { label: 'numberedHeadings: true',   note: 'CSS-counter chapter numbers in tracked mono accent',     ds: { numberedHeadings: true } },
-        { label: 'ornament + numbered',      note: 'Combined — the full magazine register',                  ds: { dividers: 'ornament', numberedHeadings: true } },
-        { label: 'treatment: "incipit"',     note: 'Opening line in tracked small-caps (distinct from dropcap/lead)', ds: { treatment: 'incipit' } },
+        { label: 'dividers: "ornament"',   note: 'Fleuron (❧) replaces the rule between sections',     ds: { dividers: 'ornament' } },
+        { label: 'dividers: "asterism"',   note: 'Asterism (⁂) section break',                        ds: { dividers: 'asterism' } },
+        { label: 'numberedHeadings: true', note: 'CSS-counter chapter numbers in tracked mono accent', ds: { numberedHeadings: true } },
+        { label: 'ornament + numbered',    note: 'Combined — the full magazine register',              ds: { dividers: 'ornament', numberedHeadings: true } },
       ] as Array<{ label: string; note: string; ds: DS }>).map(item => (
         <div key={item.label} className="border-t border-fg/5">
           <VariantLabel label={item.label} note={item.note} />
@@ -636,6 +655,25 @@ function RichTextShowcase() {
           />
         </div>
       ))}
+
+      <VariantGroup
+        label="Contents — section navigator"
+        note="treatment: &ldquo;toc&rdquo; — h2 headings auto-generate a navigable Contents panel, inserted after the first heading (Option B: title lands first). Each h2 in the body gets an anchor id and a back-to-Contents arrow."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "toc" · canvas' note="H1 title → Contents panel → body with 5 anchored H2s" />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_TOC_ARTICLE } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'toc' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "toc" · surface · ruled headings' note="Surface background with ruled chapter dividers alongside the TOC" />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_TOC_ARTICLE } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'toc', ruledHeadings: true }}
+        />
+      </div>
 
       <VariantGroup
         label="Scroll reveal · reading cadence"
