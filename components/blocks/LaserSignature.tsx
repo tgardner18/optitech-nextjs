@@ -23,8 +23,8 @@
  *   100% opaque, brand teal (or near-white on brand bg), no glow (etched)
  *
  * The settled color adapts via --ls-settled-color custom property:
- *   default   → oklch(55% 0.18 195)  brand teal
- *   brand bg  → oklch(97% 0.005 195) near-white
+ *   default   → var(--ot-brand)        brand teal
+ *   brand bg  → var(--ot-fg-on-brand)  near-white (always light)
  *
  * prefers-reduced-motion: data-static reveals all characters instantly.
  */

@@ -202,10 +202,10 @@ export default function VideoBlock({
             <>
               {/* Thumbnail or shimmer */}
               {thumbState === "loading" && (
-                <div className="absolute inset-0 bg-[oklch(20%_0.022_195)] animate-pulse" />
+                <div className="absolute inset-0 bg-surface animate-pulse" />
               )}
               {thumbState === "error" && (
-                <div className="absolute inset-0 bg-[oklch(20%_0.022_195)]" />
+                <div className="absolute inset-0 bg-surface" />
               )}
               {thumbState === "ready" && posterSrc && (
                 <Image
@@ -232,7 +232,7 @@ export default function VideoBlock({
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "linear-gradient(to top, oklch(12% 0.012 195 / 0.65) 0%, oklch(12% 0.012 195 / 0.25) 45%, transparent 100%)",
+                    "linear-gradient(to top, oklch(from var(--ot-canvas) l c h / 0.65) 0%, oklch(from var(--ot-canvas) l c h / 0.25) 45%, transparent 100%)",
                 }}
               />
 
@@ -266,7 +266,7 @@ export default function VideoBlock({
                     "bg-brand",
                     "motion-safe:transition-[transform,background-color]",
                     "motion-safe:duration-200 motion-safe:ease-quick",
-                    "group-hover/play:bg-[oklch(38%_0.16_195)]",
+                    "group-hover/play:bg-brand-hover",
                     "motion-safe:group-hover/play:scale-110",
                   ].join(" ")}
                 >
@@ -279,7 +279,7 @@ export default function VideoBlock({
                   >
                     <path
                       d="M6 4.5L20 12L6 19.5V4.5Z"
-                      fill="oklch(97% 0.005 195)"
+                      fill="var(--ot-fg-on-brand)"
                     />
                   </svg>
                 </span>

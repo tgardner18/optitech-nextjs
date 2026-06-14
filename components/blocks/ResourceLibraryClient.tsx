@@ -163,6 +163,7 @@ function GridCard({
     <div className={cardCva({ color })}>
       {/* Brand header band — scan-line sweeps on card hover (CSS .resource-card-band::after) */}
       <div className="resource-card-band bg-brand flex items-center justify-center h-20 shrink-0">
+        {/* dur-exempt: 240ms — icon hover lift; nearest token quick(200ms) Δ40ms / base(320ms) Δ80ms, would change feel */}
         <div
           className="relative z-10 text-fg-on-brand opacity-70 group-hover:opacity-100 motion-safe:transition-[transform,opacity] motion-safe:duration-[240ms] motion-safe:ease-kinetic motion-safe:group-hover:-translate-y-[3px] motion-safe:group-hover:scale-110"
           aria-hidden="true"
@@ -210,12 +211,12 @@ function GridCard({
           text-label font-semibold tracking-label uppercase text-fg-muted
           group-hover:text-fg group-hover:bg-brand/[0.08]
           hover:text-fg-on-brand hover:bg-brand hover:border-brand
-          motion-safe:transition-[color,background-color,border-color] motion-safe:duration-[220ms] motion-safe:ease-quick
+          motion-safe:transition-[color,background-color,border-color] motion-safe:duration-(--ot-dur-quick) motion-safe:ease-quick
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
         aria-label={`Download ${asset.title} (${label}${size ? `, ${size}` : ''})`}
       >
         <ArrowDownToLine
-          className="w-4 h-4 motion-safe:transition-transform motion-safe:duration-[220ms] motion-safe:ease-kinetic motion-safe:group-hover:translate-y-[2px] motion-safe:hover:translate-y-[4px]"
+          className="w-4 h-4 motion-safe:transition-transform motion-safe:duration-(--ot-dur-quick) motion-safe:ease-kinetic motion-safe:group-hover:translate-y-[2px] motion-safe:hover:translate-y-[4px]"
           aria-hidden="true"
         />
         Download

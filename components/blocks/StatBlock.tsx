@@ -319,6 +319,7 @@ export default function StatBlock({
           ? {
               transform:       entered ? 'scaleY(1)' : 'scaleY(0)',
               transformOrigin: 'top center',
+              /* dur-exempt: 0.75s — divider scaleY draw; nearest token slow(600ms) Δ150ms, would change feel */
               transition:      `transform 0.75s var(--ot-ease-kinetic) ${staggerMs + 320}ms`,
             }
           : {}

@@ -27,15 +27,18 @@ export type ChartBlockClientProps = {
 }
 
 // Color helpers — derived from the same patterns used by CardBlock and TabsBlock
+// brand/glass are dark-context variants; --ot-fg-on-brand is always light, so
+// deriving from it keeps the text light without a light-mode flip, and re-tints
+// under a CMS rebrand. Applied via inline style (CSS), so relative color resolves.
 function headingColor(color: ChartStyleOptions['color']): string {
   if (color === 'brand')  return 'var(--ot-fg-on-brand)'
-  if (color === 'glass')  return 'rgba(255,255,255,0.95)'
+  if (color === 'glass')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.95)'
   return 'var(--ot-fg)'
 }
 
 function subtextColor(color: ChartStyleOptions['color']): string {
-  if (color === 'brand')  return 'rgba(255,255,255,0.65)'
-  if (color === 'glass')  return 'rgba(255,255,255,0.55)'
+  if (color === 'brand')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.65)'
+  if (color === 'glass')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.55)'
   return 'var(--ot-fg-muted)'
 }
 
@@ -57,9 +60,12 @@ function wrapperProps(color: ChartStyleOptions['color']): {
     case 'glass':
       return {
         className: 'px-lg py-xl w-full',
+        // Glass material — token-derived tint (matches the unified .bg-glass
+        // philosophy: --ot-fg @ low alpha; backdrop-filter does the frosting).
+        // data-surface='dark' below keeps --ot-fg light in this dark-glass context.
         style: {
-          background:          'rgba(255,255,255,0.08)',
-          border:              '1px solid rgba(255,255,255,0.12)',
+          background:          'oklch(from var(--ot-fg) l c h / 0.08)',
+          border:              '1px solid oklch(from var(--ot-fg) l c h / 0.12)',
           backdropFilter:      'blur(12px)',
           WebkitBackdropFilter:'blur(12px)',
         },

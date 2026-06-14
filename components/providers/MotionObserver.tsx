@@ -31,8 +31,29 @@ export function MotionObserver() {
       if (!el.hasAttribute('data-in')) io.observe(el)
     }
 
+    // ── Offscreen-pause observer ──────────────────────────────────────────────
+    // A SECOND observer for ambient, infinite, paint-bound animations (hero
+    // breathe, liquid text sweep, marquee). Unlike `io` above it does NOT
+    // unobserve — it toggles on every enter/exit so the animation pauses while
+    // well offscreen and resumes on return. A generous rootMargin means it only
+    // pauses once the host is well past the fold, never snapping at the edge.
+    // Default state is running (no data-offscreen) until JS confirms offscreen,
+    // so there is no hydration flash and behavior is unchanged when JS is absent.
+    const pauseIo = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) entry.target.removeAttribute('data-offscreen')
+          else                      entry.target.setAttribute('data-offscreen', '')
+        }
+      },
+      { rootMargin: '200px 0px 200px 0px' }
+    )
+
+    const observePause = (el: Element) => pauseIo.observe(el)
+
     // Initial scan.
     document.querySelectorAll('[data-stagger]').forEach(observe)
+    document.querySelectorAll('[data-pause-offscreen]').forEach(observePause)
 
     // The root layout — and therefore this effect — never re-mounts on App Router
     // client-side navigation. Watch the DOM so [data-stagger] elements added by a
@@ -45,6 +66,8 @@ export function MotionObserver() {
           const el = node as Element
           if (el.matches('[data-stagger]')) observe(el)
           el.querySelectorAll?.('[data-stagger]').forEach(observe)
+          if (el.matches('[data-pause-offscreen]')) observePause(el)
+          el.querySelectorAll?.('[data-pause-offscreen]').forEach(observePause)
         }
       }
     })
@@ -52,6 +75,7 @@ export function MotionObserver() {
 
     return () => {
       io.disconnect()
+      pauseIo.disconnect()
       mo.disconnect()
     }
   }, [])

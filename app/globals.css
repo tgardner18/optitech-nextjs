@@ -61,8 +61,8 @@
   --ease-quick:   var(--ot-ease-quick);
 
   /* Animations — apply with motion-safe: modifier to honour prefers-reduced-motion */
-  --animate-fade-in:  fadeIn  0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-up: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in:  fadeIn  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-up: slideUp var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Button surface context tokens ───────────────────────────────────────────
@@ -121,7 +121,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .animate-stat-pulse {
-    animation: statPulse 0.26s var(--ot-ease-quick) forwards;
+    animation: statPulse 0.26s var(--ot-ease-quick) forwards; /* dur-exempt: 260ms — nearest quick(200)/base(320) Δ60ms */
   }
 }
 
@@ -151,6 +151,7 @@
   transform: translateY(0.75rem);
   pointer-events: none;
   /* Enter: kinetic expo-out; exit: quart-in (faster) */
+  /* dur-exempt: 350ms — nearest base(320) Δ30ms */
   transition:
     opacity     350ms cubic-bezier(0.16, 1, 0.3, 1),
     transform   350ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -160,6 +161,7 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  /* dur-exempt: 350ms — nearest base(320) Δ30ms */
   transition:
     opacity   350ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -168,8 +170,8 @@
 /* Exit is faster than entrance */
 .scroll-top-btn[data-visible="false"] {
   transition:
-    opacity   220ms cubic-bezier(0.7, 0, 0.84, 0),
-    transform 220ms cubic-bezier(0.7, 0, 0.84, 0);
+    opacity   var(--ot-dur-quick) cubic-bezier(0.7, 0, 0.84, 0),
+    transform var(--ot-dur-quick) cubic-bezier(0.7, 0, 0.84, 0);
 }
 
 /* prefers-reduced-motion: entrance is opacity-only, no translate */
@@ -178,17 +180,17 @@
   .scroll-top-btn[data-visible="true"],
   .scroll-top-btn[data-visible="false"] {
     transform: none;
-    transition: opacity 200ms linear;
+    transition: opacity var(--ot-dur-quick) linear;
   }
 }
 
 .animate-scroll-top-orbit {
-  animation: scrollTopOrbit 4s linear infinite;
+  animation: scrollTopOrbit 4s linear infinite; /* dur-exempt: 4s — continuous orbit loop, off the UI scale (no breathe/liquid token applies) */
 }
 
 /* On hover the arc accelerates — kinetic snap */
 .scroll-top-btn[data-visible="true"]:hover .animate-scroll-top-orbit {
-  animation-duration: 1.2s;
+  animation-duration: 1.2s; /* dur-exempt: 1.2s — hover orbit speed-up, off the UI scale */
 }
 
 /* ── TrustRail marquee ────────────────────────────────────────────────────────
@@ -226,10 +228,10 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .animate-accordion-open {
-    animation: accordionOpen 0.32s var(--ot-ease-kinetic) forwards;
+    animation: accordionOpen var(--ot-dur-base) var(--ot-ease-kinetic) forwards;
   }
   .animate-accordion-close {
-    animation: accordionClose 0.26s var(--ot-ease-quick) forwards;
+    animation: accordionClose 0.26s var(--ot-ease-quick) forwards; /* dur-exempt: 260ms — nearest quick(200)/base(320) Δ60ms */
   }
 }
 
@@ -333,9 +335,9 @@
     transform: translateY(3rem);
   }
   /* Animate columns in when the row enters the viewport */
-  [data-stagger="slide"][data-in]    > * { animation: slideUp    0.6s var(--ot-ease-kinetic) both; }
-  [data-stagger="fade"][data-in]     > * { animation: fadeIn     0.6s var(--ot-ease-kinetic) both; }
-  [data-stagger="parallax"][data-in] > * { animation: parallaxUp 0.9s var(--ot-ease-kinetic) both; }
+  [data-stagger="slide"][data-in]    > * { animation: slideUp    var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+  [data-stagger="fade"][data-in]     > * { animation: fadeIn     var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+  [data-stagger="parallax"][data-in] > * { animation: parallaxUp 0.9s var(--ot-ease-kinetic) both; } /* dur-exempt: 900ms — nearest slow(600) Δ300ms */
   [data-stagger][data-in] > *:nth-child(2) { animation-delay: 120ms; }
   [data-stagger][data-in] > *:nth-child(3) { animation-delay: 240ms; }
   [data-stagger][data-in] > *:nth-child(4) { animation-delay: 360ms; }
@@ -362,12 +364,12 @@
   .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-bleed { opacity: 0; }
 
   /* Draw / fade in when the divider enters the viewport */
-  [data-stagger="draw"][data-in] .ot-divider-line  { animation: otDividerDraw 0.7s var(--ot-ease-kinetic) both; }
-  [data-stagger="draw"][data-in] .ot-divider-mark  { animation: otDividerMark 0.5s var(--ot-ease-kinetic) both; animation-delay: 260ms; }
+  [data-stagger="draw"][data-in] .ot-divider-line  { animation: otDividerDraw 0.7s var(--ot-ease-kinetic) both; } /* dur-exempt: 700ms — nearest slow(600) Δ100ms */
+  [data-stagger="draw"][data-in] .ot-divider-mark  { animation: otDividerMark 0.5s var(--ot-ease-kinetic) both; animation-delay: 260ms; } /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   /* glow bloom fades in 200ms behind the rule it surrounds */
-  [data-stagger="draw"][data-in] .ot-divider-bloom { animation: otDividerFade 0.5s var(--ot-ease-kinetic) both; animation-delay: 200ms; }
+  [data-stagger="draw"][data-in] .ot-divider-bloom { animation: otDividerFade 0.5s var(--ot-ease-kinetic) both; animation-delay: 200ms; } /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   /* bleed: a pure fade up from nothing, eased in — no transform */
-  [data-stagger="draw"][data-in] .ot-divider-bleed { animation: otDividerFade 0.4s ease-in both; }
+  [data-stagger="draw"][data-in] .ot-divider-bleed { animation: otDividerFade 0.4s ease-in both; } /* dur-exempt: 400ms — nearest base(320) Δ80ms */
 }
 
 body {
@@ -420,7 +422,7 @@ body {
   .display-gradient-ember,
   .display-gradient-mono,
   .display-extrude {
-    animation: depth-arrive 0.9s var(--ot-ease-kinetic) both;
+    animation: depth-arrive 0.9s var(--ot-ease-kinetic) both; /* dur-exempt: 900ms — nearest slow(600) Δ300ms */
   }
 }
 
@@ -644,8 +646,8 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .ot-depth-extrude {
-    animation: otExtrudeArrive 0.65s var(--ot-ease-kinetic) both;
-    transition: --ot-extrude-offset 280ms var(--ot-ease-kinetic);
+    animation: otExtrudeArrive 0.65s var(--ot-ease-kinetic) both; /* dur-exempt: 650ms — nearest slow(600) Δ50ms */
+    transition: --ot-extrude-offset 280ms var(--ot-ease-kinetic); /* dur-exempt: 280ms — nearest base(320) Δ40ms */
   }
   .ot-depth-extrude:hover {
     --ot-extrude-offset: 1.4;
@@ -707,7 +709,7 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .ot-depth-liquid { animation: otLiquidShift 8s ease-in-out infinite alternate; }
+  .ot-depth-liquid { animation: otLiquidShift var(--ot-dur-liquid) ease-in-out infinite alternate; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -812,7 +814,7 @@ body {
     4px 4px 0 var(--ot-brand-hover),
     7px 7px 0 oklch(from var(--ot-brand-hover) calc(l * 0.58) c h / 0.65),
     0 8px 28px var(--ot-bloom-brand-faint);
-  transition: transform 280ms var(--ot-ease-quick), box-shadow 280ms var(--ot-ease-quick);
+  transition: transform 280ms var(--ot-ease-quick), box-shadow 280ms var(--ot-ease-quick); /* dur-exempt: 280ms — nearest base(320) Δ40ms */
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -955,8 +957,8 @@ body {
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
   text-decoration-color: oklch(from var(--ot-brand) l c h / 0.4);
-  transition: color 0.15s var(--ot-ease-quick),
-              text-decoration-color 0.15s var(--ot-ease-quick);
+  transition: color var(--ot-dur-fast) var(--ot-ease-quick),
+              text-decoration-color var(--ot-dur-fast) var(--ot-ease-quick);
 }
 [data-rich-text] a:hover {
   color: var(--ot-brand-hover);
@@ -1169,8 +1171,8 @@ body {
   opacity: 0.30;
   text-decoration: none;
   transition:
-    opacity 150ms var(--ot-ease-quick),
-    color 150ms var(--ot-ease-quick);
+    opacity var(--ot-dur-fast) var(--ot-ease-quick),
+    color var(--ot-dur-fast) var(--ot-ease-quick);
 }
 [data-rich-text][data-treatment="toc"] h2:hover > a,
 [data-rich-text][data-treatment="toc"] h2 > a:hover,
@@ -1507,7 +1509,7 @@ body {
  * --ot-bloom-brand and --ot-bloom-accent, which follow the CMS theme override.
  * ─────────────────────────────────────────────────────────────────────────── */
 .card-hover-lift {
-  transition: transform 200ms var(--ot-ease-quick), box-shadow 200ms var(--ot-ease-quick);
+  transition: transform var(--ot-dur-quick) var(--ot-ease-quick), box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
 }
 .card-hover-lift:hover {
   transform: translateY(-4px);
@@ -1520,7 +1522,7 @@ body {
 }
 
 .card-hover-glow {
-  transition: box-shadow 200ms var(--ot-ease-quick);
+  transition: box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
 }
 .card-hover-glow:hover {
   box-shadow:
@@ -1543,9 +1545,9 @@ body {
 .card-bg-frost {
   background: linear-gradient(
     to top,
-    oklch(12% 0.012 195 / 0.52) 0%,
-    oklch(12% 0.012 195 / 0.34) 55%,
-    oklch(12% 0.012 195 / 0.12) 100%
+    oklch(from var(--ot-canvas) l c h / 0.52) 0%,
+    oklch(from var(--ot-canvas) l c h / 0.34) 55%,
+    oklch(from var(--ot-canvas) l c h / 0.12) 100%
   );
   backdrop-filter: blur(6px) saturate(115%);
   -webkit-backdrop-filter: blur(6px) saturate(115%);
@@ -1556,14 +1558,14 @@ body {
  * pulling focus to the text. Guarded so reduced-motion users see no change. */
 @media (prefers-reduced-motion: no-preference) {
   .card-bg-frost {
-    transition: background 220ms var(--ot-ease-quick);
+    transition: background var(--ot-dur-quick) var(--ot-ease-quick);
   }
   .group:hover .card-bg-frost {
     background: linear-gradient(
       to top,
-      oklch(12% 0.012 195 / 0.64) 0%,
-      oklch(12% 0.012 195 / 0.44) 55%,
-      oklch(12% 0.012 195 / 0.16) 100%
+      oklch(from var(--ot-canvas) l c h / 0.64) 0%,
+      oklch(from var(--ot-canvas) l c h / 0.44) 55%,
+      oklch(from var(--ot-canvas) l c h / 0.16) 100%
     );
   }
 }
@@ -1578,8 +1580,8 @@ body {
 .resource-card {
   box-shadow: 0 2px 18px var(--ot-bloom-brand-faint);
   transition:
-    transform 300ms var(--ot-ease-quick),
-    box-shadow 300ms var(--ot-ease-quick);
+    transform var(--ot-dur-base) var(--ot-ease-quick),
+    box-shadow var(--ot-dur-base) var(--ot-ease-quick);
 }
 .resource-card:hover {
   box-shadow:
@@ -1608,7 +1610,7 @@ body {
 }
 @media (prefers-reduced-motion: no-preference) {
   .resource-card-band::before {
-    transition: transform 320ms var(--ot-ease-kinetic);
+    transition: transform var(--ot-dur-base) var(--ot-ease-kinetic);
   }
   .resource-card:hover .resource-card-band::before {
     transform: scaleY(1);
@@ -1616,7 +1618,7 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .resource-card-band {
-    transition: background-color 200ms var(--ot-ease-quick);
+    transition: background-color var(--ot-dur-quick) var(--ot-ease-quick);
   }
   .resource-card:hover .resource-card-band {
     background-color: var(--ot-brand-hover);
@@ -1624,15 +1626,24 @@ body {
 }
 
 /* ── Glass panel — true frosted-glass overlay for rows, sections, and stat panels
- * True glassmorphism: backdrop-filter is the frost — the background MUST be
- * near-transparent so blur of whatever is behind shows through.
+ * True glassmorphism: backdrop-filter does the frosting — the background MUST be
+ * a low-alpha tint so the blur of whatever is behind shows through. This is the
+ * single reconciled glass philosophy across the system: the tint is ALWAYS
+ * token-derived from --ot-fg via relative color syntax (never raw white/black),
+ * so the material follows the theme. On the default dark canvas --ot-fg is
+ * near-white → light frost on dark; in light mode --ot-fg is near-black → dark
+ * frost on light. This satisfies DESIGN.md's "never light-frosted on light
+ * backgrounds" rule automatically, in both directions, without a second variant.
  *
- * background: rgba(255,255,255,0.07) — white tint (NOT a dark fill) lets the
- *   backdrop-filter do the work; a dark fill occludes the blur completely.
+ * (This is distinct from .banner-glass, which is a heavier OPAQUE canvas-75%
+ * treatment — a different material, intentionally not unified with this one.)
+ *
+ * background: oklch(from var(--ot-fg) l c h / 0.07) — low-alpha tint lets the
+ *   backdrop-filter do the work; a higher-alpha/opaque fill would occlude the blur.
  * backdrop-filter: blur(18px) saturate(180%) — the actual frost + colour-pop.
- * border: 1px solid rgba(255,255,255,0.20) — visible edge highlight, glass-like.
+ * border: oklch(from var(--ot-fg) l c h / 0.20) — visible edge highlight, glass-like.
  * box-shadow outer: depth; inset top-edge shimmer creates the glass-catching-light look.
- * ::before: 135° diagonal sheen — surface specular, always on top of content.
+ * ::before: 135° diagonal sheen (--ot-fg @ 0.12) — surface specular, above content.
  *
  * CRITICAL: the parent section must have a rich/varied background (gradient, image,
  * etc.) — backdrop-filter blurs what's behind. A flat solid hex makes it invisible.
@@ -1640,20 +1651,20 @@ body {
  * ─────────────────────────────────────────────────────────────────────────── */
 .bg-glass {
   position: relative;
-  background: rgba(255, 255, 255, 0.07);
+  background: oklch(from var(--ot-fg) l c h / 0.07);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.20);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.20);
   box-shadow:
     0 8px 32px var(--ot-bloom-brand-faint),
-    inset 0 1px 0 oklch(97% 0.005 195 / 0.25);
+    inset 0 1px 0 oklch(from var(--ot-fg) l c h / 0.25);
 }
 
 .bg-glass::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
+  background: linear-gradient(135deg, oklch(from var(--ot-fg) l c h / 0.12) 0%, transparent 60%);
   pointer-events: none;
   border-radius: inherit;
 }
@@ -1813,13 +1824,28 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .hero-atmos[data-color="canvas"]::before,
   .hero-atmos[data-color="surface"]::before {
-    animation: heroPanelBreathe 9s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+    animation: heroPanelBreathe var(--ot-dur-breathe) cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
   }
 }
 
 @keyframes heroPanelBreathe {
   from { --hero-glow-a: 0.11; }
   to   { --hero-glow-a: 0.28; }
+}
+
+/* ── Offscreen-pause for ambient, infinite, paint-bound animations ───────────
+ * MotionObserver toggles data-offscreen on [data-pause-offscreen] hosts when
+ * they scroll well past the fold (generous rootMargin → no edge snapping).
+ * Pausing — not will-change — is the fix here: hero breathe and liquid text
+ * are paint-bound, so a compositor hint wouldn't help and would only add memory
+ * pressure. Lives inside no-preference so reduced-motion users (who never run
+ * these animations and never receive data-offscreen) are wholly unaffected.
+ * The pseudo-element rule is required because heroPanelBreathe runs on
+ * .hero-atmos::before while the attribute is toggled on the .hero-atmos host;
+ * it is placed after the breathe declaration so it wins at equal specificity. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-pause-offscreen][data-offscreen]    { animation-play-state: paused; }
+  .hero-atmos[data-offscreen]::before        { animation-play-state: paused; }
 }
 
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
@@ -1871,7 +1897,7 @@ body {
 }
 
 .tab-panel-enter {
-  animation: tab-panel-in 200ms ease-out forwards;
+  animation: tab-panel-in var(--ot-dur-quick) ease-out forwards;
 }
 
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────
@@ -1894,7 +1920,7 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .btn-signal::before {
-    transition: transform 220ms var(--ot-ease-kinetic);
+    transition: transform var(--ot-dur-quick) var(--ot-ease-kinetic);
   }
   .btn-signal:hover::before,
   .btn-signal:focus-visible::before {
@@ -1932,7 +1958,7 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .btn-hover-fill::before {
-    transition: opacity 200ms var(--ot-ease-quick);
+    transition: opacity var(--ot-dur-quick) var(--ot-ease-quick);
   }
   .btn-hover-fill:hover::before,
   .btn-hover-fill:focus-visible::before {
@@ -2051,10 +2077,10 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .btn-glass {
     transition:
-      background 200ms var(--ot-ease-quick),
-      border-color 200ms var(--ot-ease-quick),
-      box-shadow 200ms var(--ot-ease-quick),
-      transform 150ms var(--ot-ease-quick);
+      background var(--ot-dur-quick) var(--ot-ease-quick),
+      border-color var(--ot-dur-quick) var(--ot-ease-quick),
+      box-shadow var(--ot-dur-quick) var(--ot-ease-quick),
+      transform var(--ot-dur-fast) var(--ot-ease-quick);
   }
 }
 
@@ -2108,7 +2134,7 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .animate-dropdown-in {
-    animation: dropdownIn 180ms var(--ot-ease-kinetic) forwards;
+    animation: dropdownIn var(--ot-dur-quick) var(--ot-ease-kinetic) forwards;
   }
 }
 
@@ -2195,11 +2221,11 @@ body {
 /* ── Active: trigger the sequential signing animation ── */
 @media (prefers-reduced-motion: no-preference) {
   .ls-wrap[data-active] .ls-rule {
-    animation: lsRuleDraw 180ms ease-out forwards;
+    animation: lsRuleDraw var(--ot-dur-quick) ease-out forwards;
   }
 
   .ls-wrap[data-active] .ls-char {
-    animation: lsCharWrite 500ms calc(var(--ls-char-delay, 200ms)) ease-out both;
+    animation: lsCharWrite 500ms calc(var(--ls-char-delay, 200ms)) ease-out both; /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   }
 }
 
@@ -2316,16 +2342,16 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .banner-wrap[data-active] .banner-eyebrow {
-    animation: fadeIn  0.4s   0ms var(--ot-ease-kinetic) both;
+    animation: fadeIn  0.4s   0ms var(--ot-ease-kinetic) both; /* dur-exempt: 400ms — nearest base(320) Δ80ms */
   }
   .banner-wrap[data-active] .banner-heading {
-    animation: slideUp 0.6s 120ms var(--ot-ease-kinetic) both;
+    animation: slideUp var(--ot-dur-slow) 120ms var(--ot-ease-kinetic) both;
   }
   .banner-wrap[data-active] .banner-body {
-    animation: slideUp 0.5s 240ms var(--ot-ease-kinetic) both;
+    animation: slideUp 0.5s 240ms var(--ot-ease-kinetic) both; /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   }
   .banner-wrap[data-active] .banner-ctas {
-    animation: slideUp 0.5s 340ms var(--ot-ease-kinetic) both;
+    animation: slideUp 0.5s 340ms var(--ot-ease-kinetic) both; /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   }
 }
 
@@ -2361,7 +2387,7 @@ body {
 /* Nav items */
 .oa-sb-nav-item {
   color: oklch(54% 0.018 175);
-  transition: color 120ms var(--ot-ease-quick), background-color 120ms var(--ot-ease-quick);
+  transition: color 120ms var(--ot-ease-quick), background-color 120ms var(--ot-ease-quick); /* dur-exempt: 120ms — nearest fast(150) Δ30ms */
 }
 .oa-sb-nav-item:hover {
   color: oklch(80% 0.012 165);
@@ -2379,7 +2405,7 @@ body {
 }
 .oa-sb-logout {
   color: oklch(42% 0.014 175);
-  transition: color 120ms var(--ot-ease-quick), background-color 120ms var(--ot-ease-quick);
+  transition: color 120ms var(--ot-ease-quick), background-color 120ms var(--ot-ease-quick); /* dur-exempt: 120ms — nearest fast(150) Δ30ms */
 }
 .oa-sb-logout:hover {
   color: oklch(70% 0.012 165);
@@ -2446,6 +2472,6 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   .oa-day-panel {
-    animation: oa-slide-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: oa-slide-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) both; /* dur-exempt: 240ms — nearest quick(200) Δ40ms */
   }
 }

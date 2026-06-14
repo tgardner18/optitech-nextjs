@@ -172,7 +172,11 @@ export default function PrimaryTextBlock({
           {eyebrow && (
             <p className={eyebrowCva({ color })} {...pa('eyebrow')}>{eyebrow}</p>
           )}
-          <Heading className={headlineCva({ size, color, gradient, depth })} {...pa('headline')}>
+          <Heading
+            className={headlineCva({ size, color, gradient, depth })}
+            {...(depth === 'liquid' ? { 'data-pause-offscreen': '' } : {})}
+            {...pa('headline')}
+          >
             {headline}
           </Heading>
           {body && (

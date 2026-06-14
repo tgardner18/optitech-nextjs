@@ -87,6 +87,17 @@
   --ot-ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1); /* expo out — entrances     */
   --ot-ease-quick:   cubic-bezier(0.25, 1, 0.5, 1); /* quart out — UI states   */
 
+  /* Durations — scale mirrors the easing tokens. Theme-invariant, so defined
+   * once here (NOT duplicated into the light/dark blocks). */
+  /* UI / state / entrance durations */
+  --ot-dur-fast:  150ms;
+  --ot-dur-quick: 200ms;
+  --ot-dur-base:  320ms;
+  --ot-dur-slow:  600ms;
+  /* Ambient continuous loops */
+  --ot-dur-breathe: 9s;
+  --ot-dur-liquid:  8s;
+
   /* ── Monoton display weight ──────────────────────────────────────────────
    * Monoton is a single-weight font (Regular 400 only — no variable axis).
    * Always renders at 400 regardless of font-weight value.

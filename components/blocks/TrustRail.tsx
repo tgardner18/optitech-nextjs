@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -283,19 +283,24 @@ export default function TrustRail({
               style={{ background: `linear-gradient(to left, ${bgToken}, transparent)` }}
             />
 
-            {/* Scrolling track — logos doubled for seamless loop */}
+            {/* Scrolling track — logos doubled for seamless loop.
+                Uses the .animate-trust-rail-scroll class (not an inline animation)
+                so the offscreen-pause rule — a stylesheet declaration — can
+                override its play-state; an inline `animation` shorthand would win
+                on specificity and never pause. The class is already gated by
+                @media (prefers-reduced-motion: no-preference); we also drop the
+                class under reduced motion to mirror the prior inline gating. */}
             <div
-              className="flex items-center"
+              className={cn('flex items-center', !prefersReduced && 'animate-trust-rail-scroll')}
+              data-pause-offscreen
               style={{
                 gap: `${railGap}px`,
                 // paddingRight = railGap ensures translateX(-50%) lands exactly
                 // at the seam between the two copies — no jitter on loop reset.
                 paddingRight: `${railGap}px`,
-                animation: !prefersReduced
-                  ? `trustRailScroll ${duration}s linear infinite`
-                  : undefined,
-                willChange: !prefersReduced ? 'transform' : undefined,
-              }}
+                // Feeds .animate-trust-rail-scroll's animation-duration.
+                ['--trust-rail-duration']: `${duration}s`,
+              } as CSSProperties}
               // Entire track is decorative; screen readers get the list below
               aria-hidden
             >

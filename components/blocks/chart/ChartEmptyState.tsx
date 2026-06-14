@@ -14,10 +14,14 @@ export default function ChartEmptyState({ height, color }: Props) {
 
   const isDark = color === 'brand' || color === 'glass'
 
-  const iconColor  = isDark ? 'rgba(255,255,255,0.30)' : 'var(--ot-fg-muted)'
-  const textColor  = isDark ? 'rgba(255,255,255,0.50)' : 'var(--ot-fg-muted)'
-  const muteColor  = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(var(--ot-fg-muted), 0.6)'
-  const borderCol  = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'
+  // brand/glass are dark-context variants → derive light values from
+  // --ot-fg-on-brand (always light, no light-mode flip); other variants use the
+  // theme-following fg tokens. The dashed border derives from --ot-fg so it
+  // follows the canvas in both modes. All applied via inline style (CSS).
+  const iconColor  = isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.30)' : 'var(--ot-fg-muted)'
+  const textColor  = isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.50)' : 'var(--ot-fg-muted)'
+  const muteColor  = isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.30)' : 'oklch(from var(--ot-fg-muted) l c h / 0.6)'
+  const borderCol  = isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.15)' : 'oklch(from var(--ot-fg) l c h / 0.08)'
 
   return (
     <div
@@ -46,7 +50,7 @@ export default function ChartEmptyState({ height, color }: Props) {
         Chart data unavailable
       </p>
       <p style={{
-        color:      isDark ? 'rgba(255,255,255,0.35)' : 'var(--ot-fg-muted)',
+        color:      isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.35)' : 'var(--ot-fg-muted)',
         fontSize:   '0.75rem',
         fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
         margin:     0,

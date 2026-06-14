@@ -194,6 +194,7 @@ export default function HeroBlock({
           className="hero-atmos"
           data-color={color}
           data-layout={atmosLayout}
+          data-pause-offscreen
           aria-hidden="true"
         />
 

@@ -55,9 +55,12 @@ function resolveScheme(fill: CardFill, imageStyle: CardImageStyle): Scheme {
 }
 
 // Typography classes keyed by scheme.
-// "light" scheme uses hardcoded OKLCH values: canvas/fg tokens invert in light
-// mode, but fill="light" is intentionally a dark-mode construct (light card
-// on a dark section ground).
+// "light" scheme stays a fixed light surface regardless of page theme (a light
+// card on a dark section ground): canvas/fg tokens flip with the theme, so they
+// can't be used here. Instead the fixed lightness/chroma are kept while the HUE
+// is pulled from --ot-brand via relative color syntax — so a CMS rebrand re-tints
+// the neutral without flipping it. At the default teal brand (h=195) these
+// resolve to the original literals exactly.
 const T = {
   eyebrow: {
     dark:  "text-label font-semibold tracking-label uppercase text-fg-muted",
@@ -67,12 +70,12 @@ const T = {
   heading: {
     dark:  "text-title font-semibold leading-title tracking-title text-fg",
     brand: "text-title font-semibold leading-title tracking-title text-fg-on-brand",
-    light: "text-title font-semibold leading-title tracking-title text-[oklch(12%_0.012_195)]",
+    light: "text-title font-semibold leading-title tracking-title text-[oklch(from_var(--ot-brand)_0.12_0.012_h)]",
   },
   description: {
     dark:  "text-body leading-body text-fg-muted",
     brand: "text-body leading-body text-fg-on-brand/80",
-    light: "text-body leading-body text-[oklch(20%_0.022_195)]",
+    light: "text-body leading-body text-[oklch(from_var(--ot-brand)_0.20_0.022_h)]",
   },
   cta: {
     dark:  "brand" as const,
@@ -87,14 +90,14 @@ const FILL_CLASS: Record<CardFill, string> = {
   ghost:   "bg-transparent",
   surface: "bg-surface",
   brand:   "bg-brand",
-  light:   "bg-[oklch(97%_0.005_195)]",
+  light:   "bg-[oklch(from_var(--ot-brand)_0.97_0.005_h)]",
   // True glassmorphism: bg-glass provides the exact recipe (rgba white tint, blur+saturate,
   // full border, box-shadow with inset shimmer, and ::before surface sheen).
   glass:   "bg-glass",
 };
 
 function resolveBorder(fill: CardFill, border: CardBorder): string {
-  // Glass: bg-glass already sets border: 1px solid rgba(255,255,255,0.20) and the inset shimmer.
+  // Glass: bg-glass already sets a token-derived border (--ot-fg @ 0.20) and the inset shimmer.
   // Don't add a Tailwind border that would fight it — only allow brand border override.
   if (fill === "glass") {
     return border === "brand" ? "border-brand" : "";
@@ -208,7 +211,7 @@ export default function CardBlock({
 
   // Accent line uses --ot-accent so it follows the CMS theme override.
   const accentStyle = accentLine === "top"
-    ? { borderTop: fill === "brand" ? "3px solid oklch(97% 0.005 195 / 0.4)" : "3px solid var(--ot-accent)" }
+    ? { borderTop: fill === "brand" ? "3px solid oklch(from var(--ot-fg-on-brand) l c h / 0.4)" : "3px solid var(--ot-accent)" }
     : undefined;
 
   // Float content needs an explicit background to visually slide over the image.
@@ -270,7 +273,7 @@ export default function CardBlock({
             className="absolute inset-0 z-1"
             style={{
               background:
-                "linear-gradient(to top, oklch(12% 0.012 195 / 0.6) 0%, oklch(12% 0.012 195 / 0.22) 50%, transparent 100%)",
+                "linear-gradient(to top, oklch(from var(--ot-canvas) l c h / 0.6) 0%, oklch(from var(--ot-canvas) l c h / 0.22) 50%, transparent 100%)",
             }}
           />
         </>

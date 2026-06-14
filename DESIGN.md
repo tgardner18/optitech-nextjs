@@ -203,17 +203,24 @@ The token system creates inherent depth without additional treatment. Surface ov
 
 ### Glass surfaces
 
-`backdrop-filter: blur()` creates material depth and floating. Glass in this system is always **dark and tinted** — never light-frosted.
+`backdrop-filter: blur()` creates material depth and floating. The system has **one** true-glassmorphism utility plus a heavier opaque sibling; both are token-derived and follow the theme.
 
-**Dark glass** (sticky nav, floating panels, cards over imagery):
-```
-bg-canvas/75 backdrop-blur-md border border-fg/10
-```
+**`.bg-glass` — true glassmorphism (the single reconciled philosophy).** The tint is *always* token-derived from `--ot-fg` via relative color syntax — never raw white/black — and `backdrop-filter` does the actual frosting. Because the tint reads from `--ot-fg`, it inverts with the theme automatically:
+- on the default dark canvas → light frost on dark,
+- in light mode → **dark** frost on light.
 
-**Brand-tinted glass** (panels over brand surfaces):
+This is what keeps glass compliant with *"never light-frosted on light backgrounds"* — in both directions — without a second variant:
 ```
-bg-brand/15 backdrop-blur-md border border-brand/20
+background:        oklch(from var(--ot-fg) l c h / 0.07);   /* low-alpha tint — blur shows through */
+border:            oklch(from var(--ot-fg) l c h / 0.20);
+::before sheen:    oklch(from var(--ot-fg) l c h / 0.12);
+backdrop-filter:   blur(18px) saturate(180%);                /* the frosting */
 ```
+The background MUST stay low-alpha — a high-alpha or opaque fill occludes the blur and it stops being glass.
+
+**`.banner-glass` — heavier opaque material (intentionally NOT unified with `.bg-glass`).** A near-opaque `canvas/75` treatment for sticky/announcement bars where legibility outranks see-through. Different material, different job; do not converge the two.
+
+**Brand-tinted glass** (`.btn-glass`, panels over brand surfaces): a brand-derived tint over the same `--ot-fg` sheen, e.g. `oklch(from var(--ot-brand) l c h / 0.16)`.
 
 **Rule:** Glass earns its blur when there is something visually interesting beneath — an image, a brand fill, a layered section background. Glass over a flat same-color surface is a non-effect. Sticky navigation glass is always appropriate.
 
