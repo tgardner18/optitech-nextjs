@@ -42,6 +42,12 @@
   --ot-font-syne:      var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
   --ot-font-signature: var(--font-signature), cursive;          /* Caveat 400 — QuoteBlock laser signature (thin handwriting) */
 
+  /* Display / accent role font — themeable via ThemeManager "Display Font".
+   * Defaults to Syne, so display/accent type is pixel-identical to today.
+   * buildThemeCSS() repoints this to --font-display-a/-b when an editor picks
+   * an alternate. Body (sans), mono, and signature are intentionally NOT themed. */
+  --ot-font-display:   var(--ot-font-syne);
+
   /* Scale */
   --ot-text-display:  clamp(3rem, 8vw, 6rem);
   --ot-text-headline: clamp(1.75rem, 4vw, 2.75rem);
@@ -80,6 +86,13 @@
   --ot-radius-none:  0px;
   --ot-radius-input: 4px; /* the only non-zero radius in the system */
 
+  /* Corner Style axis — themeable via ThemeManager "Corner Style".
+   * Default Sharp (0px) → pixel-identical to today. buildThemeCSS() raises these
+   * to the Soft / Rounded value sets in lib/theme-axes.ts. surface = cards /
+   * panels / glass; control = buttons. Inputs keep --ot-radius-input untouched. */
+  --ot-radius-surface: 0px;
+  --ot-radius-control: 0px;
+
   /* ── Elevation ───────────────────────────────────────────────────────────── */
   --ot-shadow-hover-lift: 0 8px 32px var(--ot-bloom-brand-faint);
 
@@ -87,16 +100,26 @@
   --ot-ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1); /* expo out — entrances     */
   --ot-ease-quick:   cubic-bezier(0.25, 1, 0.5, 1); /* quart out — UI states   */
 
+  /* Motion Intensity axis — themeable via ThemeManager "Motion Intensity".
+   * A single unitless multiplier scales the whole --ot-dur-* system below.
+   * Default 1 → identical timing to today; buildThemeCSS() sets 0.7 (Calm) or
+   * 1.3 (Energetic). This ONLY affects the no-preference durations — the
+   * @media (prefers-reduced-motion: reduce) static blocks are independent and
+   * always win, so the OS preference remains the absolute floor. */
+  --ot-motion-scale: 1;
+
   /* Durations — scale mirrors the easing tokens. Theme-invariant, so defined
-   * once here (NOT duplicated into the light/dark blocks). */
+   * once here (NOT duplicated into the light/dark blocks). Each is the base
+   * value × --ot-motion-scale (a unitless multiplier on a <time> is valid CSS),
+   * so the entire system — including the ambient loops — scales from one knob. */
   /* UI / state / entrance durations */
-  --ot-dur-fast:  150ms;
-  --ot-dur-quick: 200ms;
-  --ot-dur-base:  320ms;
-  --ot-dur-slow:  600ms;
+  --ot-dur-fast:  calc(150ms * var(--ot-motion-scale));
+  --ot-dur-quick: calc(200ms * var(--ot-motion-scale));
+  --ot-dur-base:  calc(320ms * var(--ot-motion-scale));
+  --ot-dur-slow:  calc(600ms * var(--ot-motion-scale));
   /* Ambient continuous loops */
-  --ot-dur-breathe: 9s;
-  --ot-dur-liquid:  8s;
+  --ot-dur-breathe: calc(9s * var(--ot-motion-scale));
+  --ot-dur-liquid:  calc(8s * var(--ot-motion-scale));
 
   /* ── Monoton display weight ──────────────────────────────────────────────
    * Monoton is a single-weight font (Regular 400 only — no variable axis).

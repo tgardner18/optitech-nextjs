@@ -219,7 +219,9 @@ export default function CardBlock({
   const floatContentBg = (fill === "ghost" || fill === "glass") ? "bg-canvas" : FILL_CLASS[fill];
 
   const rootClass = cn(
-    "relative h-full overflow-hidden",
+    // Corner Style axis (surface radius). Sharp = 0px default → unchanged today.
+    // overflow-hidden already clips the image/scrim to the rounded corner.
+    "relative h-full overflow-hidden rounded-ot-surface",
     FILL_CLASS[fill],
     resolveBorder(fill, border),
     isHover && "group cursor-pointer",

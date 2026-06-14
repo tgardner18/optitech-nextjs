@@ -50,7 +50,7 @@ export default function FormWrapper({ children, title, description, submitUrl, c
           <header className="mb-lg">
             {title && (
               <h2
-                className="font-syne font-normal text-title leading-title tracking-title text-fg"
+                className="font-display font-normal text-title leading-title tracking-title text-fg"
               >
                 {title}
               </h2>

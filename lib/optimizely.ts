@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { headers } from 'next/headers'
 import { config, getClient as _getClient } from '@optimizely/cms-sdk'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
+import { resolveCornerStyle, resolveDisplayFont, resolveMotionScale } from '@/lib/theme-axes'
 import type { Locale } from '@/lib/i18n/config'
 import { getLocale as getNextIntlLocale } from 'next-intl/server'
 
@@ -123,6 +124,9 @@ const THEME_QUERY = `
         colorFgLight
         colorFgMuted
         colorFgMutedLight
+        cornerStyle
+        displayFont
+        motionIntensity
         siteName
         defaultSeoDescription
         defaultSocialImage { url { default } }
@@ -463,6 +467,23 @@ export function buildThemeCSS(settings: any): string {
   // Foreground — light mode only
   if (settings.colorFgLight)      light.push(`--ot-fg: ${settings.colorFgLight}`)
   if (settings.colorFgMutedLight) light.push(`--ot-fg-muted: ${settings.colorFgMutedLight}`)
+
+  // ── Non-color theme axes — mode-invariant, :root only ──────────────────────
+  // CMS stores option keys; lib/theme-axes.ts owns the values and returns null
+  // for unset/default so the token's own default applies (→ identical to today).
+  const corner = resolveCornerStyle(settings.cornerStyle)
+  if (corner) {
+    root.push(`--ot-radius-surface: ${corner.surface}`)
+    root.push(`--ot-radius-control: ${corner.control}`)
+  }
+
+  const displayFontVar = resolveDisplayFont(settings.displayFont)
+  if (displayFontVar) root.push(`--ot-font-display: ${displayFontVar}`)
+
+  // Scales every --ot-dur-* token (incl. ambient loops). Cannot re-enable motion
+  // a visitor disabled — the reduce-motion static blocks are independent of this.
+  const motionScale = resolveMotionScale(settings.motionIntensity)
+  if (motionScale != null) root.push(`--ot-motion-scale: ${motionScale}`)
 
   if (!root.length && !dark.length && !light.length) return ''
 

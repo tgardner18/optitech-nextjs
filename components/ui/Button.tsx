@@ -16,6 +16,10 @@ const rootCva = cva(
   [
     "group relative inline-flex items-center justify-center",
     "select-none cursor-pointer",
+    // Corner Style axis (control radius). Sharp = 0px default → unchanged today.
+    // The .btn-signal / .btn-hover-fill fills are overflow:hidden, so their
+    // ::before sweep clips to this radius automatically.
+    "rounded-ot-control",
     "text-label font-semibold tracking-label uppercase",
     "transition-[background-color,box-shadow,transform] duration-150 ease-quick",
     "focus-visible:outline-2 focus-visible:outline-offset-[3px]",

@@ -484,7 +484,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                     ) : initials ? (
                       <div className="w-full h-full bg-brand/20 flex items-center justify-center">
                         <span
-                          className="font-syne text-[2rem] font-bold text-brand select-none"
+                          className="font-display text-[2rem] font-bold text-brand select-none"
                           style={{ fontVariationSettings: "'wght' 500" }}
                         >
                           {initials}

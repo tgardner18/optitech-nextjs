@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Caveat, Geist_Mono, Poppins, Syne } from "next/font/google";
+import { Caveat, Fraunces, Geist_Mono, Poppins, Space_Grotesk, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
@@ -17,6 +17,30 @@ const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// ── Alternate DISPLAY/accent fonts (ThemeManager "Display Font" axis) ──────────
+// Both preloaded here because next/font is build-time — the CMS only selects
+// among these via lib/theme-axes.ts; it can never load an arbitrary font string.
+// display: "swap" + variable assignment matches Syne, so swapping is FOUT-free
+// at the display scale these play.
+//
+// Display Font A — Space Grotesk: geometric, technical-editorial; pairs with the
+// Kinetic Editorial register without competing with Poppins body.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display-a",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Display Font B — Fraunces: a characterful old-style serif display (the "serif
+// display" note in DESIGN.md §4); brings editorial warmth at section openers.
+const fraunces = Fraunces({
+  variable: "--font-display-b",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "900"],
   display: "swap",
 });
 
@@ -92,7 +116,7 @@ export default async function RootLayout({
       // client/server diff when localStorage overrides the CMS default.
       data-default-theme={defaultMode}
       data-theme={defaultMode}
-      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${caveat.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${spaceGrotesk.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

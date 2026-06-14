@@ -571,7 +571,7 @@ export default function SiteSearch() {
             {/* /SEARCH wordmark */}
             <div className="mb-lg select-none" aria-hidden>
               <span
-                className="font-syne block leading-none"
+                className="font-display block leading-none"
                 style={{
                   fontSize:              'clamp(4rem, 9vw, 9rem)',
                   letterSpacing:         '-0.045em',

@@ -48,7 +48,8 @@ function downloadFilename(asset: ResourceAsset): string {
 // ─── CVA ──────────────────────────────────────────────────────────────────────
 
 const cardCva = cva(
-  'resource-card group h-full flex flex-col overflow-hidden border border-fg/8',
+  // rounded-ot-surface = Corner Style axis; Sharp 0px default → unchanged today.
+  'resource-card group h-full flex flex-col overflow-hidden border border-fg/8 rounded-ot-surface',
   {
     variants: {
       color: {

@@ -109,6 +109,49 @@ export const OT_ThemeManager = contentType({
     colorFgMuted:      { type: 'string', displayName: 'Foreground Muted Dark — secondary text in dark mode (hex or oklch)',            group: 'OT_Theme', sortOrder: 170 },
     colorFgMutedLight: { type: 'string', displayName: 'Foreground Muted Light — secondary text in light mode (hex or oklch)',          group: 'OT_Theme', sortOrder: 175 },
 
+    // ── Non-color theme axes ───────────────────────────────────────────────
+    // Stored as option keys only; vetted CSS values live in lib/theme-axes.ts.
+    // All default to the current behavior, so unset = identical to today.
+    cornerStyle: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Corner Style — radius on cards, panels, glass & buttons',
+      description: 'Sharp is the OptiTech default. Soft and Rounded add a modest radius to surfaces and controls only — inputs and structure are unaffected.',
+      group: 'OT_Theme',
+      sortOrder: 180,
+      enum: [
+        { value: 'sharp',   displayName: 'Sharp — square corners (default)' },
+        { value: 'soft',    displayName: 'Soft — subtle 4px radius' },
+        { value: 'rounded', displayName: 'Rounded — 8–10px radius' },
+      ],
+    },
+    displayFont: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Display Font — accent/display typography (body stays Poppins)',
+      description: 'Applies to display and accent type only (section openers, pull quotes, impact headers). Body text remains Poppins.',
+      group: 'OT_Theme',
+      sortOrder: 185,
+      enum: [
+        { value: 'syne',         displayName: 'Syne — geometric (default)' },
+        { value: 'spaceGrotesk', displayName: 'Space Grotesk — technical-editorial' },
+        { value: 'fraunces',     displayName: 'Fraunces — characterful serif' },
+      ],
+    },
+    motionIntensity: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Motion Intensity — scales all animation/transition timing',
+      description: 'Calm slows motion, Energetic speeds it up. Never overrides a visitor\'s OS "reduce motion" setting — that always wins.',
+      group: 'OT_Theme',
+      sortOrder: 190,
+      enum: [
+        { value: 'calm',      displayName: 'Calm — slower (0.7×)' },
+        { value: 'default',   displayName: 'Default — current timing (1×)' },
+        { value: 'energetic', displayName: 'Energetic — faster (1.3×)' },
+      ],
+    },
+
     // ── SEO / Search & Discovery ──────────────────────────────────────────────
     siteName: {
       type: 'string',

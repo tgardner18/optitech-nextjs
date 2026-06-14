@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 import { SectionLabel } from '../components'
 import ThemePreviewContent from '@/components/theme/ThemePreviewContent'
+import ThemeAxesPreview from '@/components/theme/ThemeAxesPreview'
 
 export const metadata: Metadata = {
   title: 'Theme Preview — Design System — OptiTech',
@@ -14,6 +15,12 @@ export default async function ThemePreviewPage() {
   return (
     <>
       <ThemePreviewContent settings={settings} />
+
+      <ThemeAxesPreview
+        activeCorner={settings?.cornerStyle}
+        activeFont={settings?.displayFont}
+        activeMotion={settings?.motionIntensity}
+      />
 
       {/* ── Link to CMS ── */}
       <section className="px-md py-xl lg:px-lg">

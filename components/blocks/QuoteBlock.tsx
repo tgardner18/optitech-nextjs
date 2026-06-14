@@ -76,7 +76,7 @@ const quoteTextCva = cva(
 
 // Quote mark — more visible than before (0.30 / 0.35 vs the old 0.12 / 0.18).
 const quoteMarkCva = cva(
-  "absolute select-none pointer-events-none font-syne font-bold leading-none",
+  "absolute select-none pointer-events-none font-display font-bold leading-none",
   {
     variants: {
       color: {

@@ -18,6 +18,8 @@
   --font-sans: var(--ot-font-sans);
   --font-mono: var(--ot-font-mono);
   --font-syne: var(--ot-font-syne);
+  /* Display/accent role — drives `font-display`; themeable via ThemeManager. */
+  --font-display: var(--ot-font-display);
 
   /* Text sizes */
   --text-display:  var(--ot-text-display);
@@ -49,6 +51,9 @@
   /* Border radius */
   --radius-none:  var(--ot-radius-none);
   --radius-input: var(--ot-radius-input);
+  /* Corner Style axis aliases → `rounded-ot-surface` / `rounded-ot-control`. */
+  --radius-ot-surface: var(--ot-radius-surface);
+  --radius-ot-control: var(--ot-radius-control);
 
   /* Shadows */
   --shadow-hover-lift: var(--ot-shadow-hover-lift);
@@ -1651,6 +1656,7 @@ body {
  * ─────────────────────────────────────────────────────────────────────────── */
 .bg-glass {
   position: relative;
+  border-radius: var(--ot-radius-surface); /* Corner Style axis — 0px default; ::before inherits it */
   background: oklch(from var(--ot-fg) l c h / 0.07);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -1988,7 +1994,7 @@ body {
  * blog-impact-ruled-bg lays a faint horizontal rule grid over the header.
  * ─────────────────────────────────────────────────────────────────────────── */
 .blog-impact-hollow-text {
-  font-family: var(--ot-font-syne);
+  font-family: var(--ot-font-display); /* display role — themeable via ThemeManager (default Syne) */
   font-size: clamp(4.5rem, 13vw, 11rem);
   font-weight: 400;
   line-height: 0.88;
@@ -2308,6 +2314,7 @@ body {
 
 /* ── Glass panels: dark-tinted frost for scrim=glass treatment ── */
 .banner-glass {
+  border-radius: var(--ot-radius-surface); /* Corner Style axis — 0px default */
   background: oklch(from var(--ot-canvas) l c h / 0.75);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -2317,6 +2324,7 @@ body {
 
 /* Brand-tinted glass: used when color=brand + treatment=glass */
 .banner-glass-brand {
+  border-radius: var(--ot-radius-surface); /* Corner Style axis — 0px default */
   background: oklch(from var(--ot-brand) l c h / 0.15);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
