@@ -118,18 +118,22 @@ const secondaryCtaCva = cva(
   }
 )
 
-// ─── Scrim class helper ───────────────────────────────────────────────────────
+// ─── Scrim / background class helper ────────────────────────────────────────
 //
-// Scrim mode:    one dark overlay directly on the image; opacity scales with
-//               imageBlend (overlay = lighter, multiply = heavier press)
-// Glass mode:   a lighter scrim + a separate base darkener (bg-canvas/35)
-//               so the image still breathes while the glass panel handles
-//               text legibility.
+// No image (scrim):  this layer IS the banner background, so it uses the FULL
+//                    solid color — a partial alpha would wash the brand out
+//                    (the brand color must read as the brand color, not a tint).
+// Image (scrim):     a colored overlay so the photo reads through, tinted to the
+//                    color; opacity scales with imageBlend (overlay = lighter,
+//                    multiply = heavier press).
+// Glass:             intentionally translucent frosted panel (its identity);
+//                    left as-is whether or not there's an image.
 
 function getScrimClass(
   color:       string,
   imageBlend:  string,
   treatment:   string,
+  hasImage:    boolean,
 ): string {
   if (treatment === 'glass') {
     const map: Record<string, string> = {
@@ -139,6 +143,16 @@ function getScrimClass(
     }
     return map[color] ?? 'bg-canvas/45'
   }
+  // Solid color background when there is no image to show through.
+  if (!hasImage) {
+    const solid: Record<string, string> = {
+      canvas:  'bg-canvas',
+      surface: 'bg-surface',
+      brand:   'bg-brand',
+    }
+    return solid[color] ?? 'bg-canvas'
+  }
+  // Colored overlay over an image.
   const isMultiply = imageBlend === 'multiply'
   const map: Record<string, [string, string]> = {
     canvas:  ['bg-canvas/80',  'bg-canvas/90'],
@@ -186,7 +200,7 @@ export default function BannerBlock({
   const isBrand    = color === 'brand'
   const isCentered = alignment === 'center'
   const hasImage   = Boolean(bgImageSrc)
-  const scrimClass = getScrimClass(color, imageBlend, treatment)
+  const scrimClass = getScrimClass(color, imageBlend, treatment, hasImage)
   const Heading    = headingLevel
 
   // ── Content elements (shared between scrim and glass layouts) ──────────────

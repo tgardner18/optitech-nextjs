@@ -256,12 +256,11 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
 
           {/* ── Banner (brand background, centered) ─────────────────────────── */}
           {/* Renders the real BannerBlock so it reflects the live component under
-              the current theme. bg-brand on the wrapper keeps the brand read solid
-              behind the component's scrim; [&>section]:flex-1 lets the banner fill
-              the column height to match the card. */}
+              the current theme. With no image the banner fills with the SOLID brand
+              color; [&>section]:flex-1 lets it fill the column height to match the card. */}
           <div className="flex flex-col gap-sm">
             <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold">Banner · Brand</p>
-            <div className="bg-brand border border-fg/10 overflow-hidden flex-1 flex [&>section]:flex-1">
+            <div className="border border-fg/10 overflow-hidden flex-1 flex [&>section]:flex-1">
               <BannerBlock
                 eyebrow="Now Available"
                 heading="Optimize Every Visitor Experience"
