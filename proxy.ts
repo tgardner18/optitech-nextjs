@@ -46,6 +46,22 @@ const LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
 /** Cookie name used by LocaleSelector to persist locale preference. */
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
+/**
+ * Canonical visitor identifier, minted server-side on first page visit.
+ *
+ * One id, three systems:
+ *   - Optimizely Web Experimentation reads it client-side for BYOID.
+ *   - Optimizely Feature Experimentation uses it as the FX userId (server-side
+ *     variant resolution) so decisions are stable across requests.
+ *   - ODP identifies the visitor by this id so realtime audience segments align
+ *     with the FX/Web identity (no vuid reconciliation needed).
+ *
+ * NOT httpOnly: the Web Experimentation snippet and ODP client are browser JS
+ * and must be able to read it.
+ */
+const USER_ID_COOKIE   = 'optimizely_user_id'
+const USER_ID_MAX_AGE  = 60 * 60 * 24 * 365 // 1 year in seconds
+
 // ── Admin helpers ─────────────────────────────────────────────────────────────
 
 function redirectToLogin(request: NextRequest, from: string): NextResponse {
@@ -63,6 +79,29 @@ function redirectToLogin(request: NextRequest, from: string): NextResponse {
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // ── 0. Mint canonical visitor id ──────────────────────────────────────────
+  // Runs before everything else so it covers every matched route. We set it on
+  // request.cookies *now* (before the headers below are cloned) so this same
+  // render sees it via cookies(), and attach it to whatever response we return
+  // via setVisitorId() so the browser persists it.
+  let mintedVisitorId: string | undefined
+  if (!request.cookies.get(USER_ID_COOKIE)?.value) {
+    mintedVisitorId = crypto.randomUUID()
+    request.cookies.set(USER_ID_COOKIE, mintedVisitorId)
+  }
+  const setVisitorId = (res: NextResponse): NextResponse => {
+    if (mintedVisitorId) {
+      res.cookies.set(USER_ID_COOKIE, mintedVisitorId, {
+        httpOnly: false, // Web Exp (BYOID) + ODP client read this in the browser
+        secure:   process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path:     '/',
+        maxAge:   USER_ID_MAX_AGE,
+      })
+    }
+    return res
+  }
+
   // ── Admin route protection ────────────────────────────────────────────────
   // All /opti-admin/* routes require a valid session cookie, except the login
   // page itself. The session token is SHA-256(OPTI_ADMIN_USER:OPTI_ADMIN_PASSWORD)
@@ -78,7 +117,7 @@ export default async function proxy(request: NextRequest) {
         return redirectToLogin(request, pathname)
       }
     }
-    return NextResponse.next()
+    return setVisitorId(NextResponse.next())
   }
 
   // ── 1. Detect locale from URL prefix ──────────────────────────────────────
@@ -118,11 +157,11 @@ export default async function proxy(request: NextRequest) {
     // not [...slug] with slug=['es','showcase']).
     const url = request.nextUrl.clone()
     url.pathname = internalPath
-    return NextResponse.rewrite(url, { request: { headers } })
+    return setVisitorId(NextResponse.rewrite(url, { request: { headers } }))
   }
 
   // No rewrite needed — just forward the locale header.
-  return NextResponse.next({ request: { headers } })
+  return setVisitorId(NextResponse.next({ request: { headers } }))
 }
 
 export const config = {
