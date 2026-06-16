@@ -74,12 +74,6 @@ export const BlankExperience = contentType({
       group: 'OT_SEO',
       sortOrder: 80,
     },
-    
-  availableContentTypes: {
-    "setting": "Selected",
-    "allowedTypes": [
-      "SysContentFolder"
-    ]
   },
   },
 })
