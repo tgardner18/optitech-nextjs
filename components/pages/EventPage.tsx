@@ -63,7 +63,7 @@ function Fact({
 export default function EventPage({ content, pa }: Props) {
   const {
     title, eventType,
-    summary, body, featuredImage,
+    description, featuredImage,
     startDate, endDate,
     locationType, venueName, city,
     creditType, creditHours,
@@ -126,26 +126,18 @@ export default function EventPage({ content, pa }: Props) {
         <div className="mx-auto max-w-5xl px-md lg:px-xl">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-xl items-start">
 
-            {/* Main column */}
+            {/* Main column — single description. The opening paragraph carries
+                the editorial lead-in (deck) at title scale; the remainder reads
+                as the article body at the standard measure. */}
             <div className="min-w-0 order-2 lg:order-1">
-              {summary?.html && (
+              {description?.html && (
                 <div
                   data-rich-text=""
                   data-color="canvas"
-                  className="text-title leading-title text-fg-muted text-pretty mb-lg [&_p]:m-0 [&_p+p]:mt-[0.5em]"
-                  {...pa?.('summary')}
+                  className="max-w-[68ch] [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty [&>p:first-of-type]:mb-lg"
+                  {...pa?.('description')}
                   // CMS-managed rich text — not user input
-                  dangerouslySetInnerHTML={{ __html: summary.html }}
-                />
-              )}
-              {body?.html && (
-                <div
-                  data-rich-text=""
-                  data-color="canvas"
-                  className="max-w-[68ch]"
-                  {...pa?.('body')}
-                  // CMS-managed rich text — not user input
-                  dangerouslySetInnerHTML={{ __html: body.html }}
+                  dangerouslySetInnerHTML={{ __html: description.html }}
                 />
               )}
             </div>

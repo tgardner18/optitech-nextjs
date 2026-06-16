@@ -2,11 +2,12 @@ import type { Metadata }       from 'next'
 import { notFound }             from 'next/navigation'
 import { SectionLabel }         from '../../components'
 import BlogPage from '@/components/pages/BlogPage'
+import EventPage from '@/components/pages/EventPage'
 
 // ─── Static params ─────────────────────────────────────────────────────────
 
 export function generateStaticParams() {
-  return [{ page: 'blog' }, { page: 'folder' }]
+  return [{ page: 'blog' }, { page: 'event' }, { page: 'folder' }]
 }
 
 export async function generateMetadata({
@@ -17,6 +18,7 @@ export async function generateMetadata({
   const { page } = await params
   const labels: Record<string, string> = {
     blog:   'Blog Page',
+    event:  'Event Page',
     folder: 'Folder Page',
   }
   const label = labels[page]
@@ -122,6 +124,100 @@ function BlogPageShowcase() {
   )
 }
 
+// ─── Event page showcase ────────────────────────────────────────────────────
+
+const MOCK_EVENT_DESCRIPTION = {
+  html: `
+    <p>Three days inside the systems that make sub-millisecond feature delivery possible. OptiTech Velocity brings together the engineers building the evaluation hot path with the teams shipping on top of it.</p>
+    <p>The conference runs three tracks across two stages, with hands-on labs each afternoon. Every session is recorded, but the workshops, the hallway track, and the late-night architecture debates only happen in the room.</p>
+    <h2>What you will leave with</h2>
+    <p>A working mental model of edge-distributed flag state, a set of targeting patterns you can apply the following Monday, and a direct line to the people who maintain the SDK you depend on.</p>
+    <p>Seats in the afternoon labs are capped at thirty. Register early to reserve your track.</p>
+  `,
+}
+
+const MOCK_EVENT_CONFERENCE = {
+  _metadata: {
+    key:       'showcase-event-conference',
+    published: '2026-05-01T09:00:00Z',
+    url:       { default: '/events/optitech-velocity-2026' },
+  },
+  title:       'OptiTech Velocity 2026: The Delivery Systems Conference',
+  eventType:   'conference',
+  description: MOCK_EVENT_DESCRIPTION,
+  featuredImage: { url: { default: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80&fit=crop' } },
+  startDate:   '2026-09-15T09:00:00Z',
+  endDate:     '2026-09-17T17:00:00Z',
+  locationType: 'inPerson',
+  venueName:   'Pier 27 Conference Center',
+  city:        'San Francisco, CA',
+  creditType:  'CPE',
+  creditHours: 18,
+  registrationUrl: { default: 'https://example.com/register' },
+}
+
+const MOCK_EVENT_WEBINAR = {
+  _metadata: {
+    key:       'showcase-event-webinar',
+    published: '2026-05-20T09:00:00Z',
+    url:       { default: '/events/targeting-rules-deep-dive' },
+  },
+  title:       'Targeting Rules, Compiled: A Deep Dive for Platform Teams',
+  eventType:   'webinar',
+  description: {
+    html: `
+      <p>How OptiTech turns human-readable targeting rules into a compact decision tree that the evaluation engine walks in a single pass, and what that means for the rules you write.</p>
+      <p>A 45-minute technical session followed by live Q&amp;A. Bring your gnarliest targeting edge cases.</p>
+      <h2>Who should attend</h2>
+      <p>Platform and infrastructure engineers responsible for feature delivery, and anyone who has ever watched a targeting rule behave in a way they did not expect.</p>
+    `,
+  },
+  startDate:   '2026-07-08T17:00:00Z',
+  endDate:     '2026-07-08T18:00:00Z',
+  locationType: 'virtual',
+  venueName:   'Zoom Webinar',
+  registrationUrl: { default: 'https://example.com/register' },
+}
+
+function EventPageShowcase() {
+  return (
+    <>
+      <section className="px-md pt-xl pb-lg lg:px-lg">
+        <SectionLabel index="Pages · OT_EventPage" title="Event Page" />
+        <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+          The event detail page type, served URL-addressably through the catch-all slug route. A single rich-text Description carries the page: its opening paragraph renders as the editorial lead-in, the remainder as the article body. The facts rail (date, time, location, credit) and registration CTA stay pinned alongside, and the header adapts to whether a featured image is set.
+        </p>
+      </section>
+
+      {/* With featured image — multi-day, in-person, credit */}
+      <section className="pt-xl border-t border-fg/5">
+        <div className="px-md lg:px-lg pb-lg">
+          <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">01</p>
+          <h3 className="text-title font-semibold leading-title tracking-title text-fg">Featured image header</h3>
+          <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
+            A multi-day in-person conference. The featured image bleeds into a full-height header with a brand-tinted scrim; the type badge and title anchor to the lower edge. Multi-day dates, venue, city, and CPE credit fill the facts rail.
+          </p>
+        </div>
+        <EventPage content={MOCK_EVENT_CONFERENCE as unknown as Parameters<typeof EventPage>[0]['content']} />
+        <div className="pb-xl" />
+      </section>
+
+      {/* No image — virtual, single-session */}
+      <section className="pt-xl border-t border-fg/5">
+        <div className="px-md lg:px-lg pb-lg">
+          <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">02</p>
+          <h3 className="text-title font-semibold leading-title tracking-title text-fg">Brand-rule header (no image)</h3>
+          <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
+            A single-session virtual webinar with no featured image. The header falls back to a brand rule over canvas; the location fact swaps to the virtual (video) treatment and the credit row drops out entirely.
+          </p>
+        </div>
+        <EventPage content={MOCK_EVENT_WEBINAR as unknown as Parameters<typeof EventPage>[0]['content']} />
+        <div className="pb-xl" />
+      </section>
+    </>
+  )
+}
+
 // ─── Folder page showcase ───────────────────────────────────────────────────
 
 function FolderPageShowcase() {
@@ -151,6 +247,7 @@ export default async function ShowcasePageTypePage({ params }: Props) {
 
   switch (page) {
     case 'blog':   return <BlogPageShowcase />
+    case 'event':  return <EventPageShowcase />
     case 'folder': return <FolderPageShowcase />
     default:       return notFound()
   }

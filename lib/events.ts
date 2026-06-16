@@ -7,7 +7,7 @@ import { isUpcoming } from '@/lib/eventFormat'
 /**
  * The flat shape consumed by OT_EventListingBlock (card / list / calendar views)
  * and by the event search results. Resolved from OT_EventPage by the queries
- * below; `summary` is HTML-stripped plain text for excerpts.
+ * below; `summary` is the HTML-stripped opening of `description`, used for excerpts.
  */
 export type EventCardData = {
   key:              string
@@ -35,8 +35,7 @@ export type EventPageContent = {
   }
   title:           string
   eventType?:      string
-  summary?:        { html?: string | null } | null
-  body?:           { html?: string | null } | null
+  description?:    { html?: string | null } | null
   featuredImage?:  { url?: { default?: string | null } | null } | null
   startDate?:      string | null
   endDate?:        string | null
@@ -47,11 +46,14 @@ export type EventPageContent = {
   creditHours?:    number | null
   registrationUrl?: { default?: string | null } | null
   // SEO
-  seoTitle?:       string | null
-  seoDescription?: string | null
-  canonicalUrl?:   { default?: string | null } | null
-  ogImage?:        { url?: { default?: string | null } | null } | null
-  noIndex?:        boolean | null
+  seoTitle?:        string | null
+  seoDescription?:  string | null
+  canonicalUrl?:    { default?: string | null } | null
+  ogImage?:         { url?: { default?: string | null } | null } | null
+  pageAnswer?:      string | null
+  schemaType?:      string | null
+  noIndex?:         boolean | null
+  customSchemaJson?: string | null
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────────
@@ -83,7 +85,7 @@ const EVENTS_QUERY = `
         city
         creditType
         creditHours
-        summary { html }
+        description { html }
         featuredImage { url { default } }
         registrationUrl { default }
       }
@@ -101,8 +103,7 @@ const EVENT_PAGE_QUERY = `
         _metadata { key locale published url { default } }
         title
         eventType
-        summary { html }
-        body { html }
+        description { html }
         startDate
         endDate
         locationType
@@ -116,7 +117,10 @@ const EVENT_PAGE_QUERY = `
         seoDescription
         canonicalUrl { default }
         ogImage { url { default } }
+        pageAnswer
+        schemaType
         noIndex
+        customSchemaJson
       }
     }
   }
@@ -137,7 +141,7 @@ function toCardData(item: any): EventCardData {
     city:            item.city ?? undefined,
     creditType:      item.creditType ?? undefined,
     creditHours:     typeof item.creditHours === 'number' ? item.creditHours : undefined,
-    summary:         stripHtml(item.summary?.html) || undefined,
+    summary:         stripHtml(item.description?.html) || undefined,
     imageUrl:        item.featuredImage?.url?.default ?? null,
     registrationUrl: item.registrationUrl?.default ?? undefined,
   }

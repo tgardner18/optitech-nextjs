@@ -112,7 +112,7 @@ function buildBlankExperienceQuery(withDomain: boolean): string {
 }
 
 // Event search — surfaces OT_EventPage with the fields that matter for events
-// (date + location carry as much weight as the title). summary is HTML-stripped
+// (date + location carry as much weight as the title). description is HTML-stripped
 // to a short excerpt by the caller.
 function buildEventQuery(withDomain: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
@@ -140,7 +140,7 @@ function buildEventQuery(withDomain: boolean): string {
           locationType
           venueName
           city
-          summary { html }
+          description { html }
           featuredImage { url { default } }
         }
       }
@@ -253,7 +253,7 @@ export async function GET(req: NextRequest) {
         if (!item._metadata?.url?.default) continue
         if (seen.has(item._metadata.key)) continue
         seen.add(item._metadata.key)
-        const summaryHtml = (item.summary?.html as string | undefined) || undefined
+        const summaryHtml = (item.description?.html as string | undefined) || undefined
         const locationLabel = formatEventLocation({
           locationType: item.locationType,
           venueName:    item.venueName,

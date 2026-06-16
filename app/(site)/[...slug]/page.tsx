@@ -127,7 +127,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ...(eventContent ?? {}),
       seoTitle: eventContent?.seoTitle ?? eventContent?.title ?? undefined,
       ogImage:  eventContent?.ogImage ?? eventContent?.featuredImage ?? undefined,
-      schemaType: 'Event',
+      schemaType: eventContent?.schemaType || 'Event',
     }
     return buildPageMetadata(seoFields, settings ?? {}, path)
   }
@@ -395,7 +395,7 @@ async function CmsPage({ params, searchParams }: Props) {
 
       if (eventContent) {
         const eventJsonLd = buildJsonLd(
-          { ...(eventContent as PageSeoFields), schemaType: 'Event' },
+          { ...(eventContent as PageSeoFields), schemaType: (eventContent as PageSeoFields).schemaType || 'Event' },
           settings ?? {},
           fullPageUrl,
         )
