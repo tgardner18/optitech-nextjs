@@ -3,8 +3,10 @@ import '@/cms/registry'
 import type { Metadata } from "next";
 import { Caveat, Fraunces, Geist_Mono, Poppins, Space_Grotesk, Syne } from "next/font/google";
 import "./globals.css";
+import { draftMode } from "next/headers";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
+import { OptimizelyTracking } from "@/components/tracking/OptimizelyTracking";
 import { getSiteSettings, getRequestDomain, buildThemeCSS, getRequestLocale } from '@/lib/optimizely'
 
 const poppins = Poppins({
@@ -103,6 +105,21 @@ export default async function RootLayout({
   const rawWebExpId = (settings?.webExperimentationProjectId as string | null | undefined)?.trim()
   const webExpProjectId = rawWebExpId && /^\d+$/.test(rawWebExpId) ? rawWebExpId : null
 
+  // FX + ODP — skip entirely in CMS preview/draft so the editor iframe never
+  // pollutes experiment or ODP data. Keys are validated against a safe charset
+  // before being interpolated into inline scripts.
+  const { isEnabled: isPreview } = await draftMode()
+  const rawOdpKey = (settings?.odpPublicKey as string | null | undefined)?.trim()
+  const odpPublicKey = !isPreview && rawOdpKey && /^[\w-]+$/.test(rawOdpKey) ? rawOdpKey : null
+  const rawFxKey = (settings?.featureExperimentationSdkKey as string | null | undefined)?.trim()
+  const fxSdkKey = !isPreview && rawFxKey && /^[\w-]+$/.test(rawFxKey) ? rawFxKey : null
+
+  // Official ODP stub — queues method calls until zaius-min.js loads, so
+  // window.zaius is usable immediately (pageview tracking + customer()).
+  const odpStub = odpPublicKey
+    ? `var zaius=window.zaius||(window.zaius=[]);zaius.methods=["initialize","onload","customer","entity","event","subscribe","unsubscribe","consent","identify","anonymize","dispatch"];zaius.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);zaius.push(t);return zaius}};(function(){for(var i=0;i<zaius.methods.length;i++){var method=zaius.methods[i];zaius[method]=zaius.factory(method)}var e=document.createElement("script");e.type="text/javascript";e.async=true;e.src="https://d1igp3oop3iho5.cloudfront.net/v2/${odpPublicKey}/zaius-min.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)})();`
+    : null
+
   return (
     <html
       lang={locale}
@@ -141,12 +158,26 @@ export default async function RootLayout({
           // eslint-disable-next-line @next/next/no-sync-scripts
           <script src={`https://cdn.optimizely.com/js/${webExpProjectId}.js`} suppressHydrationWarning />
         )}
+        {/* ODP tracker stub — blocking so window.zaius exists before tracking runs. */}
+        {odpStub && (
+          <script dangerouslySetInnerHTML={{ __html: odpStub }} suppressHydrationWarning />
+        )}
+        {/* Hand the FX SDK key to the browser client without threading props. */}
+        {fxSdkKey && (
+          <script
+            dangerouslySetInnerHTML={{ __html: `window.__OPTIMIZELY_FX_SDK_KEY__=${JSON.stringify(fxSdkKey)};` }}
+            suppressHydrationWarning
+          />
+        )}
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           {children}
           <MotionObserver />
         </ThemeProvider>
+        {/* FX boot + ODP pageview tracking (client). Self-guards on window.zaius
+            / the SDK key, so rendering it when only one of the two is set is safe. */}
+        {(odpPublicKey || fxSdkKey) && <OptimizelyTracking />}
       </body>
     </html>
   );

@@ -201,5 +201,21 @@ export const OT_ThemeManager = contentType({
       group: 'OT_Integrations',
       sortOrder: 10,
     },
+    featureExperimentationSdkKey: {
+      type: 'string',
+      maxLength: 20,
+      displayName: 'Optimizely Feature Experimentation SDK Key',
+      description: 'SDK key for Optimizely Feature Experimentation (server-side). Found in FX project Settings → Environments.',
+      group: 'OT_Integrations',
+      sortOrder: 20,
+    },
+    odpPublicKey: {
+      type: 'string',
+      maxLength: 50,
+      displayName: 'Optimizely Data Platform (ODP) Tracker ID',
+      description: 'ODP public Tracker ID (e.g. xOj2uLjIt4aE4HXXcQg-Lg). When set, the ODP tracker script is injected for this domain and pageviews are tracked. Found in ODP → Data Setup → Integrations → JavaScript Tag.',
+      group: 'OT_Integrations',
+      sortOrder: 30,
+    },
   },
 })

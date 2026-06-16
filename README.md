@@ -45,6 +45,41 @@ OPTI_ADMIN_PASSWORD=           # Password for the /opti-admin sign-in
                                # (the auth endpoint returns 503 "not configured").
 ```
 
+### Syncing content types to the CMS
+
+Content type and display template definitions live in [`cms/content-types/`](cms/content-types/) and [`cms/display-templates/`](cms/display-templates/) and are pushed to your CMS instance with the `@optimizely/cms-cli`, wrapped by [`scripts/cms-push.mjs`](scripts/cms-push.mjs):
+
+```bash
+yarn cms:push            # push content types / templates to the CMS
+yarn cms:push:dry        # build & validate the manifest without pushing
+yarn cms:pull            # pull the current schema from the CMS
+```
+
+**Which instance gets pushed** is determined entirely by the `OPTIMIZELY_CMS_CLIENT_ID` / `OPTIMIZELY_CMS_CLIENT_SECRET` credentials. The push script resolves them from an env file in this order:
+
+1. `.env.<branch>` — the per-branch-instance convention (slashes in the branch name are sanitized, e.g. `feature/x` → `.env.feature-x`).
+2. `.env.local` — fallback so a fresh clone works without a per-branch file.
+
+Override with `CMS_ENV_FILE=path yarn cms:push`. The credentials must be in that file — the dev server auto-loads `.env.local`, but the CLI does not.
+
+#### First push to a fresh instance — the `mayContainTypes` cycle
+
+The page types reference each other through `mayContainTypes` (a Folder may contain an Experience, which may contain a Blog page, …). Those declared references form a cycle. This is **fine on an instance where the types already exist** (the push is an update), but on a **fresh instance** the importer has to *create* all the types in one atomic manifest, and a cyclic set of references has no valid creation order. The server rejects it:
+
+```
+Content type 'BlankExperience' has a circular dependency through 'OT_BlogPage,OT_CampaignPage,OT_FolderPage'.
+```
+
+…which then cascades into misleading `Unable to find a content type 'OT_…'` errors as the whole import rolls back. Nothing is created (the import is atomic), so it is safe to retry.
+
+To resolve it, run the **opt-in bootstrap**, which pushes in two phases — first with every `mayContainTypes` stripped (so all types create with no declared references), then the full manifest (the references now resolve against types that already exist):
+
+```bash
+yarn cms:push:bootstrap          # or: yarn cms:push --ignore-circular-dependency  (alias: --bootstrap)
+```
+
+> **Why it's opt-in (off by default):** the bootstrap forces `ignore-data-loss-warnings` to create/restore the cyclic types. That's always safe on an empty instance, but could mask real data loss on a populated one — so a plain `yarn cms:push` never forces it. A bare push that hits the cycle simply surfaces the error and points you here. Established instances never hit this path; the first push just succeeds.
+
 ### Shared block preview — set a default application in the CMS
 
 If your CMS instance has more than one application (site) defined, you **must** designate one of them as the default. Without a default application, the Visual Builder does not know which front-end URL to use when opening a shared block in the preview panel, and editors will see the "Preview is not configured" message.

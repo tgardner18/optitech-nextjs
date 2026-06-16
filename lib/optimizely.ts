@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { headers } from 'next/headers'
 import { config, getClient as _getClient } from '@optimizely/cms-sdk'
+import type { GraphVariationInput } from '@optimizely/cms-sdk'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
 import { resolveCornerStyle, resolveDisplayFont, resolveMotionScale } from '@/lib/theme-axes'
 import type { Locale } from '@/lib/i18n/config'
@@ -133,6 +134,8 @@ const THEME_QUERY = `
         twitterHandle
         organizationDescription
         webExperimentationProjectId
+        featureExperimentationSdkKey
+        odpPublicKey
         primaryNavigation {
           menuLink { text title target url { default } }
           subNavItems {
@@ -202,19 +205,28 @@ export async function getLocalizedContentByPath(
   path: string,
   locale: Locale,
   baseUrl?: string,
+  variationSlug?: string | null,
 ): Promise<any | null> {
   await setRequestContext(locale)
   const host = baseUrl || undefined
 
+  // When an FX content experiment buckets the visitor into a CMS variation,
+  // fetch that variation instead of the original. `include: 'SOME'` +
+  // `includeOriginal: false` returns only the named variation (or nothing if it
+  // doesn't exist — callers fall back to the already-fetched default).
+  const variation: GraphVariationInput | undefined = variationSlug
+    ? { include: 'SOME', value: [variationSlug], includeOriginal: false }
+    : undefined
+
   // ── Default locale ────────────────────────────────────────────────────────
   if (locale === DEFAULT_LOCALE) {
-    const results = await getClient().getContentByPath(path, { host })
+    const results = await getClient().getContentByPath(path, { host, variation })
     return results?.length ? pickByLocale(results, locale) : null
   }
 
   // ── Non-default locale: step 1 — locale-prefixed path ─────────────────────
   // Content Graph stores translated pages at /<locale><path>.
-  const prefixedResults = await getClient().getContentByPath(`/${locale}${path}`, { host })
+  const prefixedResults = await getClient().getContentByPath(`/${locale}${path}`, { host, variation })
   if (prefixedResults?.length) {
     return pickByLocale(prefixedResults, locale)
   }
