@@ -78,8 +78,7 @@ export const BlankExperience = contentType({
   availableContentTypes: {
     "setting": "Selected",
     "allowedTypes": [
-      "SysContentFolder",
-      "OtherTypeYouWantToAllow"
+      "SysContentFolder"
     ]
   },
   },
