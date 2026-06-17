@@ -121,6 +121,7 @@ import OT_CalloutBlockAdapter          from '@/cms/components/OT_CalloutBlock'
 import OT_DividerBlockAdapter          from '@/cms/components/OT_DividerBlock'
 import OT_EventListingBlockAdapter     from '@/cms/components/OT_EventListingBlock'
 import OT_PractitionerListingBlockAdapter from '@/cms/components/OT_PractitionerListingBlock'
+import OT_PractitionerProfileAdapter      from '@/cms/components/OT_PractitionerProfile'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -261,6 +262,8 @@ initReactComponentRegistry({
     OT_DividerBlock:          OT_DividerBlockAdapter,
     OT_EventListingBlock:     OT_EventListingBlockAdapter,
     OT_PractitionerListingBlock: OT_PractitionerListingBlockAdapter,
+    // Preview-only: lets /preview render the shared profile record (not used in compositions)
+    OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;
     // '_Row' and '_Column' are the fixed registry keys OptimizelyGridSection resolves.
     BlankSection:       BlankSectionAdapter,
