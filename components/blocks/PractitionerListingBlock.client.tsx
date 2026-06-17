@@ -210,7 +210,7 @@ export default function PractitionerListingClient({
             so visitors can switch layout regardless of the CMS default. */}
         <div className="flex items-center gap-md">
           {showSearch && (
-            <div className="relative w-full max-w-xl">
+            <div className="relative flex-1 min-w-0 max-w-xl">
               <label htmlFor={searchId} className="sr-only">
                 Search practitioners by name or specialty
               </label>
