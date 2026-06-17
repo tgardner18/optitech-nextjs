@@ -58,6 +58,20 @@ function DetailRow({
   )
 }
 
+// ─── Agenda time parsing ──────────────────────────────────────────────────────
+// The agenda `time` is free-text from the CMS (e.g. "8:30 AM – 9:00 AM" or
+// "9:00 AM"). Split a range on the dash so the time column renders as a deliberate
+// two-line display instead of mid-range wrapping.
+function splitTimeRange(raw?: string | null): { start: string; end: string | null } | null {
+  const t = (raw ?? '').trim()
+  if (!t) return null
+  const parts = t.split(/\s*[–—-]\s*/)
+  if (parts.length >= 2 && parts[1]) {
+    return { start: parts[0].trim(), end: parts.slice(1).join(' – ').trim() }
+  }
+  return { start: t, end: null }
+}
+
 // ─── Section heading — chapter marker ─────────────────────────────────────────
 
 function SectionHeading({ children }: { children: string }) {
@@ -205,23 +219,34 @@ export default function EventPage({ content, pa }: Props) {
                   <ol className="relative">
                     {agenda.map((item, i) => {
                       const isLast = i === agenda.length - 1
+                      const t = splitTimeRange(item.time)
                       return (
-                        <li key={i} className="flex gap-md pb-lg last:pb-0">
-                          <div className="w-24 flex-none pt-0.5 text-right font-mono text-[0.8125rem] leading-snug text-fg-muted">
-                            {item.time}
+                        <li key={i} className="flex gap-md pb-xl last:pb-0">
+                          {/* Time column — intentional two-line split for ranges */}
+                          <div className="w-22 flex-none pt-0.5 text-right font-mono text-xs leading-tight whitespace-nowrap">
+                            {t && (
+                              t.end ? (
+                                <>
+                                  <span className="block text-fg font-medium">{t.start}</span>
+                                  <span className="block text-fg-muted">– {t.end}</span>
+                                </>
+                              ) : (
+                                <span className="block text-fg font-medium">{t.start}</span>
+                              )
+                            )}
                           </div>
-                          {/* Spine + dot */}
-                          <div className="relative flex-none w-2 self-stretch">
-                            <span className="absolute left-1/2 -translate-x-1/2 top-1.5 block w-2 h-2 rounded-full bg-brand" aria-hidden />
+                          {/* Spine + ring dot */}
+                          <div className="relative flex-none w-2.5 self-stretch">
+                            <span className="absolute left-1/2 -translate-x-1/2 top-1 block w-2.5 h-2.5 rounded-full border-2 border-brand bg-canvas" aria-hidden />
                             {!isLast && (
                               <span
-                                className="absolute left-1/2 -translate-x-1/2 top-3 bottom-0 block w-px"
-                                style={{ background: 'oklch(from var(--ot-brand) l c h / 0.2)' }}
+                                className="absolute left-1/2 -translate-x-1/2 top-4 bottom-0 block w-px"
+                                style={{ background: 'oklch(from var(--ot-brand) l c h / 0.25)' }}
                                 aria-hidden
                               />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 pb-1">
                             {item.title && <p className="text-body font-semibold text-fg leading-snug">{item.title}</p>}
                             {item.description && <p className="text-body text-fg-muted mt-xs text-pretty">{item.description}</p>}
                             {item.speaker && (
@@ -238,47 +263,56 @@ export default function EventPage({ content, pa }: Props) {
                 </section>
               )}
 
-              {/* Speakers — responsive card grid */}
+              {/* Speakers — full-width horizontal cards */}
               {speakers && speakers.length > 0 && (
                 <section className="mt-2xl" {...pa?.('speakers')}>
                   <SectionHeading>Speakers</SectionHeading>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+                  <ul className="flex flex-col gap-3">
                     {speakers.map((sp, i) => {
                       const photo    = sp.headshot?.url?.default || null
                       const profile  = sp.profileUrl?.default || null
                       const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
                       const initials = getInitials(sp.name)
                       return (
-                        <li key={i} className="card-hover-glow flex flex-col bg-surface border border-fg/10 px-5 py-6">
+                        <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 bg-surface border border-fg/10 px-6 py-5">
+                          {/* Headshot — 96px circle with a chromatic bloom ring */}
                           {photo ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={photo} alt={sp.name ?? ''} className="w-20 h-20 rounded-full object-cover" />
+                            <img
+                              src={photo}
+                              alt={sp.name ?? ''}
+                              className="flex-none w-24 h-24 rounded-full object-cover"
+                              style={{ boxShadow: '0 0 0 2px oklch(from var(--ot-brand) l c h / 0.3)' }}
+                            />
                           ) : (
                             <div
-                              className="flex items-center justify-center w-20 h-20 rounded-full text-[1.25rem] font-bold text-brand"
+                              className="flex-none flex items-center justify-center w-24 h-24 rounded-full text-[1.5rem] font-bold text-brand"
                               style={{
-                                background: 'oklch(from var(--ot-brand) l c h / 0.2)',
-                                border:     '1px solid oklch(from var(--ot-brand) l c h / 0.4)',
+                                background: 'oklch(from var(--ot-brand) l c h / 0.15)',
+                                border:     '1px solid oklch(from var(--ot-brand) l c h / 0.3)',
                               }}
                               aria-hidden
                             >
-                              {initials || <User size={28} strokeWidth={1.75} aria-hidden />}
+                              {initials || <User size={32} strokeWidth={1.75} aria-hidden />}
                             </div>
                           )}
-                          {sp.name && <p className="text-title font-semibold text-fg leading-snug mt-md">{sp.name}</p>}
-                          {subline && <p className="text-body text-fg-muted mt-0.5">{subline}</p>}
-                          {sp.bio && <p className="text-body text-fg-muted/80 leading-snug mt-sm line-clamp-3 text-pretty">{sp.bio}</p>}
-                          {profile && (
-                            <a
-                              href={profile}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group mt-auto pt-md inline-flex items-center gap-xs text-[0.875rem] font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                            >
-                              View Profile
-                              <ArrowRight size={14} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
-                            </a>
-                          )}
+                          {/* Content */}
+                          <div className="min-w-0 flex-1 text-center md:text-left">
+                            {sp.name && <p className="text-title font-bold text-fg leading-snug">{sp.name}</p>}
+                            {subline && <p className="text-sm text-fg-muted mt-0.5">{subline}</p>}
+                            {sp.bio && <p className="text-sm text-fg-muted/80 leading-snug mt-sm line-clamp-3 text-pretty">{sp.bio}</p>}
+                            {profile && (
+                              <a
+                                href={profile}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group mt-sm inline-flex items-center gap-xs text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                              >
+                                View Profile
+                                <ArrowRight size={13} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
+                              </a>
+                            )}
+                          </div>
                         </li>
                       )
                     })}

@@ -216,17 +216,104 @@ function EventListRow({ event }: { event: EventCardData }) {
 
 type DayInfo = { date: Date; key: string }
 
+// Calendar layout constants (px). The numeral zone sits at the top of every cell;
+// multi-day bars stack in lanes below it; single-day pills flow below the bars.
+const NUMERAL_ZONE = 24   // h-6 — top strip holding the date numeral
+const BAR_H        = 22   // one multi-day lane (18px bar + 4px gap)
+const MAX_BARS     = 3    // visible multi-day lanes per week
+const MAX_PILLS    = 3    // visible single-day pills per day
+
 function ymKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+function dayMs(d: Date): number {
+  return startOfDay(d).getTime()
+}
+
+function eventStartEnd(event: EventCardData): { start: number; end: number } | null {
+  if (!event.startDate) return null
+  const start = new Date(event.startDate)
+  if (Number.isNaN(start.getTime())) return null
+  const endRaw = event.endDate ? new Date(event.endDate) : start
+  const end = Number.isNaN(endRaw.getTime()) ? start : endRaw
+  return { start: dayMs(start), end: dayMs(end) }
+}
+
 function eventCoversDay(event: EventCardData, day: Date): boolean {
-  if (!event.startDate) return false
-  const start = startOfDay(new Date(event.startDate))
-  if (Number.isNaN(start.getTime())) return false
-  const end = event.endDate ? startOfDay(new Date(event.endDate)) : start
-  const d = startOfDay(day).getTime()
-  return d >= start.getTime() && d <= (Number.isNaN(end.getTime()) ? start.getTime() : end.getTime())
+  const se = eventStartEnd(event)
+  if (!se) return false
+  const d = dayMs(day)
+  return d >= se.start && d <= se.end
+}
+
+function isMultiDay(event: EventCardData): boolean {
+  const se = eventStartEnd(event)
+  return !!se && se.end > se.start
+}
+
+// Greedy lane-packing of the multi-day events that overlap one week (7 columns).
+// Returns each placement's column span + lane, and the lane count used (capped).
+type Span = {
+  event: EventCardData
+  colStart: number
+  colEnd: number
+  lane: number
+  continuesLeft: boolean
+  continuesRight: boolean
+}
+
+function placeMultiDay(week: (DayInfo | null)[], events: EventCardData[]): { spans: Span[]; laneCount: number } {
+  const raw: Omit<Span, 'lane'>[] = []
+  for (const e of events) {
+    if (!isMultiDay(e)) continue
+    const se = eventStartEnd(e)!
+    let colStart = -1, colEnd = -1
+    for (let c = 0; c < 7; c++) {
+      const cell = week[c]
+      if (cell && eventCoversDay(e, cell.date)) {
+        if (colStart < 0) colStart = c
+        colEnd = c
+      }
+    }
+    if (colStart < 0) continue
+    raw.push({
+      event: e,
+      colStart,
+      colEnd,
+      continuesLeft:  se.start < dayMs(week[colStart]!.date),
+      continuesRight: se.end   > dayMs(week[colEnd]!.date),
+    })
+  }
+  // Longest spans first, then left-to-right, so big bars settle into low lanes.
+  raw.sort((a, b) => (b.colEnd - b.colStart) - (a.colEnd - a.colStart) || a.colStart - b.colStart)
+  const laneEnds: number[] = []
+  const spans: Span[] = []
+  for (const s of raw) {
+    let lane = laneEnds.findIndex(end => s.colStart > end)
+    if (lane === -1) { lane = laneEnds.length; laneEnds.push(s.colEnd) }
+    else laneEnds[lane] = s.colEnd
+    if (lane < MAX_BARS) spans.push({ ...s, lane })
+  }
+  return { spans, laneCount: Math.min(laneEnds.length, MAX_BARS) }
+}
+
+// Single-day event strip inside a calendar cell: start time (mono), type badge,
+// then the title. A brand-tinted fill + full 1px border reads as an event strip
+// (DESIGN.md prohibits side-stripe borders > 1px, so no left accent rule here).
+function CalendarPill({ event }: { event: EventCardData }) {
+  const time = formatEventTime(event.startDate)
+  return (
+    <span className="block overflow-hidden bg-brand/10 border border-brand/25 px-1.5 py-1 leading-tight">
+      {time && <span className="block font-mono text-[10px] text-fg-muted leading-none">{time}</span>}
+      {event.eventType && (
+        <span className="inline-block bg-accent text-fg-on-accent text-[8px] font-bold uppercase tracking-wider px-1 leading-[1.4] mt-0.5">
+          {eventTypeLabel(event.eventType)}
+        </span>
+      )}
+      <span className="block truncate text-xs font-medium text-fg leading-tight mt-0.5">{event.title}</span>
+    </span>
+  )
 }
 
 function CalendarView({ events, color, now }: { events: EventCardData[]; color: Color; now: Date }) {
@@ -252,6 +339,16 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     }
     return out
   }, [cursor])
+
+  // Pad to whole weeks (trailing blanks) and chunk into rows of 7 so each week
+  // can host its own multi-day strip overlay.
+  const weeks = useMemo<(DayInfo | null)[][]>(() => {
+    const padded = [...cells]
+    while (padded.length % 7 !== 0) padded.push(null)
+    const out: (DayInfo | null)[][] = []
+    for (let i = 0; i < padded.length; i += 7) out.push(padded.slice(i, i + 7))
+    return out
+  }, [cells])
 
   // Events visible in the current month, and a per-day index.
   const monthEvents = useMemo(
@@ -301,7 +398,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     <div>
       {/* Month nav */}
       <div className="flex items-center justify-between mb-md">
-        <h3 id={labelId} className="text-title font-semibold text-fg">{monthLabel}</h3>
+        <h3 id={labelId} className="text-[1.75rem] leading-none tracking-[-0.02em] font-bold text-fg">{monthLabel}</h3>
         <div className="flex items-center gap-xs">
           <button type="button" className={navBtn} aria-label="Previous month" onClick={() => goMonth(-1)}>
             <ChevronLeft size={16} strokeWidth={2} />
@@ -329,54 +426,84 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
             </div>
           ))}
         </div>
-        {/* Day cells */}
-        <div className="grid grid-cols-7 border-l border-fg/10">
-          {cells.map((cell, i) => {
-            if (!cell) {
-              return <div key={`blank-${i}`} className="border-r border-b border-fg/10 bg-fg/[0.015] min-h-[92px]" aria-hidden />
-            }
-            const dayEvents = eventsForDay(cell.date)
-            const isToday   = cell.key === todayKey
-            const isSel     = cell.key === selected
-            const hasEvents = dayEvents.length > 0
+        {/* Day cells — one grid per week, each with a multi-day strip overlay */}
+        <div className="border-l border-fg/10">
+          {weeks.map((week, wi) => {
+            const { spans, laneCount } = placeMultiDay(week, monthEvents)
             return (
-              <button
-                type="button"
-                key={cell.key}
-                role="gridcell"
-                aria-selected={isSel}
-                aria-label={`${new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(cell.date)}${hasEvents ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
-                disabled={!hasEvents}
-                onClick={() => hasEvents && setSelected(isSel ? null : cell.key)}
-                className={`relative text-left border-r border-b border-fg/10 min-h-[92px] p-xs flex flex-col gap-px
-                  transition-colors duration-150 ease-quick
-                  ${hasEvents ? 'cursor-pointer hover:bg-brand/[0.06]' : 'cursor-default'}
-                  ${isSel ? 'bg-brand/10' : ''}
-                  focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`}
-              >
-                {/* Navigation numerals — clean & upright (not display type):
-                    explicit not-italic + tabular figures, weight 700. Today is
-                    the brand colour on a subtle bloom-faint indicator (kept sharp
-                    to honour DESIGN.md's no-rounded-full identity rule). */}
-                <span className={`not-italic tabular-nums font-bold text-[0.8125rem] leading-none ${
-                  isToday
-                    ? 'inline-flex items-center justify-center w-6 h-6 -ml-0.5 bg-(--ot-bloom-brand-faint) text-brand'
-                    : 'text-fg-muted'
-                }`}>
-                  {cell.date.getDate()}
-                </span>
-                {/* Up to 2 chips, then "+N more" */}
-                <span className="flex flex-col gap-px mt-xs">
-                  {dayEvents.slice(0, 2).map(e => (
-                    <span key={e.key} className="block truncate bg-accent/15 text-accent text-label font-semibold px-1 py-px leading-tight">
-                      {eventTypeLabel(e.eventType) || e.title}
-                    </span>
-                  ))}
-                  {dayEvents.length > 2 && (
-                    <span className="text-label text-fg-muted/70 px-1">+{dayEvents.length - 2} more</span>
-                  )}
-                </span>
-              </button>
+              <div key={wi} className="relative grid grid-cols-7" role="row">
+                {week.map((cell, col) => {
+                  if (!cell) {
+                    return <div key={`b-${wi}-${col}`} aria-hidden className="border-r border-b border-fg/10 bg-fg/2 min-h-20 lg:min-h-30" />
+                  }
+                  const dayEvents = eventsForDay(cell.date)
+                  const singles   = dayEvents.filter(e => !isMultiDay(e))
+                  const shown     = singles.slice(0, MAX_PILLS)
+                  const hidden    = singles.length - shown.length
+                  const isToday   = cell.key === todayKey
+                  const isSel     = cell.key === selected
+                  const hasEvents = dayEvents.length > 0
+                  return (
+                    <button
+                      type="button"
+                      key={cell.key}
+                      role="gridcell"
+                      aria-selected={isSel}
+                      aria-label={`${new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(cell.date)}${hasEvents ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
+                      disabled={!hasEvents}
+                      onClick={() => hasEvents && setSelected(isSel ? null : cell.key)}
+                      className={`group relative text-left border-r border-b border-fg/10 min-h-20 lg:min-h-30 flex flex-col
+                        transition-colors duration-150 ease-quick
+                        ${hasEvents ? 'cursor-pointer hover:bg-brand/8' : 'cursor-default'}
+                        ${isToday && !isSel ? 'bg-brand/4' : ''}
+                        ${isSel ? 'bg-brand/10' : ''}
+                        focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`}
+                    >
+                      {/* Numeral zone (fixed height; multi-day bars + pills sit below) */}
+                      <span className="flex items-center justify-end px-1 flex-none" style={{ height: NUMERAL_ZONE }}>
+                        <span className={`not-italic tabular-nums font-bold text-[0.8125rem] leading-none ${
+                          isToday
+                            ? 'inline-flex items-center justify-center min-w-5 h-5 px-1 bg-brand text-fg-on-brand'
+                            : 'text-fg-muted'
+                        }`}>
+                          {cell.date.getDate()}
+                        </span>
+                      </span>
+                      {/* Reserve the multi-day lane band (bars are drawn in the overlay) */}
+                      {laneCount > 0 && <span aria-hidden className="flex-none" style={{ height: laneCount * BAR_H }} />}
+                      {/* Single-day event strips */}
+                      {shown.length > 0 && (
+                        <span className="flex flex-col gap-0.5 px-0.5 pb-0.5 min-w-0">
+                          {shown.map(e => <CalendarPill key={e.key} event={e} />)}
+                          {hidden > 0 && (
+                            <span className="text-[10px] font-semibold text-fg-muted/70 px-1 leading-tight">+{hidden} more</span>
+                          )}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+                {/* Multi-day spanning overlay — shares the 7-col track with the cells */}
+                {spans.length > 0 && (
+                  <div
+                    className="pointer-events-none absolute inset-0 grid grid-cols-7"
+                    style={{ paddingTop: NUMERAL_ZONE, gridAutoRows: `${BAR_H}px` }}
+                    aria-hidden
+                  >
+                    {spans.map(s => (
+                      <span
+                        key={`${s.event.key}-${s.lane}`}
+                        className="px-0.5"
+                        style={{ gridColumn: `${s.colStart + 1} / span ${s.colEnd - s.colStart + 1}`, gridRowStart: s.lane + 1 }}
+                      >
+                        <span className="flex items-center h-4.5 bg-brand text-fg-on-brand text-[11px] font-semibold leading-none px-1.5 overflow-hidden whitespace-nowrap">
+                          <span className="truncate">{s.continuesLeft ? ' ' : s.event.title}</span>
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>
