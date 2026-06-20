@@ -66,6 +66,17 @@ export const OT_LandingRow = displayTemplate({
         baseline: { displayName: 'Baseline', sortOrder: 50 },
       },
     },
+    columnRhythm: {
+      displayName: 'Column rhythm',
+      editor: 'select',
+      sortOrder: 65,
+      choices: {
+        none:     { displayName: 'None (flat baseline)', sortOrder: 10 },
+        gentle:   { displayName: 'Gentle cascade',       sortOrder: 20 },
+        moderate: { displayName: 'Moderate cascade',     sortOrder: 30 },
+        bold:     { displayName: 'Bold cascade',         sortOrder: 40 },
+      },
+    },
     backgroundColor: {
       displayName: 'Background color',
       editor: 'select',

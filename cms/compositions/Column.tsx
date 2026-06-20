@@ -47,12 +47,14 @@ const alignClasses: Record<string, string> = {
 export default function Column({ node, displaySettings = {}, children }: Props) {
   const { pa } = getPreviewUtils(node)
 
-  const span    = String(displaySettings.gridSpan          ?? 'auto')
+  const span    = String(displaySettings.gridSpan           ?? 'auto')
   const spacing = String(displaySettings.contentSpacing    ?? 'medium')
   const justify = String(displaySettings.justifyContent    ?? 'start')
   const align   = String(displaySettings.alignContent      ?? 'stretch')
   const vPad    = String(displaySettings.verticalPadding   ?? 'none')
   const hPad    = String(displaySettings.horizontalPadding ?? 'none')
+  const nudgeRaw = String(displaySettings.columnRhythmNudge ?? 'none')
+  const nudge    = nudgeRaw === 'none' ? undefined : nudgeRaw
 
   const spanClass    = span === 'auto' ? 'flex-1 min-w-0' : 'flex-none w-full'
   const spacingClass = contentSpacingClasses[spacing]     ?? contentSpacingClasses.medium
@@ -65,6 +67,7 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
     <div
       className={`vb:col flex flex-col self-stretch ${spanClass} ${spacingClass} ${vPadClass} ${hPadClass} ${justifyClass} ${alignClass}`}
       data-col-span={span !== 'auto' ? span : undefined}
+      data-nudge={nudge}
       {...pa(node)}
     >
       {children}

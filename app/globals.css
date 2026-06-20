@@ -117,8 +117,8 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(1.5rem); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 1.5rem)); }
+  to   { opacity: 1; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px))); }
 }
 
 @keyframes statPulse {
@@ -318,6 +318,123 @@
   [data-bp="xl"] [data-col-span="col12"] { flex-basis: 100%; }
 }
 
+/* ── Column rhythm (editorial cascade) ──────────────────────────────────────
+ * Controlled by the columnRhythm display setting on OT_LandingRow.
+ * Applies a staircase translateY offset to each child column, creating a
+ * deliberate editorial cascade — the eye steps down the page as it scans left
+ * to right across a multi-column row.
+ *
+ * Three levels map directly to the spacing token scale:
+ *   gentle:   col2 sm  / col3 md  / col4+ lg    (0 / 8 / 16 / 32px)
+ *   moderate: col2 md  / col3 lg  / col4+ xl    (0 / 16 / 32 / 64px)
+ *   bold:     col2 lg  / col3 xl  / col4+ 2xl   (0 / 32 / 64 / 128px)
+ *
+ * --ot-rhythm-offset: per-column base set by the row rhythm pattern (nth-child).
+ * --ot-rhythm-nudge:  per-column correction from the columnRhythmNudge setting.
+ * Both default to 0px — the calc() is a no-op on rows without rhythm set.
+ *
+ * All rules are scoped inside breakpoint @media blocks matching their data-bp
+ * values, so rhythm zeroes out automatically when columns stack below the Row's
+ * showAsRowFrom breakpoint. No mobile layout shift.
+ *
+ * slideUp and parallaxUp keyframes incorporate --ot-rhythm-offset and
+ * --ot-rhythm-nudge so stagger entrance animations settle into the rhythm
+ * resting position rather than translateY(0). Without rhythm both vars are
+ * 0px — existing animation behaviour is unchanged.
+ *
+ * Note: transform does not affect box layout. Bottom overflow on large rhythm
+ * levels is expected; use the Row's verticalPadding setting to compensate.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  [data-bp="sm"][data-rhythm] > * {
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px)));
+  }
+  [data-bp="sm"][data-rhythm="gentle"]   > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-sm);  }
+  [data-bp="sm"][data-rhythm="gentle"]   > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="sm"][data-rhythm="gentle"]   > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="sm"][data-rhythm="moderate"] > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="sm"][data-rhythm="moderate"] > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="sm"][data-rhythm="moderate"] > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="sm"][data-rhythm="bold"]     > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="sm"][data-rhythm="bold"]     > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="sm"][data-rhythm="bold"]     > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-2xl); }
+  [data-bp="sm"][data-rhythm] > [data-nudge="down_sm"] { --ot-rhythm-nudge: var(--ot-space-sm);            }
+  [data-bp="sm"][data-rhythm] > [data-nudge="down_md"] { --ot-rhythm-nudge: var(--ot-space-md);            }
+  [data-bp="sm"][data-rhythm] > [data-nudge="down_lg"] { --ot-rhythm-nudge: var(--ot-space-lg);            }
+  [data-bp="sm"][data-rhythm] > [data-nudge="down_xl"] { --ot-rhythm-nudge: var(--ot-space-xl);            }
+  [data-bp="sm"][data-rhythm] > [data-nudge="up_sm"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-sm)); }
+  [data-bp="sm"][data-rhythm] > [data-nudge="up_md"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-md)); }
+  [data-bp="sm"][data-rhythm] > [data-nudge="up_lg"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-lg)); }
+  [data-bp="sm"][data-rhythm] > [data-nudge="up_xl"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-xl)); }
+}
+@media (min-width: 768px) {
+  [data-bp="md"][data-rhythm] > * {
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px)));
+  }
+  [data-bp="md"][data-rhythm="gentle"]   > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-sm);  }
+  [data-bp="md"][data-rhythm="gentle"]   > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="md"][data-rhythm="gentle"]   > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="md"][data-rhythm="moderate"] > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="md"][data-rhythm="moderate"] > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="md"][data-rhythm="moderate"] > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="md"][data-rhythm="bold"]     > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="md"][data-rhythm="bold"]     > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="md"][data-rhythm="bold"]     > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-2xl); }
+  [data-bp="md"][data-rhythm] > [data-nudge="down_sm"] { --ot-rhythm-nudge: var(--ot-space-sm);            }
+  [data-bp="md"][data-rhythm] > [data-nudge="down_md"] { --ot-rhythm-nudge: var(--ot-space-md);            }
+  [data-bp="md"][data-rhythm] > [data-nudge="down_lg"] { --ot-rhythm-nudge: var(--ot-space-lg);            }
+  [data-bp="md"][data-rhythm] > [data-nudge="down_xl"] { --ot-rhythm-nudge: var(--ot-space-xl);            }
+  [data-bp="md"][data-rhythm] > [data-nudge="up_sm"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-sm)); }
+  [data-bp="md"][data-rhythm] > [data-nudge="up_md"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-md)); }
+  [data-bp="md"][data-rhythm] > [data-nudge="up_lg"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-lg)); }
+  [data-bp="md"][data-rhythm] > [data-nudge="up_xl"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-xl)); }
+}
+@media (min-width: 1024px) {
+  [data-bp="lg"][data-rhythm] > * {
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px)));
+  }
+  [data-bp="lg"][data-rhythm="gentle"]   > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-sm);  }
+  [data-bp="lg"][data-rhythm="gentle"]   > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="lg"][data-rhythm="gentle"]   > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="lg"][data-rhythm="moderate"] > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="lg"][data-rhythm="moderate"] > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="lg"][data-rhythm="moderate"] > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="lg"][data-rhythm="bold"]     > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="lg"][data-rhythm="bold"]     > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="lg"][data-rhythm="bold"]     > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-2xl); }
+  [data-bp="lg"][data-rhythm] > [data-nudge="down_sm"] { --ot-rhythm-nudge: var(--ot-space-sm);            }
+  [data-bp="lg"][data-rhythm] > [data-nudge="down_md"] { --ot-rhythm-nudge: var(--ot-space-md);            }
+  [data-bp="lg"][data-rhythm] > [data-nudge="down_lg"] { --ot-rhythm-nudge: var(--ot-space-lg);            }
+  [data-bp="lg"][data-rhythm] > [data-nudge="down_xl"] { --ot-rhythm-nudge: var(--ot-space-xl);            }
+  [data-bp="lg"][data-rhythm] > [data-nudge="up_sm"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-sm)); }
+  [data-bp="lg"][data-rhythm] > [data-nudge="up_md"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-md)); }
+  [data-bp="lg"][data-rhythm] > [data-nudge="up_lg"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-lg)); }
+  [data-bp="lg"][data-rhythm] > [data-nudge="up_xl"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-xl)); }
+}
+@media (min-width: 1280px) {
+  [data-bp="xl"][data-rhythm] > * {
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px)));
+  }
+  [data-bp="xl"][data-rhythm="gentle"]   > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-sm);  }
+  [data-bp="xl"][data-rhythm="gentle"]   > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="xl"][data-rhythm="gentle"]   > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="xl"][data-rhythm="moderate"] > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-md);  }
+  [data-bp="xl"][data-rhythm="moderate"] > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="xl"][data-rhythm="moderate"] > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="xl"][data-rhythm="bold"]     > *:nth-child(2)   { --ot-rhythm-offset: var(--ot-space-lg);  }
+  [data-bp="xl"][data-rhythm="bold"]     > *:nth-child(3)   { --ot-rhythm-offset: var(--ot-space-xl);  }
+  [data-bp="xl"][data-rhythm="bold"]     > *:nth-child(n+4) { --ot-rhythm-offset: var(--ot-space-2xl); }
+  [data-bp="xl"][data-rhythm] > [data-nudge="down_sm"] { --ot-rhythm-nudge: var(--ot-space-sm);            }
+  [data-bp="xl"][data-rhythm] > [data-nudge="down_md"] { --ot-rhythm-nudge: var(--ot-space-md);            }
+  [data-bp="xl"][data-rhythm] > [data-nudge="down_lg"] { --ot-rhythm-nudge: var(--ot-space-lg);            }
+  [data-bp="xl"][data-rhythm] > [data-nudge="down_xl"] { --ot-rhythm-nudge: var(--ot-space-xl);            }
+  [data-bp="xl"][data-rhythm] > [data-nudge="up_sm"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-sm)); }
+  [data-bp="xl"][data-rhythm] > [data-nudge="up_md"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-md)); }
+  [data-bp="xl"][data-rhythm] > [data-nudge="up_lg"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-lg)); }
+  [data-bp="xl"][data-rhythm] > [data-nudge="up_xl"]   { --ot-rhythm-nudge: calc(-1 * var(--ot-space-xl)); }
+}
+
 /* ── Row staggered column entrance ──────────────────────────────────────────
  * MotionObserver (client component in providers/) observes [data-stagger]
  * elements and adds data-in when they enter the viewport.
@@ -325,22 +442,22 @@
  * visible elements already have data-in before we hide off-screen ones.
  * ─────────────────────────────────────────────────────────────────────────── */
 @keyframes parallaxUp {
-  from { opacity: 0; transform: translateY(3rem); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 3rem)); }
+  to   { opacity: 1; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px))); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   /* Hold off-screen rows at their pre-animation state once the system is ready */
   .motion-ready [data-stagger="slide"]:not([data-in]) > * {
     opacity: 0;
-    transform: translateY(1.5rem);
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 1.5rem));
   }
   .motion-ready [data-stagger="fade"]:not([data-in]) > * {
     opacity: 0;
   }
   .motion-ready [data-stagger="parallax"]:not([data-in]) > * {
     opacity: 0;
-    transform: translateY(3rem);
+    transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 3rem));
   }
   /* Animate columns in when the row enters the viewport */
   [data-stagger="slide"][data-in]    > * { animation: slideUp    var(--ot-dur-slow) var(--ot-ease-kinetic) both; }

@@ -52,6 +52,15 @@ export const CATEGORIES: ShowcaseCategory[] = [
     ],
   },
   {
+    label: 'Layout',
+    slug:  'layout',
+    match: '/showcase/layout',
+    href:  '/showcase/layout/row-rhythm',
+    items: [
+      { label: 'Row Rhythm', slug: 'row-rhythm' },
+    ],
+  },
+  {
     label: 'Theme',
     slug:  'theme',
     match: '/showcase/theme',

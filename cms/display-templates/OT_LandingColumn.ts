@@ -81,5 +81,21 @@ export const OT_LandingColumn = displayTemplate({
         end:    { displayName: 'Right',  sortOrder: 30 },
       },
     },
+    columnRhythmNudge: {
+      displayName: 'Rhythm nudge',
+      editor: 'select',
+      sortOrder: 70,
+      choices: {
+        none:    { displayName: 'None (Default)',   sortOrder: 10 },
+        down_sm: { displayName: '+ Small (8px)',    sortOrder: 20 },
+        down_md: { displayName: '+ Medium (16px)',  sortOrder: 30 },
+        down_lg: { displayName: '+ Large (32px)',   sortOrder: 40 },
+        down_xl: { displayName: '+ XL (64px)',      sortOrder: 50 },
+        up_sm:   { displayName: '- Small (-8px)',   sortOrder: 60 },
+        up_md:   { displayName: '- Medium (-16px)', sortOrder: 70 },
+        up_lg:   { displayName: '- Large (-32px)',  sortOrder: 80 },
+        up_xl:   { displayName: '- XL (-64px)',     sortOrder: 90 },
+      },
+    },
   },
 })

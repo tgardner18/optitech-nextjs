@@ -83,6 +83,7 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
   const align      = String(displaySettings.alignItems       ?? 'start')
   const vPadding   = String(displaySettings.verticalPadding  ?? 'small')
   const bgColor    = String(displaySettings.backgroundColor  ?? 'none')
+  const rhythm            = String(displaySettings.columnRhythm      ?? 'none')
   const wrap              = displaySettings.wrapColumns      === true
   const reverse           = displaySettings.reverseColumns   === true
   const entranceAnimation = String(displaySettings.entranceAnimation ?? 'none')
@@ -120,6 +121,7 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
       className={`vb:row flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${bgColorClass} ${justifyClass} ${alignClass}`}
       data-theme={DARK_BG.has(bgColor) ? 'dark' : undefined}
       data-stagger={isAnimated ? entranceAnimation : undefined}
+      data-rhythm={rhythm !== 'none' ? rhythm : undefined}
       {...pa(node)}
       data-bp={breakpoint}
     >
