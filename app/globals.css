@@ -2628,6 +2628,57 @@ body {
   --ot-fg-on-accent: oklch(13% 0.012 170);
 }
 
+/* ── Section overlap ─────────────────────────────────────────────────────────
+ * Controlled by sectionOverlap on OT_LandingSection.
+ * The overlapping section pulls up into the one above it via negative margin-top.
+ * The section's background intrudes upward — the seam interlocks rather than
+ * sitting flush. Content inside remains padded as authored; only the background
+ * extent changes.
+ *
+ * position: relative + z-index: 1 places the pulled-up section above the previous
+ * one's content layer. Multiple consecutive overlapping sections resolve cleanly
+ * via DOM order (later in DOM = higher in stack when z-index ties).
+ *
+ * DEPENDENCY: the overlapping section should have a backgroundColor set (canvas,
+ * surface, brand, glass). A transparent section overlapping another creates no
+ * visual seam — both sections' content occupy the same space with no separation.
+ * Glass sections gain a secondary benefit: backdrop-filter blurs the section above
+ * through the glass surface, reinforcing the material depth.
+ *
+ * Applied at sm+ (640px+) only. Below this threshold sections stack linearly and
+ * the overlap zeroes out — no content is ever hidden on mobile.
+ *
+ * Amounts map to the spacing token scale, skipping xs/sm (too subtle to read as
+ * intentional) and starting at md (16px) for the shallowest visible tuck.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  [data-overlap="shallow"] { position: relative; z-index: 1; margin-top: calc(-1 * var(--ot-space-md));  }
+  [data-overlap="mid"]     { position: relative; z-index: 1; margin-top: calc(-1 * var(--ot-space-lg));  }
+  [data-overlap="deep"]    { position: relative; z-index: 1; margin-top: calc(-1 * var(--ot-space-xl));  }
+  [data-overlap="full"]    { position: relative; z-index: 1; margin-top: calc(-1 * var(--ot-space-2xl)); }
+}
+
+/* ── Column bleed ─────────────────────────────────────────────────────────────
+ * Controlled by columnBleed on OT_LandingColumn.
+ * Extends one column's content area into its sibling's space via negative margin.
+ * Any block inside a bleed column that fills its parent's width (images, cards,
+ * full-width divs) will naturally extend into the adjacent column's territory.
+ *
+ * The bleeding column sits above its sibling (z-index: 1). Use for editorial
+ * depth moments: a portrait image overflowing its column boundary, or a media
+ * block asserting dominance over a text column.
+ *
+ * Fixed depth of lg (32px) — beyond a typical gap-md gap, ensuring the bleed
+ * reads as intentional composition rather than layout error.
+ *
+ * Applied at sm+ only — below this threshold columns stack and the bleed zeroes
+ * out, preventing unexpected layout on mobile.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  [data-col-bleed="right"] { position: relative; z-index: 1; margin-right: calc(-1 * var(--ot-space-lg)); }
+  [data-col-bleed="left"]  { position: relative; z-index: 1; margin-left:  calc(-1 * var(--ot-space-lg)); }
+}
+
 /* ── OptiAdmin day-panel slide-in ────────────────────────────────────────────
  * Fixed overlay panel used by the calendar day flyout.
  * prefers-reduced-motion: panel appears instantly without translation.

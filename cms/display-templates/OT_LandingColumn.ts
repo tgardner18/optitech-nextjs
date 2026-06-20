@@ -81,6 +81,16 @@ export const OT_LandingColumn = displayTemplate({
         end:    { displayName: 'Right',  sortOrder: 30 },
       },
     },
+    columnBleed: {
+      displayName: 'Bleed into neighbor',
+      editor: 'select',
+      sortOrder: 65,
+      choices: {
+        none:  { displayName: 'None (Default)',    sortOrder: 10 },
+        right: { displayName: 'Right (32px)',      sortOrder: 20 },
+        left:  { displayName: 'Left (32px)',       sortOrder: 30 },
+      },
+    },
     columnRhythmNudge: {
       displayName: 'Rhythm nudge',
       editor: 'select',

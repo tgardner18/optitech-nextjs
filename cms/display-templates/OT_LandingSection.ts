@@ -42,6 +42,18 @@ export const OT_LandingSection = displayTemplate({
         glass:     { displayName: 'Glass (frosted)', sortOrder: 60 },
       },
     },
+    sectionOverlap: {
+      displayName: 'Pull up into section above',
+      editor: 'select',
+      sortOrder: 35,
+      choices: {
+        none:    { displayName: 'None (flush)',     sortOrder: 10 },
+        shallow: { displayName: 'Shallow (16px)',   sortOrder: 20 },
+        mid:     { displayName: 'Mid (32px)',       sortOrder: 30 },
+        deep:    { displayName: 'Deep (64px)',      sortOrder: 40 },
+        full:    { displayName: 'Full (128px)',     sortOrder: 50 },
+      },
+    },
     entranceAnimation: {
       displayName: 'Entrance animation',
       editor: 'select',

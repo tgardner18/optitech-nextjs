@@ -39,6 +39,7 @@ export default function Section({ content, displaySettings = {} }: Props) {
   const width              = String(displaySettings.gridWidth          ?? 'default')
   const vSpace             = String(displaySettings.verticalSpacing    ?? 'large')
   const bgColor            = String(displaySettings.backgroundColor    ?? 'none')
+  const overlap            = String(displaySettings.sectionOverlap     ?? 'none')
   const entranceAnimation  = String(displaySettings.entranceAnimation  ?? 'none')
 
   const widthClass   = widthClasses[width]              ?? widthClasses.default
@@ -51,6 +52,7 @@ export default function Section({ content, displaySettings = {} }: Props) {
     <section
       className={`vb:section flex flex-col w-full ${bgColorClass}`}
       data-theme={DARK_BG.has(bgColor) ? 'dark' : undefined}
+      data-overlap={overlap !== 'none' ? overlap : undefined}
       {...pa(content)}
       data-stagger={isAnimated ? entranceAnimation : undefined}
     >

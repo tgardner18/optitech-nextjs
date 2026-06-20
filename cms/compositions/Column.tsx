@@ -55,6 +55,8 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
   const hPad    = String(displaySettings.horizontalPadding ?? 'none')
   const nudgeRaw = String(displaySettings.columnRhythmNudge ?? 'none')
   const nudge    = nudgeRaw === 'none' ? undefined : nudgeRaw
+  const bleedRaw = String(displaySettings.columnBleed ?? 'none')
+  const bleed    = bleedRaw === 'none' ? undefined : bleedRaw
 
   const spanClass    = span === 'auto' ? 'flex-1 min-w-0' : 'flex-none w-full'
   const spacingClass = contentSpacingClasses[spacing]     ?? contentSpacingClasses.medium
@@ -67,6 +69,7 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
     <div
       className={`vb:col flex flex-col self-stretch ${spanClass} ${spacingClass} ${vPadClass} ${hPadClass} ${justifyClass} ${alignClass}`}
       data-col-span={span !== 'auto' ? span : undefined}
+      data-col-bleed={bleed}
       data-nudge={nudge}
       {...pa(node)}
     >
