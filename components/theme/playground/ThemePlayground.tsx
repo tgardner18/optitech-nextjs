@@ -107,6 +107,10 @@ export default function ThemePlayground({
     '--ot-radius-control': CORNER_STYLES[corner].control,
     '--ot-font-sans': `${PRIMARY_FONTS[font].var}, system-ui, sans-serif`,
     '--ot-motion-scale': String(MOTION_INTENSITIES[motion]),
+    // Re-declare font-family on the wrapper so the overridden --ot-font-sans is
+    // actually re-resolved here; descendants inherit it. (Inheriting from <body>
+    // alone wouldn't work — body already resolved the var to the default font.)
+    fontFamily: 'var(--ot-font-sans)',
   } as CSSProperties
 
   return (
