@@ -4,19 +4,19 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import {
   CORNER_STYLES,
-  DISPLAY_FONTS,
+  PRIMARY_FONTS,
   MOTION_INTENSITIES,
   DEFAULT_CORNER_STYLE,
-  DEFAULT_DISPLAY_FONT,
+  DEFAULT_PRIMARY_FONT,
   DEFAULT_MOTION_INTENSITY,
   type CornerStyleKey,
-  type DisplayFontKey,
+  type PrimaryFontKey,
   type MotionIntensityKey,
 } from '@/lib/theme-axes'
 
 // Live, in-page demonstration of the three non-color theme axes. Each control
 // writes the SAME CSS custom properties buildThemeCSS() emits (--ot-radius-*,
-// --ot-font-display, --ot-motion-scale) onto a scoped preview wrapper, so what
+// --ot-font-sans, --ot-motion-scale) onto a scoped preview wrapper, so what
 // you see here is exactly what ThemeManager produces site-wide.
 
 const CORNER_LABELS: Record<CornerStyleKey, string> = {
@@ -54,14 +54,14 @@ export default function ThemeAxesPreview({
   activeMotion?: string
 }) {
   const [corner, setCorner] = useState<CornerStyleKey>((activeCorner as CornerStyleKey) in CORNER_STYLES ? (activeCorner as CornerStyleKey) : DEFAULT_CORNER_STYLE)
-  const [font, setFont]     = useState<DisplayFontKey>((activeFont as DisplayFontKey) in DISPLAY_FONTS ? (activeFont as DisplayFontKey) : DEFAULT_DISPLAY_FONT)
+  const [font, setFont]     = useState<PrimaryFontKey>((activeFont as PrimaryFontKey) in PRIMARY_FONTS ? (activeFont as PrimaryFontKey) : DEFAULT_PRIMARY_FONT)
   const [motion, setMotion] = useState<MotionIntensityKey>((activeMotion as MotionIntensityKey) in MOTION_INTENSITIES ? (activeMotion as MotionIntensityKey) : DEFAULT_MOTION_INTENSITY)
 
   // The exact override set buildThemeCSS() would emit, scoped to this wrapper.
   const previewVars = {
     '--ot-radius-surface': CORNER_STYLES[corner].surface,
     '--ot-radius-control': CORNER_STYLES[corner].control,
-    '--ot-font-display':   DISPLAY_FONTS[font].var,
+    '--ot-font-sans':      `${PRIMARY_FONTS[font].var}, system-ui, sans-serif`,
     '--ot-motion-scale':   String(MOTION_INTENSITIES[motion]),
   } as CSSProperties
 
@@ -71,8 +71,9 @@ export default function ThemeAxesPreview({
         <p className="text-label tracking-label uppercase text-fg-muted mb-xs font-semibold">06 · Theme</p>
         <h2 className="text-headline font-bold leading-headline tracking-headline text-fg">Personality Axes</h2>
         <p className="text-sm text-fg-muted leading-body mt-sm max-w-2xl">
-          Corner Style, Display Font, and Motion Intensity. Defaults (Sharp · Syne · Default)
-          render identically to today. Selecting a value here previews exactly what the matching
+          Corner Style, Primary Font, and Motion Intensity. Defaults (Sharp · Poppins · Default)
+          render identically to today. Primary Font sets the whole type hierarchy — display headers
+          down to body and labels. Selecting a value here previews exactly what the matching
           ThemeManager field produces — these toggles write the same CSS variables. Your visitor&rsquo;s
           OS &ldquo;reduce motion&rdquo; setting always wins over Motion Intensity.
         </p>
@@ -87,9 +88,9 @@ export default function ThemeAxesPreview({
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-sm">
-          <span className="text-label text-fg-muted/70 w-28 shrink-0">Display Font</span>
-          {(Object.keys(DISPLAY_FONTS) as DisplayFontKey[]).map(k => (
-            <Pill key={k} active={font === k} onClick={() => setFont(k)}>{DISPLAY_FONTS[k].label}</Pill>
+          <span className="text-label text-fg-muted/70 w-28 shrink-0">Primary Font</span>
+          {(Object.keys(PRIMARY_FONTS) as PrimaryFontKey[]).map(k => (
+            <Pill key={k} active={font === k} onClick={() => setFont(k)}>{PRIMARY_FONTS[k].label}</Pill>
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-sm">
@@ -103,14 +104,15 @@ export default function ThemeAxesPreview({
       {/* ── Live preview — scoped CSS vars ── */}
       <div style={previewVars} className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
 
-        {/* Display font + card surface radius */}
+        {/* Primary font (whole hierarchy) + card surface radius */}
         <div className="bg-surface border border-fg/10 rounded-ot-surface overflow-hidden p-lg flex flex-col gap-md">
-          <p className="text-label tracking-label uppercase text-brand font-semibold">Display / Accent type</p>
-          <p className="font-display text-[clamp(2rem,5vw,3.25rem)] leading-none text-fg" style={{ fontWeight: 500 }}>
+          <p className="text-label tracking-label uppercase text-brand font-semibold">Primary type — full hierarchy</p>
+          <p className="text-[clamp(2rem,5vw,3.25rem)] leading-none text-fg" style={{ fontWeight: 800 }}>
             Forward&nbsp;Motion.
           </p>
           <p className="text-sm text-fg-muted leading-body">
-            Body copy stays Poppins — only the display/accent role follows the font axis. This card uses
+            The primary font drives the entire hierarchy — this display line at weight 800 and this body
+            copy both follow the axis. Syne stays reserved for select accent areas. This card uses
             <code className="font-mono text-fg"> rounded-ot-surface</code>.
           </p>
         </div>
@@ -147,7 +149,7 @@ export default function ThemeAxesPreview({
       <div className="mt-lg bg-canvas/60 border border-fg/10 rounded-ot-surface px-md py-md">
         <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold mb-sm">Emitted overrides</p>
         <pre className="font-mono text-label text-fg-muted overflow-x-auto whitespace-pre-wrap">{`--ot-radius-surface: ${CORNER_STYLES[corner].surface};  --ot-radius-control: ${CORNER_STYLES[corner].control};
---ot-font-display: ${DISPLAY_FONTS[font].var};
+--ot-font-sans: ${PRIMARY_FONTS[font].var}, system-ui, sans-serif;
 --ot-motion-scale: ${MOTION_INTENSITIES[motion]};`}</pre>
       </div>
     </section>

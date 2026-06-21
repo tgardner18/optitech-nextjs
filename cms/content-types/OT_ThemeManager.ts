@@ -125,17 +125,18 @@ export const OT_ThemeManager = contentType({
         { value: 'rounded', displayName: 'Rounded — 8–10px radius' },
       ],
     },
-    displayFont: {
+    primaryFont: {
       type: 'string',
       format: 'selectOne',
-      displayName: 'Display Font — accent/display typography (body stays Poppins)',
-      description: 'Applies to display and accent type only (section openers, pull quotes, impact headers). Body text remains Poppins.',
+      displayName: 'Primary Font — the whole type hierarchy (display, headline, body, labels)',
+      description: 'Sets the primary typeface for the entire site — display headers down to body and labels. All four ship the same 300–800 weight range and hold up under the display, gradient-fill, and bloom treatments. Syne stays reserved for select accent areas.',
       group: 'OT_Theme',
       sortOrder: 185,
       enum: [
-        { value: 'syne',         displayName: 'Syne — geometric (default)' },
-        { value: 'spaceGrotesk', displayName: 'Space Grotesk — technical-editorial' },
-        { value: 'fraunces',     displayName: 'Fraunces — characterful serif' },
+        { value: 'poppins',       displayName: 'Poppins — geometric, friendly (default)' },
+        { value: 'hankenGrotesk', displayName: 'Hanken Grotesk — clean, neutral grotesque' },
+        { value: 'sora',          displayName: 'Sora — squared, technical' },
+        { value: 'bricolage',     displayName: 'Bricolage Grotesque — expressive, characterful' },
       ],
     },
     motionIntensity: {

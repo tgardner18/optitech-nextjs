@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound }       from 'next/navigation'
 import { CopyButton }     from './CopyButton'
+import { PRIMARY_FONTS, type PrimaryFontKey } from '@/lib/theme-axes'
 
 // ─── Palette definitions ──────────────────────────────────────────────────────
 
@@ -20,7 +21,7 @@ type Palette = {
   brandRationale: string
   accentRationale: string
   cornerStyle: string
-  displayFont: string
+  primaryFont: string
   motionIntensity: string
   colors:      PaletteField[]
 }
@@ -47,87 +48,87 @@ function makeColors(vals: Record<string, string>): PaletteField[] {
 
 const PALETTES: Palette[] = [
   {
-    slug:     'tech',
-    name:     'Indigo Stack',
-    codename: 'Tech',
-    vertical: 'Software & Infrastructure',
-    description: 'Deep indigo brand against indigo-tinted dark surfaces. Signal green accent for interactive moments. The combination reads as precise and editorial rather than generic SaaS blue.',
-    brandRationale:  'Indigo sits adjacent to blue on the hue wheel but reads as more intentional — closer to violet, further from the default SaaS reflex. At 52% lightness it fills large surfaces without muddying text.',
-    accentRationale: 'Signal green (hue 145) provides maximum hue contrast against the indigo brand. At 78% lightness it is bright enough to function as a call-to-action marker without neon energy.',
+    slug:     'atelier',
+    name:     'Atelier',
+    codename: 'Clay & Ultraviolet',
+    vertical: 'Creative & Content Platforms',
+    description: 'Warm clay brand on a paper-light canvas, with a single jolt of ultraviolet for interactive moments. A light, editorial register that reads as a tool made by people with taste — the deliberate opposite of the dark-SaaS reflex.',
+    brandRationale:  'Clay-terracotta (hue 40, 56% lightness) is warm and material rather than corporate. It fills large surfaces with confidence and carries its hue into the light grounds, so the whole palette feels like one substance.',
+    accentRationale: 'Ultraviolet (hue 295) sits almost opposite clay on the wheel — maximum hue contrast for a single, surprising accent. Kept deep (62% lightness) so it punctuates rather than glows, and takes light text for AA contrast.',
     cornerStyle:    'soft',
-    displayFont:    'spaceGrotesk',
+    primaryFont:    'bricolage',
+    motionIntensity: 'calm',
+    colors: makeColors({
+      colorBrand:        'oklch(56% 0.15 40)',
+      colorBrandHover:   'oklch(44% 0.14 40)',
+      colorAccent:       'oklch(62% 0.23 295)',
+      colorAccentHover:  'oklch(52% 0.21 295)',
+      colorFgOnAccent:   'oklch(97% 0.01 295)',
+      colorCanvas:       'oklch(18% 0.02 40)',
+      colorSurface:      'oklch(25% 0.03 40)',
+      colorCanvasLight:  'oklch(97% 0.012 50)',
+      colorSurfaceLight: 'oklch(99% 0.008 50)',
+      colorFgOnBrand:    'oklch(98% 0.01 50)',
+      colorFg:           'oklch(96% 0.008 50)',
+      colorFgLight:      'oklch(22% 0.03 40)',
+      colorFgMuted:      'oklch(70% 0.05 50)',
+      colorFgMutedLight: 'oklch(45% 0.05 45)',
+    }),
+  },
+  {
+    slug:     'reactor',
+    name:     'Reactor',
+    codename: 'Aubergine & Molten',
+    vertical: 'Developer Infrastructure & AI Compute',
+    description: 'Electric-violet brand on a deep aubergine-black canvas, sparked by molten amber. The dark theme done without the indigo-plus-green SaaS cliché: sharp corners and energetic motion read as raw compute throughput.',
+    brandRationale:  'Electric violet (hue 300, 60% lightness) is saturated enough to carry hero surfaces and CTAs while staying off the over-used SaaS-blue track. It tints the aubergine grounds, keeping the depth chromatic, never grey.',
+    accentRationale: 'Molten amber (hue 65, 78% lightness) is the high-energy spark against the cool violet — a wide hue gap for unmistakable signal. It takes dark text and reads as heat and motion rather than neon.',
+    cornerStyle:    'sharp',
+    primaryFont:    'sora',
+    motionIntensity: 'energetic',
+    colors: makeColors({
+      colorBrand:        'oklch(60% 0.19 300)',
+      colorBrandHover:   'oklch(48% 0.17 300)',
+      colorAccent:       'oklch(78% 0.17 65)',
+      colorAccentHover:  'oklch(66% 0.16 65)',
+      colorFgOnAccent:   'oklch(20% 0.03 65)',
+      colorCanvas:       'oklch(17% 0.022 305)',
+      colorSurface:      'oklch(24% 0.032 305)',
+      colorCanvasLight:  'oklch(97% 0.008 305)',
+      colorSurfaceLight: 'oklch(93% 0.012 305)',
+      colorFgOnBrand:    'oklch(98% 0.006 305)',
+      colorFg:           'oklch(96% 0.006 305)',
+      colorFgLight:      'oklch(18% 0.022 305)',
+      colorFgMuted:      'oklch(68% 0.06 305)',
+      colorFgMutedLight: 'oklch(42% 0.05 305)',
+    }),
+  },
+  {
+    slug:     'tonic',
+    name:     'Tonic',
+    codename: 'Slate & Chartreuse',
+    vertical: 'Productivity & Analytics',
+    description: 'A restrained, near-neutral slate carrying the surface on a cool porcelain canvas, with one chartreuse jolt reserved for interactive moments. Rounded corners and a clean grotesque make it the calm-productive counterweight to Reactor.',
+    brandRationale:  'Slate (hue 250, 42% lightness, low chroma) is a tinted near-neutral, never flat grey — it grounds the interface with quiet authority and lets a single accent do the talking, the Restrained color strategy in practice.',
+    accentRationale: 'Chartreuse (hue 125, 85% lightness) is a fresh, high-energy signal against the cool slate — modern and unexpected for analytics, where teal or blue would be the reflex. It takes dark text for crisp AA contrast.',
+    cornerStyle:    'rounded',
+    primaryFont:    'hankenGrotesk',
     motionIntensity: 'default',
     colors: makeColors({
-      colorBrand:        'oklch(52% 0.20 265)',
-      colorBrandHover:   'oklch(38% 0.17 265)',
-      colorAccent:       'oklch(78% 0.21 145)',
-      colorAccentHover:  'oklch(64% 0.18 145)',
-      colorFgOnAccent:   'oklch(11% 0.012 145)',
-      colorCanvas:       'oklch(11% 0.018 265)',
-      colorSurface:      'oklch(19% 0.026 265)',
-      colorCanvasLight:  'oklch(97% 0.004 265)',
-      colorSurfaceLight: 'oklch(93% 0.007 265)',
-      colorFgOnBrand:    'oklch(97% 0.004 265)',
-      colorFg:           'oklch(96% 0.005 265)',
-      colorFgLight:      'oklch(11% 0.018 265)',
-      colorFgMuted:      'oklch(66% 0.06 265)',
-      colorFgMutedLight: 'oklch(38% 0.05 265)',
-    }),
-  },
-  {
-    slug:     'healthcare',
-    name:     'Garnet Sage',
-    codename: 'Healthcare',
-    vertical: 'Health Systems & Clinical Care',
-    description: 'Deep rose-burgundy brand against near-black surfaces with a rose undertone. Sage green accent — calm and natural, not mint-clinical. Warmth and gravitas without sentimentality.',
-    brandRationale:  'Rose-burgundy (hue 355, 45% lightness) reads as serious and human rather than playful pink. It avoids the teal-on-white cliché entirely and communicates care without the sterility of clinical white.',
-    accentRationale: 'Sage green (hue 165) is muted enough to feel natural rather than energetic. It echoes healing and nature without defaulting to the over-used mint palette that dominates health tech.',
-    cornerStyle:    'rounded',
-    displayFont:    'syne',
-    motionIntensity: 'calm',
-    colors: makeColors({
-      colorBrand:        'oklch(45% 0.14 355)',
-      colorBrandHover:   'oklch(33% 0.11 355)',
-      colorAccent:       'oklch(70% 0.14 165)',
-      colorAccentHover:  'oklch(56% 0.12 165)',
-      colorFgOnAccent:   'oklch(11% 0.008 165)',
-      colorCanvas:       'oklch(11% 0.010 355)',
-      colorSurface:      'oklch(19% 0.014 355)',
-      colorCanvasLight:  'oklch(98% 0.003 355)',
-      colorSurfaceLight: 'oklch(93% 0.005 355)',
-      colorFgOnBrand:    'oklch(98% 0.003 355)',
-      colorFg:           'oklch(97% 0.003 355)',
-      colorFgLight:      'oklch(11% 0.010 355)',
-      colorFgMuted:      'oklch(64% 0.05 355)',
-      colorFgMutedLight: 'oklch(38% 0.04 355)',
-    }),
-  },
-  {
-    slug:     'financial',
-    name:     'Forest & Amber',
-    codename: 'Financial Services',
-    vertical: 'Asset Management & Financial Services',
-    description: 'Deep forest green brand against forest-tinted near-black. Warm amber accent — earned warmth rather than ostentatious gold. Authority and measured confidence, not the navy-and-gold cliché.',
-    brandRationale:  'Forest green (hue 148, 40% lightness) signals stability and measured authority. It reads as institutional without corporate stiffness and has no associations with the typical navy-and-gold financial palette.',
-    accentRationale: 'Warm amber (hue 52) is adjacent to gold but sits closer to cognac — earned warmth rather than metallic opulence. At 73% lightness it is visible on dark surfaces without screaming for attention.',
-    cornerStyle:    'sharp',
-    displayFont:    'fraunces',
-    motionIntensity: 'calm',
-    colors: makeColors({
-      colorBrand:        'oklch(40% 0.12 148)',
-      colorBrandHover:   'oklch(28% 0.10 148)',
-      colorAccent:       'oklch(73% 0.15 52)',
-      colorAccentHover:  'oklch(59% 0.13 52)',
-      colorFgOnAccent:   'oklch(10% 0.008 148)',
-      colorCanvas:       'oklch(10% 0.008 148)',
-      colorSurface:      'oklch(18% 0.014 148)',
-      colorCanvasLight:  'oklch(97% 0.004 148)',
-      colorSurfaceLight: 'oklch(92% 0.006 148)',
-      colorFgOnBrand:    'oklch(97% 0.004 148)',
-      colorFg:           'oklch(97% 0.003 148)',
-      colorFgLight:      'oklch(10% 0.008 148)',
-      colorFgMuted:      'oklch(65% 0.05 148)',
-      colorFgMutedLight: 'oklch(36% 0.04 148)',
+      colorBrand:        'oklch(42% 0.04 250)',
+      colorBrandHover:   'oklch(32% 0.04 250)',
+      colorAccent:       'oklch(85% 0.20 125)',
+      colorAccentHover:  'oklch(74% 0.19 125)',
+      colorFgOnAccent:   'oklch(22% 0.04 125)',
+      colorCanvas:       'oklch(16% 0.012 255)',
+      colorSurface:      'oklch(23% 0.018 255)',
+      colorCanvasLight:  'oklch(98% 0.004 250)',
+      colorSurfaceLight: 'oklch(95% 0.006 250)',
+      colorFgOnBrand:    'oklch(98% 0.004 250)',
+      colorFg:           'oklch(96% 0.005 250)',
+      colorFgLight:      'oklch(24% 0.02 255)',
+      colorFgMuted:      'oklch(66% 0.05 255)',
+      colorFgMutedLight: 'oklch(40% 0.04 255)',
     }),
   },
 ]
@@ -173,9 +174,12 @@ function SwatchGrid({ colors }: { colors: PaletteField[] }) {
 // ─── Live mini preview ────────────────────────────────────────────────────────
 
 function MiniPreview({ palette: p }: { palette: Palette }) {
-  const vars = Object.fromEntries(
-    p.colors.map(c => [c.cssVar, c.value])
-  ) as React.CSSProperties
+  const fontVar = PRIMARY_FONTS[p.primaryFont as PrimaryFontKey]?.var ?? PRIMARY_FONTS.poppins.var
+  const vars = {
+    ...Object.fromEntries(p.colors.map(c => [c.cssVar, c.value])),
+    // Demonstrate the theme's primary font — children inherit this fontFamily.
+    fontFamily: `${fontVar}, system-ui, sans-serif`,
+  } as React.CSSProperties
 
   return (
     <div style={vars} className="border border-fg/10 overflow-hidden">
@@ -245,7 +249,7 @@ function buildCmsFieldString(p: Palette): string {
   const lines = p.colors.map(c => `${c.key.padEnd(20)} ${c.value}`)
   lines.push('')
   lines.push(`cornerStyle          ${p.cornerStyle}`)
-  lines.push(`displayFont          ${p.displayFont}`)
+  lines.push(`primaryFont          ${p.primaryFont}`)
   lines.push(`motionIntensity      ${p.motionIntensity}`)
   return lines.join('\n')
 }
@@ -283,8 +287,8 @@ function CopyBlock({ palette: p }: { palette: Palette }) {
               <span>{p.cornerStyle}</span>
             </div>
             <div className="flex gap-xl">
-              <span className="text-fg w-[180px] flex-none">displayFont</span>
-              <span>{p.displayFont}</span>
+              <span className="text-fg w-[180px] flex-none">primaryFont</span>
+              <span>{p.primaryFont}</span>
             </div>
             <div className="flex gap-xl">
               <span className="text-fg w-[180px] flex-none">motionIntensity</span>
@@ -377,8 +381,8 @@ export default async function PalettePage({
             <span className="text-fg ml-md">{p.cornerStyle}</span>
           </div>
           <div className="bg-surface px-md py-sm border border-fg/10">
-            <span className="text-fg-muted">displayFont</span>
-            <span className="text-fg ml-md">{p.displayFont}</span>
+            <span className="text-fg-muted">primaryFont</span>
+            <span className="text-fg ml-md">{p.primaryFont}</span>
           </div>
           <div className="bg-surface px-md py-sm border border-fg/10">
             <span className="text-fg-muted">motionIntensity</span>

@@ -42,10 +42,11 @@
   --ot-font-syne:      var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
   --ot-font-signature: var(--font-signature), cursive;          /* Caveat 400 — QuoteBlock laser signature (thin handwriting) */
 
-  /* Display / accent role font — themeable via ThemeManager "Display Font".
-   * Defaults to Syne, so display/accent type is pixel-identical to today.
-   * buildThemeCSS() repoints this to --font-display-a/-b when an editor picks
-   * an alternate. Body (sans), mono, and signature are intentionally NOT themed. */
+  /* Display / accent role font — FIXED to Syne (no longer themeable). Drives the
+   * `.font-display` accent utility for select areas (e.g. the Impact blog). The
+   * themeable axis now swaps the PRIMARY family (--ot-font-sans, set by
+   * buildThemeCSS() from the ThemeManager "Primary Font" field). Mono and
+   * signature are intentionally NOT themed. */
   --ot-font-display:   var(--ot-font-syne);
 
   /* Scale */

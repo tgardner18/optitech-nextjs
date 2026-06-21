@@ -18,7 +18,7 @@ export default async function ThemePreviewPage() {
 
       <ThemeAxesPreview
         activeCorner={settings?.cornerStyle}
-        activeFont={settings?.displayFont}
+        activeFont={settings?.primaryFont}
         activeMotion={settings?.motionIntensity}
       />
 

@@ -70,9 +70,9 @@ export const CATEGORIES: ShowcaseCategory[] = [
     match: '/showcase/theme',
     href:  '/showcase/theme',
     items: [
-      { label: 'Tech',               slug: 'tech'       },
-      { label: 'Healthcare',         slug: 'healthcare' },
-      { label: 'Financial Services', slug: 'financial'  },
+      { label: 'Atelier', slug: 'atelier' },
+      { label: 'Reactor', slug: 'reactor' },
+      { label: 'Tonic',   slug: 'tonic'   },
     ],
   },
   {

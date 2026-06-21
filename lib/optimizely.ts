@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { headers } from 'next/headers'
 import { config, getClient as _getClient } from '@optimizely/cms-sdk'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
-import { resolveCornerStyle, resolveDisplayFont, resolveMotionScale } from '@/lib/theme-axes'
+import { resolveCornerStyle, resolvePrimaryFont, resolveMotionScale } from '@/lib/theme-axes'
 import type { Locale } from '@/lib/i18n/config'
 import { getLocale as getNextIntlLocale } from 'next-intl/server'
 
@@ -125,7 +125,7 @@ const THEME_QUERY = `
         colorFgMuted
         colorFgMutedLight
         cornerStyle
-        displayFont
+        primaryFont
         motionIntensity
         siteName
         defaultSeoDescription
@@ -478,8 +478,9 @@ export function buildThemeCSS(settings: any): string {
     root.push(`--ot-radius-control: ${corner.control}`)
   }
 
-  const displayFontVar = resolveDisplayFont(settings.displayFont)
-  if (displayFontVar) root.push(`--ot-font-display: ${displayFontVar}`)
+  // Primary font drives the whole sans hierarchy (display → body → label).
+  const primaryFontVar = resolvePrimaryFont(settings.primaryFont)
+  if (primaryFontVar) root.push(`--ot-font-sans: ${primaryFontVar}, system-ui, sans-serif`)
 
   // Scales every --ot-dur-* token (incl. ambient loops). Cannot re-enable motion
   // a visitor disabled — the reduce-motion static blocks are independent of this.

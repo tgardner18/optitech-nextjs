@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Caveat, Fraunces, Geist_Mono, Poppins, Space_Grotesk, Syne } from "next/font/google";
+import { Bricolage_Grotesque, Caveat, Geist_Mono, Hanken_Grotesk, Poppins, Sora, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
@@ -17,6 +17,8 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
+// Syne — fixed accent/display font for very select areas (e.g. the Impact blog).
+// No longer themeable: the ThemeManager font axis now swaps the PRIMARY family.
 const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
@@ -24,27 +26,38 @@ const syne = Syne({
   display: "swap",
 });
 
-// ── Alternate DISPLAY/accent fonts (ThemeManager "Display Font" axis) ──────────
-// Both preloaded here because next/font is build-time — the CMS only selects
-// among these via lib/theme-axes.ts; it can never load an arbitrary font string.
-// display: "swap" + variable assignment matches Syne, so swapping is FOUT-free
-// at the display scale these play.
+// ── Alternate PRIMARY fonts (ThemeManager "Primary Font" axis) ─────────────────
+// Each is a full primary typeface — drives the entire hierarchy (display headers
+// down to body and labels) when selected, exactly like Poppins. All preloaded
+// here because next/font is build-time; the CMS only selects among these via
+// lib/theme-axes.ts and can never load an arbitrary font string. The 300–800
+// weight ladder matches Poppins so every type level holds, and display: "swap" +
+// variable assignment keeps the swap FOUT-free.
 //
-// Display Font A — Space Grotesk: geometric, technical-editorial; pairs with the
-// Kinetic Editorial register without competing with Poppins body.
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display-a",
+// Primary A — Hanken Grotesk: clean, humanist grotesque. The neutral workhorse
+// pole — disappears into body copy, snaps to authority at weight 800.
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--font-primary-a",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-// Display Font B — Fraunces: a characterful old-style serif display (the "serif
-// display" note in DESIGN.md §4); brings editorial warmth at section openers.
-const fraunces = Fraunces({
-  variable: "--font-display-b",
+// Primary B — Sora: squared geometric sans engineered for technical brands.
+// The precise / engineered pole; large display sizes read milled-from-metal.
+const sora = Sora({
+  variable: "--font-primary-b",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "900"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Primary C — Bricolage Grotesque: contemporary grotesque with irregular detail.
+// The character / expressive pole; exceptional display presence under gradient fills.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-primary-c",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -120,7 +133,7 @@ export default async function RootLayout({
       // client/server diff when localStorage overrides the CMS default.
       data-default-theme={defaultMode}
       data-theme={defaultMode}
-      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${spaceGrotesk.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${hankenGrotesk.variable} ${sora.variable} ${bricolage.variable} ${caveat.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
