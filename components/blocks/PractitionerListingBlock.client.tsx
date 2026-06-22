@@ -10,6 +10,7 @@ import type {
   PractitionerListingDensity,
   PractitionerListingLayout,
 } from '@/cms/styling/OT_PractitionerListingBlock.styling'
+import MultiSelect from '@/components/ui/MultiSelect'
 import PractitionerCard from '@/components/practitioner/PractitionerCard'
 import PractitionerListRow from '@/components/practitioner/PractitionerListRow'
 
@@ -27,64 +28,6 @@ const GRID_COLS: Record<PractitionerListingColumns, string> = {
   2: 'sm:grid-cols-2',
   3: 'sm:grid-cols-2 lg:grid-cols-3',
   4: 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-}
-
-// ─── Filter chip ──────────────────────────────────────────────────────────────
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={
-        'inline-flex items-center px-sm py-1 text-label uppercase tracking-label font-semibold ' +
-        'motion-safe:transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ' +
-        (active
-          ? 'bg-brand text-fg-on-brand'
-          : 'border border-fg/15 text-fg-muted hover:text-fg hover:border-fg/35')
-      }
-    >
-      {children}
-    </button>
-  )
-}
-
-// ─── Filter group ───────────────────────────────────────────────────────────────
-
-function FilterGroup({
-  label,
-  options,
-  selected,
-  onSelect,
-}: {
-  label: string
-  options: string[]
-  selected: string | null
-  onSelect: (value: string | null) => void
-}) {
-  if (options.length === 0) return null
-  return (
-    <div className="flex flex-wrap items-center gap-x-sm gap-y-xs">
-      <span className="font-mono text-xs uppercase tracking-label text-fg-muted/60 mr-xs">{label}</span>
-      <Chip active={selected === null} onClick={() => onSelect(null)}>
-        All
-      </Chip>
-      {options.map(opt => (
-        <Chip key={opt} active={selected === opt} onClick={() => onSelect(selected === opt ? null : opt)}>
-          {opt}
-        </Chip>
-      ))}
-    </div>
-  )
 }
 
 // ─── View toggle ───────────────────────────────────────────────────────────────
@@ -118,8 +61,10 @@ function ViewToggle({
 
 // ─── Directory client ─────────────────────────────────────────────────────────
 //
-// Owns search + filter state. Filter options are derived ONLY from the loaded
-// practitioner set — never a fixed list — so the same block serves any vertical.
+// Owns search + filter state. The three facets (specialty, location, language)
+// are derived ONLY from the loaded practitioner set — never a fixed list — so
+// the same block serves any vertical. Each facet is multi-select: values OR
+// within a facet, facets AND across each other.
 
 export default function PractitionerListingClient({
   practitioners,
@@ -130,48 +75,58 @@ export default function PractitionerListingClient({
   density,
   emptyMessage,
 }: Props) {
-  const [query, setQuery]   = useState('')
-  const [area, setArea]     = useState<string | null>(null)
-  const [language, setLang] = useState<string | null>(null)
-  const [view, setView]     = useState<PractitionerListingLayout>(layout)
+  const [query, setQuery]         = useState('')
+  const [areas, setAreas]         = useState<string[]>([])
+  const [locations, setLocations] = useState<string[]>([])
+  const [langs, setLangs]         = useState<string[]>([])
+  const [view, setView]           = useState<PractitionerListingLayout>(layout)
   const searchId = useId()
 
   const onSurface = color === 'surface'
 
-  // Derive filter options from the loaded set.
-  const { areaOptions, languageOptions } = useMemo(() => {
-    const areas = new Map<string, string>()      // lowercased → display
-    const langs = new Map<string, string>()
-    for (const p of practitioners) {
-      for (const a of p.practiceAreas) {
-        if (a.areaName) {
-          const k = a.areaName.toLowerCase()
-          if (!areas.has(k)) areas.set(k, a.areaName)
-        }
-      }
-      for (const l of parseLanguages(p.languages)) {
-        const k = l.toLowerCase()
-        if (!langs.has(k)) langs.set(k, l)
-      }
+  // Derive facet options from the loaded set, de-duplicated case-insensitively.
+  const { areaOptions, locationOptions, languageOptions } = useMemo(() => {
+    const a = new Map<string, string>()   // lowercased → display
+    const loc = new Map<string, string>()
+    const l = new Map<string, string>()
+    const add = (m: Map<string, string>, raw: string | undefined) => {
+      const v = raw?.trim()
+      if (!v) return
+      const k = v.toLowerCase()
+      if (!m.has(k)) m.set(k, v)
     }
-    const byLabel = (a: string, b: string) => a.localeCompare(b)
+    for (const p of practitioners) {
+      for (const area of p.practiceAreas) add(a, area.areaName)
+      add(loc, p.officeLocation)
+      for (const lang of parseLanguages(p.languages)) add(l, lang)
+    }
+    const byLabel = (x: string, y: string) => x.localeCompare(y)
     return {
-      areaOptions:     [...areas.values()].sort(byLabel),
-      languageOptions: [...langs.values()].sort(byLabel),
+      areaOptions:     [...a.values()].sort(byLabel),
+      locationOptions: [...loc.values()].sort(byLabel),
+      languageOptions: [...l.values()].sort(byLabel),
     }
   }, [practitioners])
 
-  // Apply search + filters.
+  // Apply search + filters: OR within a facet, AND across facets.
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
+    const areaSet = new Set(areas.map(s => s.toLowerCase()))
+    const locSet  = new Set(locations.map(s => s.toLowerCase()))
+    const langSet = new Set(langs.map(s => s.toLowerCase()))
+
     return practitioners.filter(p => {
-      if (area) {
-        const has = p.practiceAreas.some(a => a.areaName?.toLowerCase() === area.toLowerCase())
-        if (!has) return false
+      if (areaSet.size) {
+        const match = p.practiceAreas.some(a => a.areaName && areaSet.has(a.areaName.toLowerCase()))
+        if (!match) return false
       }
-      if (language) {
-        const langs = parseLanguages(p.languages).map(l => l.toLowerCase())
-        if (!langs.includes(language.toLowerCase())) return false
+      if (locSet.size) {
+        const loc = p.officeLocation?.trim().toLowerCase()
+        if (!loc || !locSet.has(loc)) return false
+      }
+      if (langSet.size) {
+        const pls = parseLanguages(p.languages).map(l => l.toLowerCase())
+        if (!pls.some(l => langSet.has(l))) return false
       }
       if (q) {
         const haystack = [
@@ -187,25 +142,23 @@ export default function PractitionerListingClient({
       }
       return true
     })
-  }, [practitioners, query, area, language])
+  }, [practitioners, query, areas, locations, langs])
 
-  const filtersActive = !!query || !!area || !!language
+  const filtersActive = !!query || areas.length > 0 || locations.length > 0 || langs.length > 0
   const clearAll = () => {
     setQuery('')
-    setArea(null)
-    setLang(null)
+    setAreas([])
+    setLocations([])
+    setLangs([])
   }
 
   const inputBg = onSurface ? 'bg-canvas' : 'bg-surface'
-
-  // The search + filter row shows only when enabled; the view toggle is always
-  // available, so visitors can switch grid/list even with controls hidden.
   const hasControls = showSearchFilters
 
   return (
     <div>
       {/* ── Controls ── */}
-      <div className="mb-lg flex flex-col gap-md">
+      <div className={`mb-lg flex flex-col gap-md ${hasControls ? 'border-b border-fg/10 pb-md' : ''}`}>
         {/* Search + view toggle share the top row; the toggle is always available
             so visitors can switch layout regardless of the CMS default. */}
         <div className="flex items-center gap-md">
@@ -251,33 +204,62 @@ export default function PractitionerListingClient({
           </div>
         </div>
 
-        {showSearchFilters && (areaOptions.length > 0 || languageOptions.length > 0) && (
-          <div className="flex flex-col gap-sm">
-            <FilterGroup label="Specialty" options={areaOptions} selected={area} onSelect={setArea} />
-            <FilterGroup label="Language" options={languageOptions} selected={language} onSelect={setLang} />
+        {/* Facet dropdowns + result meta. Dropdowns cluster left; count + clear
+            sit right, wrapping below the facets on narrow viewports. */}
+        {showSearchFilters && (
+          <div className="flex flex-col gap-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-sm">
+              {areaOptions.length > 0 && (
+                <MultiSelect
+                  label="Specialty"
+                  options={areaOptions}
+                  selected={areas}
+                  onChange={setAreas}
+                  onSurface={onSurface}
+                  searchPlaceholder="Filter specialties"
+                />
+              )}
+              {locationOptions.length > 0 && (
+                <MultiSelect
+                  label="Location"
+                  options={locationOptions}
+                  selected={locations}
+                  onChange={setLocations}
+                  onSurface={onSurface}
+                  searchPlaceholder="Filter locations"
+                />
+              )}
+              {languageOptions.length > 0 && (
+                <MultiSelect
+                  label="Language"
+                  options={languageOptions}
+                  selected={langs}
+                  onChange={setLangs}
+                  onSurface={onSurface}
+                  searchPlaceholder="Filter languages"
+                />
+              )}
+            </div>
+
+            <div className="flex items-center gap-md">
+              <p className="font-mono text-xs uppercase tracking-label text-fg-muted/70" aria-live="polite">
+                <span className="text-fg">{results.length}</span>{' '}
+                {results.length === 1 ? 'profile' : 'profiles'}
+              </p>
+              {filtersActive && (
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                >
+                  <X size={13} strokeWidth={2} aria-hidden />
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
-
-      {/* ── Result count + clear ── */}
-      {hasControls && (
-        <div className="mb-md flex items-center justify-between gap-sm border-b border-fg/10 pb-sm">
-          <p className="font-mono text-xs uppercase tracking-label text-fg-muted/70" aria-live="polite">
-            <span className="text-fg">{results.length}</span>{' '}
-            {results.length === 1 ? 'profile' : 'profiles'}
-          </p>
-          {filtersActive && (
-            <button
-              type="button"
-              onClick={clearAll}
-              className="inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              <X size={13} strokeWidth={2} aria-hidden />
-              Clear
-            </button>
-          )}
-        </div>
-      )}
 
       {/* ── Results ── */}
       {results.length === 0 ? (

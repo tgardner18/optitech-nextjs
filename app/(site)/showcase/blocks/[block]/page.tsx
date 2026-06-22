@@ -65,7 +65,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'callout':          { label: 'CalloutBlock',          cmsKey: 'OT_CalloutBlock',          description: 'Compact semantic inline notification. Six intent types: neutral, info, success, warning, danger, brand. Three variants: filled, bordered, bar. Dismissible with a two-phase kinetic exit — content sweeps right and fades, then the container height collapses.' },
   'divider':          { label: 'DividerBlock',          cmsKey: 'OT_DividerBlock',          description: 'Structural section divider that opens deliberate breathing room between stacked sections. Three treatments: mark (a hairline broken by an editable label or an editorial ornament), glow (a precise luminous rule — a chromatic line of light with a soft bloom above and below), and bleed (atmospheric luminance — an elliptical light seam rising from the boundary). One Tone control spans all three — neutral, brand, accent, spectrum, aurora — plus editor-controlled spacing, weight, and an optional draw-in reveal that rides the shared scroll observer.' },
   'event-listing':    { label: 'EventListingBlock',     cmsKey: 'OT_EventListingBlock',     description: 'CMS-driven listing of Event Pages with three toggleable views: card grid, list (calendar-style date blocks), and a monthly calendar with day agenda. A segmented icon control switches views; type-filter chips and a past-events toggle refine the set. Works across technology, healthcare, legal, and financial events on both canvas and surface grounds. In production, events are fetched at render time from published Event Pages; the showcase uses static fixtures.' },
-  'practitioner-listing': { label: 'PractitionerListingBlock', cmsKey: 'OT_PractitionerListingBlock', description: 'CMS-driven, vertical-agnostic people directory pulled from Practitioner Profiles. Grid (cards) or list (rows) layout, client-side search across name / credentials / specialty, and filter chips for practice area and language that are derived dynamically from the loaded set — never a fixed list. Scope it to one vertical with the Group Tag Filter (e.g. "medical"). Squared portraits with a chromatic brand bloom and a designed initials fallback. In production, practitioners are fetched at render time; the showcase uses static fixtures spanning medical, legal, and technology verticals.' },
+  'practitioner-listing': { label: 'PractitionerListingBlock', cmsKey: 'OT_PractitionerListingBlock', description: 'CMS-driven, vertical-agnostic people directory pulled from Practitioner Profiles. Grid (cards) or list (rows) layout, client-side search across name / credentials / specialty, and three multi-select filters — specialty, location, and language — derived dynamically from the loaded set, never a fixed list. Values OR within a filter and AND across filters. Scope it to one vertical with the Group Tag Filter (e.g. "medical"). Squared portraits with a chromatic brand bloom and a designed initials fallback. In production, practitioners are fetched at render time; the showcase uses static fixtures spanning medical, legal, and technology verticals.' },
 }
 
 export function generateStaticParams() {
@@ -2359,15 +2359,15 @@ function PractitionerListingShowcase() {
 
       <div className="px-md pb-sm lg:px-lg pt-md">
         <p className="text-label text-fg-muted/60 leading-body max-w-[65ch]">
-          In production, practitioners are fetched at render time from Practitioner Profiles, scoped by the Group Tag Filter. The showcase uses static fixtures across three verticals so every filter and empty state is exercisable. Search by a name (“Vargas”) or a specialty (“tax”); the specialty and language chips list only values present in the loaded set.
+          In production, practitioners are fetched at render time from Practitioner Profiles, scoped by the Group Tag Filter. The showcase uses static fixtures across three verticals so every filter and empty state is exercisable. Search by a name (“Vargas”) or a specialty (“tax”); the specialty, location, and language dropdowns list only values present in the loaded set, with multiple selections allowed per filter.
         </p>
       </div>
 
-      <VariantGroup label="Grid · 3 columns · canvas · search + filters" note="The full directory experience. All eight practitioners loaded with no group-tag scope; specialty and language chips are derived from the data. Portrait-first cards: the headshot (or its branded-abstract initials plate) fills a 3:4 plate. Hover a card to lift it and slide the glass footer up, revealing a bio excerpt." />
+      <VariantGroup label="Grid · 3 columns · canvas · search + filters" note="The full directory experience. All eight practitioners loaded with no group-tag scope; the specialty, location, and language dropdowns are derived from the data. Portrait-first cards: the headshot (or its branded-abstract initials plate) fills a 3:4 plate. Hover a card to lift it and slide the glass footer up, revealing a bio excerpt." />
       <div className="border-t border-fg/5">
         <PractitionerListingBlock
           heading="Find a practitioner"
-          subtext="Search our directory by name or specialty, or filter by practice area and language."
+          subtext="Search our directory by name or specialty, or filter by specialty, location, and language."
           practitioners={MOCK_PRACTITIONERS}
           styleOptions={{ layout: 'grid', color: 'canvas', columns: 3, showSearchFilters: true, density: 'comfortable' }}
         />

@@ -128,6 +128,13 @@
   100% { transform: scale(1); }
 }
 
+/* MultiSelect popover entrance — opacity + short rise, transform-only so no
+   layout shift. Gated at the utility via motion-safe:. */
+@keyframes multiselect-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .animate-stat-pulse {
     animation: statPulse 0.26s var(--ot-ease-quick) forwards; /* dur-exempt: 260ms — nearest quick(200)/base(320) Δ60ms */
