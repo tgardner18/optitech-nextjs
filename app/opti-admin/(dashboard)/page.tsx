@@ -7,7 +7,7 @@ import { ADMIN_BLOCK_TYPES } from '@/lib/admin/contentTypes'
 import { getRecentContent } from '@/lib/admin/graph'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 
-export const metadata: Metadata = { title: 'Dashboard — OptiAdmin' }
+export const metadata: Metadata = { title: 'Dashboard — Accelerator Admin' }
 
 function categoryBadge(category: string): string {
   switch (category) {

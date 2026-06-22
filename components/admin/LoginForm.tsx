@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react'
 
 export default function LoginForm() {
-  const router       = useRouter()
   const searchParams = useSearchParams()
   const redirectTo   = searchParams.get('from') ?? '/opti-admin'
 
@@ -31,8 +30,11 @@ export default function LoginForm() {
       })
 
       if (res.ok) {
-        router.push(redirectTo)
-        router.refresh()
+        // Full document navigation (not router.push) so the destination page's
+        // metadata title replaces the login page's, and the auth cookie is read
+        // fresh on a clean request. A soft navigation leaves the browser tab
+        // showing the stale "Sign In" title.
+        window.location.assign(redirectTo)
         return
       }
 

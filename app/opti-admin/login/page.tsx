@@ -3,7 +3,7 @@ import { Settings2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import LoginForm from '@/components/admin/LoginForm'
 
-export const metadata: Metadata = { title: 'Sign In — OptiAdmin' }
+export const metadata: Metadata = { title: 'Sign In — Accelerator Admin' }
 
 // LoginForm uses useSearchParams, which requires Suspense wrapping
 // to satisfy Next.js's static rendering constraints.

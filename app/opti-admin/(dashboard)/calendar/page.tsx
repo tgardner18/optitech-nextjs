@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getCalendarItems } from '@/lib/admin/graph'
 import ContentCalendarClient from '@/components/admin/ContentCalendarClient'
 
-export const metadata: Metadata = { title: 'Content Calendar — OptiAdmin' }
+export const metadata: Metadata = { title: 'Content Calendar — Accelerator Admin' }
 
 export default async function CalendarPage() {
   const items = await getCalendarItems()

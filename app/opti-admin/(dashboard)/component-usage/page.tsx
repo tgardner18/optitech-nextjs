@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import ComponentUsageClient from '@/components/admin/ComponentUsageClient'
 import { ALLOWED_QUERY_KEYS, ADMIN_BLOCK_TYPES } from '@/lib/admin/contentTypes'
 
-export const metadata: Metadata = { title: 'Component Usage — OptiAdmin' }
+export const metadata: Metadata = { title: 'Component Usage — Accelerator Admin' }
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> }
 
