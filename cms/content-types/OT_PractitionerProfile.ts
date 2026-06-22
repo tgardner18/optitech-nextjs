@@ -15,8 +15,8 @@ import { OT_PracticeArea } from './OT_PracticeArea'
 // array, and this record needs the `practiceAreas` array. It is queried directly
 // via lib/practitioners.ts rather than through a registered adapter.
 //
-// `groupTag` associates the record with a vertical/brand ("optimedical",
-// "optilegal", "optitech") and must match the groupTagFilter on any listing
+// `groupTag` associates the record with a vertical or group ("medical",
+// "legal", "technology") and must match the groupTagFilter on any listing
 // block that should include this practitioner. Indexed `searchable` so the
 // listing query and site search can find people by name, credentials, or city.
 
@@ -142,7 +142,7 @@ export const OT_PractitionerProfile = contentType({
       type:         'string',
       maxLength:    40,
       displayName:  'Group Tag',
-      description:  'Associates this practitioner with a vertical or brand — "optimedical", "optilegal", "optitech". Must match the Group Tag Filter on any listing block that should include this person.',
+      description:  'Associates this practitioner with a vertical or group — e.g. "medical", "legal", "technology". Must match the Group Tag Filter on any listing block that should include this person.',
       group:        'OT_Content',
       sortOrder:    140,
       indexingType: 'queryable',

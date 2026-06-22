@@ -5,8 +5,8 @@ import { contentType } from '@optimizely/cms-sdk'
 // layouts, client-side search, and dynamically-derived filters. Editors drop it
 // onto any page in the Visual Builder.
 //
-// `groupTagFilter` restricts the listing to a vertical subset — "optimedical"
-// shows only medical practitioners, "optilegal" only legal — which is how one
+// `groupTagFilter` restricts the listing to a vertical subset — "medical"
+// shows only medical practitioners, "legal" only legal — which is how one
 // block type serves every vertical without code changes. Leave it blank to show
 // all practitioners. Practitioners are fetched at render time in the adapter
 // (cms/components/OT_PractitionerListingBlock.tsx); search and filtering happen
@@ -45,7 +45,7 @@ export const OT_PractitionerListingBlock = contentType({
       type:        'string',
       maxLength:   40,
       displayName: 'Group Tag Filter',
-      description: 'Restricts the listing to practitioners whose Group Tag matches this value — "optimedical", "optilegal", "optitech". Leave blank to show all practitioners.',
+      description: 'Restricts the listing to practitioners whose Group Tag matches this value — e.g. "medical", "legal", "technology". Leave blank to show all practitioners.',
       group:       'OT_Content',
       sortOrder:   30,
     },

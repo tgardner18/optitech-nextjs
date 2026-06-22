@@ -20,7 +20,7 @@ export const OT_FeatureGridBlock = contentType({
       isLocalized: true,
       maxLength:   60,
       displayName: 'Eyebrow',
-      description: 'Small label above the heading e.g. "Why OptiTech"',
+      description: 'Small label above the heading e.g. "Why us"',
       group:       'OT_Content',
       sortOrder:   10,
       indexingType: 'searchable',

@@ -116,7 +116,7 @@ export const OT_ThemeManager = contentType({
       type: 'string',
       format: 'selectOne',
       displayName: 'Corner Style — radius on cards, panels, glass & buttons',
-      description: 'Sharp is the OptiTech default. Soft and Rounded add a modest radius to surfaces and controls only — inputs and structure are unaffected.',
+      description: 'Sharp is the default. Soft and Rounded add a modest radius to surfaces and controls only — inputs and structure are unaffected.',
       group: 'OT_Theme',
       sortOrder: 180,
       enum: [
