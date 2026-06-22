@@ -20,6 +20,18 @@ const PEEK_INSET: Record<string, string> = {
   lg:   'px-[14%]',
 }
 
+// Gap between slides, keyed to the row's Content Spacing dropdown. Applied as a
+// per-slide gutter (half on each side) + a matching negative margin on the track
+// so the outer slides still align flush with the container edge. Slides stay
+// w-full, so the translateX(-active * 100%) step math is unaffected.
+const GAP_VAR: Record<string, string> = {
+  none:   '0px',
+  small:  'var(--spacing-sm)',
+  medium: 'var(--spacing-md)',
+  large:  'var(--spacing-lg)',
+  xl:     'var(--spacing-xl)',
+}
+
 type Props = {
   children:         ReactNode
   transition:       string
@@ -27,6 +39,7 @@ type Props = {
   autoplay:         string
   loop:             string
   peek:             string
+  gap:              string
   verticalPadding:  string
   bgColorClass:     string
   paProps?:         Record<string, unknown>
@@ -40,6 +53,7 @@ export default function SliderRow({
   autoplay        = 'off',
   loop            = 'loop',
   peek            = 'none',
+  gap             = 'none',
   verticalPadding = '',
   bgColorClass    = '',
   paProps         = {},
@@ -84,6 +98,8 @@ export default function SliderRow({
   const showDots    = controls === 'both' || controls === 'dots'
   const isFadeBased = transition === 'fade' || transition === 'morph'
   const hasPeek     = peek !== 'none'
+  const gapValue    = GAP_VAR[gap] ?? GAP_VAR.none
+  const hasGap      = gapValue !== GAP_VAR.none
   const canPrev     = loop !== 'none' || active > 0
   const canNext     = loop !== 'none' || active < count - 1
 
@@ -125,7 +141,12 @@ export default function SliderRow({
             // Slide / Cover: translate-based track
             <div
               className="flex transition-transform ease-[var(--ease-kinetic)] duration-500"
-              style={{ transform: `translateX(-${active * 100}%)` }}
+              style={{
+                transform: `translateX(-${active * 100}%)`,
+                // Negative track margin cancels the outer slides' gutter so the
+                // first/last slides stay flush with the container edge.
+                ...(hasGap ? { marginInline: `calc(${gapValue} / -2)` } : {}),
+              }}
             >
               {slides.map((slide, i) => (
                 <div
@@ -137,6 +158,7 @@ export default function SliderRow({
                       i !== active && 'scale-[0.88] opacity-40',
                     ),
                   )}
+                  style={hasGap ? { paddingInline: `calc(${gapValue} / 2)` } : undefined}
                 >
                   {slide}
                 </div>

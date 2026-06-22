@@ -106,6 +106,7 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
         autoplay={String(displaySettings.sliderAutoplay      ?? 'off')}
         loop={String(displaySettings.sliderLoop              ?? 'loop')}
         peek={String(displaySettings.sliderPeek              ?? 'none')}
+        gap={spacing}
         verticalPadding={vPaddingClass}
         bgColorClass={bgColorClass}
         staggerAttr={isAnimated ? entranceAnimation : undefined}
