@@ -27,7 +27,7 @@ export type RichTextStyleOptions = {
    * First-paragraph / block-level treatment.
    * - standard: faithful prose rendering
    * - lead: first paragraph promoted to deck size in brand color
-   * - toc: auto-generated section navigator from h2 headings, inserted after first heading
+   * - toc: auto-generated section navigator from h2 headings, inserted above the first heading
    */
   treatment?: "standard" | "lead" | "toc";
   /** Adds a 1px brand rule above h2 and h3 headings — editorial chapter dividers */
@@ -181,7 +181,7 @@ export default function RichTextBlock({
   } = styleOptions;
 
   // Build element map for toc treatment. A closure flag tracks the first heading
-  // rendered in document order so the nav panel is inserted exactly once, after it.
+  // rendered in document order so the nav panel is inserted exactly once, above it.
   let firstHeadingRendered = false;
   const headings = treatment === 'toc' ? extractHeadings(content) : [];
 
@@ -192,8 +192,8 @@ export default function RichTextBlock({
       firstHeadingRendered = true;
       return (
         <>
-          <h1>{children}</h1>
           {isFirst && <ArticleToc headings={headings} />}
+          <h1>{children}</h1>
         </>
       );
     },
@@ -203,6 +203,7 @@ export default function RichTextBlock({
       firstHeadingRendered = true;
       return (
         <>
+          {isFirst && <ArticleToc headings={headings} />}
           <h2 id={id}>
             <span>{children}</span>
             {!isFirst && headings.length > 0 && (
@@ -211,7 +212,6 @@ export default function RichTextBlock({
               </a>
             )}
           </h2>
-          {isFirst && <ArticleToc headings={headings} />}
         </>
       );
     },
