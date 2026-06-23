@@ -27,7 +27,7 @@ export type RichTextStyleOptions = {
    * First-paragraph / block-level treatment.
    * - standard: faithful prose rendering
    * - lead: first paragraph promoted to deck size in brand color
-   * - toc: auto-generated section navigator from h2 headings, inserted above the first heading
+   * - toc: auto-generated section navigator from h2 headings, inserted at the top of the block
    */
   treatment?: "standard" | "lead" | "toc";
   /** Adds a 1px brand rule above h2 and h3 headings — editorial chapter dividers */
@@ -180,39 +180,25 @@ export default function RichTextBlock({
     reveal           = "none",
   } = styleOptions;
 
-  // Build element map for toc treatment. A closure flag tracks the first heading
-  // rendered in document order so the nav panel is inserted exactly once, above it.
-  let firstHeadingRendered = false;
+  // Build element map for toc treatment. The nav panel itself is rendered above
+  // the whole RichText (see below) so it sits at the very top of the block,
+  // regardless of whether the first node is a heading or a paragraph. The map
+  // here only adds anchor ids + a back-to-contents arrow to each h2.
   const headings = treatment === 'toc' ? extractHeadings(content) : [];
 
   const elements = treatment === 'toc' ? {
     ...baseElements,
-    'heading-one': ({ children }: any) => {
-      const isFirst = !firstHeadingRendered;
-      firstHeadingRendered = true;
-      return (
-        <>
-          {isFirst && <ArticleToc headings={headings} />}
-          <h1>{children}</h1>
-        </>
-      );
-    },
     'heading-two': ({ text, children }: any) => {
       const id = slugify(text);
-      const isFirst = !firstHeadingRendered;
-      firstHeadingRendered = true;
       return (
-        <>
-          {isFirst && <ArticleToc headings={headings} />}
-          <h2 id={id}>
-            <span>{children}</span>
-            {!isFirst && headings.length > 0 && (
-              <a href="#article-toc" aria-label="Back to contents">
-                <ArrowUp size={12} strokeWidth={2} aria-hidden="true" />
-              </a>
-            )}
-          </h2>
-        </>
+        <h2 id={id}>
+          <span>{children}</span>
+          {headings.length > 0 && (
+            <a href="#article-toc" aria-label="Back to contents">
+              <ArrowUp size={12} strokeWidth={2} aria-hidden="true" />
+            </a>
+          )}
+        </h2>
       );
     },
   } : baseElements;
@@ -234,6 +220,7 @@ export default function RichTextBlock({
         className={innerCva({ alignment, size })}
         {...pa('content')}
       >
+        {treatment === 'toc' && <ArticleToc headings={headings} />}
         <RichText content={content ?? undefined} elements={elements} />
       </div>
     </section>
