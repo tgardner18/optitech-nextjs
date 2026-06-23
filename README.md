@@ -58,6 +58,70 @@ To set the default:
 
 Once set, shared block previews will load in the Visual Builder iframe using this site's preview URL.
 
+## CMP Content Preview
+
+This app can render a live preview of a blog authored in **Optimizely Content Marketing Platform (CMP)**, so a marketer editing in CMP sees it laid out in this site's blog UI before it's ever published to the CMS. When an editor clicks **Preview** in CMP, CMP fires a `content_preview_requested` webhook at this app; the app renders the payload through the same [`BlogPage`](components/pages/BlogPage.tsx) component the CMS uses and hands the URL back to CMP, which embeds it in its preview pane.
+
+> This is **separate** from the CMS Visual Builder "Shared block preview" above. That previews CMS content; this previews CMP content. They share no configuration.
+
+### How it works
+
+1. CMP POSTs `content_preview_requested` to **`/api/cmp-preview`** with the full content and a `callback-secret` header.
+2. The handler verifies the secret, then persists the delivery to the durable store (keyed by `preview_id`).
+3. It POSTs `acknowledge` (we can render it), then `complete` with the render URL `…/cmp-preview?id=<preview_id>`.
+4. CMP caches that URL and embeds **`/cmp-preview`** in an iframe. That page loads the stored payload, resolves the featured image to a public CDN URL, and renders `BlogPage`.
+
+The acknowledge/complete calls and image resolution authenticate to CMP via the OAuth2 **client-credentials** flow (no user login / redirect involved).
+
+### Required environment variables
+
+```bash
+# .env.local (development) or Vercel environment settings (production)
+
+# CMP API app — Settings → Apps in CMP (OAuth2 client credentials).
+# The app registration asks for a redirect/Authorization Callback URL; it is
+# only used by the authorization-code flow and is unused here — any valid URL is fine.
+CMP_CLIENT_ID=                 # client_id of the CMP App
+CMP_CLIENT_SECRET=             # client_secret of the CMP App
+CMP_CALLBACK_SECRET=           # must match the "callback secret" set on the CMP webhook;
+                               # CMP sends it as the `callback-secret` request header so
+                               # inbound webhooks can be verified
+
+# Durable preview store — Vercel Marketplace → Upstash → Redis (NOT "Vercel KV",
+# which is retired). Connect it to the project and Vercel injects these. Without
+# them the store falls back to in-memory (fine for `yarn dev`, NOT reliable on
+# Vercel, since CMP fetches the completed URL later on a possibly-different instance).
+KV_REST_API_URL=               # also accepts UPSTASH_REDIS_REST_URL
+KV_REST_API_TOKEN=             # also accepts UPSTASH_REDIS_REST_TOKEN
+```
+
+If `CMP_*` are unset the webhook still captures and the renderer still works locally — it just skips verification and the acknowledge/complete round-trip.
+
+### Setup steps
+
+1. **Create a CMP App** (CMP → **Settings → Apps**) with App Role *Other*. Save and copy its `client_id` / `client_secret` → `CMP_CLIENT_ID` / `CMP_CLIENT_SECRET`. The redirect URL field is required by the form but unused by this integration.
+2. **Provision the durable store**: Vercel project → **Storage → Upstash → Redis**, then **connect it to the project**. Vercel injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
+3. **Recreate the blog content type in CMP** (`cmp_opti_blog`) with field keys matching the mapping in [`lib/cmpBlog.ts`](lib/cmpBlog.ts): `headline`, `subHeadline`, `topic` (choice), `featuredImage` (library-asset), `body` (rich-text), `readTime`.
+4. **Create the CMP webhook** (CMP → **Settings → Webhooks**): event `content_preview_requested`, target URL `https://<your-deployment>/api/cmp-preview`, and set a **callback secret** — use the same value as `CMP_CALLBACK_SECRET`.
+5. **Set all env vars in Vercel** (Production) and **redeploy**, then click **Preview** on a CMP blog.
+
+### Inspecting & troubleshooting
+
+- **GET `/api/cmp-preview`** returns the most recently captured webhook delivery as JSON — handy for confirming payload shape.
+- The handler logs each step to the Vercel **Functions** logs, prefixed `[cmp-preview]` — including the verbatim `acknowledge →` and `complete →` status + response body. If `complete` is not 2xx, that logged body names the exact field at fault.
+- The render page accepts `?id=<preview_id>` (a specific delivery) and `?style=impact|atmospheric|editorial` (header treatment; defaults to `editorial`).
+- Framing inside CMP is already permitted by the global `frame-ancestors … *.cms.optimizely.com` policy in [`next.config.mjs`](next.config.mjs).
+
+### Where things live
+
+| Concern | Location |
+|---|---|
+| Webhook handler (verify → store → acknowledge/complete) | [`app/api/cmp-preview/route.ts`](app/api/cmp-preview/route.ts) |
+| Render page | [`app/cmp-preview/page.tsx`](app/cmp-preview/page.tsx) |
+| CMP API client (token, callbacks, asset resolve) | [`lib/cmpApi.ts`](lib/cmpApi.ts) |
+| Payload → `BlogPageContent` mapping | [`lib/cmpBlog.ts`](lib/cmpBlog.ts) |
+| Durable delivery store (Upstash REST + in-memory fallback) | [`lib/cmpPreviewStore.ts`](lib/cmpPreviewStore.ts) |
+
 ## OptiAdmin Dashboard
 
 OptiAdmin is a lightweight, self-contained admin area for inspecting the content in your Optimizely CMS instance. It lives under [`app/opti-admin/`](app/opti-admin/) and reads live data through Optimizely Graph — it is read-only and does not write back to the CMS.
