@@ -113,3 +113,25 @@ export async function getLatestPublishDelivery(): Promise<CmpDelivery | null> {
   }
   return memPublishLatest
 }
+
+// ── CMP content_guid → CMS content key mapping (phase 4 idempotency) ─────────
+// The CMS assigns its own key on create (client-supplied keys are forbidden), so
+// we persist content_guid → CMS key to update the same page on re-publish.
+const mapKey = (contentGuid: string) => `cmp:blog:map:${contentGuid}`
+const memBlogMap = new Map<string, string>()
+
+export async function getMappedCmsKey(contentGuid: string): Promise<string | null> {
+  if (kvConfig()) {
+    const raw = await kvCommand(['GET', mapKey(contentGuid)])
+    return typeof raw === 'string' ? raw : null
+  }
+  return memBlogMap.get(contentGuid) ?? null
+}
+
+export async function setMappedCmsKey(contentGuid: string, cmsKey: string): Promise<void> {
+  if (kvConfig()) {
+    await kvCommand(['SET', mapKey(contentGuid), cmsKey])
+    return
+  }
+  memBlogMap.set(contentGuid, cmsKey)
+}

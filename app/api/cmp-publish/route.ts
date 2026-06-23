@@ -1,5 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { putPublishDelivery, getLatestPublishDelivery } from '@/lib/cmpPreviewStore'
+import {
+  putPublishDelivery,
+  getLatestPublishDelivery,
+  getMappedCmsKey,
+  setMappedCmsKey,
+} from '@/lib/cmpPreviewStore'
+import { mapCmpPreviewToBlog } from '@/lib/cmpBlog'
+import { cmsConfigured, upsertBlogPage, type BlogPageProperties } from '@/lib/cmsApi'
 
 // CMP publish webhook — PHASE 4, STEP 1: capture & inspect.
 //
@@ -29,6 +36,73 @@ type CapturedMeta = {
 
 // Reads the body without trusting the content-type header (mirrors the preview
 // webhook): JSON first, then form encodings, then raw text re-parsed as JSON.
+// URL-friendly slug from the headline (CMP has no slug field).
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
+// Creates/updates a draft OT_BlogPage from the published CMP content. Best-effort
+// and fully logged — never throws into the webhook response. Skipped unless the
+// CMS creds + target container are configured.
+async function upsertBlogFromPublish(body: unknown): Promise<void> {
+  const containerKey = process.env.CMP_BLOG_CONTAINER_KEY
+  if (!cmsConfigured() || !containerKey) {
+    console.log('[cmp-publish] CMS not configured (creds or CMP_BLOG_CONTAINER_KEY) — skipping blog create')
+    return
+  }
+
+  const mapped = mapCmpPreviewToBlog(body)
+  if (!mapped || !mapped.contentGuid) {
+    console.warn('[cmp-publish] payload had no mappable blog / content_guid — skipping')
+    return
+  }
+
+  const c = mapped.content
+  const properties: BlogPageProperties = {
+    headline: c.headline,
+    subHeadline: c.subHeadline || undefined,
+    topic: c.topic || undefined,
+    // CMS stores rich text as an HTML string; existing blogs wrap body in a <div>.
+    body: c.body?.html ? `<div>${c.body.html}</div>` : undefined,
+    readTime: c.readTime || undefined,
+  }
+  // Reference the federated CMP DAM asset directly (no copy into the CMS).
+  if (mapped.featuredImageAssetGuid) {
+    properties.featuredImage = `cms://content/${mapped.featuredImageAssetGuid}`
+  }
+
+  try {
+    // Look up a prior CMS key for this CMP content (idempotent re-publish).
+    const existingKey = (await getMappedCmsKey(mapped.contentGuid)) ?? undefined
+
+    const result = await upsertBlogPage({
+      existingKey,
+      container: containerKey,
+      locale: mapped.locale,
+      displayName: c.headline || 'Untitled',
+      routeSegment: slugify(c.headline || mapped.contentGuid),
+      properties,
+    })
+
+    // Persist the mapping on first create so re-publish updates the same page.
+    if (result.action === 'created' && result.cmsKey) {
+      await setMappedCmsKey(mapped.contentGuid, result.cmsKey)
+    }
+
+    console.log(
+      `[cmp-publish] blog ${result.action} (cms ${result.cmsKey}, guid ${mapped.contentGuid}) → ${result.status} ${result.body}`,
+    )
+  } catch (err) {
+    console.error('[cmp-publish] blog upsert failed:', err)
+  }
+}
+
 async function readBody(req: NextRequest): Promise<unknown> {
   const contentType = req.headers.get('content-type') ?? ''
   if (contentType.includes('application/json')) {
@@ -82,9 +156,15 @@ export async function POST(req: NextRequest) {
 
   console.log('[cmp-publish] webhook received:\n' + JSON.stringify({ meta, body }, null, 2))
 
-  // Surface the event name if present, to speed up identifying the publish event.
   const eventName = (body as { event_name?: string })?.event_name
-  return NextResponse.json({ ok: true, eventName, captured: meta, payload: body })
+
+  // asset_published fires when content is published to this webhook channel —
+  // that's our cue to create/update the draft OT_BlogPage in the CMS.
+  if (eventName === 'asset_published') {
+    await upsertBlogFromPublish(body)
+  }
+
+  return NextResponse.json({ ok: true, eventName, captured: meta })
 }
 
 export async function GET() {

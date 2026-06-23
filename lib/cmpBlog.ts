@@ -36,9 +36,16 @@ export type MappedCmpBlog = {
   previewId?: string
   contentId?: string
   versionId?: string
+  /** Stable CMP content identifier — the idempotency key for CMS create/update (phase 4). */
+  contentGuid?: string
   contentHash?: string
   /** CMP asset-urls endpoint for the featured image — needs CMP API auth to resolve. */
   featuredImageAssetUrl?: string | null
+  /** Raw CMP DAM asset guid. In the CMS shared DAM this is the key of the
+   *  federated graph:cmp_PublicImageAsset, referenceable as cms://content/<guid>. */
+  featuredImageAssetGuid?: string | null
+  /** Content locale (CMP primary_locale), defaulting to 'en'. */
+  locale: string
   links?: { acknowledge?: string; complete?: string }
 }
 
@@ -54,7 +61,9 @@ export function mapCmpPreviewToBlog(
   if (!sc) return null
 
   const body = sc.content_body ?? {}
-  const fieldsVersion = body.fields_version ?? {}
+  // content_preview_requested nests fields under `fields_version`; asset_published
+  // uses `latest_fields_version`. Accept either so one mapper serves both events.
+  const fieldsVersion = body.latest_fields_version ?? body.fields_version ?? {}
   const fields = fieldsVersion.fields ?? {}
   const locale: string | undefined = body.primary_locale
 
@@ -71,7 +80,9 @@ export function mapCmpPreviewToBlog(
   const topic       = topicRaw ? topicRaw.toLowerCase() : undefined
   const published   = body.updated_at ?? body.created_at ?? ''
 
-  const featuredImageAssetUrl = fieldValue(fields, 'featuredImage', locale)?.links?.self ?? null
+  const featuredImageField    = fieldValue(fields, 'featuredImage', locale)
+  const featuredImageAssetUrl  = featuredImageField?.links?.self ?? null
+  const featuredImageAssetGuid = featuredImageField?.asset_guid ?? null
 
   const content: BlogPageContent = {
     _metadata: {
@@ -95,8 +106,11 @@ export function mapCmpPreviewToBlog(
     previewId: payload?.data?.preview_id,
     contentId: sc.id,
     versionId: sc.version_id,
+    contentGuid: body.content_guid,
     contentHash: fieldsVersion.content_hash,
     featuredImageAssetUrl,
+    featuredImageAssetGuid,
+    locale: locale ?? 'en',
     links: {
       acknowledge: payload?.data?.links?.acknowledge,
       complete: payload?.data?.links?.complete,
