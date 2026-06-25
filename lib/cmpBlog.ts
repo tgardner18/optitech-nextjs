@@ -60,6 +60,19 @@ export function mapCmpPreviewToBlog(
   const sc = payload?.data?.assets?.structured_contents?.[0]
   if (!sc) return null
 
+  // CMP emits locales inconsistently — `en_US` (underscore), a bare `en`, or an
+  // odd-cased `En` — while the CMS Management API requires a canonical BCP-47 tag
+  // (`en-US`, `en`). Normalize the separator and subtag casing (language lower,
+  // 2-letter region upper). Only applied to values handed to the CMS — the raw
+  // form is kept for CMP per-locale field matching below.
+  const toBcp47 = (l: string): string => {
+    const parts = l.replace(/_/g, '-').split('-').filter(Boolean)
+    if (parts.length === 0) return 'en'
+    parts[0] = parts[0].toLowerCase() // language subtag
+    if (parts[1] && /^[A-Za-z]{2}$/.test(parts[1])) parts[1] = parts[1].toUpperCase() // region subtag
+    return parts.join('-')
+  }
+
   const body = sc.content_body ?? {}
   // content_preview_requested nests fields under `fields_version`; asset_published
   // uses `latest_fields_version`. Accept either so one mapper serves both events.
@@ -110,7 +123,7 @@ export function mapCmpPreviewToBlog(
     contentHash: fieldsVersion.content_hash,
     featuredImageAssetUrl,
     featuredImageAssetGuid,
-    locale: locale ?? 'en',
+    locale: toBcp47(locale ?? 'en'),
     links: {
       acknowledge: payload?.data?.links?.acknowledge,
       complete: payload?.data?.links?.complete,
