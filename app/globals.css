@@ -831,20 +831,23 @@ body {
   }
 }
 
-/* Light mode: brand face, neutral shadows derived from brand hue at zero chroma */
+/* Light mode: brand face, brand-HUED shadow stack graduating into deep teal.
+   The old near-zero-chroma grays read as a flat drop on white; keeping the brand
+   hue and a steeper lightness ramp gives the same saturated 3D "side" the dark
+   variant has, so the pop survives the ground flip. */
 [data-theme="light"] .ot-depth-extrude {
   color: var(--ot-brand);
   text-shadow:
     calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
-      oklch(from var(--ot-brand) 0.52 0.006 h),
+      oklch(from var(--ot-brand) calc(l * 0.74) c h),
     calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
-      oklch(from var(--ot-brand) 0.42 0.005 h),
+      oklch(from var(--ot-brand) calc(l * 0.58) c h),
     calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
-      oklch(from var(--ot-brand) 0.30 0.004 h),
+      oklch(from var(--ot-brand) calc(l * 0.44) c h),
     calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
-      oklch(from var(--ot-brand) 0.22 0.003 h / 0.80),
+      oklch(from var(--ot-brand) calc(l * 0.30) calc(c * 0.92) h),
     calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
-      oklch(from var(--ot-brand) 0.14 0.002 h / 0.45);
+      oklch(from var(--ot-brand) calc(l * 0.18) calc(c * 0.70) h / 0.90);
 }
 
 /* Brand background: fg-on-brand face, accent-colored shadow stack */
@@ -916,29 +919,27 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────── */
 .ot-depth-outline {
   color: transparent;
-  -webkit-text-stroke: 0.04em var(--ot-brand);
+  -webkit-text-stroke: 0.03em var(--ot-brand);
   paint-order: stroke fill;
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-brand) l c h / 0.14);
-  filter:
-    drop-shadow(0 0 0.17em oklch(from var(--ot-brand) l c h / 0.48))
-    drop-shadow(0 0 0.42em oklch(from var(--ot-brand) l c h / 0.17));
+  /* text-shadow paints the FILLED glyph regardless of the transparent fill, so a
+     single offset shadow becomes a solid colored back-plate behind the hollow
+     wire: layered editorial depth without the muddy blur the old double
+     drop-shadow produced. One tight halo only, for a clean lit edge. */
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-brand) l c h / 0.20);
+  filter: drop-shadow(0 0 0.13em oklch(from var(--ot-brand) l c h / 0.42));
 }
 
-/* Light mode: same stroke, soft glow, ghost offset barely visible */
+/* Light mode: same crisp wire, lighter back-plate + tighter halo so it reads on white */
 [data-theme="light"] .ot-depth-outline {
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-brand) l c h / 0.08);
-  filter:
-    drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.24))
-    drop-shadow(0 0 0.22em oklch(from var(--ot-brand) l c h / 0.10));
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-brand) l c h / 0.13);
+  filter: drop-shadow(0 0 0.07em oklch(from var(--ot-brand) l c h / 0.24));
 }
 
 /* Brand background: accent stroke for contrast against the brand fill */
 .bg-brand-fill .ot-depth-outline {
-  -webkit-text-stroke: 0.04em var(--ot-accent);
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-accent) l c h / 0.22);
-  filter:
-    drop-shadow(0 0 0.17em oklch(from var(--ot-accent) l c h / 0.50))
-    drop-shadow(0 0 0.42em oklch(from var(--ot-accent) l c h / 0.18));
+  -webkit-text-stroke: 0.03em var(--ot-accent);
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-accent) l c h / 0.26);
+  filter: drop-shadow(0 0 0.13em oklch(from var(--ot-accent) l c h / 0.46));
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -1016,21 +1017,71 @@ body {
 .ot-fx-chromatic {
   color: var(--ot-fg);
   text-shadow:
-    -0.07em 0 0 oklch(from var(--ot-brand)  l c h / 0.85),
-     0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.85);
+    -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
+     0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
 }
 [data-theme="light"] .ot-fx-chromatic {
   text-shadow:
-    -0.07em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-     0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+    -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.95),
+     0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.95);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .ot-fx-chromatic { animation: otChromaJitter 4s steps(1, end) infinite; }
+  .ot-fx-chromatic { animation: otChromaJitter 3.6s steps(1, end) infinite; }
 }
+/* A calm RGB-split rest punctuated by three short digital bursts: each slips the
+   channels hard sideways, tears them vertically, and flickers alpha, then snaps
+   back. steps(1,end) = instant cuts (no tween), which is what reads as "glitch"
+   rather than a smooth drift. The fg face is never offset, so it stays legible
+   throughout. Reduced-motion users get the static split above. */
 @keyframes otChromaJitter {
-  0%, 92%, 100% { text-shadow: -0.07em 0 0 oklch(from var(--ot-brand) l c h / 0.85),  0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.85); }
-  94%           { text-shadow: -0.1em 0.014em 0 oklch(from var(--ot-brand) l c h / 0.85), 0.085em -0.014em 0 oklch(from var(--ot-accent) l c h / 0.85); }
-  97%           { text-shadow: -0.05em -0.01em 0 oklch(from var(--ot-brand) l c h / 0.85), 0.11em 0.01em 0 oklch(from var(--ot-accent) l c h / 0.85); }
+  0% {
+    text-shadow:
+      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
+       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
+  /* burst 1 — hard outward slip + upward tear */
+  20% {
+    text-shadow:
+      -0.13em -0.025em 0 oklch(from var(--ot-brand)  l c h / 0.95),
+       0.10em  0.020em 0 oklch(from var(--ot-accent) l c h / 0.82);
+  }
+  21.5% {
+    text-shadow:
+       0.08em  0.020em 0 oklch(from var(--ot-brand)  l c h / 0.70),
+      -0.11em -0.015em 0 oklch(from var(--ot-accent) l c h / 0.95);
+  }
+  23% {
+    text-shadow:
+      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
+       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
+  /* burst 2 — single quick widening */
+  51% {
+    text-shadow:
+      -0.09em 0 0 oklch(from var(--ot-brand)  l c h / 0.92),
+       0.12em 0 0 oklch(from var(--ot-accent) l c h / 0.80);
+  }
+  52.5% {
+    text-shadow:
+      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
+       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
+  /* burst 3 — biggest tear, opposing vertical offsets */
+  79% {
+    text-shadow:
+      -0.14em  0.030em 0 oklch(from var(--ot-brand)  l c h / 0.95),
+       0.12em -0.030em 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
+  80% {
+    text-shadow:
+       0.06em -0.020em 0 oklch(from var(--ot-brand)  l c h / 0.85),
+      -0.08em  0.020em 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
+  81.5%, 100% {
+    text-shadow:
+      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
+       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+  }
 }
 
 /* HIGHLIGHT — accent "marker swipe" behind the text (apply to an inline span).  */
@@ -1073,9 +1124,13 @@ body {
 /* Sits on tinted grounds + token-derived, so it never becomes neon-on-#000.      */
 .ot-fx-glow {
   color: var(--ot-fg);
+  /* Three layers, not two: a tight high-alpha core gives a crisp backlit edge the
+     old diffuse pair lacked on dark grounds, then mid + wide accent layers bloom
+     into an aurora. This is the "lit from within" read the light variant already had. */
   filter:
-    drop-shadow(0 0 0.32em oklch(from var(--ot-brand)  l c h / 0.5))
-    drop-shadow(0 0 0.7em  oklch(from var(--ot-accent) l c h / 0.32));
+    drop-shadow(0 0 0.12em oklch(from var(--ot-brand)  l c h / 0.78))
+    drop-shadow(0 0 0.4em  oklch(from var(--ot-brand)  l c h / 0.46))
+    drop-shadow(0 0 0.85em oklch(from var(--ot-accent) l c h / 0.40));
 }
 [data-theme="light"] .ot-fx-glow {
   filter:
