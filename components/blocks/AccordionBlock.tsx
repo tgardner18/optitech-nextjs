@@ -141,10 +141,10 @@ const questionCva = cva(
 const iconCva = cva(
   [
     'shrink-0 mt-0.5',
-    // Rotate +45° → × when open, on the same smooth curve as the row reveal.
-    'transition-transform duration-300',
+    // Rotate +45° → × when open, on the same slower, smooth curve as the row reveal.
+    'transition-transform [transition-duration:var(--ot-dur-accordion)]',
     'group-data-[state=open]:rotate-45',
-    '[transition-timing-function:var(--ot-ease-smooth)]',
+    '[transition-timing-function:var(--ot-ease-accordion)]',
   ].join(' '),
   {
     variants: {

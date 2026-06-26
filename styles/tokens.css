@@ -112,6 +112,7 @@
   --ot-ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1); /* expo out — entrances     */
   --ot-ease-quick:   cubic-bezier(0.25, 1, 0.5, 1); /* quart out — UI states   */
   --ot-ease-smooth:  cubic-bezier(0.33, 1, 0.68, 1); /* cubic out — collapse/expand: gentle start, no snap */
+  --ot-ease-accordion: cubic-bezier(0.65, 0, 0.35, 1); /* ease-in-out cubic — accordion: symmetric, very smooth both directions */
 
   /* Motion Intensity axis — themeable via ThemeManager "Motion Intensity".
    * A single unitless multiplier scales the whole --ot-dur-* system below.
@@ -130,6 +131,9 @@
   --ot-dur-quick: calc(200ms * var(--ot-motion-scale));
   --ot-dur-base:  calc(320ms * var(--ot-motion-scale));
   --ot-dur-slow:  calc(600ms * var(--ot-motion-scale));
+  /* Accordion expand/collapse — deliberately slower than dur-base for a smooth,
+   * luxurious reveal. Scales with motion-scale like the rest of the system. */
+  --ot-dur-accordion: calc(620ms * var(--ot-motion-scale));
   /* Ambient continuous loops */
   --ot-dur-breathe: calc(9s * var(--ot-motion-scale));
   --ot-dur-liquid:  calc(8s * var(--ot-motion-scale));

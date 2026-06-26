@@ -272,22 +272,21 @@ html {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* ease-smooth (cubic-out) replaces the expo curve — expo front-loads ~60% of the
-     height in the first 10% of the timeline, which reads as a snap; cubic-out opens
-     gently and decelerates evenly. Same curve + duration both directions for a
-     cohesive open/close pair. */
+  /* ease-accordion (ease-in-out cubic) + the slower dur-accordion give a smooth,
+     symmetric reveal: it eases in, eases out, and never snaps. Same curve +
+     duration both directions for a cohesive open/close pair. */
   .animate-accordion-open {
-    animation: accordionOpen var(--ot-dur-base) var(--ot-ease-smooth) forwards;
+    animation: accordionOpen var(--ot-dur-accordion) var(--ot-ease-accordion) forwards;
   }
   .animate-accordion-close {
-    animation: accordionClose var(--ot-dur-base) var(--ot-ease-smooth) forwards;
+    animation: accordionClose var(--ot-dur-accordion) var(--ot-ease-accordion) forwards;
   }
 
   [data-radix-accordion-content][data-state='open'] .acc-answer-reveal {
-    animation: accordionContentIn var(--ot-dur-base) var(--ot-ease-smooth) both;
+    animation: accordionContentIn var(--ot-dur-accordion) var(--ot-ease-accordion) both;
   }
   [data-radix-accordion-content][data-state='closed'] .acc-answer-reveal {
-    animation: accordionContentOut var(--ot-dur-base) var(--ot-ease-smooth) both;
+    animation: accordionContentOut var(--ot-dur-accordion) var(--ot-ease-accordion) both;
   }
 }
 
