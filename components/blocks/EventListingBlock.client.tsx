@@ -392,7 +392,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     setSelected(null)
   }, [events, cursor])
 
-  const navBtn = 'inline-flex items-center justify-center w-9 h-9 border border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const navBtn = 'inline-flex items-center justify-center w-11 h-11 border border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
 
   return (
     <div>
@@ -416,12 +416,16 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
         </div>
       </div>
 
-      {/* Desktop grid */}
-      <div className="hidden sm:block" role="grid" aria-labelledby={labelId}>
-        {/* Weekday header */}
-        <div className="grid grid-cols-7 border-t border-l border-fg/10" role="row">
+      {/* Desktop calendar. Presented as a labelled group of day toggle buttons
+          (natively Tab-operable) rather than role="grid" — an ARIA grid contracts
+          for 2D arrow-key navigation we don't implement, so the honest semantics
+          are a group. Each day's aria-label carries its full weekday + date, so
+          the visual weekday header is decorative (aria-hidden). */}
+      <div className="hidden sm:block" role="group" aria-labelledby={labelId}>
+        {/* Weekday header — decorative; day buttons announce the full weekday */}
+        <div className="grid grid-cols-7 border-t border-l border-fg/10" aria-hidden="true">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} role="columnheader" className="border-r border-b border-fg/10 px-xs py-xs text-label uppercase tracking-label font-semibold text-fg-muted/70 text-center">
+            <div key={d} className="border-r border-b border-fg/10 px-xs py-xs text-label uppercase tracking-label font-semibold text-fg-muted/70 text-center">
               {d}
             </div>
           ))}
@@ -431,7 +435,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
           {weeks.map((week, wi) => {
             const { spans, laneCount } = placeMultiDay(week, monthEvents)
             return (
-              <div key={wi} className="relative grid grid-cols-7" role="row">
+              <div key={wi} className="relative grid grid-cols-7">
                 {week.map((cell, col) => {
                   if (!cell) {
                     return <div key={`b-${wi}-${col}`} aria-hidden className="border-r border-b border-fg/10 bg-fg/2 min-h-20 lg:min-h-30" />
@@ -447,8 +451,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
                     <button
                       type="button"
                       key={cell.key}
-                      role="gridcell"
-                      aria-selected={isSel}
+                      aria-pressed={hasEvents ? isSel : undefined}
                       aria-label={`${new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(cell.date)}${hasEvents ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
                       disabled={!hasEvents}
                       onClick={() => hasEvents && setSelected(isSel ? null : cell.key)}
@@ -726,6 +729,12 @@ export default function EventListingClient({
   const listEmpty = effectiveView !== 'calendar' && capUpcoming.length === 0 &&
     (pastMode !== 'show' || past.length === 0)
 
+  // Polite announcement for SR users — the visible body swaps silently when the
+  // view, type filter, or past-toggle changes.
+  const resultAnnouncement = effectiveView === 'calendar'
+    ? `Calendar view, ${typeFiltered.length} event${typeFiltered.length === 1 ? '' : 's'}`
+    : `${capUpcoming.length} upcoming event${capUpcoming.length === 1 ? '' : 's'}${showPast && capPast.length ? `, ${capPast.length} past` : ''}, ${effectiveView === 'list' ? 'list' : 'card'} view`
+
   return (
     <div>
       {/* ── Controls bar ─────────────────────────────────────────────────────── */}
@@ -749,12 +758,12 @@ export default function EventListingClient({
 
           <div className="flex items-center gap-md">
             {showPastCtrl && (
-              <label className="inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-fg-muted cursor-pointer select-none">
+              <label className="inline-flex items-center gap-xs min-h-[44px] text-label uppercase tracking-label font-semibold text-fg-muted cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={showPast}
                   onChange={e => setShowPast(e.target.checked)}
-                  className="accent-[var(--ot-brand)] w-3.5 h-3.5"
+                  className="accent-[var(--ot-brand)] w-4 h-4"
                 />
                 Show past events
               </label>
@@ -763,6 +772,9 @@ export default function EventListingClient({
           </div>
         </div>
       )}
+
+      {/* SR-only result announcement — the visible body below swaps silently */}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{resultAnnouncement}</p>
 
       {/* ── Views ────────────────────────────────────────────────────────────── */}
       {effectiveView === 'calendar' ? (

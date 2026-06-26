@@ -108,7 +108,7 @@ const featureBodyCva = cva('mt-xs text-body leading-body [&>p]:m-0 [&>p+p]:mt-xs
 })
 
 const featureCtaCva = cva(
-  'inline-flex items-center gap-xs mt-sm text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70',
+  'inline-flex items-center gap-xs mt-sm min-h-[44px] text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
   {
     variants: {
       color: {
@@ -133,7 +133,7 @@ const iconCva = cva('flex-shrink-0', {
 })
 
 const sectionCtaCva = cva(
-  'inline-flex items-center gap-xs text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70',
+  'inline-flex items-center gap-xs min-h-[44px] text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
   {
     variants: {
       color: {

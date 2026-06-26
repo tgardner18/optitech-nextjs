@@ -57,9 +57,9 @@ const headingCva = cva(
       size: {
         large:   'text-[clamp(2.5rem,5vw,3.75rem)]',
         compact: 'text-headline',
-        // leading-[1.05] overrides the leading-headline base — at display scale
-        // (up to 6rem) the 0.9 token would clip descenders against overflow-hidden.
-        display: 'text-display leading-[1.15] tracking-display font-extrabold',
+        // leading-display-safe (1.15) overrides the 0.9 display token — at display
+        // scale on this overflow-hidden ground, 0.9 would clip descenders.
+        display: 'text-display leading-display-safe tracking-display font-extrabold',
       },
     },
     defaultVariants: { color: 'canvas', size: 'large' },
@@ -285,7 +285,10 @@ export default function BannerBlock({
             alt=""
             fill
             sizes="100vw"
-            priority
+            // Only the hero banner (h1 = page's primary heading) is the LCP
+            // candidate and should preload. Secondary (h2) banners lazy-load so
+            // multiple banners on a page don't all preload and hurt LCP.
+            priority={headingLevel === 'h1'}
             quality={85}
             className="object-cover object-center"
           />

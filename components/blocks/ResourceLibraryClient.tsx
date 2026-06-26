@@ -246,7 +246,7 @@ function Pagination({
   const from = (page - 1) * pageSize + 1
   const to   = Math.min(page * pageSize, total)
 
-  const btnBase     = 'inline-flex items-center justify-center w-9 h-9 border text-label font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const btnBase     = 'inline-flex items-center justify-center w-11 h-11 border text-label font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
   const btnInactive = 'border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg'
   const btnActive   = 'bg-brand border-transparent text-fg-on-brand'
   const btnDisabled = 'border-fg/8 text-fg/25 cursor-not-allowed'
@@ -260,7 +260,7 @@ function Pagination({
 
   return (
     <div className="mt-xl flex flex-col items-center gap-md">
-      <p className="text-label text-fg-muted">
+      <p className="text-label text-fg-muted" aria-live="polite" aria-atomic="true">
         Showing <strong>{from}–{to}</strong> of <strong>{total}</strong> files
       </p>
       <div className="flex items-center gap-xs">
@@ -339,10 +339,12 @@ export default function ResourceLibraryClient({
 
   const changePage = useCallback((p: number) => {
     setPage(p)
-    window.scrollBy({ top: -120, behavior: 'smooth' })
+    // Honour prefers-reduced-motion for the JS-driven scroll.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollBy({ top: -120, behavior: reduce ? 'auto' : 'smooth' })
   }, [])
 
-  const toggleBase     = 'p-[7px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const toggleBase     = 'inline-flex items-center justify-center w-11 h-11 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
   const toggleActive   = 'text-brand'
   const toggleInactive = 'text-fg-muted/50 hover:text-fg-muted'
 

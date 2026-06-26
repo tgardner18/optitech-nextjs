@@ -148,13 +148,21 @@ Dark mode is the default. `data-theme="dark"` on `<html>` is set before first pa
 
 ## 4. Typography
 
-**Three fonts, one system:**
+**One themeable primary family + fixed-role companions.**
 
-| Variable | Font | Role |
+The **primary family** drives the entire hierarchy (display → body → label). It is **Poppins by default and swappable per vertical** through the ThemeManager "Primary Font" axis, which overrides the `--ot-font-sans` token (Tailwind `font-sans`). Every primary ships the same 300–800 weight ladder, so all type levels hold across a swap with no FOUT (`display: swap` + build-time `next/font`).
+
+| Token / axis value | Font | Role |
 |---|---|---|
-| `--font-sans` | Poppins | Everything. Display, headline, title, body, label, buttons, nav. |
-| `--font-syne` | Syne (variable) | Accent moments only. Section openers, pull quotes. Once per viewport max. |
+| `--ot-font-sans` (default) | Poppins | Primary — the whole hierarchy: display, headline, title, body, label, buttons, nav. |
+| Primary axis → `--font-primary-a` | Source Serif 4 | Primary alternate — institutional / editorial pole (medical, financial, legal). The one sanctioned serif. |
+| Primary axis → `--font-primary-b` | Sora | Primary alternate — precise / engineered pole (technical brands). |
+| Primary axis → `--font-primary-c` | Bricolage Grotesque | Primary alternate — expressive / character pole. |
+| `--font-syne` | Syne (variable) | Fixed accent/display only. Section openers, pull quotes. Once per viewport max. Not themeable. |
 | `--font-mono` | Geist Mono | Code samples, technical labels, data readouts. |
+| `--ot-font-signature` | Caveat 400 | Signature only — the QuoteBlock LaserSignature. Never general copy. |
+
+**Component authors:** reference `--ot-font-sans` (or `font-sans`) for the primary family — never a raw `--font-poppins`, which bypasses the theme axis. **Serif is permitted only** as the Source Serif primary selected through the axis; never introduce another serif or hardcode a family.
 
 ### Scale and hierarchy
 
@@ -346,6 +354,7 @@ These global utilities reference bloom tokens and must be defined in `globals.cs
 | `.display-extrude` | Isometric extrusion — fg face + accent rim stroke + 12-layer 45° shadow stack. Max depth 0.42em. Animated via `--display-depth` on entrance. |
 | `.card-hover-tilt` | Isometric back-face visible at rest (solid 2-layer offset shadow in brand-hover). On hover: `perspective(900px) rotateX(-3deg) rotateY(5deg)` + deepened shadow. Reduced-motion: shadow only. |
 | `.logo-invert-dark` | `filter: brightness(0) invert(1)` in dark mode; removed in light mode |
+| `.tab-scroller` | Horizontal tab-trigger strip. Dynamic `mask-image` edge-feather (driven by `--fade-l`/`--fade-r` set from scroll position) signals off-canvas tabs; inert when nothing overflows. Pairs with scroll-snap + JS `scrollIntoView` keeping the active trigger in view; `scroll-behavior` is reduced-motion gated. |
 
 ### Header Effects (consolidated set)
 

@@ -36,9 +36,16 @@ export type MappedCmpBlog = {
   previewId?: string
   contentId?: string
   versionId?: string
+  /** Stable CMP content identifier — the idempotency key for CMS create/update (phase 4). */
+  contentGuid?: string
   contentHash?: string
   /** CMP asset-urls endpoint for the featured image — needs CMP API auth to resolve. */
   featuredImageAssetUrl?: string | null
+  /** Raw CMP DAM asset guid. In the CMS shared DAM this is the key of the
+   *  federated graph:cmp_PublicImageAsset, referenceable as cms://content/<guid>. */
+  featuredImageAssetGuid?: string | null
+  /** Content locale (CMP primary_locale), defaulting to 'en'. */
+  locale: string
   links?: { acknowledge?: string; complete?: string }
 }
 
@@ -53,8 +60,23 @@ export function mapCmpPreviewToBlog(
   const sc = payload?.data?.assets?.structured_contents?.[0]
   if (!sc) return null
 
+  // CMP emits locales inconsistently — `en_US` (underscore), a bare `en`, or an
+  // odd-cased `En` — while the CMS Management API requires a canonical BCP-47 tag
+  // (`en-US`, `en`). Normalize the separator and subtag casing (language lower,
+  // 2-letter region upper). Only applied to values handed to the CMS — the raw
+  // form is kept for CMP per-locale field matching below.
+  const toBcp47 = (l: string): string => {
+    const parts = l.replace(/_/g, '-').split('-').filter(Boolean)
+    if (parts.length === 0) return 'en'
+    parts[0] = parts[0].toLowerCase() // language subtag
+    if (parts[1] && /^[A-Za-z]{2}$/.test(parts[1])) parts[1] = parts[1].toUpperCase() // region subtag
+    return parts.join('-')
+  }
+
   const body = sc.content_body ?? {}
-  const fieldsVersion = body.fields_version ?? {}
+  // content_preview_requested nests fields under `fields_version`; asset_published
+  // uses `latest_fields_version`. Accept either so one mapper serves both events.
+  const fieldsVersion = body.latest_fields_version ?? body.fields_version ?? {}
   const fields = fieldsVersion.fields ?? {}
   const locale: string | undefined = body.primary_locale
 
@@ -71,7 +93,9 @@ export function mapCmpPreviewToBlog(
   const topic       = topicRaw ? topicRaw.toLowerCase() : undefined
   const published   = body.updated_at ?? body.created_at ?? ''
 
-  const featuredImageAssetUrl = fieldValue(fields, 'featuredImage', locale)?.links?.self ?? null
+  const featuredImageField    = fieldValue(fields, 'featuredImage', locale)
+  const featuredImageAssetUrl  = featuredImageField?.links?.self ?? null
+  const featuredImageAssetGuid = featuredImageField?.asset_guid ?? null
 
   const content: BlogPageContent = {
     _metadata: {
@@ -95,8 +119,11 @@ export function mapCmpPreviewToBlog(
     previewId: payload?.data?.preview_id,
     contentId: sc.id,
     versionId: sc.version_id,
+    contentGuid: body.content_guid,
     contentHash: fieldsVersion.content_hash,
     featuredImageAssetUrl,
+    featuredImageAssetGuid,
+    locale: toBcp47(locale ?? 'en'),
     links: {
       acknowledge: payload?.data?.links?.acknowledge,
       complete: payload?.data?.links?.complete,

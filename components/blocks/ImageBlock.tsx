@@ -226,7 +226,7 @@ export default function ImageBlock({
       {lightbox && (
         <div
           aria-hidden="true"
-          className="absolute top-2 right-2 z-30 p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
+          className="absolute top-2 right-2 z-30 p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
         >
           <Maximize2 className="w-4 h-4" />
         </div>
@@ -250,7 +250,7 @@ export default function ImageBlock({
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className="block w-full text-left group cursor-zoom-in"
+              className="block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               {imageContainerEl}
             </button>

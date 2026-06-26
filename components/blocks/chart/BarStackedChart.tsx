@@ -37,7 +37,7 @@ export default function BarStackedChart({
   const tickStyle = {
     fill:       theme.tickColor,
     fontSize:   11,
-    fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+    fontFamily: 'var(--ot-font-sans)',
     fontWeight: 500,
   }
 
@@ -85,7 +85,7 @@ export default function BarStackedChart({
             wrapperStyle={{
               color:      theme.legendColor,
               fontSize:   11,
-              fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+              fontFamily: 'var(--ot-font-sans)',
             }}
           />
         )}

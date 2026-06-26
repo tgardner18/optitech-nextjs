@@ -151,11 +151,13 @@ export default function ChartBlockClient({
       <div style={{ marginBottom: 20 }}>
         <h3 style={{
           color:         headingColor(color),
-          fontSize:      '1.25rem',
-          fontWeight:    600,
-          lineHeight:    1.3,
-          letterSpacing: '-0.01em',
-          fontFamily:    'var(--font-poppins, system-ui, sans-serif)',
+          // Title type scale from tokens (not hand-copied literals); --ot-font-sans
+          // follows the ThemeManager primary-font axis, unlike the raw Poppins var.
+          fontSize:      'var(--ot-text-title)',
+          fontWeight:    'var(--ot-weight-title)',
+          lineHeight:    'var(--ot-leading-title)',
+          letterSpacing: 'var(--ot-tracking-title)',
+          fontFamily:    'var(--ot-font-sans)',
           margin:        0,
           textWrap:      'balance',
         } as React.CSSProperties}>
@@ -163,15 +165,16 @@ export default function ChartBlockClient({
         </h3>
         {subtext && (
           <p style={{
-            color:       subtextColor(color),
-            fontSize:    '0.8125rem',
-            fontWeight:  600,
-            fontFamily:  'var(--font-poppins, system-ui, sans-serif)',
-            letterSpacing: '0.04em',
+            color:         subtextColor(color),
+            // Label type scale from tokens — incl. the system's +0.06em label
+            // tracking (was an off-token 0.04em).
+            fontSize:      'var(--ot-text-label)',
+            fontWeight:    'var(--ot-weight-label)',
+            fontFamily:    'var(--ot-font-sans)',
+            letterSpacing: 'var(--ot-tracking-label)',
             textTransform: 'uppercase',
-            marginTop:   6,
-            margin:      '6px 0 0',
-          }}>
+            margin:        '6px 0 0',
+          } as React.CSSProperties}>
             {subtext}
           </p>
         )}

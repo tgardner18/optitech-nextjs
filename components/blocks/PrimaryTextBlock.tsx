@@ -104,7 +104,7 @@ const eyebrowCva = cva("text-label tracking-label uppercase font-semibold", {
 const headlineCva = cva("text-balance", {
   variants: {
     size: {
-      display:  "text-display leading-[1.15] tracking-display font-extrabold",
+      display:  "text-display leading-display-safe tracking-display font-extrabold",
       headline: "text-headline leading-headline tracking-headline font-bold",
       title:    "text-title leading-title tracking-title font-semibold",
       label:    "text-label tracking-label uppercase font-semibold",

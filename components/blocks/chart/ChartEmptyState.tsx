@@ -44,7 +44,7 @@ export default function ChartEmptyState({ height, color }: Props) {
         color:      textColor,
         fontSize:   '0.875rem',
         fontWeight: 600,
-        fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+        fontFamily: 'var(--ot-font-sans)',
         margin:     0,
       }}>
         Chart data unavailable
@@ -52,7 +52,7 @@ export default function ChartEmptyState({ height, color }: Props) {
       <p style={{
         color:      isDark ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.35)' : 'var(--ot-fg-muted)',
         fontSize:   '0.75rem',
-        fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+        fontFamily: 'var(--ot-font-sans)',
         margin:     0,
         opacity:    0.7,
         textAlign:  'center',

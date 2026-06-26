@@ -46,7 +46,7 @@ export default function ChartTooltip({
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
           margin:        '0 0 6px',
-          fontFamily:    'var(--font-poppins, system-ui, sans-serif)',
+          fontFamily:    'var(--ot-font-sans)',
         }}>
           {String(label)}
         </p>
@@ -71,7 +71,7 @@ export default function ChartTooltip({
           <span style={{
             color:      theme.legendColor,
             fontSize:   '0.8125rem',
-            fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+            fontFamily: 'var(--ot-font-sans)',
             flexGrow:    1,
           }}>
             {String(entry.name ?? '')}
@@ -80,7 +80,7 @@ export default function ChartTooltip({
             color:      theme.tooltipText,
             fontWeight: 700,
             fontSize:   '0.8125rem',
-            fontFamily: 'var(--font-poppins, system-ui, sans-serif)',
+            fontFamily: 'var(--ot-font-sans)',
             marginLeft:  8,
           }}>
             {valuePrefix}{entry.value != null ? String(entry.value) : ''}{valueSuffix}

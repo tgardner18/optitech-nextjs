@@ -99,7 +99,7 @@ export default function CalloutBlockClient({
   const fg        = iVar(intent, 'fg')
   const bg        = iVar(intent, 'bg')
   const border    = iVar(intent, 'border')
-  const iconColor = isBrand ? 'white' : fg
+  const iconColor = isBrand ? 'var(--ot-fg-on-brand)' : fg
 
   // ── Dismiss animation wrappers ────────────────────────────────────────────
   // Two-phase exit: content sweeps right+fades (220ms), then height collapses (280ms).
@@ -123,25 +123,19 @@ export default function CalloutBlockClient({
   let rootClass = ''
 
   if (isBar) {
-    // Bar: 4px left accent anchor + faint tint + subtle full perimeter border.
-    // bg/border use iAlpha so bar opacity is independent of the filled/bordered tokens.
-    const barBg     = iAlpha(intent, 0.07)
-    const barBorder = iAlpha(intent, 0.15)
+    // Bar: faint intent tint + a full 1px perimeter border in the intent color.
+    // No side-stripe accent — DESIGN.md §11 bans a colored border >1px on a single
+    // edge. Intent still reads through the tint, the uniform frame, and the colored
+    // icon. bg/border use iAlpha so bar opacity is independent of the filled tokens.
+    const barBg     = iAlpha(intent, 0.10)
+    const barBorder = iAlpha(intent, 0.30)
     if (isBrand) {
       rootClass = 'bg-brand-fill'
-      rootStyle = {
-        borderTop:    `1px solid ${barBorder}`,
-        borderRight:  `1px solid ${barBorder}`,
-        borderBottom: `1px solid ${barBorder}`,
-        borderLeft:   `4px solid ${fg}`,
-      }
+      rootStyle = { border: `1px solid ${barBorder}` }
     } else {
       rootStyle = {
-        background:   barBg,
-        borderTop:    `1px solid ${barBorder}`,
-        borderRight:  `1px solid ${barBorder}`,
-        borderBottom: `1px solid ${barBorder}`,
-        borderLeft:   `4px solid ${fg}`,
+        background: barBg,
+        border:     `1px solid ${barBorder}`,
       }
     }
   } else if (variant === 'filled') {
@@ -172,9 +166,12 @@ export default function CalloutBlockClient({
       aria-label="Dismiss"
       style={{ color: fg, borderColor: border } as React.CSSProperties}
       className={cn(
-        'shrink-0 rounded-full border flex items-center justify-center cursor-pointer',
+        'shrink-0 rounded-none border flex items-center justify-center cursor-pointer',
         'transition-colors hover:bg-fg/5',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand outline-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 outline-none',
+        // Brand-intent bar resolves dark tokens; a brand ring would vanish on the
+        // brand fill, so switch the focus ring to fg-on-brand there.
+        isBrand ? 'focus-visible:ring-fg-on-brand' : 'focus-visible:ring-brand',
         isBar ? 'size-6' : 'size-7',
       )}
     >

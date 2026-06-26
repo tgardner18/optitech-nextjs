@@ -114,7 +114,10 @@ function LogoImg({
         href={logo.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="group shrink-0 flex items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+        className={cn(
+          'group shrink-0 flex items-center focus-visible:outline-none focus-visible:ring-2',
+          onBrand ? 'focus-visible:ring-fg-on-brand' : 'focus-visible:ring-brand',
+        )}
         style={style}
         aria-label={logo.altText ?? 'Partner logo'}
       >

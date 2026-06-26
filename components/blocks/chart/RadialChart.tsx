@@ -106,7 +106,7 @@ export default function RadialChart({
           color:         theme.tooltipText,
           fontSize:      `${Math.max(Math.round(height * 0.14), 28)}px`,
           fontWeight:    800,
-          fontFamily:    'var(--font-poppins, system-ui, sans-serif)',
+          fontFamily:    'var(--ot-font-sans)',
           letterSpacing: '-0.03em',
           lineHeight:    1,
         }}>
@@ -116,7 +116,7 @@ export default function RadialChart({
           color:         theme.legendColor,
           fontSize:      '0.75rem',
           fontWeight:    600,
-          fontFamily:    'var(--font-poppins, system-ui, sans-serif)',
+          fontFamily:    'var(--ot-font-sans)',
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
           marginTop:     6,

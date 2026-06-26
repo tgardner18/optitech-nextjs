@@ -32,6 +32,7 @@
 
   /* Line heights */
   --leading-display:  var(--ot-leading-display);
+  --leading-display-safe: var(--ot-leading-display-safe);
   --leading-headline: var(--ot-leading-headline);
   --leading-subhead:  var(--ot-leading-subhead);
   --leading-title:    var(--ot-leading-title);
@@ -68,10 +69,12 @@
   /* Motion */
   --ease-kinetic: var(--ot-ease-kinetic);
   --ease-quick:   var(--ot-ease-quick);
+  --ease-smooth:  var(--ot-ease-smooth);
 
   /* Animations — apply with motion-safe: modifier to honour prefers-reduced-motion */
-  --animate-fade-in:  fadeIn  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-up: slideUp var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in:   fadeIn   var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-up:  slideUp  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-hero-zoom: heroZoom var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Button surface context tokens ───────────────────────────────────────────
@@ -127,6 +130,13 @@ html {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 1.5rem)); }
   to   { opacity: 1; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px))); }
+}
+
+/* Hero "parallax" entrance — the visual pushes in inside its clipped frame.
+   Scale only; the frame's fade-in carries the opacity. */
+@keyframes heroZoom {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
 }
 
 @keyframes statPulse {
@@ -249,12 +259,35 @@ html {
   to   { grid-template-rows: 0fr; }
 }
 
+/* Content fade — the answer's opacity rides in lockstep with the row height
+   (same duration + ease, no offset, no translate) so open/close read as one
+   fluid motion rather than a height move plus a separate settle. */
+@keyframes accordionContentIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes accordionContentOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  /* ease-smooth (cubic-out) replaces the expo curve — expo front-loads ~60% of the
+     height in the first 10% of the timeline, which reads as a snap; cubic-out opens
+     gently and decelerates evenly. Same curve + duration both directions for a
+     cohesive open/close pair. */
   .animate-accordion-open {
-    animation: accordionOpen var(--ot-dur-base) var(--ot-ease-kinetic) forwards;
+    animation: accordionOpen var(--ot-dur-base) var(--ot-ease-smooth) forwards;
   }
   .animate-accordion-close {
-    animation: accordionClose 0.26s var(--ot-ease-quick) forwards; /* dur-exempt: 260ms — nearest quick(200)/base(320) Δ60ms */
+    animation: accordionClose var(--ot-dur-base) var(--ot-ease-smooth) forwards;
+  }
+
+  [data-radix-accordion-content][data-state='open'] .acc-answer-reveal {
+    animation: accordionContentIn var(--ot-dur-base) var(--ot-ease-smooth) both;
+  }
+  [data-radix-accordion-content][data-state='closed'] .acc-answer-reveal {
+    animation: accordionContentOut var(--ot-dur-base) var(--ot-ease-smooth) both;
   }
 }
 
@@ -2170,6 +2203,25 @@ body {
   animation: tab-panel-in var(--ot-dur-quick) ease-out forwards;
 }
 
+/* ── Tab trigger scroll strip — edge-fade overflow affordance ──────────────────
+ * The mobile trigger row scrolls horizontally with a hidden scrollbar; without a
+ * cue, off-canvas tabs are invisible. A mask-image feathers whichever edge still
+ * has hidden content — --fade-l / --fade-r are set from scroll position in JS
+ * (TabsBlock.client). When nothing overflows both are 0px and the mask is inert,
+ * so the desktop / side layouts are unaffected. Same #000/transparent alpha-mask
+ * idiom as the panel top-edge feather above.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.tab-scroller {
+  --tab-fade-size: 2.5rem;
+  scroll-behavior: smooth;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-scroller { scroll-behavior: auto; }
+}
+
 /* ── Signal Button — kinetic fill sweep ───────────────────────────────────────
  * ::before is the teal fill that sweeps left-to-right on hover/focus.
  * Inner content is z-10 in JSX; text color transitions via group-hover:.
@@ -2249,61 +2301,17 @@ body {
   }
 }
 
-/* ── Blog: Impact — hollow Syne display type, brand extrude + ambient halo ───
- * Outline-only letterforms using -webkit-text-stroke in the brand colour.
- * A hard 2-step diagonal shadow in progressively darkened brand creates a
- * retro letterpress / risograph depth effect at display scale.
- * The faint radial halo keeps the letterforms glowing on the dark canvas.
- * blog-impact-index is the ghost ordinal watermark behind the headline.
- * blog-impact-ruled-bg lays a faint horizontal rule grid over the header.
+/* ── Accent-as-text/mark on a content ground ────────────────────────────────────
+ * The signal-green accent is high-lightness, so as text or a thin mark it fails
+ * contrast on a near-white light-mode canvas. Darken it on light grounds (deeper
+ * than the header-effect gradient's l-0.30, since this is small label text that
+ * needs AA); dark mode keeps the bright accent. Token-derived, so it follows any
+ * ThemeManager accent override.
  * ─────────────────────────────────────────────────────────────────────────── */
-.blog-impact-hollow-text {
-  font-family: var(--ot-font-display); /* Syne — the fixed accent font for select areas like this Impact header */
-  font-size: clamp(4.5rem, 13vw, 11rem);
-  font-weight: 400;
-  line-height: 0.88;
-  letter-spacing: -0.04em;
-  /* Light-mode default: hollow letterforms — brand stroke visible on light canvas */
-  color: transparent;
-  -webkit-text-stroke: 2px var(--ot-brand);
-  paint-order: stroke fill;
-  text-shadow:
-    3px  3px  0    oklch(from var(--ot-brand) calc(l * 0.52) c h),
-    6px  6px  0    oklch(from var(--ot-brand) calc(l * 0.35) c h / 0.72),
-    0    0    80px oklch(from var(--ot-brand) l c h / 0.28),
-    0    0   180px oklch(from var(--ot-brand) l c h / 0.12);
-}
-
-/* Dark-mode override: solid fg fill so letterforms stay legible against a dark
-   canvas regardless of how dark the brand colour is. Brand shifts to the
-   shadow/stroke role — thin outer edge + hard extrude + ambient halo. */
-[data-theme="dark"] .blog-impact-hollow-text {
-  color: var(--ot-fg);
-  -webkit-text-stroke: 1.5px oklch(from var(--ot-brand) l c h / 0.55);
-  text-shadow:
-    3px  3px  0    var(--ot-brand),
-    5px  5px  0    oklch(from var(--ot-brand) calc(l * 0.62) c h / 0.72),
-    0    0    80px oklch(from var(--ot-brand) l c h / 0.35),
-    0    0   180px oklch(from var(--ot-brand) l c h / 0.15);
-}
-
-.blog-impact-index {
-  font-size: clamp(10rem, 25vw, 20rem);
-  font-weight: 800;
-  opacity: 0.08;
-  line-height: 1;
-  color: var(--ot-brand);
-}
-
-.blog-impact-ruled-bg {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    oklch(from var(--ot-brand) l c h / 0.05) 0px,
-    oklch(from var(--ot-brand) l c h / 0.05) 1px,
-    transparent 1px,
-    transparent 56px
-  );
-}
+.text-accent-ground { color: var(--ot-accent); }
+.bg-accent-ground   { background-color: var(--ot-accent); }
+[data-theme="light"] .text-accent-ground { color: oklch(from var(--ot-accent) calc(l - 0.40) c h); }
+[data-theme="light"] .bg-accent-ground   { background-color: oklch(from var(--ot-accent) calc(l - 0.40) c h); }
 
 /* ── Blog: Atmospheric — gradient overlay for image/video background header ──
  * Heavy darkening gradient ensures the glass panel text is legible regardless

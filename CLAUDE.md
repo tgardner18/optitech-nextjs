@@ -70,7 +70,7 @@ Full design specs live in [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md). R
 **North Star:** "The Kinetic Editorial" — precision-crafted, editorial confidence, choreographed motion. This is the default theme's character and the craft bar **every vertical theme must meet**.
 **Key constraints:**
 - Committed color strategy: one saturated anchor fills 30–60% of the surface (not an accent)
-- Token-driven type system: Poppins for all hierarchy (display/headline/title/body/label), Syne for accent moments only (headline scale and up, at most once per viewport), Geist Mono for code/data. No serif.
+- Token-driven type system: one **themeable primary family** drives the whole hierarchy (display/headline/title/body/label) via `--ot-font-sans` — Poppins by default, swappable per vertical through the ThemeManager "Primary Font" axis to Source Serif 4, Sora, or Bricolage Grotesque (all weight-ladder-matched). Syne for accent moments only (headline scale and up, at most once per viewport), Geist Mono for code/data, Caveat for the QuoteBlock signature only. Reference `--ot-font-sans`, never a raw `--font-poppins`. Serif is allowed only as the Source Serif primary via the axis.
 - Layered depth system: dark glass, ambient shadows (can be resting), chromatic brand-hued shadows from the bloom tokens; `prefers-reduced-motion` required for all motion
 - WCAG 2.1 AA on all text and interactive states, in every theme
 

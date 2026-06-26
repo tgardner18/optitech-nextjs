@@ -78,7 +78,7 @@ export default function LaserSignature({ name, color, epiProps }: Props) {
     <span
       ref={wrapRef}
       className={`ls-wrap${isBrand ? ' ls-wrap--brand' : ''}`}
-      role="text"
+      role="img"
       aria-label={name}
       {...epiProps}
     >

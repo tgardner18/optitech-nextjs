@@ -256,10 +256,9 @@ export default function VideoBlock({
                 aria-label={`Play: ${title}`}
                 className="absolute inset-0 flex items-center justify-center group/play focus-visible:outline-none"
               >
-                {/* Focus ring on the button itself */}
-                <span className="absolute inset-0 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2" />
-
-                {/* Brand square — sharp-cornered, default-theme-native */}
+                {/* Brand square — sharp-cornered, default-theme-native.
+                    Focus indicator rides the button's focus-visible state via
+                    group/play so the ring frames the square, not the whole poster. */}
                 <span
                   className={[
                     "relative flex items-center justify-center w-16 h-16",
@@ -268,6 +267,8 @@ export default function VideoBlock({
                     "motion-safe:duration-200 motion-safe:ease-quick",
                     "group-hover/play:bg-brand-hover",
                     "motion-safe:group-hover/play:scale-110",
+                    "group-focus-visible/play:ring-2 group-focus-visible/play:ring-fg-on-brand",
+                    "group-focus-visible/play:ring-offset-2 group-focus-visible/play:ring-offset-transparent",
                   ].join(" ")}
                 >
                   {/* Play triangle */}
