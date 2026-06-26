@@ -12,13 +12,13 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
  *   depth3d           — hard isometric 3D offset shadow stack ("pop-out")
  *   embossed          — pressed/carved into the surface
  *   outline           — hollow wire letterforms with brand stroke + glow
- *   glitch            — RGB channel-split / digital-glitch fringe
+ *   neon              — retro-disco glowing tube (dual-tone brand+accent, buzz flicker)
  *   highlight         — accent marker swipe behind the text (inline)
  *   glow              — backlit aurora halo
  */
 export type HeaderEffect =
   | "none" | "gradient" | "animatedGradient" | "depth3d"
-  | "embossed" | "outline" | "glitch" | "highlight" | "glow";
+  | "embossed" | "outline" | "neon" | "highlight" | "glow";
 
 export type PrimaryTextStyleOptions = {
   /** Horizontal alignment of the content column within the section */
@@ -39,7 +39,7 @@ const EFFECT_CLASS: Record<HeaderEffect, string> = {
   depth3d:          "ot-depth-extrude",
   embossed:         "ot-depth-emboss",
   outline:          "ot-depth-outline",
-  glitch:           "ot-fx-chromatic",
+  neon:             "ot-fx-neon",
   highlight:        "ot-fx-highlight",
   glow:             "ot-fx-glow",
 };

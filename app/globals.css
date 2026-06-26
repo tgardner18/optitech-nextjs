@@ -831,12 +831,18 @@ body {
   }
 }
 
-/* Light mode: brand face, the depth steps DARKER (sides recede into shadow — a
-   lighter side would read as glow and vanish on white). Chroma is held at full c
-   for every layer so a dark brand (e.g. navy) stays saturated deep-blue depth
-   rather than crushing to gray-black mud; the lightness ramp carries the 3D. */
+/* Light mode: the face stays the TRUE brand color, kept legible against the
+   darker depth by a thin bright KEYLINE around the glyphs. A dark navy face sat
+   only ~0.08 lightness above its own first shadow step, so front and side merged
+   into mush. The keyline is near-white with a faint brand tint: where a glyph
+   edge meets the white ground it blends invisibly, but where it meets the dark
+   depth it becomes a crisp lit rim that separates the front plane from the side.
+   paint-order: stroke fill keeps the navy fill crisp on top. Depth steps stay
+   dark and full-chroma, so the side reads as saturated deep-brand shadow. */
 [data-theme="light"] .ot-depth-extrude {
   color: var(--ot-brand);
+  -webkit-text-stroke: 0.02em oklch(from var(--ot-brand) 0.95 calc(c * 0.4) h);
+  paint-order: stroke fill;
   text-shadow:
     calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
       oklch(from var(--ot-brand) calc(l * 0.72) c h),
@@ -1010,78 +1016,64 @@ body {
   background-image: linear-gradient(120deg, var(--ot-fg-on-brand) 0%, var(--ot-accent) 100%);
 }
 
-/* CHROMATIC — faux-CMYK channel split / print misregistration.                  */
-/* Robust: face = fg (adapts to mode); the two offset ghosts are brand & accent  */
-/* at alpha, so they read as colored fringes on either ground. Legibility holds  */
-/* because the solid fg face is the readable layer. Motion: a slow micro-jitter. */
-.ot-fx-chromatic {
-  color: var(--ot-fg);
+/* NEON — retro-disco glowing-tube headline. Reference lane: 1970s disco signage
+   (Studio 54 / holiday-disco invite), deliberately NOT cold cyberpunk/Web3 neon.
+   Kept clear of that prohibited lane by: a DUAL-tone bloom drawn from the theme's
+   OWN brand+accent (re-skins per vertical, never a fixed cyber-cyan), a warm
+   white-hot tube core, soft layered halos instead of one hard ring, and a gas-
+   tube buzz flicker. Ground is the tinted dark canvas, never #000. One optional
+   headline effect, not the page identity. Best at headline scale and up. */
+.ot-fx-neon {
+  color: oklch(from var(--ot-accent) 0.97 0.04 h);            /* warm white-hot core */
   text-shadow:
-    -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-     0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+    0 0 0.02em oklch(from var(--ot-accent) 0.97 0.04 h),        /* crisp tube edge   */
+    0 0 0.09em oklch(from var(--ot-accent) 0.97 0.04 h / 0.90), /* core bleed        */
+    0 0 0.18em oklch(from var(--ot-brand)  l c h / 0.95),       /* inner glow brand  */
+    0 0 0.42em oklch(from var(--ot-brand)  l c h / 0.68),       /* mid bloom brand   */
+    0 0 0.72em oklch(from var(--ot-accent) l c h / 0.60),       /* outer bloom accent*/
+    0 0 1.15em oklch(from var(--ot-accent) l c h / 0.42);       /* far halo accent   */
 }
-[data-theme="light"] .ot-fx-chromatic {
+
+/* Light mode: a white-hot core disappears on white, so the FACE becomes the
+   (slightly deepened, AA-legible) brand and the dual-tone bloom softens into a
+   daylight-signage haze. Vivid and readable on canvas, not literal tube-neon. */
+[data-theme="light"] .ot-fx-neon {
+  color: oklch(from var(--ot-brand) calc(l * 0.82) calc(c * 1.05) h);
   text-shadow:
-    -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.95),
-     0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.95);
+    0 0 0.04em oklch(from var(--ot-brand)  l c h / 0.35),
+    0 0 0.18em oklch(from var(--ot-accent) l c h / 0.42),
+    0 0 0.40em oklch(from var(--ot-accent) l c h / 0.26);
 }
+
+/* Brand-filled ground: a brand glow would vanish into the brand fill, so the core
+   is fg-on-brand white-hot and the whole bloom runs in accent for contrast. */
+.bg-brand-fill .ot-fx-neon {
+  color: oklch(from var(--ot-fg-on-brand) 0.97 c h);
+  text-shadow:
+    0 0 0.02em oklch(from var(--ot-fg-on-brand) 0.97 c h),
+    0 0 0.10em oklch(from var(--ot-accent) l c h / 0.95),
+    0 0 0.34em oklch(from var(--ot-accent) l c h / 0.70),
+    0 0 0.75em oklch(from var(--ot-accent) l c h / 0.50);
+}
+
+/* Gas-tube buzz: steady, with two quick irregular flicker bursts per loop.
+   filter:brightness dims the face AND the glow together (one cheap animated
+   property), so it reads as the whole sign buzzing. steps(1,end) = abrupt
+   on/off, never a smooth fade. Reduced-motion users get the steady lit sign. */
 @media (prefers-reduced-motion: no-preference) {
-  .ot-fx-chromatic { animation: otChromaJitter 3.6s steps(1, end) infinite; }
+  .ot-fx-neon { animation: otNeonFlicker 7s steps(1, end) infinite; }
 }
-/* A calm RGB-split rest punctuated by three short digital bursts: each slips the
-   channels hard sideways, tears them vertically, and flickers alpha, then snaps
-   back. steps(1,end) = instant cuts (no tween), which is what reads as "glitch"
-   rather than a smooth drift. The fg face is never offset, so it stays legible
-   throughout. Reduced-motion users get the static split above. */
-@keyframes otChromaJitter {
-  0% {
-    text-shadow:
-      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
-  /* burst 1 — hard outward slip + upward tear */
-  20% {
-    text-shadow:
-      -0.13em -0.025em 0 oklch(from var(--ot-brand)  l c h / 0.95),
-       0.10em  0.020em 0 oklch(from var(--ot-accent) l c h / 0.82);
-  }
-  21.5% {
-    text-shadow:
-       0.08em  0.020em 0 oklch(from var(--ot-brand)  l c h / 0.70),
-      -0.11em -0.015em 0 oklch(from var(--ot-accent) l c h / 0.95);
-  }
-  23% {
-    text-shadow:
-      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
-  /* burst 2 — single quick widening */
-  51% {
-    text-shadow:
-      -0.09em 0 0 oklch(from var(--ot-brand)  l c h / 0.92),
-       0.12em 0 0 oklch(from var(--ot-accent) l c h / 0.80);
-  }
-  52.5% {
-    text-shadow:
-      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
-  /* burst 3 — biggest tear, opposing vertical offsets */
-  79% {
-    text-shadow:
-      -0.14em  0.030em 0 oklch(from var(--ot-brand)  l c h / 0.95),
-       0.12em -0.030em 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
-  80% {
-    text-shadow:
-       0.06em -0.020em 0 oklch(from var(--ot-brand)  l c h / 0.85),
-      -0.08em  0.020em 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
-  81.5%, 100% {
-    text-shadow:
-      -0.05em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-       0.05em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
-  }
+@keyframes otNeonFlicker {
+  0%, 40%, 100% { filter: brightness(1); }
+  40.5% { filter: brightness(0.50); }
+  41%   { filter: brightness(0.90); }
+  41.5% { filter: brightness(0.62); }
+  42%   { filter: brightness(1); }
+  77%   { filter: brightness(1); }
+  77.4% { filter: brightness(0.40); }
+  77.8% { filter: brightness(0.92); }
+  78.2% { filter: brightness(0.70); }
+  78.6% { filter: brightness(1); }
 }
 
 /* HIGHLIGHT — accent "marker swipe" behind the text (apply to an inline span).  */
