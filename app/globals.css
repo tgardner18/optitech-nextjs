@@ -63,7 +63,7 @@
   /* Shadows */
   --shadow-hover-lift: var(--ot-shadow-hover-lift);
 
-  /* Monoton display weight (single weight — always 400) */
+  /* Syne accent weight (single weight — always 400) */
   --font-weight-syne: var(--ot-weight-syne);
 
   /* Motion */
@@ -75,6 +75,12 @@
   --animate-fade-in:   fadeIn   var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-slide-up:  slideUp  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-hero-zoom: heroZoom var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Accordion open/close (standard Radix height animation). MUST be registered
+     here so the `animate-accordion-down/up` utilities exist and compose with the
+     component's motion-safe: + data-[state]: variants. Slowed via --ot-dur-accordion
+     (motion-scale aware); no `forwards` — Radix owns the resting open/closed state. */
+  --animate-accordion-down: accordion-down var(--ot-dur-accordion) var(--ot-ease-accordion);
+  --animate-accordion-up:   accordion-up   var(--ot-dur-accordion) var(--ot-ease-accordion);
 }
 
 /* ── Button surface context tokens ───────────────────────────────────────────
@@ -244,62 +250,20 @@ html {
 }
 
 /* ── AccordionBlock ──────────────────────────────────────────────────────────
- * Uses grid-template-rows (0fr ↔ 1fr) instead of height to avoid animating
- * a layout property. Content element is a grid; inner wrapper has min-h-0.
- * Kinetic ease (expo-out) — same curve used for all block entrances.
- * The motion-safe: Tailwind modifier in the component gates these classes.
+ * Standard Radix accordion animation: height 0 ↔ --radix-accordion-content-height
+ * (the height Radix measures and exposes on the open content). Reliable across
+ * browsers, unlike the grid-template-rows fr trick. Registered as the
+ * `animate-accordion-down/up` utilities in @theme; applied via the component's
+ * motion-safe: + data-[state]: variants on an overflow-hidden content element.
+ * Duration is the slowed --ot-dur-accordion token (still motion-scale aware).
  * ─────────────────────────────────────────────────────────────────────────── */
-@keyframes accordionOpen {
-  from { grid-template-rows: 0fr; }
-  to   { grid-template-rows: 1fr; }
+@keyframes accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
 }
-
-@keyframes accordionClose {
-  from { grid-template-rows: 1fr; }
-  to   { grid-template-rows: 0fr; }
-}
-
-/* Content fade — the answer's opacity rides in lockstep with the row height
-   (same duration + ease, no offset, no translate) so open/close read as one
-   fluid motion rather than a height move plus a separate settle. */
-@keyframes accordionContentIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes accordionContentOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* ease-smooth (cubic-out) replaces the expo curve — expo front-loads ~60% of the
-     height in the first 10% of the timeline, which reads as a snap; cubic-out opens
-     gently and decelerates evenly. Same curve + duration both directions for a
-     cohesive open/close pair. */
-  .animate-accordion-open {
-    animation: accordionOpen var(--ot-dur-base) var(--ot-ease-smooth) forwards;
-  }
-  .animate-accordion-close {
-    animation: accordionClose var(--ot-dur-base) var(--ot-ease-smooth) forwards;
-  }
-
-  [data-radix-accordion-content][data-state='open'] .acc-answer-reveal {
-    animation: accordionContentIn var(--ot-dur-base) var(--ot-ease-smooth) both;
-  }
-  [data-radix-accordion-content][data-state='closed'] .acc-answer-reveal {
-    animation: accordionContentOut var(--ot-dur-base) var(--ot-ease-smooth) both;
-  }
-}
-
-/* Grid container must be declared unconditionally — the animation targets it */
-[data-radix-accordion-content] {
-  display: grid;
-}
-[data-radix-accordion-content][data-state='open'] {
-  grid-template-rows: 1fr;
-}
-[data-radix-accordion-content][data-state='closed'] {
-  grid-template-rows: 0fr;
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
 }
 
 /* ── Grid column spans ───────────────────────────────────────────────────────
@@ -832,20 +796,30 @@ body {
   }
 }
 
-/* Light mode: brand face, neutral shadows derived from brand hue at zero chroma */
+/* Light mode: 3D-STICKER treatment — a TRUE-brand (navy) face, a near-white
+   OUTLINE around the glyphs, and a LIGHTER-shade depth stepping down-right. This
+   is the look that previously only appeared when the text was selected: the white
+   stroke is invisible where a glyph edge meets the white page (a white outline
+   must be) but reads as a crisp rim against the lighter depth on the shadowed
+   side. The depth LIFTS the brand lightness (clamped 0.46–0.74) so it sits lighter
+   than the face — a soft colored shadow, not a dark side — which is why it reads
+   best on darker brands (where this effect is typically used). paint-order keeps
+   the fill crisp on top. */
 [data-theme="light"] .ot-depth-extrude {
   color: var(--ot-brand);
+  -webkit-text-stroke: 0.03em oklch(from var(--ot-brand) 0.99 0.008 h);
+  paint-order: stroke fill;
   text-shadow:
     calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
-      oklch(from var(--ot-brand) 0.52 0.006 h),
+      oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.36), 0.74) c h),
     calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
-      oklch(from var(--ot-brand) 0.42 0.005 h),
+      oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.31), 0.74) c h),
     calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
-      oklch(from var(--ot-brand) 0.30 0.004 h),
+      oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.74) c h),
     calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
-      oklch(from var(--ot-brand) 0.22 0.003 h / 0.80),
+      oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.21), 0.74) c h),
     calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
-      oklch(from var(--ot-brand) 0.14 0.002 h / 0.45);
+      oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.16), 0.74) c h);
 }
 
 /* Brand background: fg-on-brand face, accent-colored shadow stack */
@@ -917,29 +891,27 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────── */
 .ot-depth-outline {
   color: transparent;
-  -webkit-text-stroke: 0.04em var(--ot-brand);
+  -webkit-text-stroke: 0.03em var(--ot-brand);
   paint-order: stroke fill;
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-brand) l c h / 0.14);
-  filter:
-    drop-shadow(0 0 0.17em oklch(from var(--ot-brand) l c h / 0.48))
-    drop-shadow(0 0 0.42em oklch(from var(--ot-brand) l c h / 0.17));
+  /* text-shadow paints the FILLED glyph regardless of the transparent fill, so a
+     single offset shadow becomes a solid colored back-plate behind the hollow
+     wire: layered editorial depth without the muddy blur the old double
+     drop-shadow produced. One tight halo only, for a clean lit edge. */
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-brand) l c h / 0.20);
+  filter: drop-shadow(0 0 0.13em oklch(from var(--ot-brand) l c h / 0.42));
 }
 
-/* Light mode: same stroke, soft glow, ghost offset barely visible */
+/* Light mode: same crisp wire, lighter back-plate + tighter halo so it reads on white */
 [data-theme="light"] .ot-depth-outline {
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-brand) l c h / 0.08);
-  filter:
-    drop-shadow(0 0 0.10em oklch(from var(--ot-brand) l c h / 0.24))
-    drop-shadow(0 0 0.22em oklch(from var(--ot-brand) l c h / 0.10));
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-brand) l c h / 0.13);
+  filter: drop-shadow(0 0 0.07em oklch(from var(--ot-brand) l c h / 0.24));
 }
 
 /* Brand background: accent stroke for contrast against the brand fill */
 .bg-brand-fill .ot-depth-outline {
-  -webkit-text-stroke: 0.04em var(--ot-accent);
-  text-shadow: 0.04em 0.06em 0 oklch(from var(--ot-accent) l c h / 0.22);
-  filter:
-    drop-shadow(0 0 0.17em oklch(from var(--ot-accent) l c h / 0.50))
-    drop-shadow(0 0 0.42em oklch(from var(--ot-accent) l c h / 0.18));
+  -webkit-text-stroke: 0.03em var(--ot-accent);
+  text-shadow: 0.05em 0.07em 0 oklch(from var(--ot-accent) l c h / 0.26);
+  filter: drop-shadow(0 0 0.13em oklch(from var(--ot-accent) l c h / 0.46));
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -1010,28 +982,51 @@ body {
   background-image: linear-gradient(120deg, var(--ot-fg-on-brand) 0%, var(--ot-accent) 100%);
 }
 
-/* CHROMATIC — faux-CMYK channel split / print misregistration.                  */
-/* Robust: face = fg (adapts to mode); the two offset ghosts are brand & accent  */
-/* at alpha, so they read as colored fringes on either ground. Legibility holds  */
-/* because the solid fg face is the readable layer. Motion: a slow micro-jitter. */
-.ot-fx-chromatic {
-  color: var(--ot-fg);
+/* NEON — clean single-tube neon sign. Reference: a bent-glass tube with a white-
+   hot core and a single-color bloom (deliberately NOT cold cyberpunk/Web3 neon —
+   the glow hue is the theme's OWN accent, re-skinning per vertical, on the tinted
+   canvas, never #000). The look comes from the FONT: Tilt Neon (--ot-font-neon) is
+   a monoline display face that reads as one continuous tube. Dark: white tube +
+   accent glow. Light: brand tube + accent glow (a lit tube can't read on white).
+   No flicker. Best on short statement headlines. font-synthesis-weight:none stops
+   the browser faux-bolding Tilt Neon's 400-only face (a heading may request 800),
+   which would thicken the clean monoline. */
+.ot-fx-neon {
+  font-family: var(--ot-font-neon);
+  font-weight: 400;
+  font-synthesis-weight: none;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  color: var(--ot-fg);                                          /* white-hot tube   */
   text-shadow:
-    -0.07em 0 0 oklch(from var(--ot-brand)  l c h / 0.85),
-     0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.85);
+    0 0 0.04em oklch(from var(--ot-fg)     l c h / 0.95),        /* white core bleed */
+    0 0 0.12em oklch(from var(--ot-accent) l c h / 0.95),        /* inner accent glow*/
+    0 0 0.30em oklch(from var(--ot-accent) l c h / 0.80),        /* mid bloom        */
+    0 0 0.60em oklch(from var(--ot-accent) l c h / 0.58),        /* outer bloom      */
+    0 0 1.10em oklch(from var(--ot-accent) l c h / 0.42),        /* halo             */
+    0 0 1.80em oklch(from var(--ot-accent) l c h / 0.28);        /* far halo         */
 }
-[data-theme="light"] .ot-fx-chromatic {
+
+/* Light mode: a white tube vanishes on white, so the tube becomes the (deepened,
+   AA-legible) brand color; the glow stays accent but tightens and lifts alpha so
+   it registers as a colored haze on the light ground rather than washing out. */
+[data-theme="light"] .ot-fx-neon {
+  color: oklch(from var(--ot-brand) calc(l * 0.85) c h);
   text-shadow:
-    -0.07em 0 0 oklch(from var(--ot-brand)  l c h / 0.9),
-     0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.9);
+    0 0 0.05em oklch(from var(--ot-accent) l c h / 0.45),
+    0 0 0.18em oklch(from var(--ot-accent) l c h / 0.34),
+    0 0 0.40em oklch(from var(--ot-accent) l c h / 0.22);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .ot-fx-chromatic { animation: otChromaJitter 4s steps(1, end) infinite; }
-}
-@keyframes otChromaJitter {
-  0%, 92%, 100% { text-shadow: -0.07em 0 0 oklch(from var(--ot-brand) l c h / 0.85),  0.07em 0 0 oklch(from var(--ot-accent) l c h / 0.85); }
-  94%           { text-shadow: -0.1em 0.014em 0 oklch(from var(--ot-brand) l c h / 0.85), 0.085em -0.014em 0 oklch(from var(--ot-accent) l c h / 0.85); }
-  97%           { text-shadow: -0.05em -0.01em 0 oklch(from var(--ot-brand) l c h / 0.85), 0.11em 0.01em 0 oklch(from var(--ot-accent) l c h / 0.85); }
+
+/* Brand-filled ground (always dark): the tube is fg-on-brand white, accent glow. */
+.bg-brand-fill .ot-fx-neon {
+  color: var(--ot-fg-on-brand);
+  text-shadow:
+    0 0 0.04em oklch(from var(--ot-fg-on-brand) l c h / 0.95),
+    0 0 0.12em oklch(from var(--ot-accent) l c h / 0.95),
+    0 0 0.30em oklch(from var(--ot-accent) l c h / 0.80),
+    0 0 0.60em oklch(from var(--ot-accent) l c h / 0.58),
+    0 0 1.10em oklch(from var(--ot-accent) l c h / 0.42);
 }
 
 /* HIGHLIGHT — accent "marker swipe" behind the text (apply to an inline span).  */
@@ -1074,9 +1069,13 @@ body {
 /* Sits on tinted grounds + token-derived, so it never becomes neon-on-#000.      */
 .ot-fx-glow {
   color: var(--ot-fg);
+  /* Three layers, not two: a tight high-alpha core gives a crisp backlit edge the
+     old diffuse pair lacked on dark grounds, then mid + wide accent layers bloom
+     into an aurora. This is the "lit from within" read the light variant already had. */
   filter:
-    drop-shadow(0 0 0.32em oklch(from var(--ot-brand)  l c h / 0.5))
-    drop-shadow(0 0 0.7em  oklch(from var(--ot-accent) l c h / 0.32));
+    drop-shadow(0 0 0.12em oklch(from var(--ot-brand)  l c h / 0.78))
+    drop-shadow(0 0 0.4em  oklch(from var(--ot-brand)  l c h / 0.46))
+    drop-shadow(0 0 0.85em oklch(from var(--ot-accent) l c h / 0.40));
 }
 [data-theme="light"] .ot-fx-glow {
   filter:

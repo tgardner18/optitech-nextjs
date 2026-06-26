@@ -141,10 +141,10 @@ const questionCva = cva(
 const iconCva = cva(
   [
     'shrink-0 mt-0.5',
-    // Rotate +45° → × when open, on the same smooth curve as the row reveal.
-    'transition-transform duration-300',
+    // Rotate +45° → × when open, on the same slower, smooth curve as the row reveal.
+    'transition-transform [transition-duration:var(--ot-dur-accordion)]',
     'group-data-[state=open]:rotate-45',
-    '[transition-timing-function:var(--ot-ease-smooth)]',
+    '[transition-timing-function:var(--ot-ease-accordion)]',
   ].join(' '),
   {
     variants: {
@@ -158,11 +158,13 @@ const iconCva = cva(
   },
 )
 
-// Content element is the grid container (set by global CSS via [data-radix-accordion-content]).
-// The animation classes target grid-template-rows — no height/layout property animated.
+// Standard Radix height animation: overflow-hidden clips the content while height
+// animates 0 ↔ --radix-accordion-content-height. motion-safe: gates it for
+// reduced-motion (which then opens/closes instantly).
 const contentClasses = [
-  'motion-safe:data-[state=open]:animate-accordion-open',
-  'motion-safe:data-[state=closed]:animate-accordion-close',
+  'overflow-hidden',
+  'motion-safe:data-[state=open]:animate-accordion-down',
+  'motion-safe:data-[state=closed]:animate-accordion-up',
 ].join(' ')
 
 const answerCva = cva(
@@ -316,17 +318,12 @@ function AccordionItemNode({ value, item, color, borderStyle }: ItemNodeProps) {
         </h3>
       </RadixAccordion.Header>
 
-      {/* Grid container (display:grid set by global CSS on [data-radix-accordion-content]).
-          Inner div has min-h-0 + overflow-hidden to complete the grid-rows reveal trick. */}
+      {/* Radix sets --radix-accordion-content-height on this element; the
+          overflow-hidden + height keyframes animate the reveal. */}
       <RadixAccordion.Content className={contentClasses}>
-        <div className="min-h-0 overflow-hidden">
-          {/* acc-answer-reveal: content settles in (fade + rise) as the row expands,
-              so the answer arrives rather than being unveiled by the height clip alone.
-              Motion-safe; reduced-motion users see it immediately. */}
-          <p className={cn(answerCva({ color, borderStyle }), 'acc-answer-reveal')}>
-            {item.answer}
-          </p>
-        </div>
+        <p className={answerCva({ color, borderStyle })}>
+          {item.answer}
+        </p>
       </RadixAccordion.Content>
     </RadixAccordion.Item>
   )

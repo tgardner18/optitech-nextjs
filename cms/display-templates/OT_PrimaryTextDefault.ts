@@ -48,7 +48,7 @@ export const OT_PrimaryTextDefault = displayTemplate({
         depth3d:          { displayName: '3D Depth',           sortOrder: 40 },
         embossed:         { displayName: 'Embossed',           sortOrder: 50 },
         outline:          { displayName: 'Outline',            sortOrder: 60 },
-        glitch:           { displayName: 'Glitch',             sortOrder: 70 },
+        neon:             { displayName: 'Neon',               sortOrder: 70 },
         highlight:        { displayName: 'Highlight',          sortOrder: 80 },
         glow:             { displayName: 'Glow',               sortOrder: 90 },
       },

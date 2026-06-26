@@ -147,9 +147,9 @@ export const OT_ThemeManager = contentType({
       group: 'OT_Theme',
       sortOrder: 190,
       enum: [
-        { value: 'calm',      displayName: 'Calm — slower (0.7×)' },
+        { value: 'calm',      displayName: 'Calm — slower (1.3×)' },
         { value: 'default',   displayName: 'Default — current timing (1×)' },
-        { value: 'energetic', displayName: 'Energetic — faster (1.3×)' },
+        { value: 'energetic', displayName: 'Energetic — faster (0.7×)' },
       ],
     },
 

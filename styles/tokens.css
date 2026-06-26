@@ -41,6 +41,7 @@
   --ot-font-mono:      var(--font-geist-mono), ui-monospace, monospace;
   --ot-font-syne:      var(--font-syne), system-ui, sans-serif; /* Syne variable (wght 400–800) — accent display moments */
   --ot-font-signature: var(--font-signature), cursive;          /* Caveat 400 — QuoteBlock laser signature (thin handwriting) */
+  --ot-font-neon:      var(--font-tilt-neon), system-ui, sans-serif; /* Tilt Neon 400 — PrimaryText "neon" effect only (monoline glass tube) */
 
   /* Display / accent role font — FIXED to Syne (no longer themeable). Drives the
    * `.font-display` accent utility for select areas (e.g. the Impact blog). The
@@ -112,11 +113,12 @@
   --ot-ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1); /* expo out — entrances     */
   --ot-ease-quick:   cubic-bezier(0.25, 1, 0.5, 1); /* quart out — UI states   */
   --ot-ease-smooth:  cubic-bezier(0.33, 1, 0.68, 1); /* cubic out — collapse/expand: gentle start, no snap */
+  --ot-ease-accordion: cubic-bezier(0.65, 0, 0.35, 1); /* ease-in-out cubic — accordion: symmetric, very smooth both directions */
 
   /* Motion Intensity axis — themeable via ThemeManager "Motion Intensity".
    * A single unitless multiplier scales the whole --ot-dur-* system below.
-   * Default 1 → identical timing to today; buildThemeCSS() sets 0.7 (Calm) or
-   * 1.3 (Energetic). This ONLY affects the no-preference durations — the
+   * Default 1 → identical timing to today; buildThemeCSS() sets 1.3 (Calm —
+   * slower) or 0.7 (Energetic — faster). This ONLY affects the no-preference durations — the
    * @media (prefers-reduced-motion: reduce) static blocks are independent and
    * always win, so the OS preference remains the absolute floor. */
   --ot-motion-scale: 1;
@@ -130,13 +132,17 @@
   --ot-dur-quick: calc(200ms * var(--ot-motion-scale));
   --ot-dur-base:  calc(320ms * var(--ot-motion-scale));
   --ot-dur-slow:  calc(600ms * var(--ot-motion-scale));
+  /* Accordion expand/collapse — deliberately slower than dur-base for a smooth,
+   * luxurious reveal. Scales with motion-scale like the rest of the system. */
+  --ot-dur-accordion: calc(620ms * var(--ot-motion-scale));
   /* Ambient continuous loops */
   --ot-dur-breathe: calc(9s * var(--ot-motion-scale));
   --ot-dur-liquid:  calc(8s * var(--ot-motion-scale));
 
-  /* ── Monoton display weight ──────────────────────────────────────────────
-   * Monoton is a single-weight font (Regular 400 only — no variable axis).
-   * Always renders at 400 regardless of font-weight value.
+  /* ── Accent display weight ────────────────────────────────────────────────
+   * Default weight for the Syne accent role. (Tilt Neon, used only by the neon
+   * effect via --ot-font-neon, is likewise single-weight 400 — it always renders
+   * at 400 regardless of any font-weight set on the heading.)
    * ──────────────────────────────────────────────────────────────────────── */
   --ot-weight-syne: 400;
 

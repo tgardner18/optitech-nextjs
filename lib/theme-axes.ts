@@ -46,10 +46,14 @@ export const DEFAULT_PRIMARY_FONT: PrimaryFontKey = 'poppins'
 // Composes with, never overrides, OS reduced-motion: the value only feeds the
 // no-preference durations — the `prefers-reduced-motion: reduce` static blocks
 // are independent and always win. No "off" option (the OS owns that floor).
+// A LARGER multiplier lengthens every --ot-dur-* → slower, gentler motion;
+// a SMALLER one shortens them → snappier motion. So Calm (relaxed, unhurried)
+// scales UP and Energetic (quick, lively) scales DOWN. Easy to invert by reflex —
+// "0.7 looks like less" is the trap: less duration is faster, not calmer.
 export const MOTION_INTENSITIES = {
-  calm:      0.7,
+  calm:      1.3,
   default:   1,
-  energetic: 1.3,
+  energetic: 0.7,
 } as const
 
 export type MotionIntensityKey = keyof typeof MOTION_INTENSITIES

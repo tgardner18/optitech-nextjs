@@ -375,7 +375,7 @@ function PrimaryTextShowcase() {
     { content: { eyebrow: '3D Depth',          headline: 'Depth is a statement.'       }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'depth3d' } },
     { content: { eyebrow: 'Embossed',          headline: 'Pressed into the surface.'   }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'embossed' } },
     { content: { eyebrow: 'Outline',           headline: 'Drawn in wire.'              }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'outline' } },
-    { content: { eyebrow: 'Glitch',            headline: 'Break the signal.'           }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'glitch' } },
+    { content: { eyebrow: 'Neon',              headline: 'After hours.'                }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'neon' } },
     { content: { eyebrow: 'Highlight',         headline: 'Call it out.'                }, displaySettings: { size: 'headline', color: 'canvas', alignment: 'left', headerEffect: 'highlight' } },
     { content: { eyebrow: 'Glow',              headline: 'Lit from within.'            }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'glow' } },
   ]

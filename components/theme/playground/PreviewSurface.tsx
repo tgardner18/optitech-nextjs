@@ -56,7 +56,7 @@ const WEIGHTS = [
 const HEADER_EFFECTS = [
   { cls: 'ot-fx-gradient', label: 'Gradient' },
   { cls: 'ot-depth-extrude', label: '3D Depth' },
-  { cls: 'ot-fx-chromatic', label: 'Glitch' },
+  { cls: 'ot-fx-neon', label: 'Neon' },
   { cls: 'ot-fx-glow', label: 'Glow' },
 ]
 
