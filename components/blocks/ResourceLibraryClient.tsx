@@ -260,7 +260,7 @@ function Pagination({
 
   return (
     <div className="mt-xl flex flex-col items-center gap-md">
-      <p className="text-label text-fg-muted">
+      <p className="text-label text-fg-muted" aria-live="polite" aria-atomic="true">
         Showing <strong>{from}–{to}</strong> of <strong>{total}</strong> files
       </p>
       <div className="flex items-center gap-xs">
@@ -339,7 +339,9 @@ export default function ResourceLibraryClient({
 
   const changePage = useCallback((p: number) => {
     setPage(p)
-    window.scrollBy({ top: -120, behavior: 'smooth' })
+    // Honour prefers-reduced-motion for the JS-driven scroll.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollBy({ top: -120, behavior: reduce ? 'auto' : 'smooth' })
   }, [])
 
   const toggleBase     = 'inline-flex items-center justify-center w-11 h-11 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'

@@ -70,8 +70,9 @@
   --ease-quick:   var(--ot-ease-quick);
 
   /* Animations — apply with motion-safe: modifier to honour prefers-reduced-motion */
-  --animate-fade-in:  fadeIn  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-up: slideUp var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in:   fadeIn   var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-up:  slideUp  var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-hero-zoom: heroZoom var(--ot-dur-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Button surface context tokens ───────────────────────────────────────────
@@ -127,6 +128,13 @@ html {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px) + 1.5rem)); }
   to   { opacity: 1; transform: translateY(calc(var(--ot-rhythm-offset, 0px) + var(--ot-rhythm-nudge, 0px))); }
+}
+
+/* Hero "parallax" entrance — the visual pushes in inside its clipped frame.
+   Scale only; the frame's fade-in carries the opacity. */
+@keyframes heroZoom {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
 }
 
 @keyframes statPulse {

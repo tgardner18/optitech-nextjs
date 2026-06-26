@@ -12,7 +12,8 @@ export type HeroStyleOptions = {
   color?: "brand" | "canvas" | "surface";
   /**
    * Entrance animation for the section.
-   * "parallax" degrades to fade until a client enhancer is added.
+   * "parallax": the frame fades in while the visual pushes in (scale settle)
+   * inside its clipped panel — a depth entrance, layout-safe, no scroll listener.
    */
   animation?: "none" | "fade" | "slide" | "parallax";
 };
@@ -84,12 +85,14 @@ const bodyCva = cva("text-body leading-body max-w-(--ot-measure-tight)", {
 });
 
 const primaryCtaCva = cva(
-  "inline-block hover:-translate-y-0.5 text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
+  "inline-block hover:-translate-y-0.5 hover:shadow-hover-lift text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
   {
     variants: {
       color: {
+        // On a brand panel the resting button is already brand-hover (deeper than
+        // the panel); hover inverts to a light chip rather than jumping to canvas.
         brand:
-          "bg-brand-hover hover:bg-canvas text-fg-on-brand focus-visible:outline-fg-on-brand",
+          "bg-brand-hover hover:bg-fg-on-brand text-fg-on-brand hover:text-brand focus-visible:outline-fg-on-brand",
         canvas:
           "bg-brand hover:bg-brand-hover text-fg-on-brand focus-visible:outline-brand",
         surface:
@@ -168,6 +171,12 @@ export default function HeroBlock({
     ? "motion-safe:animate-fade-in"
     : isAnimated ? "motion-safe:animate-slide-up" : "";
 
+  // Parallax: the visual frame fades in while the image inside it pushes in
+  // (scale 1.08 → 1). Clipped by the panel's overflow-hidden, so it reads as
+  // depth with no layout impact and no scroll listener.
+  const visualPanelAnim = animation === "parallax" ? "motion-safe:animate-fade-in" : animClass;
+  const visualImgAnim   = animation === "parallax" ? "motion-safe:animate-hero-zoom" : "";
+
   const stagger = (delay: number): CSSProperties =>
     isAnimated ? { animationDelay: `${delay}ms` } : {};
 
@@ -233,7 +242,7 @@ export default function HeroBlock({
 
       {/* ── Visual panel — only rendered when a visual is provided ── */}
       {hasVisual && (
-        <div className={`${visualPanelCva({ color })} ${animClass}`} style={stagger(150)} {...pa('visual')}>
+        <div className={`${visualPanelCva({ color })} ${visualPanelAnim}`} style={stagger(150)} {...pa('visual')}>
           {visual ?? (
             visualSrc ? (
               <Image
@@ -241,7 +250,7 @@ export default function HeroBlock({
                 alt={visualAlt}
                 fill
                 sizes="(min-width: 1024px) 45vw, 100vw"
-                className="object-cover"
+                className={`object-cover ${visualImgAnim}`}
                 priority
               />
             ) : null

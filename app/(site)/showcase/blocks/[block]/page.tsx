@@ -197,6 +197,11 @@ function HeroShowcase() {
       content: { eyebrow: 'Animation', headline: 'Slide entrance.', primaryCtaLabel: 'Get started', primaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
       displaySettings: { color: 'canvas', animation: 'slide' },
     },
+    {
+      label: 'Parallax', note: 'motion-safe: frame fades while the visual pushes in (scale 1.08 → 1) — depth entrance, no scroll listener',
+      content: { eyebrow: 'Animation', headline: 'Parallax entrance.', primaryCtaLabel: 'Get started', primaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
+      displaySettings: { color: 'surface', animation: 'parallax' },
+    },
   ]
 
   return (
@@ -1041,6 +1046,21 @@ function FeatureGridShowcase() {
           displaySettings={{ color: 'canvas', layout: 'grid', columns: 'col4', iconStyle: 'accent', feature1Icon: 'zap', feature2Icon: 'globe', feature3Icon: 'bar-chart', feature4Icon: 'sparkles', feature5Icon: 'shield', feature6Icon: 'check-circle', animate: true }}
         />
       </div>
+
+      <VariantGroup label="With CTAs · ruled layout · canvas" note="Per-feature 'Learn more' links plus a section CTA. Each link carries a 44px min touch target and a focus ring that adapts to the surface color." />
+      <div className="border-t border-fg/5">
+        <OT_FeatureGridBlock
+          content={{
+            eyebrow: 'Platform',
+            heading: 'Everything in one place',
+            subheading: 'Plan, launch, and measure without switching tools.',
+            features: FG_ITEMS.slice(0, 4).map(item => ({ ...item, ctaLabel: 'Learn more', ctaUrl: { default: '#' } })),
+            ctaLabel: 'See all features',
+            ctaUrl: { default: '#' },
+          } as any}
+          displaySettings={{ color: 'canvas', layout: 'ruled', columns: 'col2', iconStyle: 'none', animate: false }}
+        />
+      </div>
       <div className="pb-xl" />
     </>
   )
@@ -1228,6 +1248,11 @@ function BlogFeedShowcase() {
           pageSize={3}
           styleOptions={{ color: 'surface', columns: 'col3', headingSize: 'headline' }}
         />
+      </div>
+
+      <VariantGroup label="Pagination · canvas · pageSize 3" note="6 posts at 3 per page → 2 pages. The result count is an aria-live region (announced on page/filter change) and the pagination controls meet the 44px touch target." />
+      <div className="border-t border-fg/5">
+        <BlogFeedBlock posts={MOCK_POSTS} topics={['insights', 'innovation', 'resources', 'news', 'leadership', 'stories']} pageSize={3} styleOptions={{ color: 'canvas', columns: 'col3', headingSize: 'headline' }} />
       </div>
       <div className="pb-xl" />
     </>

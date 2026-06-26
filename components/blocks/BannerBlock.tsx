@@ -285,7 +285,10 @@ export default function BannerBlock({
             alt=""
             fill
             sizes="100vw"
-            priority
+            // Only the hero banner (h1 = page's primary heading) is the LCP
+            // candidate and should preload. Secondary (h2) banners lazy-load so
+            // multiple banners on a page don't all preload and hurt LCP.
+            priority={headingLevel === 'h1'}
             quality={85}
             className="object-cover object-center"
           />

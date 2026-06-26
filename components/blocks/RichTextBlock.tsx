@@ -82,11 +82,17 @@ function extractNodeText(node: any): string {
 
 function extractHeadings(content: any): HeadingEntry[] {
   const nodes: any[] = content?.children ?? [];
+  // De-duplicate ids: two headings with the same text would otherwise share an
+  // anchor and every TOC link would jump to the first. Suffix repeats (-2, -3…).
+  const seen = new Map<string, number>();
   return nodes
     .filter(n => n.type === 'heading-two')
     .map(n => {
       const text = extractNodeText(n);
-      return { text, id: slugify(text) };
+      const base = slugify(text) || 'section';
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+      return { text, id: count === 0 ? base : `${base}-${count + 1}` };
     });
 }
 
@@ -186,10 +192,15 @@ export default function RichTextBlock({
   // here only adds anchor ids + a back-to-contents arrow to each h2.
   const headings = treatment === 'toc' ? extractHeadings(content) : [];
 
+  // Headings render in document order, exactly as extractHeadings collected them,
+  // so walk the same array by index. This guarantees each rendered h2 id matches
+  // its TOC link's href (and inherits the same de-dup), instead of re-slugifying a
+  // possibly-different `text` source per heading.
+  let headingIndex = 0;
   const elements = treatment === 'toc' ? {
     ...baseElements,
-    'heading-two': ({ text, children }: any) => {
-      const id = slugify(text);
+    'heading-two': ({ children }: any) => {
+      const id = headings[headingIndex++]?.id;
       return (
         <h2 id={id}>
           <span>{children}</span>

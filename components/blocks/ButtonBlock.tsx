@@ -53,12 +53,20 @@ export default function ButtonBlock({
   const leadingIcon  = iconEl && iconPosition === "leading"  ? iconEl : undefined;
   const trailingIcon = iconEl && iconPosition === "trailing" ? iconEl : undefined;
 
+  // A button with no label has nothing to show. A button with a label but no URL
+  // is a misconfiguration: render it inert (disabled) rather than a dead clickable
+  // control — visible in the Visual Builder so the editor knows to add a link.
+  const hasLabel = !!label?.trim();
+  const hasUrl   = !!url?.trim();
+  if (!hasLabel) return null;
+
   return (
     <div className={cn(ALIGN_CLASS[alignment], "w-full")}>
       <Button
         variant={variant}
         size={size}
-        href={url}
+        href={hasUrl ? url : undefined}
+        disabled={!hasUrl}
         leadingIcon={leadingIcon}
         trailingIcon={trailingIcon}
         className={fullWidth ? "w-full" : undefined}
