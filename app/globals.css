@@ -831,23 +831,23 @@ body {
   }
 }
 
-/* Light mode: brand face, brand-HUED shadow stack graduating into deep teal.
-   The old near-zero-chroma grays read as a flat drop on white; keeping the brand
-   hue and a steeper lightness ramp gives the same saturated 3D "side" the dark
-   variant has, so the pop survives the ground flip. */
+/* Light mode: brand face, the depth steps DARKER (sides recede into shadow — a
+   lighter side would read as glow and vanish on white). Chroma is held at full c
+   for every layer so a dark brand (e.g. navy) stays saturated deep-blue depth
+   rather than crushing to gray-black mud; the lightness ramp carries the 3D. */
 [data-theme="light"] .ot-depth-extrude {
   color: var(--ot-brand);
   text-shadow:
     calc(var(--ot-extrude-offset) * 0.03em) calc(var(--ot-extrude-offset) * 0.03em) 0
-      oklch(from var(--ot-brand) calc(l * 0.74) c h),
+      oklch(from var(--ot-brand) calc(l * 0.72) c h),
     calc(var(--ot-extrude-offset) * 0.06em) calc(var(--ot-extrude-offset) * 0.06em) 0
-      oklch(from var(--ot-brand) calc(l * 0.58) c h),
+      oklch(from var(--ot-brand) calc(l * 0.56) c h),
     calc(var(--ot-extrude-offset) * 0.10em) calc(var(--ot-extrude-offset) * 0.10em) 0
-      oklch(from var(--ot-brand) calc(l * 0.44) c h),
+      oklch(from var(--ot-brand) calc(l * 0.42) c h),
     calc(var(--ot-extrude-offset) * 0.16em) calc(var(--ot-extrude-offset) * 0.16em) 0
-      oklch(from var(--ot-brand) calc(l * 0.30) calc(c * 0.92) h),
+      oklch(from var(--ot-brand) calc(l * 0.30) c h),
     calc(var(--ot-extrude-offset) * 0.22em) calc(var(--ot-extrude-offset) * 0.22em) 0
-      oklch(from var(--ot-brand) calc(l * 0.18) calc(c * 0.70) h / 0.90);
+      oklch(from var(--ot-brand) calc(l * 0.20) c h / 0.92);
 }
 
 /* Brand background: fg-on-brand face, accent-colored shadow stack */
