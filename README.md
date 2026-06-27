@@ -38,6 +38,15 @@ NEXT_PUBLIC_SITE_URL=          # Canonical site origin — no trailing slash
                                # JSON-LD pageUrl values. Falls back to the
                                # request Host header when not set (useful in dev).
 
+# Maps
+NEXT_PUBLIC_MAPBOX_TOKEN=      # Mapbox public token (pk....) for map rendering
+                               # and address geocoding. Required for
+                               # OT_LocationListingBlock — the map view renders an
+                               # unconfigured-state notice without it, and
+                               # addresses are not geocoded. The grid and list
+                               # views work without it. Create a token at
+                               # https://account.mapbox.com/access-tokens/
+
 # OptiAdmin dashboard (see "OptiAdmin Dashboard" below)
 OPTI_ADMIN_USER=               # Username for the /opti-admin sign-in
 OPTI_ADMIN_PASSWORD=           # Password for the /opti-admin sign-in

@@ -30,6 +30,7 @@ import { OT_CalloutDefault }         from '@/cms/display-templates/OT_CalloutDef
 import { OT_DividerBlockDefault }    from '@/cms/display-templates/OT_DividerBlockDefault'
 import { OT_EventListingDefault }    from '@/cms/display-templates/OT_EventListingDefault'
 import { OT_PractitionerListingDefault } from '@/cms/display-templates/OT_PractitionerListingDefault'
+import { OT_LocationListingDefault } from '@/cms/display-templates/OT_LocationListingDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -77,6 +78,8 @@ import { OT_PracticeArea }            from '@/cms/content-types/OT_PracticeArea'
 import { OT_PractitionerProfile }     from '@/cms/content-types/OT_PractitionerProfile'
 import { OT_PractitionerPage }        from '@/cms/content-types/OT_PractitionerPage'
 import { OT_PractitionerListingBlock } from '@/cms/content-types/OT_PractitionerListingBlock'
+import { OT_LocationProfile }            from '@/cms/content-types/OT_LocationProfile'
+import { OT_LocationListingBlock }       from '@/cms/content-types/OT_LocationListingBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -122,6 +125,7 @@ import OT_DividerBlockAdapter          from '@/cms/components/OT_DividerBlock'
 import OT_EventListingBlockAdapter     from '@/cms/components/OT_EventListingBlock'
 import OT_PractitionerListingBlockAdapter from '@/cms/components/OT_PractitionerListingBlock'
 import OT_PractitionerProfileAdapter      from '@/cms/components/OT_PractitionerProfile'
+import OT_LocationListingBlockAdapter        from '@/cms/components/OT_LocationListingBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -169,6 +173,7 @@ initDisplayTemplateRegistry([
   OT_DividerBlockDefault,
   OT_EventListingDefault,
   OT_PractitionerListingDefault,
+  OT_LocationListingDefault,
 ])
 
 initContentTypeRegistry([
@@ -216,6 +221,8 @@ initContentTypeRegistry([
   OT_PractitionerProfile,
   OT_PractitionerPage,
   OT_PractitionerListingBlock,
+  OT_LocationProfile,
+  OT_LocationListingBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -262,6 +269,7 @@ initReactComponentRegistry({
     OT_DividerBlock:          OT_DividerBlockAdapter,
     OT_EventListingBlock:     OT_EventListingBlockAdapter,
     OT_PractitionerListingBlock: OT_PractitionerListingBlockAdapter,
+    OT_LocationListingBlock:     OT_LocationListingBlockAdapter,
     // Preview-only: lets /preview render the shared profile record (not used in compositions)
     OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     // Composition structure — 'BlankSection' is the SDK's built-in section type key;

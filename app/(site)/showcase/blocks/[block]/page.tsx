@@ -25,6 +25,7 @@ import Button                        from '@/components/ui/Button'
 import BlogFeedBlock                 from '@/components/blocks/BlogFeedBlock'
 import EventListingBlock             from '@/components/blocks/EventListingBlock'
 import PractitionerListingBlock      from '@/components/blocks/PractitionerListingBlock'
+import LocationListingBlock          from '@/components/blocks/LocationListingBlock'
 import {
   ArrowRight, Zap, ChevronRight, Play, Download,
   Sparkles, Send, Rocket, Star, Plus,
@@ -32,6 +33,7 @@ import {
 import type { BlogFeedPost }         from '@/lib/blogFeed'
 import type { EventCardData }        from '@/lib/events'
 import type { PractitionerCardData } from '@/lib/practitioners'
+import type { LocationData }          from '@/lib/locations'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -39,7 +41,7 @@ const BLOCK_SLUGS = [
   'hero', 'card', 'primary-text', 'quote', 'rich-text',
   'image', 'video', 'stat', 'feature-grid', 'trust-rail',
   'accordion', 'tabs', 'blog-feed', 'button', 'chart', 'banner', 'resource-library',
-  'callout', 'divider', 'event-listing', 'practitioner-listing',
+  'callout', 'divider', 'event-listing', 'practitioner-listing', 'location-listing',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -66,6 +68,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'divider':          { label: 'DividerBlock',          cmsKey: 'OT_DividerBlock',          description: 'Structural section divider that opens deliberate breathing room between stacked sections. Three treatments: mark (a hairline broken by an editable label or an editorial ornament), glow (a precise luminous rule — a chromatic line of light with a soft bloom above and below), and bleed (atmospheric luminance — an elliptical light seam rising from the boundary). One Tone control spans all three — neutral, brand, accent, spectrum, aurora — plus editor-controlled spacing, weight, and an optional draw-in reveal that rides the shared scroll observer.' },
   'event-listing':    { label: 'EventListingBlock',     cmsKey: 'OT_EventListingBlock',     description: 'CMS-driven listing of Event Pages with three toggleable views: card grid, list (calendar-style date blocks), and a monthly calendar with day agenda. A segmented icon control switches views; type-filter chips and a past-events toggle refine the set. Works across technology, healthcare, legal, and financial events on both canvas and surface grounds. In production, events are fetched at render time from published Event Pages; the showcase uses static fixtures.' },
   'practitioner-listing': { label: 'PractitionerListingBlock', cmsKey: 'OT_PractitionerListingBlock', description: 'CMS-driven, vertical-agnostic people directory pulled from Practitioner Profiles. Grid (cards) or list (rows) layout, client-side search across name / credentials / specialty, and three multi-select filters — specialty, location, and language — derived dynamically from the loaded set, never a fixed list. Values OR within a filter and AND across filters. Scope it to one vertical with the Group Tag Filter (e.g. "medical"). Squared portraits with a chromatic brand bloom and a designed initials fallback. In production, practitioners are fetched at render time; the showcase uses static fixtures spanning medical, legal, and technology verticals.' },
+  'location-listing': { label: 'LocationListingBlock', cmsKey: 'OT_LocationListingBlock', description: 'CMS-driven, vertical-agnostic location directory pulled from Location Profiles. Three toggleable views: a Mapbox dark map paired with a synchronized scrollable location rail (click a marker or rail card to fly + open its popup), an image-plate card grid, and a compact list. Client-side search across name / label / address, and a single-select label filter derived dynamically from the loaded set — never a fixed list, "All" always first. Scope it to one vertical with the Group Tag Filter (e.g. "optimedical"). Custom brand-beacon markers and fully-restyled dark-glass popups. In production, addresses are geocoded via the Mapbox API at render time (24h ISR cache); the showcase uses static fixtures with pre-resolved coordinates, so it makes no API calls.' },
 }
 
 export function generateStaticParams() {
@@ -2431,6 +2434,123 @@ function PractitionerListingShowcase() {
   )
 }
 
+// ─── Location Listing ─────────────────────────────────────────────────────────
+
+// Static fixtures with PRE-RESOLVED coordinates — the showcase never calls the
+// Mapbox Geocoding API (the server wrapper only geocodes locations missing
+// coordinates). A few carry verified, thematically-matched Unsplash imagery; the
+// rest intentionally omit an image to exercise the designed branded-fallback plate.
+const LOC_IMG_HOSPITAL = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80&fit=crop'
+const LOC_IMG_HQ       = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&fit=crop'
+
+const MOCK_LOCATIONS: LocationData[] = [
+  // ── OptiMedical ────────────────────────────────────────────────────────────────
+  {
+    key: 'loc-memorial', locationName: 'Memorial Medical Center', locationLabel: 'Hospital',
+    imageUrl: LOC_IMG_HOSPITAL,
+    address: '1 Gustave L. Levy Pl, New York, NY 10029',
+    details: { html: '<p>Level I trauma center. Emergency department open 24/7. Visitor parking on-site; valet at the main entrance.</p>' },
+    groupTag: 'optimedical', url: '/locations/memorial-medical-center',
+    coordinates: { lat: 40.7900, lon: -73.9526 },
+  },
+  {
+    key: 'loc-downtown-clinic', locationName: 'Downtown Health Clinic', locationLabel: 'Clinic',
+    address: '462 First Ave, New York, NY 10016',
+    details: { html: '<p>Primary and urgent care, Mon–Sat 8am–8pm. Walk-ins welcome. Wheelchair accessible.</p>' },
+    groupTag: 'optimedical', url: '/locations/downtown-health-clinic',
+    coordinates: { lat: 40.7397, lon: -73.9754 },
+  },
+  {
+    key: 'loc-brooklyn-pharmacy', locationName: 'Brooklyn Pharmacy', locationLabel: 'Pharmacy',
+    address: '150 55th St, Brooklyn, NY 11220',
+    details: { html: '<p>Full-service pharmacy with same-day prescription pickup and immunizations. Drive-through available.</p>' },
+    groupTag: 'optimedical', url: '/locations/brooklyn-pharmacy',
+    coordinates: { lat: 40.6360, lon: -74.0170 },
+  },
+
+  // ── OptiTech offices ─────────────────────────────────────────────────────────────
+  {
+    key: 'loc-boston-hq', locationName: 'Boston Headquarters', locationLabel: 'Headquarters',
+    imageUrl: LOC_IMG_HQ,
+    address: '1 Financial Center, Boston, MA 02111',
+    details: { html: '<p>Global headquarters. Reception on the 12th floor; visitor badges required. Steps from South Station.</p>' },
+    groupTag: 'optitech-offices', url: '/locations/boston-headquarters',
+    coordinates: { lat: 42.3553, lon: -71.0557 },
+  },
+  {
+    key: 'loc-ny-office', locationName: 'New York Office', locationLabel: 'Office',
+    address: '429 11th Ave, New York, NY 10001',
+    details: { html: '<p>Sales and customer success teams. Hudson Yards / West Side. By appointment.</p>' },
+    groupTag: 'optitech-offices', url: '/locations/new-york-office',
+    coordinates: { lat: 40.7550, lon: -74.0020 },
+  },
+]
+
+function LocationListingShowcase() {
+  const medical = MOCK_LOCATIONS.filter(l => l.groupTag === 'optimedical')
+  const offices = MOCK_LOCATIONS.filter(l => l.groupTag === 'optitech-offices')
+  return (
+    <>
+      <BlockHeader slug="location-listing" />
+
+      <div className="px-md pb-sm lg:px-lg pt-md">
+        <p className="text-label text-fg-muted/60 leading-body max-w-[65ch]">
+          In production, locations are fetched at render time from Location Profiles, scoped by the Group Tag Filter, and their addresses geocoded via the Mapbox API (cached 24h). The showcase uses static fixtures with pre-resolved coordinates across two groups, so every view, filter, and empty state is exercisable with no API calls. Switch views with the segmented control; in the map view, click a marker or a rail card to fly to it and open its popup. The label chips list only the labels present in the loaded set.
+        </p>
+      </div>
+
+      <VariantGroup label="Map · canvas · search + label filter" note="The signature view. A dark Mapbox map paired with a synchronized location rail: selecting a rail card flies the map and opens a restyled dark-glass popup; clicking a marker highlights its rail card. All five locations across both groups; the rail scrolls beside the map on desktop and stacks beneath it on mobile. Memorial and Boston carry imagery; the rest use the designed brand-fallback plate." />
+      <div className="border-t border-fg/5">
+        <LocationListingBlock
+          heading="Find a location"
+          subtext="Search by name, label, or address, or filter by location type."
+          locations={MOCK_LOCATIONS}
+          styleOptions={{ defaultView: 'map', showViewToggle: true, mapHeight: 'standard', color: 'canvas', columns: 3, showSearch: true, showLabelFilter: true, density: 'comfortable' }}
+        />
+      </div>
+
+      <VariantGroup label="Grid · 3 columns · canvas · search + label filter" note="The editorial card view. Landscape image plates with an accent label badge; hover a card to lift it and slide the glass footer up, revealing the address and a details excerpt. Two cards show imagery, three show the branded fallback plate." />
+      <div className="border-t border-fg/5">
+        <LocationListingBlock
+          heading="Our locations"
+          locations={MOCK_LOCATIONS}
+          styleOptions={{ defaultView: 'grid', showViewToggle: true, mapHeight: 'standard', color: 'canvas', columns: 3, showSearch: true, showLabelFilter: true, density: 'comfortable' }}
+        />
+      </div>
+
+      <VariantGroup label="List · surface · search + label filter" note="The dense list view on the surface ground: a flush square plate, name + soft label badge, address, and a chevron link affordance. Hover a row to bring its border to brand with a faint brand wash and slide the chevron right." />
+      <div className="border-t border-fg/5">
+        <LocationListingBlock
+          heading="All offices &amp; facilities"
+          locations={MOCK_LOCATIONS}
+          styleOptions={{ defaultView: 'list', showViewToggle: true, mapHeight: 'standard', color: 'surface', columns: 3, showSearch: true, showLabelFilter: true, density: 'comfortable' }}
+        />
+      </div>
+
+      <VariantGroup label="Map · tall · surface · no controls · scoped to OptiMedical" note="The curated single-vertical use case on a brand page: the Group Tag Filter restricts the set to one group, the view toggle and controls are suppressed, and the map opens taller. Three medical locations frame to a tight bounds." />
+      <div className="border-t border-fg/5">
+        <LocationListingBlock
+          heading="Where to find OptiMedical"
+          locations={medical}
+          styleOptions={{ defaultView: 'map', showViewToggle: false, mapHeight: 'tall', color: 'surface', columns: 3, showSearch: false, showLabelFilter: false, density: 'comfortable' }}
+        />
+      </div>
+
+      <VariantGroup label="Grid · 2 columns · surface · compact · no controls · scoped to offices" note="The “Our offices” presentation on an about page. Two columns give each plate more width; compact density tightens the footer. One image plate, one fallback." />
+      <div className="border-t border-fg/5">
+        <LocationListingBlock
+          heading="Our offices"
+          subtext="Visit us in Boston or New York."
+          locations={offices}
+          styleOptions={{ defaultView: 'grid', showViewToggle: false, mapHeight: 'standard', color: 'surface', columns: 2, showSearch: false, showLabelFilter: false, density: 'compact' }}
+        />
+      </div>
+
+      <div className="pb-xl" />
+    </>
+  )
+}
+
 export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
@@ -2456,6 +2576,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'divider':          return <DividerShowcase />
     case 'event-listing':    return <EventListingShowcase />
     case 'practitioner-listing': return <PractitionerListingShowcase />
+    case 'location-listing':     return <LocationListingShowcase />
     default:                 return notFound()
   }
 }

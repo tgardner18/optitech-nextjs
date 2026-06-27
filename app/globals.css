@@ -1871,6 +1871,103 @@ body {
   }
 }
 
+/* ── Location directory card ──────────────────────────────────────────────────
+ * Sibling to .practitioner-card — the image-first location plate. Resting
+ * chromatic elevation (brand-hued, never grey) deepens and lifts on hover; the
+ * glass footer reveal + details fade are handled per-element in the component
+ * (transform / opacity only). Bloom tokens follow CMS theme overrides.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-card {
+  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+  transition:
+    transform var(--ot-dur-quick) var(--ot-ease-quick),
+    box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.location-card:hover {
+  box-shadow:
+    0 16px 40px var(--ot-bloom-brand-faint),
+    0 4px 16px var(--ot-bloom-accent-faint);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .location-card:hover { transform: translateY(-6px); }
+}
+
+/* ── Map beacon marker ────────────────────────────────────────────────────────
+ * The custom Mapbox marker: a brand-filled disc with an fg-on-brand core and a
+ * chromatic brand-bloom halo (not a skeuomorphic pin). The active marker grows,
+ * gains an accent ring, and emits a motion-safe pulse. Every color resolves from
+ * a semantic token, so markers recalibrate under a CMS theme override. All
+ * sizing is transform/opacity-safe (no layout animation).
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-beacon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.location-beacon__dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--ot-brand);
+  border: 2px solid var(--ot-fg-on-brand);
+  box-shadow: 0 0 0 4px var(--ot-bloom-brand-faint), 0 2px 6px var(--ot-bloom-brand-ring);
+  transition: transform var(--ot-dur-quick) var(--ot-ease-quick),
+              box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.location-beacon:hover .location-beacon__dot {
+  transform: scale(1.18);
+}
+.location-beacon[data-active] {
+  width: 24px;
+  height: 24px;
+}
+.location-beacon[data-active] .location-beacon__dot {
+  border-color: var(--ot-accent);
+  box-shadow: 0 0 0 5px var(--ot-bloom-accent-faint), 0 4px 12px var(--ot-bloom-brand-ring);
+}
+.location-beacon__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--ot-bloom-accent-ring);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .location-beacon[data-active] .location-beacon__pulse {
+    animation: locationBeaconPulse 1.8s var(--ot-ease-quick) infinite;
+  }
+}
+@keyframes locationBeaconPulse {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  70%  { transform: scale(2.6); opacity: 0;    }
+  100% { transform: scale(2.6); opacity: 0;    }
+}
+
+/* ── Mapbox popup override ─────────────────────────────────────────────────────
+ * The default Mapbox popup ships an opaque white content box, a white tip, and a
+ * grey close button — none of which belong in this dark, token-driven system.
+ * Scoped to .location-popup (set on the react-map-gl <Popup>), these rules strip
+ * the white chrome to nothing and let the component render a sharp-cornered dark
+ * card. The tip is recolored to the canvas ground so it reads as one surface.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-popup .mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 0;
+  background: var(--ot-canvas);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.18);
+  box-shadow: 0 12px 40px var(--ot-bloom-brand-faint), 0 4px 16px oklch(from var(--ot-canvas) l c h / 0.6);
+  overflow: hidden;
+}
+.location-popup .mapboxgl-popup-close-button { display: none; }
+.location-popup.mapboxgl-popup-anchor-bottom  .mapboxgl-popup-tip { border-top-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-top      .mapboxgl-popup-tip { border-bottom-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-left     .mapboxgl-popup-tip { border-right-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-right    .mapboxgl-popup-tip { border-left-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-bottom-left  .mapboxgl-popup-tip,
+.location-popup.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip { border-top-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-top-left  .mapboxgl-popup-tip,
+.location-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip { border-bottom-color: var(--ot-canvas); }
+
 /* ── Resource Library grid card ───────────────────────────────────────────────
  * Chromatic lift on hover (translateY + shadow intensification) plus a bottom-
  * to-top fill on the brand band that deepens to brand-hover. The fill uses
