@@ -16,11 +16,13 @@ import LocationCard from '@/components/location/LocationCard'
 import LocationListRow from '@/components/location/LocationListRow'
 import LocationRailCard from '@/components/location/LocationRailCard'
 
-// Mapbox GL needs a browser — never server-render it.
+// Mapbox GL needs a browser — never server-render it. The skeleton fills the map
+// column's height (--map-h, set on the grid) so swapping in the real map causes
+// no layout shift at either map height.
 const LocationMap = dynamic(() => import('@/components/location/LocationMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex w-full items-center justify-center border border-fg/10 bg-surface" style={{ height: 480 }}>
+    <div className="flex h-(--map-h) w-full items-center justify-center border border-fg/10 bg-surface">
       <span className="text-label uppercase tracking-label text-fg-muted/60">Loading map…</span>
     </div>
   ),
@@ -95,13 +97,15 @@ function LabelChips({
   value: string | null
   onChange: (v: string | null) => void
 }) {
+  // Matches the Event block's TypeChip rhythm so filter chips read identically
+  // across the listing family.
   const chip = (active: boolean) =>
-    'inline-flex items-center whitespace-nowrap px-3 py-1.5 text-label font-semibold uppercase tracking-label ' +
-    'border motion-safe:transition-colors duration-150 ' +
+    'inline-flex items-center whitespace-nowrap text-label font-semibold uppercase tracking-label px-sm py-[5px] ' +
+    'border transition-colors duration-150 ease-quick cursor-pointer ' +
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ' +
     (active
-      ? 'border-brand bg-brand text-fg-on-brand'
-      : 'border-fg/15 text-fg-muted hover:text-fg hover:border-fg/30')
+      ? 'bg-brand border-transparent text-fg-on-brand'
+      : 'bg-transparent border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg')
 
   return (
     <div className="flex flex-wrap items-center gap-xs" role="group" aria-label="Filter by label">
@@ -252,7 +256,7 @@ export default function LocationListingClient({ locations, styleOptions, mapboxT
           {/* Rail — below the map on mobile, beside it (scrollable, matched height) on desktop. */}
           <div
             ref={railScroll}
-            className="order-2 flex flex-col gap-sm lg:order-1 lg:h-[var(--map-h)] lg:overflow-y-auto lg:pr-1"
+            className="location-rail order-2 flex flex-col gap-sm lg:order-1 lg:h-(--map-h) lg:overflow-y-auto lg:pr-1"
           >
             {results.map(l => (
               <div key={l.key} ref={el => { railRefs.current.set(l.key, el) }}>

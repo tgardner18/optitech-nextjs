@@ -1892,6 +1892,23 @@ body {
   .location-card:hover { transform: translateY(-6px); }
 }
 
+/* ── Location rail scrollbar ──────────────────────────────────────────────────
+ * The map-view rail scrolls beside the map on desktop. A thin, brand-tinted
+ * scrollbar (never the default chunky grey one) keeps it inside the mineral
+ * palette. Tokens, so it follows CMS theme overrides.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-rail {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ot-bloom-brand-ring) transparent;
+}
+.location-rail::-webkit-scrollbar { width: 8px; }
+.location-rail::-webkit-scrollbar-track { background: transparent; }
+.location-rail::-webkit-scrollbar-thumb {
+  background: var(--ot-bloom-brand-faint);
+  border-radius: 9999px;
+}
+.location-rail:hover::-webkit-scrollbar-thumb { background: var(--ot-bloom-brand-ring); }
+
 /* ── Map beacon marker ────────────────────────────────────────────────────────
  * The custom Mapbox marker: a brand-filled disc with an fg-on-brand core and a
  * chromatic brand-bloom halo (not a skeuomorphic pin). The active marker grows,

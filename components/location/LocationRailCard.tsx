@@ -46,7 +46,7 @@ export default function LocationRailCard({ location, active, onSelect, onHover, 
         <LocationPlate shape="fill" src={l.imageUrl} name={name} size="sm" />
       </div>
 
-      <span className="min-w-0 flex-1 self-center px-sm py-2">
+      <span className="min-w-0 flex-1 self-center px-sm py-sm">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-sm font-bold leading-tight text-fg">{name}</span>
           {l.locationLabel && <LocationLabelBadge label={l.locationLabel} tone="soft" />}

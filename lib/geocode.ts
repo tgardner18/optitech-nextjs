@@ -1,12 +1,22 @@
+import { cache } from 'react'
+
 // ─── Address geocoding (Mapbox Geocoding API) ──────────────────────────────────
 //
 // Converts an OT_LocationProfile's free-text `address` into map coordinates.
 // Called server-side from the Location Listing server wrapper, concurrently
 // across all loaded locations via Promise.all.
 //
-// Caching: the fetch uses Next.js ISR with a 24-hour revalidate window, so the
-// same address is geocoded at most once per day across the whole deployment —
-// addresses rarely move, and the Mapbox free tier is rate-limited.
+// Caching is layered so the Mapbox Geocoding API is hit as rarely as possible:
+//   1. React cache() — per-request memoization. Two locations sharing an address
+//      (or the same address across multiple listing blocks on one page) resolve
+//      to a single call within a render.
+//   2. Next.js Data Cache — the fetch uses `next: { revalidate: 86400 }`, so the
+//      same address is geocoded at most once per day across ALL requests and
+//      deployments, not just one render. Addresses rarely move and the token is
+//      rate-limited, so a long window is safe.
+// (Mapbox GL's tiles, style, sprites, and glyphs are HTTP-cached by the browser,
+// and the map view sets `reuseMaps` so the GL instance is reused across view
+// toggles rather than re-initialized.)
 //
 // Failure policy: NEVER throws. Returns null on missing token, no results,
 // non-OK response, or any network/parse error, logging a console.warn. Callers
@@ -15,7 +25,7 @@
 
 const GEOCODE_REVALIDATE_SECONDS = 86_400 // 24h
 
-export async function geocodeAddress(
+export const geocodeAddress = cache(async function geocodeAddress(
   address: string,
 ): Promise<{ lat: number; lon: number } | null> {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
@@ -55,4 +65,4 @@ export async function geocodeAddress(
     console.warn(`[geocode] "${trimmed}" → ${err instanceof Error ? err.message : 'error'}`)
     return null
   }
-}
+})

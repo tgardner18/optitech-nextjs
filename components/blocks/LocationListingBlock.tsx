@@ -51,7 +51,9 @@ export default async function LocationListingBlock({
 
   return (
     <section className={`${sectionBg} px-md py-xl lg:px-lg`}>
-      <div className="mx-auto max-w-7xl">
+      {/* Full-bleed within the section gutters — the map + rail and the card grid
+          use the whole page width; only the heading stays at a reading measure. */}
+      <div className="w-full">
         {(heading || subtext) && (
           <header className="mb-lg max-w-(--ot-measure)">
             {heading && (

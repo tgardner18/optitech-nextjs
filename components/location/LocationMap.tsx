@@ -7,6 +7,7 @@ import { MapPin, ArrowUpRight, X } from 'lucide-react'
 import type { LocationData } from '@/lib/locations'
 import { hasCoordinates } from '@/lib/locationFormat'
 import LocationLabelBadge from './LocationLabelBadge'
+import LocationPlate from './LocationPlate'
 
 type MappableLocation = LocationData & { coordinates: { lat: number; lon: number } }
 
@@ -175,28 +176,16 @@ export default function LocationMap({ locations, selectedKey, onSelectKey, token
                 type="button"
                 onClick={() => onSelectKey(null)}
                 aria-label="Close"
-                className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center bg-canvas/70 text-fg-muted backdrop-blur-sm transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center bg-canvas/70 text-fg-muted backdrop-blur-sm transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 <X size={15} strokeWidth={2} aria-hidden />
               </button>
 
-              {selected.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={selected.imageUrl}
-                  alt={selected.locationName || 'Location'}
-                  className="h-28 w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div
-                  className="flex h-20 w-full items-center justify-center"
-                  style={{ background: 'oklch(from var(--ot-brand) l c h / 0.18)' }}
-                  aria-hidden
-                >
-                  <MapPin size={26} strokeWidth={1.5} className="text-brand" />
-                </div>
-              )}
+              {/* Shared plate: image or the same designed brand fallback used on the
+                  cards, rail, and rows, so every no-image surface reads identically. */}
+              <div className="relative aspect-[16/9] w-full bg-canvas">
+                <LocationPlate shape="fill" src={selected.imageUrl} name={selected.locationName || 'Location'} />
+              </div>
 
               <div className="flex flex-col gap-1.5 p-3">
                 {selected.locationLabel && (
