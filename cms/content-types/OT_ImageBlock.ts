@@ -7,6 +7,18 @@ export const OT_ImageBlock = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    mediaSide: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Media Side',
+      description: 'Which side the media sits on in the editorial layout.',
+      enum: [
+        { value: 'right', displayName: 'Media right (Default)' },
+        { value: 'left', displayName: 'Media left' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     image:   { type: 'contentReference', allowedTypes: ['_image'], displayName: 'Image', group: 'OT_Content', sortOrder: 10 },
     alt:     { type: 'string', isLocalized: true, maxLength: 200, displayName: 'Alt Text',  group: 'OT_Content', sortOrder: 20 },
     caption: { type: 'string', isLocalized: true, maxLength: 200, displayName: 'Caption',   group: 'OT_Content', sortOrder: 30 },

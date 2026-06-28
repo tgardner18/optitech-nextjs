@@ -22,6 +22,18 @@ export const OT_TrustRail = contentType({
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
+    motion: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Motion',
+      enum: [
+        { value: 'scroll', displayName: 'Scroll — infinite marquee (Default)' },
+        { value: 'fade', displayName: 'Fade — staggered reveal' },
+        { value: 'static', displayName: 'Static — plain grid' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     headline: {
       type:        'string',
       maxLength:   120,

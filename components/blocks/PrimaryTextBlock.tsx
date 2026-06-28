@@ -1,5 +1,6 @@
 import { cva } from "class-variance-authority";
 import { RichText } from '@optimizely/cms-sdk/react/richText'
+import PrimaryTextDepth3D from './PrimaryTextDepth3D.client'
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
@@ -150,10 +151,17 @@ export default function PrimaryTextBlock({
   // Highlight is an inline marker swipe, so it lives on a span hugging the text;
   // every other effect applies directly to the heading element.
   const isHighlight = effect === 'highlight'
+  // depth3d is the one interactive effect: it renders real stacked DOM layers via
+  // a client component (cursor-driven 3D rotation). The heading itself does NOT
+  // get the effect class — the client owns the layered markup. Every other effect
+  // stays exactly as it was: server-rendered, zero client JavaScript.
+  const isDepth3d = effect === 'depth3d'
 
   const headingChildren = isHighlight
     ? <span className={effectClass}>{headline}</span>
-    : headline
+    : isDepth3d
+      ? <PrimaryTextDepth3D text={headline} />
+      : headline
 
   return (
     <section className={sectionCva({ color, size })}>
@@ -166,7 +174,7 @@ export default function PrimaryTextBlock({
             className={`${headlineCva({ size, color })}${
               // Highlight's band fills the line's leading, so add a little bottom
               // margin (on top of the gap-sm) to keep it off the body copy.
-              isHighlight ? ' mb-sm' : effectClass ? ` ${effectClass}` : ''
+              isHighlight ? ' mb-sm' : isDepth3d ? '' : effectClass ? ` ${effectClass}` : ''
             }`}
             {...(effect === 'animatedGradient' ? { 'data-pause-offscreen': '' } : {})}
             {...pa('headline')}

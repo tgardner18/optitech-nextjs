@@ -7,6 +7,25 @@ export const OT_PrimaryTextBlock = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    headerEffect: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Header Effect',
+      description: 'Visual effect applied to the heading (best at headline scale and up).',
+      enum: [
+        { value: 'none', displayName: 'None (Default)' },
+        { value: 'gradient', displayName: 'Gradient' },
+        { value: 'animatedGradient', displayName: 'Animated Gradient' },
+        { value: 'depth3d', displayName: '3D Depth' },
+        { value: 'embossed', displayName: 'Embossed' },
+        { value: 'outline', displayName: 'Outline' },
+        { value: 'neon', displayName: 'Neon' },
+        { value: 'highlight', displayName: 'Highlight' },
+        { value: 'glow', displayName: 'Glow' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     eyebrow:      { type: 'string',   isLocalized: true, maxLength: 60,  displayName: 'Eyebrow',       group: 'OT_Content', sortOrder: 10, indexingType: 'searchable' },
     headline:     { type: 'string',   isLocalized: true, maxLength: 120, displayName: 'Headline',      group: 'OT_Content', sortOrder: 20, indexingType: 'searchable' },
     headingLevel: { type: 'string',   format: 'selectOne', displayName: 'Heading Level', group: 'OT_Content', sortOrder: 25, enum: [

@@ -7,6 +7,18 @@ export const OT_BannerBlock = contentType({
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    treatment: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Overlay Treatment',
+      description: 'How content sits over the image.',
+      enum: [
+        { value: 'scrim', displayName: 'Scrim (Default)' },
+        { value: 'glass', displayName: 'Glass panel' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     heading:           { type: 'string',           displayName: 'Heading',             group: 'OT_Content', sortOrder: 10, isLocalized: true, maxLength: 120, indexingType: 'searchable' },
     headingLevel:      { type: 'string',           displayName: 'Heading Level',       group: 'OT_Content', sortOrder: 15, format: 'selectOne', enum: [
       { value: 'h2', displayName: 'H2 – Section heading (default)' },

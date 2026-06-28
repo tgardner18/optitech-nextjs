@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_PrimaryTextBlock({ content, displaySettings = {} }: Props) {
   const { pa }            = getPreviewUtils(content)
-  const styleOptions      = getPrimaryTextStyles(displaySettings)
+  const styleOptions      = getPrimaryTextStyles(content.headerEffect ? { ...displaySettings, headerEffect: content.headerEffect } : displaySettings)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 
   return (

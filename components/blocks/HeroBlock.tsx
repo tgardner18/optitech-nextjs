@@ -5,7 +5,22 @@ import { cva } from "class-variance-authority";
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
+/**
+ * Art direction of the hero. Each value is a distinct composition that reuses
+ * the same content (eyebrow / headline / body / dual CTA / optional visual) but
+ * arranges it differently. "color" remains the ground-palette modifier within
+ * every direction.
+ *   editorialSplit — the default: solid-color text panel beside a contained visual
+ *   spotlight      — text leads; the visual floats as a framed object with a brand-bloom halo (compact)
+ *   overlap        — layered editorial; the headline plate overlaps a contained image edge
+ *   diagonal       — a sharp diagonal seam between a color panel and a contained image, accent-lit
+ */
+export type HeroDirection =
+  | "editorialSplit" | "spotlight" | "overlap" | "diagonal";
+
 export type HeroStyleOptions = {
+  /** Art direction / composition of the hero (see HeroDirection). */
+  direction?: HeroDirection;
   /** Which side the text panel appears on at desktop widths */
   layout?: "imageRight" | "imageLeft";
   /** Background color of the text panel */
@@ -40,7 +55,8 @@ const textPanelCva = cva(
         surface: "bg-surface",
       },
       mode: {
-        split: "lg:w-[55%]",
+        // A touch wider than half so longer display headlines wrap to fewer lines.
+        split: "lg:w-[58%]",
         full:  "w-full",
       },
     },
@@ -163,7 +179,17 @@ export default function HeroBlock({
   styleOptions = {},
   pa = () => ({}),
 }: HeroBlockProps) {
-  const { layout = "imageRight", color = "brand", animation = "none" } = styleOptions;
+  const { direction = "editorialSplit", layout = "imageRight", color = "brand", animation = "none" } = styleOptions;
+
+  // Non-default art directions are self-contained compositions; delegate to them.
+  // They reuse the same content + the color/animation modifiers.
+  if (direction !== "editorialSplit") {
+    const shared = { eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa };
+    if (direction === "spotlight") return <SpotlightHero {...shared} />;
+    if (direction === "overlap")   return <OverlapHero {...shared} />;
+    if (direction === "diagonal")  return <DiagonalHero {...shared} />;
+  }
+
   const hasVisual  = !!(visual || visualSrc);
   const isAnimated = animation !== "none";
 
@@ -258,6 +284,230 @@ export default function HeroBlock({
         </div>
       )}
 
+    </section>
+  );
+}
+
+// ─── Shared pieces for the alternate art directions ──────────────────────────────
+
+type HeroDirectionProps = {
+  eyebrow?: string;
+  headline: string;
+  body?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  visualSrc?: string;
+  visualAlt?: string;
+  visual?: ReactNode;
+  color: NonNullable<HeroStyleOptions["color"]>;
+  layout: NonNullable<HeroStyleOptions["layout"]>;
+  animation: NonNullable<HeroStyleOptions["animation"]>;
+  pa: NonNullable<HeroBlockProps["pa"]>;
+};
+
+/** Section ground fill by color — the palette modifier shared across directions. */
+const groundCva = cva("", {
+  variants: {
+    color: { brand: "bg-brand-fill", canvas: "bg-canvas", surface: "bg-surface" },
+  },
+  defaultVariants: { color: "brand" },
+});
+
+/** Column-level entrance class (the alternate directions animate the content
+ *  group rather than per-element, keeping each composition self-contained). */
+function entranceClass(animation: HeroDirectionProps["animation"]): string {
+  if (animation === "fade") return "motion-safe:animate-fade-in";
+  if (animation === "slide" || animation === "parallax") return "motion-safe:animate-slide-up";
+  return "";
+}
+
+function HeroMedia({
+  visual, visualSrc, visualAlt, sizes, className = "object-cover",
+}: {
+  visual?: ReactNode; visualSrc?: string; visualAlt?: string; sizes: string; className?: string;
+}) {
+  if (visual) return <>{visual}</>;
+  if (visualSrc) {
+    return (
+      <Image src={visualSrc} alt={visualAlt ?? ""} fill sizes={sizes} className={className} priority />
+    );
+  }
+  return null;
+}
+
+function HeroCtas({
+  color, primaryCta, secondaryCta, pa, className = "",
+}: Pick<HeroDirectionProps, "color" | "primaryCta" | "secondaryCta" | "pa"> & { className?: string }) {
+  if (!primaryCta && !secondaryCta) return null;
+  return (
+    <div className={`flex flex-wrap gap-sm ${className}`}>
+      {primaryCta && (
+        <Link href={primaryCta.href} className={primaryCtaCva({ color })} {...pa("primaryCtaLabel")}>
+          {primaryCta.label}
+        </Link>
+      )}
+      {secondaryCta && (
+        <Link href={secondaryCta.href} className={secondaryCtaCva({ color })} {...pa("secondaryCtaLabel")}>
+          {secondaryCta.label}
+        </Link>
+      )}
+    </div>
+  );
+}
+
+// ─── Direction: Spotlight Bloom (compact) ────────────────────────────────────────
+// Text leads on a single unified ground; the visual floats as a contained, framed
+// object lit by a chromatic brand-bloom halo (never a full-bleed backdrop — that's
+// the Banner's job). Height-conscious: trimmed vertical padding + a wide, capped
+// media so the hero stays within roughly one band. No image → the statement carries
+// the fold on its own.
+
+function SpotlightHero({
+  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
+}: HeroDirectionProps) {
+  const hasVisual = !!(visual || visualSrc);
+  const anim = entranceClass(animation);
+  const imageLeft = layout === "imageLeft";
+  // Give the text the larger track (whichever side it lands on) so headlines get
+  // room; the media keeps the smaller share.
+  const cols = imageLeft ? "lg:grid-cols-[0.9fr_1.1fr]" : "lg:grid-cols-[1.1fr_0.9fr]";
+
+  return (
+    <section
+      className={`${groundCva({ color })} relative overflow-hidden px-md py-lg lg:px-lg lg:py-xl`}
+      data-theme={color === "brand" ? "dark" : undefined}
+      aria-label="Hero"
+    >
+      <div className="hero-spotlight-aura" aria-hidden />
+      <div className={`relative z-10 grid w-full items-center gap-lg lg:gap-2xl ${hasVisual ? cols : "mx-auto max-w-4xl"}`}>
+        <div className={`flex flex-col gap-md lg:gap-lg ${imageLeft ? "lg:order-2" : ""} ${anim}`}>
+          {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
+          <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
+          {body && <p className={bodyCva({ color })} {...pa("body")}>{body}</p>}
+          <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-sm" />
+        </div>
+
+        {hasVisual && (
+          <div className={`relative ${imageLeft ? "lg:order-1" : ""}`} {...pa("visual")}>
+            <div className="hero-bloom-halo" aria-hidden />
+            {/* Wide, height-capped plate keeps the hero compact regardless of viewport. */}
+            <div className="hero-bloom-plate relative aspect-[3/2] max-h-[24rem] overflow-hidden">
+              <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 45vw, 100vw" />
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ─── Direction: Editorial Overlap (polished) ─────────────────────────────────────
+// Layered, magazine composition: a contained image with a solid color headline plate
+// overlapping its edge, an index marker (number + accent rule), and a chromatic depth
+// shadow separating the planes. The image is contained and the type plate occludes
+// its edge — distinct from the Banner's flat full-bleed photo with centered overlay.
+// Polished: capped image height, refined marker, tighter rhythm + vertical padding.
+
+function OverlapHero({
+  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
+}: HeroDirectionProps) {
+  const hasVisual = !!(visual || visualSrc);
+  const anim = entranceClass(animation);
+  const imageLeft = layout === "imageLeft";
+  // The index marker must stay legible on a brand panel (and on custom brand
+  // colors), so it uses the on-brand token there rather than the brand-hued muted.
+  const markerColor = color === "brand" ? "text-fg-on-brand/70" : "text-fg-muted";
+
+  const plate = (
+    <div
+      className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-7 lg:row-start-1 lg:self-center lg:p-xl ${
+        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-6 lg:-ml-[9%]" : "lg:col-start-1 lg:-mr-[9%]"}` : "lg:col-span-12"
+      } ${anim}`}
+      data-theme={color === "brand" ? "dark" : undefined}
+    >
+      <p className={`mb-md flex items-center gap-sm font-mono text-label uppercase tracking-label ${markerColor}`} {...pa("eyebrow")}>
+        <span className="inline-block h-px w-8 flex-none" style={{ background: "var(--ot-accent)" }} aria-hidden />
+        {eyebrow ? eyebrow : "Hero"}
+      </p>
+      <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
+      {body && <p className={`${bodyCva({ color })} mt-sm`} {...pa("body")}>{body}</p>}
+      <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-lg" />
+    </div>
+  );
+
+  return (
+    <section className="bg-canvas px-md py-lg lg:px-lg lg:py-xl" aria-label="Hero">
+      <div className="w-full">
+        <div className="grid items-center gap-0 lg:grid-cols-12">
+          {hasVisual && (
+            <div
+              className={`relative aspect-[3/2] max-h-[28rem] overflow-hidden lg:row-start-1 ${
+                imageLeft ? "lg:col-span-7 lg:col-start-1" : "lg:col-span-7 lg:col-start-6"
+              }`}
+              {...pa("visual")}
+            >
+              <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 58vw, 100vw" />
+            </div>
+          )}
+          {plate}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Direction: Diagonal Split ───────────────────────────────────────────────────
+// A sharp diagonal seam between a solid color panel (text) and the image. The text
+// always sits on an OPAQUE color panel — never floating over the photo — so it stays
+// fully legible in every variant; the panel's diagonal edge is accent-lit (a token
+// drop-shadow that follows the clip silhouette) with a soft brand bloom. Desktop: the
+// image is full-bleed and the diagonal panel covers the text side. Mobile: the image
+// is a top band with a diagonal bottom edge and the text sits on solid ground below.
+// The photo is never behind the text, so it stays clear of the Banner. Height-stable.
+
+function DiagonalHero({
+  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
+}: HeroDirectionProps) {
+  const hasVisual = !!(visual || visualSrc);
+  const anim = entranceClass(animation);
+  const side = layout === "imageLeft" ? "left" : "right";
+
+  return (
+    <section
+      className={`${groundCva({ color })} relative overflow-hidden`}
+      data-theme={color === "brand" ? "dark" : undefined}
+      aria-label="Hero"
+    >
+      {hasVisual && (
+        <>
+          {/* Image: a clipped top band on mobile; full-bleed behind the panel on desktop. */}
+          <div
+            className="hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-0 lg:h-full"
+            {...pa("visual")}
+          >
+            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="100vw" />
+          </div>
+          {/* Solid diagonal panel (desktop only) — the readable text ground + the seam. */}
+          <div
+            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[62%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
+            data-side={side}
+            aria-hidden
+          />
+        </>
+      )}
+
+      <div className="relative z-10 flex w-full items-center px-md py-lg lg:min-h-[22rem] lg:px-lg lg:py-xl">
+        <div
+          className={`flex flex-col gap-md lg:gap-lg ${anim} ${
+            hasVisual ? `lg:max-w-[48%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+          }`}
+        >
+          {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
+          <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
+          {body && <p className={bodyCva({ color })} {...pa("body")}>{body}</p>}
+          <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-sm" />
+        </div>
+      </div>
     </section>
   );
 }

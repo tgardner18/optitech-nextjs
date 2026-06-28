@@ -839,6 +839,100 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
+/* EXTRUDE — INTERACTIVE LAYERED (depth3d)                                      */
+/* Real stacked DOM layers (one duplicate <span> per depth step) instead of    */
+/* flat text-shadow, so the stack genuinely separates in 3D when the headline  */
+/* rotates toward the cursor. Rendered by PrimaryTextDepth3D.client.tsx for     */
+/* effect "depth3d" only. The fill progression mirrors the static .ot-depth-   */
+/* extrude above; on top of it, every layer carries a token-derived OUTLINE     */
+/* stroke so the steps read as stacked ridges (the optimizely.com hero look).   */
+/*                                                                              */
+/* Static by default (works with no JS — this is also the touch / reduced-      */
+/* motion resting state): a clean flat offset stack, no perspective. The client */
+/* sets data-interactive on capable devices, which turns on perspective +       */
+/* preserve-3d so the per-layer translateZ produces real parallax on rotate.    */
+/* All colors are token-derived, so theme overrides + light/dark keep working.  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.ot-extrude3d {
+  display: inline-block;
+  /* No perspective at rest: translateZ is inert, layers sit at their flat 2D
+     offsets — identical to a clean extrude. Perspective is added only when the
+     client marks the instance interactive (capable pointer + motion allowed). */
+}
+.ot-extrude3d[data-interactive] { perspective: 1200px; }
+
+.ot-extrude3d__rot {
+  position: relative;
+  display: inline-block;
+  transform-origin: center center;
+}
+.ot-extrude3d[data-interactive] .ot-extrude3d__rot {
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+}
+
+/* Each duplicate layer. The face (last child) is in flow and sizes the box; the
+   shadow layers overlay it (inset:0, same text → identical wrapping) and step
+   down-right + back in Z. paint-order keeps the fill crisp over the ridge stroke. */
+.ot-extrude3d__layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  transform: translate3d(var(--ox, 0), var(--oy, 0), var(--oz, 0));
+  will-change: transform;
+  -webkit-user-select: none;
+          user-select: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.013em var(--ot-extrude-ridge);
+}
+.ot-extrude3d__layer:last-child {
+  position: relative; /* the face: in flow, defines the box the others overlay */
+}
+
+/* Geometry — 5 receding steps + the face. Offsets mirror the static extrude
+   (0.03 → 0.22em); translateZ (≈ offset × 3) drives the parallax when rotated. */
+.ot-extrude3d__layer:nth-child(1) { --ox: 0.22em; --oy: 0.22em; --oz: -0.66em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --ox: 0.16em; --oy: 0.16em; --oz: -0.48em; }
+.ot-extrude3d__layer:nth-child(3) { --ox: 0.10em; --oy: 0.10em; --oz: -0.30em; }
+.ot-extrude3d__layer:nth-child(4) { --ox: 0.06em; --oy: 0.06em; --oz: -0.18em; }
+.ot-extrude3d__layer:nth-child(5) { --ox: 0.03em; --oy: 0.03em; --oz: -0.09em; }
+.ot-extrude3d__layer:nth-child(6) { --ox: 0;      --oy: 0;      --oz: 0;       } /* face */
+
+/* Dark / canvas (default): near-white face, brand fills graduating deeper, with
+   a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
+.ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.16) c h); }
+.ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h); }
+.ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) calc(l * 0.42) c h); }
+.ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) calc(l * 0.62) c h); }
+.ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) calc(l * 0.82) c h); }
+.ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) l c h); }
+.ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
+
+/* Light mode: navy face with a near-white rim (the "3D sticker" look), steps
+   stepping LIGHTER (clamped) so they read as a soft colored shadow, ridge in
+   true brand. Mirrors the static [data-theme="light"] .ot-depth-extrude. */
+[data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) l c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.16), 0.74) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.21), 0.74) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.74) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.31), 0.74) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.36), 0.74) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(6) {
+  color: var(--ot-brand);
+  -webkit-text-stroke: 0.03em oklch(from var(--ot-brand) 0.99 0.008 h);
+}
+
+/* Brand background: fg-on-brand face, accent fills graduating deeper, accent
+   ridge. Mirrors the static .bg-brand-fill .ot-depth-extrude. */
+.bg-brand-fill .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.16) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-accent) calc(l * 0.22) calc(c * 0.80) h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-accent) calc(l * 0.42) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-accent) calc(l * 0.62) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-accent) calc(l * 0.82) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-accent) l c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg-on-brand); --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.30) c h); }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 /* LIQUID                                                                      */
 /* Brand → accent → brand gradient sweeps through letterforms via             */
 /* background-clip:text. Reduced motion: frozen at midpoint.                  */
@@ -1871,6 +1965,120 @@ body {
   }
 }
 
+/* ── Location directory card ──────────────────────────────────────────────────
+ * Sibling to .practitioner-card — the image-first location plate. Resting
+ * chromatic elevation (brand-hued, never grey) deepens and lifts on hover; the
+ * glass footer reveal + details fade are handled per-element in the component
+ * (transform / opacity only). Bloom tokens follow CMS theme overrides.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-card {
+  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+  transition:
+    transform var(--ot-dur-quick) var(--ot-ease-quick),
+    box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.location-card:hover {
+  box-shadow:
+    0 16px 40px var(--ot-bloom-brand-faint),
+    0 4px 16px var(--ot-bloom-accent-faint);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .location-card:hover { transform: translateY(-6px); }
+}
+
+/* ── Location rail scrollbar ──────────────────────────────────────────────────
+ * The map-view rail scrolls beside the map on desktop. A thin, brand-tinted
+ * scrollbar (never the default chunky grey one) keeps it inside the mineral
+ * palette. Tokens, so it follows CMS theme overrides.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-rail {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ot-bloom-brand-ring) transparent;
+}
+.location-rail::-webkit-scrollbar { width: 8px; }
+.location-rail::-webkit-scrollbar-track { background: transparent; }
+.location-rail::-webkit-scrollbar-thumb {
+  background: var(--ot-bloom-brand-faint);
+  border-radius: 9999px;
+}
+.location-rail:hover::-webkit-scrollbar-thumb { background: var(--ot-bloom-brand-ring); }
+
+/* ── Map beacon marker ────────────────────────────────────────────────────────
+ * The custom Mapbox marker: a brand-filled disc with an fg-on-brand core and a
+ * chromatic brand-bloom halo (not a skeuomorphic pin). The active marker grows,
+ * gains an accent ring, and emits a motion-safe pulse. Every color resolves from
+ * a semantic token, so markers recalibrate under a CMS theme override. All
+ * sizing is transform/opacity-safe (no layout animation).
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-beacon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.location-beacon__dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--ot-brand);
+  border: 2px solid var(--ot-fg-on-brand);
+  box-shadow: 0 0 0 4px var(--ot-bloom-brand-faint), 0 2px 6px var(--ot-bloom-brand-ring);
+  transition: transform var(--ot-dur-quick) var(--ot-ease-quick),
+              box-shadow var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.location-beacon:hover .location-beacon__dot {
+  transform: scale(1.18);
+}
+.location-beacon[data-active] {
+  width: 24px;
+  height: 24px;
+}
+.location-beacon[data-active] .location-beacon__dot {
+  border-color: var(--ot-accent);
+  box-shadow: 0 0 0 5px var(--ot-bloom-accent-faint), 0 4px 12px var(--ot-bloom-brand-ring);
+}
+.location-beacon__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--ot-bloom-accent-ring);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .location-beacon[data-active] .location-beacon__pulse {
+    animation: locationBeaconPulse 1.8s var(--ot-ease-quick) infinite;
+  }
+}
+@keyframes locationBeaconPulse {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  70%  { transform: scale(2.6); opacity: 0;    }
+  100% { transform: scale(2.6); opacity: 0;    }
+}
+
+/* ── Mapbox popup override ─────────────────────────────────────────────────────
+ * The default Mapbox popup ships an opaque white content box, a white tip, and a
+ * grey close button — none of which belong in this dark, token-driven system.
+ * Scoped to .location-popup (set on the react-map-gl <Popup>), these rules strip
+ * the white chrome to nothing and let the component render a sharp-cornered dark
+ * card. The tip is recolored to the canvas ground so it reads as one surface.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.location-popup .mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 0;
+  background: var(--ot-canvas);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.18);
+  box-shadow: 0 12px 40px var(--ot-bloom-brand-faint), 0 4px 16px oklch(from var(--ot-canvas) l c h / 0.6);
+  overflow: hidden;
+}
+.location-popup .mapboxgl-popup-close-button { display: none; }
+.location-popup.mapboxgl-popup-anchor-bottom  .mapboxgl-popup-tip { border-top-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-top      .mapboxgl-popup-tip { border-bottom-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-left     .mapboxgl-popup-tip { border-right-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-right    .mapboxgl-popup-tip { border-left-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-bottom-left  .mapboxgl-popup-tip,
+.location-popup.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip { border-top-color: var(--ot-canvas); }
+.location-popup.mapboxgl-popup-anchor-top-left  .mapboxgl-popup-tip,
+.location-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip { border-bottom-color: var(--ot-canvas); }
+
 /* ── Resource Library grid card ───────────────────────────────────────────────
  * Chromatic lift on hover (translateY + shadow intensification) plus a bottom-
  * to-top fill on the brand band that deepens to brand-hover. The fill uses
@@ -2149,6 +2357,93 @@ body {
   [data-pause-offscreen][data-offscreen]    { animation-play-state: paused; }
   .hero-atmos[data-offscreen]::before        { animation-play-state: paused; }
 }
+
+/* ─── HeroBlock — alternate art directions (Design direction) ──────────────────
+ * Spotlight Bloom, Drenched Statement, Editorial Overlap, Poster Frame. Every
+ * color resolves from --ot-brand / --ot-accent / --ot-fg / --ot-canvas via
+ * relative-color syntax + the bloom tokens, so all four follow CMS theme
+ * overrides and light/dark exactly like the rest of the system. Sharp corners
+ * throughout (system identity); no layout-property animation.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Ambient ground wash for Spotlight — a faint off-axis brand (and a touch of
+ * accent) bloom so the flat ground reads as lit. Behind content. */
+.hero-spotlight-aura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 70% at 85% 16%, var(--ot-bloom-brand-faint) 0%, transparent 60%),
+    radial-gradient(ellipse 48% 58% at 6% 94%,  var(--ot-bloom-accent-faint) 0%, transparent 58%);
+}
+
+/* Floating media plate (Spotlight / Drench / Poster): a 1px brand-tinted ring +
+ * a chromatic brand bloom shadow with a faint accent second layer. */
+.hero-bloom-plate {
+  position: relative;
+  z-index: 1;
+  background: var(--ot-surface);
+  box-shadow:
+    0 0 0 1px var(--ot-bloom-brand-border),
+    0 18px 50px var(--ot-bloom-brand-faint),
+    0 8px 24px oklch(from var(--ot-accent) l c h / 0.10);
+}
+
+/* Soft halo behind the Spotlight plate so the object reads as genuinely lit. */
+.hero-bloom-halo {
+  position: absolute;
+  inset: -8%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, var(--ot-bloom-brand-ring) 0%, transparent 70%);
+  filter: blur(40px);
+  opacity: 0.65;
+}
+
+/* Editorial Overlap — the headline plate carries the card chromatic depth so it
+ * lifts above the contained image it overlaps. */
+.hero-overlap-plate {
+  box-shadow:
+    0 18px 50px var(--ot-bloom-brand-faint),
+    0 6px 20px oklch(from var(--ot-canvas) l c h / 0.45);
+}
+
+/* Diagonal Split — the text always sits on an OPAQUE color panel; the panel's
+ * diagonal edge is the seam, accent-lit by a token drop-shadow that follows the
+ * clip silhouette, plus a soft brand bloom. The text never floats over the photo,
+ * so it stays legible in every variant.
+ *
+ *   Mobile : the image is a top band with a diagonal BOTTOM edge (accent below);
+ *            text sits on solid ground beneath it (no panel).
+ *   Desktop: the image is full-bleed; the panel covers the text side with a
+ *            diagonal LEFT or RIGHT edge. */
+.hero-diagonal__media {
+  /* Mobile band: diagonal bottom edge, accent runs along it. */
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+  filter: drop-shadow(0 3px 0 var(--ot-accent)) drop-shadow(0 8px 26px var(--ot-bloom-brand-ring));
+}
+@media (min-width: 1024px) {
+  /* Desktop: full-bleed image, no clip (the panel provides the seam). */
+  .hero-diagonal__media { clip-path: none; filter: none; }
+}
+
+.hero-diagonal__panel {
+  /* Soft brand bloom on the seam; the crisp accent edge is added per side below. */
+  filter: drop-shadow(0 0 30px var(--ot-bloom-brand-ring));
+}
+.hero-diagonal__panel[data-side="right"] {
+  /* Text panel on the LEFT; diagonal on its right edge (panel is 62% wide). */
+  clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  filter: drop-shadow(3px 0 0 var(--ot-accent)) drop-shadow(12px 0 30px var(--ot-bloom-brand-ring));
+}
+.hero-diagonal__panel[data-side="left"] {
+  /* Text panel on the RIGHT; diagonal on its left edge. */
+  clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(-3px 0 0 var(--ot-accent)) drop-shadow(-12px 0 30px var(--ot-bloom-brand-ring));
+}
+/* The panel stays static (animating it would briefly expose the photo under the
+ * text); the text column carries the entrance via its own motion-safe class. */
 
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
  * keyframes used by the auto-play countdown and panel entrance.

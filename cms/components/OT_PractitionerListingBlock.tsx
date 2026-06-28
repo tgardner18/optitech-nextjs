@@ -20,7 +20,7 @@ export default async function OT_PractitionerListingBlockAdapter({
 }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  const styleOptions = getPractitionerListingStyles(displaySettings)
+  const styleOptions = getPractitionerListingStyles(content.layout ? { ...displaySettings, layout: content.layout } : displaySettings)
   const locale       = await getRequestLocale()
 
   const groupTag =

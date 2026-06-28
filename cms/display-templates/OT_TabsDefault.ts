@@ -8,16 +8,6 @@ export const OT_TabsDefault = displayTemplate({
   settings: {
 
     // ── Tab trigger visual style ─────────────────────────────────────────────
-    tabStyle: {
-      displayName: 'Tab Style',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        underline:   { displayName: 'Underline (Default)', sortOrder: 10 },
-        pill:        { displayName: 'Pill',                sortOrder: 20 },
-        buttonGroup: { displayName: 'Button Group',        sortOrder: 30 },
-      },
-    },
 
     // ── Trigger placement ────────────────────────────────────────────────────
     tabPosition: {

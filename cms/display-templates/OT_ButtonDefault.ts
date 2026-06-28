@@ -7,19 +7,6 @@ export const OT_ButtonDefault = displayTemplate({
   contentType: 'OT_ButtonBlock',
   isDefault: true,
   settings: {
-    variant: {
-      displayName: 'Variant',
-      editor: 'select',
-      sortOrder: 10,
-      choices: {
-        brand:      { displayName: 'Brand — theme fill (Default)',             sortOrder: 10 },
-        accent:     { displayName: 'Accent — accent color fill',              sortOrder: 20 },
-        ghost:      { displayName: 'Ghost — bordered, for dark surfaces',     sortOrder: 30 },
-        signal:     { displayName: 'Signal — kinetic fill sweep',             sortOrder: 40 },
-        hoverFill:  { displayName: 'Hover Fill — glow border, fills on hover', sortOrder: 50 },
-        glass:      { displayName: 'Glass — frosted backdrop blur',           sortOrder: 60 },
-      },
-    },
     size: {
       displayName: 'Size',
       editor: 'select',

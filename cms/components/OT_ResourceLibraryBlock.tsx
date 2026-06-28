@@ -26,7 +26,7 @@ export default async function OT_ResourceLibraryBlockAdapter({
   displaySettings = {},
 }: Props) {
   const { pa }            = getPreviewUtils(content)
-  const styleOptions      = getResourceLibraryStyles(displaySettings)
+  const styleOptions      = getResourceLibraryStyles(content.layout ? { ...displaySettings, layout: content.layout } : displaySettings)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 
   // Extract text fields

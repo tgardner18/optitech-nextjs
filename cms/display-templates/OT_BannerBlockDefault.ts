@@ -16,15 +16,6 @@ export const OT_BannerBlockDefault = displayTemplate({
         brand:   { displayName: 'Brand',            sortOrder: 30 },
       },
     },
-    treatment: {
-      displayName: 'Overlay treatment',
-      editor:      'select',
-      sortOrder:   20,
-      choices: {
-        scrim: { displayName: 'Scrim (Default)', sortOrder: 10 },
-        glass: { displayName: 'Glass panel',     sortOrder: 20 },
-      },
-    },
     alignment: {
       displayName: 'Content alignment',
       editor:      'select',

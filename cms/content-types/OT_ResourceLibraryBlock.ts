@@ -7,6 +7,18 @@ export const OT_ResourceLibraryBlock = contentType({
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    layout: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Layout',
+      description: 'Which view to use.',
+      enum: [
+        { value: 'list', displayName: 'Dense List (Default)' },
+        { value: 'grid', displayName: 'Card Grid' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     eyebrow: {
       type:        'string',
       displayName: 'Eyebrow',

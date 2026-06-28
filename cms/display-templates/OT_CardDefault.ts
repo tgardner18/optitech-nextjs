@@ -28,17 +28,6 @@ export const OT_CardDefault = displayTemplate({
         brand:  { displayName: 'Brand',          sortOrder: 30 },
       },
     },
-    imageStyle: {
-      displayName: 'Image treatment',
-      editor: 'select',
-      sortOrder: 30,
-      choices: {
-        top:        { displayName: 'Top (Default)', sortOrder: 10 },
-        background: { displayName: 'Background',    sortOrder: 20 },
-        side:       { displayName: 'Side',          sortOrder: 30 },
-        float:      { displayName: 'Floating',      sortOrder: 40 },
-      },
-    },
     imageSide: {
       displayName: 'Image side',
       editor: 'select',

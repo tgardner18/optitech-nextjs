@@ -6,15 +6,6 @@ export const OT_PractitionerListingDefault = displayTemplate({
   contentType: 'OT_PractitionerListingBlock',
   isDefault:   true,
   settings: {
-    layout: {
-      displayName: 'Layout',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        grid: { displayName: 'Grid (cards)',    sortOrder: 10 },
-        list: { displayName: 'List (rows)',     sortOrder: 20 },
-      },
-    },
     color: {
       displayName: 'Color',
       editor:      'select',

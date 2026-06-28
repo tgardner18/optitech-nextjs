@@ -6,15 +6,6 @@ export const OT_VideoDefault = displayTemplate({
   contentType: 'OT_VideoBlock',
   isDefault: true,
   settings: {
-    mediaSide: {
-      displayName: 'Media side (editorial layout)',
-      editor: 'select',
-      sortOrder: 1,
-      choices: {
-        left:  { displayName: 'Media left (Default)', sortOrder: 10 },
-        right: { displayName: 'Media right',          sortOrder: 20 },
-      },
-    },
     ratio: {
       displayName: 'Aspect ratio',
       editor: 'select',

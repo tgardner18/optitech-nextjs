@@ -8,6 +8,18 @@ export const OT_TabsBlock = contentType({
   baseType:             '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {
+    tabStyle: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Tab Style',
+      enum: [
+        { value: 'underline', displayName: 'Underline (Default)' },
+        { value: 'pill', displayName: 'Pill' },
+        { value: 'buttonGroup', displayName: 'Button Group' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     eyebrow: {
       type:        'string',
       displayName: 'Eyebrow',

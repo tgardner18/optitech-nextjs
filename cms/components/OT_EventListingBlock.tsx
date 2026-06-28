@@ -21,7 +21,7 @@ export default async function OT_EventListingBlockAdapter({
 }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  const styleOptions = getEventListingStyles(displaySettings)
+  const styleOptions = getEventListingStyles(content.defaultView ? { ...displaySettings, defaultView: content.defaultView } : displaySettings)
 
   const locale      = await getRequestLocale()
   const siteBaseUrl = await getRequestBaseUrl()

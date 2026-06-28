@@ -16,7 +16,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
   const staggerAttr       = entranceAnimation !== 'none' ? entranceAnimation : undefined
 
-  const mediaSide = (displaySettings?.mediaSide ?? 'left') as 'left' | 'right'
+  const mediaSide = (content.mediaSide ?? displaySettings?.mediaSide ?? 'left') as 'left' | 'right'
   const hasEditorial = Boolean(
     content.eyebrow || content.heading || content.body || content.ctaUrl?.default
   )

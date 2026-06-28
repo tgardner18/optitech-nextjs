@@ -8,16 +8,6 @@ export const OT_DividerBlockDefault = displayTemplate({
   settings: {
 
     // ── Visual treatment ───────────────────────────────────────────────────────
-    style: {
-      displayName: 'Style',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        mark:  { displayName: 'Mark — text or ornament with hairline rules', sortOrder: 10 },
-        glow:  { displayName: 'Glow — luminous chromatic rule',               sortOrder: 20 },
-        bleed: { displayName: 'Bleed — atmospheric radial light seam',        sortOrder: 30 },
-      },
-    },
 
     // ── Vertical breathing room ──────────────────────────────────────────────────
     space: {

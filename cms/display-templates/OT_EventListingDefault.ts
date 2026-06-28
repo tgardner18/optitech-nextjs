@@ -6,16 +6,6 @@ export const OT_EventListingDefault = displayTemplate({
   contentType: 'OT_EventListingBlock',
   isDefault:   true,
   settings: {
-    defaultView: {
-      displayName: 'Default View',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        card:     { displayName: 'Card Grid', sortOrder: 10 },
-        list:     { displayName: 'List',      sortOrder: 20 },
-        calendar: { displayName: 'Calendar',  sortOrder: 30 },
-      },
-    },
     color: {
       displayName: 'Color',
       editor:      'select',

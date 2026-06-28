@@ -9,19 +9,6 @@ export const OT_CalloutDefault = displayTemplate({
   settings: {
 
     // ── Semantic intent ──────────────────────────────────────────────────────
-    intent: {
-      displayName: 'Intent',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        neutral: { displayName: 'Neutral',          sortOrder: 10 },
-        info:    { displayName: 'Info (Default)',    sortOrder: 20 },
-        success: { displayName: 'Success',           sortOrder: 30 },
-        warning: { displayName: 'Warning',           sortOrder: 40 },
-        danger:  { displayName: 'Danger',            sortOrder: 50 },
-        brand:   { displayName: 'Brand',             sortOrder: 60 },
-      },
-    },
 
     // ── Visual variant ───────────────────────────────────────────────────────
     variant: {

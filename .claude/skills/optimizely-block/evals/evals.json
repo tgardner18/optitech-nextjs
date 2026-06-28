@@ -1,0 +1,67 @@
+{
+  "skill_name": "optimizely-block",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a Testimonial block to our site. It should have an eyebrow, a quote (rich text), an author name, an author title, an optional author photo, and a CTA. We want editors to be able to drop it on any page and pick a background color. Wire it up end to end.",
+      "expected_output": "Should create ALL SEVEN artifacts together: (1) cms/content-types/OT_TestimonialBlock.ts with contentType({ key: 'OT_TestimonialBlock', baseType: '_component', compositionBehaviors }) and properties using the right SDK shapes (richText quote, contentReference allowedTypes ['_image'] photo, url + string label for the CTA, isLocalized + top-level maxLength, group: 'OT_Content'); (2) cms/display-templates/OT_TestimonialDefault.ts keyed on contentType with a color select; (3) cms/components/OT_TestimonialBlock.tsx server adapter using getPreviewUtils, pa(content.__composition), RichText with .json; (4) components/blocks/TestimonialBlock.tsx pure UI component with cva, no @optimizely/cms-sdk server import; (5) three cms/registry.ts entries (initContentTypeRegistry, initDisplayTemplateRegistry, initReactComponentRegistry resolver keyed OT_TestimonialBlock); (6) showcase demo in app/(site)/showcase/blocks/[block]/page.tsx (slug added to BLOCK_SLUGS, BLOCK_META entry, a TestimonialShowcase component, a switch case); (7) the nav item { label: 'Testimonial', slug: 'testimonial' } in app/(site)/showcase/config.ts. Should push BEFORE building and offer to run yarn cms:push then yarn build.",
+      "files": [],
+      "assertions": [
+        { "name": "Creates the content type", "check": "Output creates cms/content-types/OT_TestimonialBlock.ts with contentType({ ... baseType: '_component' ... })" },
+        { "name": "Creates the display template keyed on contentType", "check": "Output creates cms/display-templates/OT_TestimonialDefault.ts with displayTemplate({ ... contentType: 'OT_TestimonialBlock' ... })" },
+        { "name": "Creates the CMS adapter", "check": "Output creates cms/components/OT_TestimonialBlock.tsx using getPreviewUtils and pa(content.__composition)" },
+        { "name": "Creates the UI component", "check": "Output creates components/blocks/TestimonialBlock.tsx that does NOT import config/getPreviewUtils/ContentProps from @optimizely/cms-sdk" },
+        { "name": "Makes all three registry edits", "check": "cms/registry.ts gains entries in initContentTypeRegistry, initDisplayTemplateRegistry, and initReactComponentRegistry resolver (key OT_TestimonialBlock)" },
+        { "name": "Adds the showcase demo (four edits)", "check": "app/(site)/showcase/blocks/[block]/page.tsx gains the slug in BLOCK_SLUGS, a BLOCK_META entry, a showcase component, and a switch case" },
+        { "name": "Adds the showcase nav item", "check": "app/(site)/showcase/config.ts gains { label: 'Testimonial', slug: 'testimonial' } in the blocks items array" },
+        { "name": "Models the CTA as url + string, not link", "check": "The CTA uses a type: 'url' field plus a type: 'string' label, NOT a type: 'link' property" },
+        { "name": "Rich text rendered via .json", "check": "Adapter passes content.<quote>?.json and the UI renders with <RichText>, never .html with dangerouslySetInnerHTML" },
+        { "name": "Push before build", "check": "Response says to run cms:push (config push) before yarn build, citing the HTTP 400 Unknown type risk" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "On my new OT_PricingBlock I added the CTA as a single localized link field: ctaLink: { type: 'link', isLocalized: true, displayName: 'CTA' }. The config push is now failing with a 500. What's wrong and how do I fix it?",
+      "expected_output": "Should identify that a localized link-typed property 500s the CMS CLI config push, and that link should be reserved for navigation component types. Should instruct to replace it with two fields: ctaLabel (type: 'string', isLocalized: true, maxLength) and ctaUrl (type: 'url'), then re-push. Should note the adapter reads content.ctaUrl?.default and content.ctaLabel and the UI renders a plain anchor.",
+      "files": [],
+      "assertions": [
+        { "name": "Diagnoses the localized link push failure", "check": "Explains that a localized type: 'link' property crashes config push (link is only reliable for navigation component types)" },
+        { "name": "Prescribes url + string label", "check": "Recommends replacing the link with type: 'url' (ctaUrl) plus type: 'string' (ctaLabel)" },
+        { "name": "Does not recommend keeping link for the CTA", "check": "Does NOT suggest keeping a link-typed CTA or just removing isLocalized as the fix" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I ran yarn cms:push after adding a new block and got a bunch of errors: a couple of 'property group \"OT_Marketing\" does not match an existing group' plus a long list of 'Unable to find a content type OT_HeroBlock / OT_CardBlock / ...' for display templates that were totally fine before. Nothing changed in those other blocks. What happened?",
+      "expected_output": "Should recognize the atomic-rollback symptom: a property referenced an undeclared property group (OT_Marketing), and because the content-type portion of the import is atomic, ALL content types rolled back; the display templates then can't bind to the rolled-back types, producing the cascade of 'Unable to find a content type' errors. The other blocks are not actually broken. Fix: declare OT_Marketing in optimizely.config.mjs propertyGroups (or reuse OT_Content / OT_Style), then re-push. Should note only OT_Content/OT_Style/OT_Theme/OT_SEO/OT_Integrations are currently declared.",
+      "files": [],
+      "assertions": [
+        { "name": "Identifies the undeclared property group as root cause", "check": "Points to the OT_Marketing group not being declared in optimizely.config.mjs propertyGroups" },
+        { "name": "Explains the atomic rollback cascade", "check": "Explains the content-type import is atomic, so all types rolled back and the display-template 'Unable to find a content type' errors are downstream, not real" },
+        { "name": "Gives the fix", "check": "Says to add the group to optimizely.config.mjs propertyGroups (or use an existing group) and re-push" }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Should my new FullBleedFeature be a block or a section, and how does the display template differ? I want it to be a full-width band that contains other blocks (rows/columns) inside it.",
+      "expected_output": "Should disambiguate: because it CONTAINS other blocks (a composition subtree), it is a SECTION, not a leaf block. The section adapter (cms/compositions/) renders <OptimizelyGridSection nodes={content.nodes} /> and spreads pa(content) (not pa(content.__composition)). Its display template keys on baseType: '_section' (NOT contentType). Contrast with a leaf block, whose adapter renders typed props through a UI component, spreads pa(content.__composition), and whose display template keys on contentType. Should reference cms/compositions/Section.tsx and OT_LandingSection as the model.",
+      "files": [],
+      "assertions": [
+        { "name": "Chooses section because it contains other blocks", "check": "Concludes it is a section (contains a composition subtree), not a leaf block" },
+        { "name": "Section display template keys on baseType _section", "check": "States the section display template uses baseType: '_section', while a block template uses contentType" },
+        { "name": "Section adapter renders the grid and uses pa(content)", "check": "Says the section adapter renders OptimizelyGridSection over content.nodes and spreads pa(content), versus pa(content.__composition) for a block" }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I see OptiFormsChoiceElement and OptiFormsContainerData in cms/registry.ts. I'm building a new contact form block, can I just add an OptiForms display template and push it like my other blocks?",
+      "expected_output": "Should warn that OptiForms types are Optimizely Forms (a separate hosted product), present in initContentTypeRegistry ONLY so the SDK can build composition fragments. They must NOT be authored with the four-layer pattern: no display template, adapter, styling, or showcase entry, and they must NOT be pushed (optimizely.config.mjs excludes both OptiForms globs). Pushing a Forms display template fails with 'Unable to find a content type OptiFormsContainerData' because the backing type is never pushed. A custom form block, if truly needed, would be a normal OT_ block, separate from OptiForms.",
+      "files": [],
+      "assertions": [
+        { "name": "Identifies OptiForms as a separate product", "check": "Explains OptiForms types are Optimizely Forms, registered only for GraphQL fragment compatibility, not authored via the four-layer pattern" },
+        { "name": "Says do not push OptiForms", "check": "States OptiForms types/templates must not be pushed and that optimizely.config.mjs excludes the OptiForms* globs" },
+        { "name": "Names the push failure", "check": "Notes pushing a Forms display template errors with 'Unable to find a content type OptiFormsContainerData'" }
+      ]
+    }
+  ]
+}

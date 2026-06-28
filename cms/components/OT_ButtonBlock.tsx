@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_ButtonBlock({ content, displaySettings = {} }: Props) {
   const { pa } = getPreviewUtils(content)
-  const styleOptions = getButtonStyles(displaySettings)
+  const styleOptions = getButtonStyles(content.variant ? { ...displaySettings, variant: content.variant } : displaySettings)
 
   const label = content.label ?? ''
   const url   = content.url?.default ?? undefined
