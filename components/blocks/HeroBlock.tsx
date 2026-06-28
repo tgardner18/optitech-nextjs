@@ -450,12 +450,13 @@ function OverlapHero({
 }
 
 // ─── Direction: Diagonal Split ───────────────────────────────────────────────────
-// A sharp diagonal seam between a color panel (text) and a contained image. The
-// image is clipped to a diagonal edge that is accent-lit (a token drop-shadow that
-// follows the clip silhouette) with a soft brand bloom; it reveals with a motion-safe
-// slide. The image is a contained half, never a full-bleed backdrop with overlay —
-// clear of the Banner. Height-stable: the image tracks the panel height, capped by a
-// modest min-height so the diagonal always reads.
+// A sharp diagonal seam between a solid color panel (text) and the image. The text
+// always sits on an OPAQUE color panel — never floating over the photo — so it stays
+// fully legible in every variant; the panel's diagonal edge is accent-lit (a token
+// drop-shadow that follows the clip silhouette) with a soft brand bloom. Desktop: the
+// image is full-bleed and the diagonal panel covers the text side. Mobile: the image
+// is a top band with a diagonal bottom edge and the text sits on solid ground below.
+// The photo is never behind the text, so it stays clear of the Banner. Height-stable.
 
 function DiagonalHero({
   eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
@@ -471,19 +472,27 @@ function DiagonalHero({
       aria-label="Hero"
     >
       {hasVisual && (
-        <div
-          className={`hero-diagonal__media relative h-60 w-full lg:absolute lg:inset-y-0 lg:h-auto lg:w-[62%] ${side === "left" ? "lg:left-0" : "lg:right-0"}`}
-          data-side={side}
-          {...pa("visual")}
-        >
-          <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 62vw, 100vw" />
-        </div>
+        <>
+          {/* Image: a clipped top band on mobile; full-bleed behind the panel on desktop. */}
+          <div
+            className="hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-0 lg:h-full"
+            {...pa("visual")}
+          >
+            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="100vw" />
+          </div>
+          {/* Solid diagonal panel (desktop only) — the readable text ground + the seam. */}
+          <div
+            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[58%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
+            data-side={side}
+            aria-hidden
+          />
+        </>
       )}
 
-      <div className="relative z-10 mx-auto flex max-w-7xl items-center px-md py-xl lg:min-h-[26rem] lg:px-lg lg:py-2xl">
+      <div className="relative z-10 mx-auto flex max-w-7xl items-center px-md py-xl lg:min-h-[28rem] lg:px-lg lg:py-2xl">
         <div
           className={`flex flex-col gap-md lg:gap-lg ${anim} ${
-            hasVisual ? `lg:max-w-[44%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+            hasVisual ? `lg:max-w-[42%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
           }`}
         >
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}

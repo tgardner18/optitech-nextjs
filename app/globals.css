@@ -2409,39 +2409,41 @@ body {
     0 6px 20px oklch(from var(--ot-canvas) l c h / 0.45);
 }
 
-/* Diagonal Split — the contained image is clipped to a diagonal seam and that
- * seam is accent-lit by a token drop-shadow that follows the clip silhouette,
- * plus a soft brand bloom. Mobile: the image is a top band with a diagonal
- * BOTTOM edge; desktop: a side panel with a diagonal LEFT or RIGHT edge. The
- * image reveals with a motion-safe slide (transform/opacity only). */
+/* Diagonal Split — the text always sits on an OPAQUE color panel; the panel's
+ * diagonal edge is the seam, accent-lit by a token drop-shadow that follows the
+ * clip silhouette, plus a soft brand bloom. The text never floats over the photo,
+ * so it stays legible in every variant.
+ *
+ *   Mobile : the image is a top band with a diagonal BOTTOM edge (accent below);
+ *            text sits on solid ground beneath it (no panel).
+ *   Desktop: the image is full-bleed; the panel covers the text side with a
+ *            diagonal LEFT or RIGHT edge. */
 .hero-diagonal__media {
-  /* Mobile: diagonal bottom edge; accent runs along the bottom. */
+  /* Mobile band: diagonal bottom edge, accent runs along it. */
   clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
-  filter:
-    drop-shadow(0 3px 0 var(--ot-accent))
-    drop-shadow(0 -10px 30px var(--ot-bloom-brand-ring));
+  filter: drop-shadow(0 3px 0 var(--ot-accent)) drop-shadow(0 8px 26px var(--ot-bloom-brand-ring));
 }
 @media (min-width: 1024px) {
-  .hero-diagonal__media[data-side="right"] {
-    clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
-    filter:
-      drop-shadow(-3px 0 0 var(--ot-accent))
-      drop-shadow(-14px 0 34px var(--ot-bloom-brand-ring));
-  }
-  .hero-diagonal__media[data-side="left"] {
-    clip-path: polygon(0 0, 84% 0, 100% 100%, 0 100%);
-    filter:
-      drop-shadow(3px 0 0 var(--ot-accent))
-      drop-shadow(14px 0 34px var(--ot-bloom-brand-ring));
-  }
+  /* Desktop: full-bleed image, no clip (the panel provides the seam). */
+  .hero-diagonal__media { clip-path: none; filter: none; }
 }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-diagonal__media { animation: heroDiagonalIn var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+
+.hero-diagonal__panel {
+  /* Soft brand bloom on the seam; the crisp accent edge is added per side below. */
+  filter: drop-shadow(0 0 30px var(--ot-bloom-brand-ring));
 }
-@keyframes heroDiagonalIn {
-  from { opacity: 0; transform: translateX(5%); }
-  to   { opacity: 1; transform: translateX(0); }
+.hero-diagonal__panel[data-side="right"] {
+  /* Text panel on the LEFT; diagonal on its right edge (seam 58% top -> ~49% bottom). */
+  clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%);
+  filter: drop-shadow(3px 0 0 var(--ot-accent)) drop-shadow(12px 0 30px var(--ot-bloom-brand-ring));
 }
+.hero-diagonal__panel[data-side="left"] {
+  /* Text panel on the RIGHT; diagonal on its left edge. */
+  clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(-3px 0 0 var(--ot-accent)) drop-shadow(-12px 0 30px var(--ot-bloom-brand-ring));
+}
+/* The panel stays static (animating it would briefly expose the photo under the
+ * text); the text column carries the entrance via its own motion-safe class. */
 
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
  * keyframes used by the auto-play countdown and panel entrance.
