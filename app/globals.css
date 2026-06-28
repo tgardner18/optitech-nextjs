@@ -2366,24 +2366,16 @@ body {
  * throughout (system identity); no layout-property animation.
  * ─────────────────────────────────────────────────────────────────────────── */
 
-/* Ambient ground wash for the single-color directions — a faint off-axis brand
- * (and a touch of accent) bloom so the flat ground reads as lit. Behind content. */
-.hero-spotlight-aura,
-.hero-drench-aura {
+/* Ambient ground wash for Spotlight — a faint off-axis brand (and a touch of
+ * accent) bloom so the flat ground reads as lit. Behind content. */
+.hero-spotlight-aura {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-}
-.hero-spotlight-aura {
   background:
     radial-gradient(ellipse 58% 70% at 85% 16%, var(--ot-bloom-brand-faint) 0%, transparent 60%),
     radial-gradient(ellipse 48% 58% at 6% 94%,  var(--ot-bloom-accent-faint) 0%, transparent 58%);
-}
-.hero-drench-aura {
-  background:
-    radial-gradient(ellipse 70% 60% at 50% -12%, oklch(from var(--ot-fg) l c h / 0.06) 0%, transparent 62%),
-    radial-gradient(ellipse 54% 55% at 88% 110%, var(--ot-bloom-accent-faint) 0%, transparent 60%);
 }
 
 /* Floating media plate (Spotlight / Drench / Poster): a 1px brand-tinted ring +
@@ -2417,19 +2409,39 @@ body {
     0 6px 20px oklch(from var(--ot-canvas) l c h / 0.45);
 }
 
-/* Poster Frame — accent corner register brackets just inside the hairline frame.
- * Corner L-marks (a specimen-sheet device), not decorative side-stripes. */
-.hero-poster__mark {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-  border: 0 solid oklch(from var(--ot-accent) l c h / 0.85);
+/* Diagonal Split — the contained image is clipped to a diagonal seam and that
+ * seam is accent-lit by a token drop-shadow that follows the clip silhouette,
+ * plus a soft brand bloom. Mobile: the image is a top band with a diagonal
+ * BOTTOM edge; desktop: a side panel with a diagonal LEFT or RIGHT edge. The
+ * image reveals with a motion-safe slide (transform/opacity only). */
+.hero-diagonal__media {
+  /* Mobile: diagonal bottom edge; accent runs along the bottom. */
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+  filter:
+    drop-shadow(0 3px 0 var(--ot-accent))
+    drop-shadow(0 -10px 30px var(--ot-bloom-brand-ring));
 }
-.hero-poster__mark--tl { top: 8px;    left: 8px;    border-top-width: 2px;    border-left-width: 2px;  }
-.hero-poster__mark--tr { top: 8px;    right: 8px;   border-top-width: 2px;    border-right-width: 2px; }
-.hero-poster__mark--bl { bottom: 8px; left: 8px;    border-bottom-width: 2px; border-left-width: 2px;  }
-.hero-poster__mark--br { bottom: 8px; right: 8px;   border-bottom-width: 2px; border-right-width: 2px; }
+@media (min-width: 1024px) {
+  .hero-diagonal__media[data-side="right"] {
+    clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+    filter:
+      drop-shadow(-3px 0 0 var(--ot-accent))
+      drop-shadow(-14px 0 34px var(--ot-bloom-brand-ring));
+  }
+  .hero-diagonal__media[data-side="left"] {
+    clip-path: polygon(0 0, 84% 0, 100% 100%, 0 100%);
+    filter:
+      drop-shadow(3px 0 0 var(--ot-accent))
+      drop-shadow(14px 0 34px var(--ot-bloom-brand-ring));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-diagonal__media { animation: heroDiagonalIn var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+}
+@keyframes heroDiagonalIn {
+  from { opacity: 0; transform: translateX(5%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
 /* ── TabsBlock — progress bar + panel entrance animations ────────────────────
  * keyframes used by the auto-play countdown and panel entrance.

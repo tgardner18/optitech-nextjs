@@ -15,9 +15,8 @@ export const OT_HeroBlock = contentType({
       enum: [
         { value: 'editorialSplit', displayName: 'Editorial Split (Default)' },
         { value: 'spotlight',      displayName: 'Spotlight Bloom' },
-        { value: 'drenched',       displayName: 'Drenched Statement' },
         { value: 'overlap',        displayName: 'Editorial Overlap' },
-        { value: 'poster',         displayName: 'Poster Frame' },
+        { value: 'diagonal',       displayName: 'Diagonal Split' },
       ],
       group:     'OT_Content',
       sortOrder: 5,

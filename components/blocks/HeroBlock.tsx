@@ -11,13 +11,12 @@ import { cva } from "class-variance-authority";
  * arranges it differently. "color" remains the ground-palette modifier within
  * every direction.
  *   editorialSplit — the default: solid-color text panel beside a contained visual
- *   spotlight      — text leads; the visual floats as a framed object with a brand-bloom halo
- *   drenched       — a committed full-bleed color statement; optional contained media band
+ *   spotlight      — text leads; the visual floats as a framed object with a brand-bloom halo (compact)
  *   overlap        — layered editorial; the headline plate overlaps a contained image edge
- *   poster         — a hairline-framed specimen poster with register marks + extruded headline
+ *   diagonal       — a sharp diagonal seam between a color panel and a contained image, accent-lit
  */
 export type HeroDirection =
-  | "editorialSplit" | "spotlight" | "drenched" | "overlap" | "poster";
+  | "editorialSplit" | "spotlight" | "overlap" | "diagonal";
 
 export type HeroStyleOptions = {
   /** Art direction / composition of the hero (see HeroDirection). */
@@ -186,9 +185,8 @@ export default function HeroBlock({
   if (direction !== "editorialSplit") {
     const shared = { eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa };
     if (direction === "spotlight") return <SpotlightHero {...shared} />;
-    if (direction === "drenched")  return <DrenchedHero {...shared} />;
     if (direction === "overlap")   return <OverlapHero {...shared} />;
-    if (direction === "poster")    return <PosterHero {...shared} />;
+    if (direction === "diagonal")  return <DiagonalHero {...shared} />;
   }
 
   const hasVisual  = !!(visual || visualSrc);
@@ -356,10 +354,12 @@ function HeroCtas({
   );
 }
 
-// ─── Direction: Spotlight Bloom ──────────────────────────────────────────────────
+// ─── Direction: Spotlight Bloom (compact) ────────────────────────────────────────
 // Text leads on a single unified ground; the visual floats as a contained, framed
 // object lit by a chromatic brand-bloom halo (never a full-bleed backdrop — that's
-// the Banner's job). No image → the text statement carries the fold on its own.
+// the Banner's job). Height-conscious: trimmed vertical padding + a wide, capped
+// media so the hero stays within roughly one band. No image → the statement carries
+// the fold on its own.
 
 function SpotlightHero({
   eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
@@ -370,13 +370,13 @@ function SpotlightHero({
 
   return (
     <section
-      className={`${groundCva({ color })} relative overflow-hidden px-md py-xl lg:px-lg lg:py-2xl`}
+      className={`${groundCva({ color })} relative overflow-hidden px-md py-lg lg:px-lg lg:py-xl`}
       data-theme={color === "brand" ? "dark" : undefined}
       aria-label="Hero"
     >
       <div className="hero-spotlight-aura" aria-hidden />
-      <div className={`relative z-10 mx-auto grid max-w-7xl items-center gap-xl lg:gap-2xl ${hasVisual ? "lg:grid-cols-2" : "max-w-4xl"}`}>
-        <div className={`flex flex-col gap-lg ${imageLeft ? "lg:order-2" : ""} ${anim}`}>
+      <div className={`relative z-10 mx-auto grid max-w-7xl items-center gap-lg lg:gap-2xl ${hasVisual ? "lg:grid-cols-2" : "max-w-4xl"}`}>
+        <div className={`flex flex-col gap-md lg:gap-lg ${imageLeft ? "lg:order-2" : ""} ${anim}`}>
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
           <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
           {body && <p className={bodyCva({ color })} {...pa("body")}>{body}</p>}
@@ -386,7 +386,8 @@ function SpotlightHero({
         {hasVisual && (
           <div className={`relative ${imageLeft ? "lg:order-1" : ""}`} {...pa("visual")}>
             <div className="hero-bloom-halo" aria-hidden />
-            <div className="hero-bloom-plate relative aspect-[4/3] overflow-hidden">
+            {/* Wide, height-capped plate keeps the hero compact regardless of viewport. */}
+            <div className="hero-bloom-plate relative aspect-[3/2] max-h-[24rem] overflow-hidden">
               <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 45vw, 100vw" />
             </div>
           </div>
@@ -396,48 +397,12 @@ function SpotlightHero({
   );
 }
 
-// ─── Direction: Drenched Statement ───────────────────────────────────────────────
-// A committed, full-bleed color statement: oversized headline, centered, dual CTA.
-// Any visual is a CONTAINED band below the statement, never a photo backdrop, so it
-// stays clear of the Banner. Pure scale + drench carry it (no text effect — that's
-// the PrimaryText block's territory).
-
-function DrenchedHero({
-  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, animation, pa,
-}: HeroDirectionProps) {
-  const hasVisual = !!(visual || visualSrc);
-  const anim = entranceClass(animation);
-
-  return (
-    <section
-      className={`${groundCva({ color })} relative overflow-hidden px-md py-2xl lg:px-lg`}
-      data-theme={color === "brand" ? "dark" : undefined}
-      aria-label="Hero"
-    >
-      <div className="hero-drench-aura" aria-hidden />
-      <div className={`relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-lg text-center ${anim}`}>
-        {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
-        <h1 className={`${headlineCva({ color })} max-w-(--ot-measure)`} {...pa("headline")}>{headline}</h1>
-        {body && <p className={`${bodyCva({ color })} mx-auto`} {...pa("body")}>{body}</p>}
-        <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-sm justify-center" />
-      </div>
-
-      {hasVisual && (
-        <div className="relative z-10 mx-auto mt-2xl max-w-6xl" {...pa("visual")}>
-          <div className="hero-bloom-plate relative aspect-video overflow-hidden">
-            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 72vw, 100vw" />
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-// ─── Direction: Editorial Overlap ────────────────────────────────────────────────
+// ─── Direction: Editorial Overlap (polished) ─────────────────────────────────────
 // Layered, magazine composition: a contained image with a solid color headline plate
-// overlapping its edge, a mono index marker, and a chromatic depth shadow separating
-// the planes. The image is contained and the type plate occludes its edge — distinct
-// from the Banner's flat full-bleed photo with centered overlay.
+// overlapping its edge, an index marker (number + accent rule), and a chromatic depth
+// shadow separating the planes. The image is contained and the type plate occludes
+// its edge — distinct from the Banner's flat full-bleed photo with centered overlay.
+// Polished: capped image height, refined marker, tighter rhythm + vertical padding.
 
 function OverlapHero({
   eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
@@ -449,26 +414,27 @@ function OverlapHero({
   const plate = (
     <div
       className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-6 lg:row-start-1 lg:self-center lg:p-xl ${
-        hasVisual ? `-mt-8 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-7 lg:-ml-[8%]" : "lg:col-start-1 lg:-mr-[8%]"}` : "lg:col-span-12"
+        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-7 lg:-ml-[9%]" : "lg:col-start-1 lg:-mr-[9%]"}` : "lg:col-span-12"
       } ${anim}`}
       data-theme={color === "brand" ? "dark" : undefined}
     >
-      <p className="mb-sm font-mono text-label uppercase tracking-label text-fg-muted" {...pa("eyebrow")}>
+      <p className="mb-md flex items-center gap-sm font-mono text-label uppercase tracking-label text-fg-muted" {...pa("eyebrow")}>
+        <span className="inline-block h-px w-8 flex-none" style={{ background: "var(--ot-accent)" }} aria-hidden />
         {eyebrow ? eyebrow : "Hero"}
       </p>
       <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
-      {body && <p className={`${bodyCva({ color })} mt-md`} {...pa("body")}>{body}</p>}
+      {body && <p className={`${bodyCva({ color })} mt-sm`} {...pa("body")}>{body}</p>}
       <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-lg" />
     </div>
   );
 
   return (
-    <section className="bg-canvas px-md py-xl lg:px-lg lg:py-2xl" aria-label="Hero">
+    <section className="bg-canvas px-md py-lg lg:px-lg lg:py-xl" aria-label="Hero">
       <div className="mx-auto max-w-7xl">
         <div className="grid items-center gap-0 lg:grid-cols-12">
           {hasVisual && (
             <div
-              className={`relative aspect-[4/3] overflow-hidden lg:row-start-1 lg:aspect-[5/4] ${
+              className={`relative aspect-[3/2] max-h-[28rem] overflow-hidden lg:row-start-1 ${
                 imageLeft ? "lg:col-span-7 lg:col-start-1" : "lg:col-span-7 lg:col-start-6"
               }`}
               {...pa("visual")}
@@ -483,48 +449,47 @@ function OverlapHero({
   );
 }
 
-// ─── Direction: Poster Frame ─────────────────────────────────────────────────────
-// A hairline-framed specimen poster: corner register marks, a mono catalog label,
-// an extruded display headline (canvas/surface grounds), and a contained media plate
-// with a bloom ring. The sanctioned 70s/80s poster register (DESIGN.md §4); unique
-// to the Hero.
+// ─── Direction: Diagonal Split ───────────────────────────────────────────────────
+// A sharp diagonal seam between a color panel (text) and a contained image. The
+// image is clipped to a diagonal edge that is accent-lit (a token drop-shadow that
+// follows the clip silhouette) with a soft brand bloom; it reveals with a motion-safe
+// slide. The image is a contained half, never a full-bleed backdrop with overlay —
+// clear of the Banner. Height-stable: the image tracks the panel height, capped by a
+// modest min-height so the diagonal always reads.
 
-function PosterHero({
-  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, animation, pa,
+function DiagonalHero({
+  eyebrow, headline, body, primaryCta, secondaryCta, visualSrc, visualAlt, visual, color, layout, animation, pa,
 }: HeroDirectionProps) {
   const hasVisual = !!(visual || visualSrc);
   const anim = entranceClass(animation);
-  // The extrude face reads as fg, so reserve it for canvas/surface grounds; on a
-  // brand drench the headline stays the solid on-brand face.
-  const titleExtrude = color === "brand" ? "" : "display-extrude";
+  const side = layout === "imageLeft" ? "left" : "right";
 
   return (
     <section
-      className={`${groundCva({ color })} p-md lg:p-lg`}
+      className={`${groundCva({ color })} relative overflow-hidden`}
       data-theme={color === "brand" ? "dark" : undefined}
       aria-label="Hero"
     >
-      <div className={`hero-poster relative border border-fg/20 p-lg lg:p-xl ${anim}`}>
-        <span className="hero-poster__mark hero-poster__mark--tl" aria-hidden />
-        <span className="hero-poster__mark hero-poster__mark--tr" aria-hidden />
-        <span className="hero-poster__mark hero-poster__mark--bl" aria-hidden />
-        <span className="hero-poster__mark hero-poster__mark--br" aria-hidden />
+      {hasVisual && (
+        <div
+          className={`hero-diagonal__media relative h-60 w-full lg:absolute lg:inset-y-0 lg:h-auto lg:w-[62%] ${side === "left" ? "lg:left-0" : "lg:right-0"}`}
+          data-side={side}
+          {...pa("visual")}
+        >
+          <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 62vw, 100vw" />
+        </div>
+      )}
 
-        <p className="font-mono text-label uppercase tracking-label text-fg-muted" {...pa("eyebrow")}>
-          {eyebrow ? eyebrow : "Site Accelerator"} <span className="text-fg-muted/50">/ Hero</span>
-        </p>
-
-        <div className={`mt-lg grid items-center gap-xl ${hasVisual ? "lg:grid-cols-2" : ""}`}>
-          <div className="flex flex-col gap-lg">
-            <h1 className={`${headlineCva({ color })} ${titleExtrude}`} {...pa("headline")}>{headline}</h1>
-            {body && <p className={bodyCva({ color })} {...pa("body")}>{body}</p>}
-            <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-sm" />
-          </div>
-          {hasVisual && (
-            <div className="hero-bloom-plate relative aspect-[4/3] overflow-hidden" {...pa("visual")}>
-              <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 45vw, 100vw" />
-            </div>
-          )}
+      <div className="relative z-10 mx-auto flex max-w-7xl items-center px-md py-xl lg:min-h-[26rem] lg:px-lg lg:py-2xl">
+        <div
+          className={`flex flex-col gap-md lg:gap-lg ${anim} ${
+            hasVisual ? `lg:max-w-[44%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+          }`}
+        >
+          {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
+          <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
+          {body && <p className={bodyCva({ color })} {...pa("body")}>{body}</p>}
+          <HeroCtas color={color} primaryCta={primaryCta} secondaryCta={secondaryCta} pa={pa} className="mt-sm" />
         </div>
       </div>
     </section>

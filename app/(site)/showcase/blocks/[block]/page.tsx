@@ -221,20 +221,8 @@ function HeroShowcase() {
       displaySettings: { layout: 'imageLeft', color: 'canvas', animation: 'none' },
     },
     {
-      label: 'Drenched Statement · Brand · media band',
-      note: 'A committed full-bleed color statement; any visual is a contained band below the headline, never a photo backdrop.',
-      content: { direction: 'drenched', eyebrow: 'Launch', headline: 'Commit to the color.', body: 'Scale and saturation carry the fold; the optional media sits below as a contained band.', primaryCtaLabel: 'Get started', primaryCtaUrl: { default: '#' }, secondaryCtaLabel: 'Talk to us', secondaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
-      displaySettings: { layout: 'imageRight', color: 'brand', animation: 'none' },
-    },
-    {
-      label: 'Drenched Statement · Canvas · no image',
-      note: 'Type-forward statement on the canvas ground.',
-      content: { direction: 'drenched', eyebrow: 'Manifesto', headline: 'Say it once. Say it loud.', body: 'No image needed; the statement is the hero.', primaryCtaLabel: 'Read more', primaryCtaUrl: { default: '#' } },
-      displaySettings: { layout: 'imageRight', color: 'canvas', animation: 'none' },
-    },
-    {
       label: 'Editorial Overlap · Surface · image right',
-      note: 'A solid headline plate overlaps the contained image edge with a chromatic depth shadow and a mono index marker.',
+      note: 'A solid headline plate overlaps the contained image edge with a chromatic depth shadow and a number + accent-rule index marker. Image height is capped to keep it compact.',
       content: { direction: 'overlap', eyebrow: 'Feature 01', headline: 'Layers that read as depth.', body: 'The type plate occludes the image edge, separated by a brand-hued shadow.', primaryCtaLabel: 'Explore', primaryCtaUrl: { default: '#' }, secondaryCtaLabel: 'Docs', secondaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
       displaySettings: { layout: 'imageRight', color: 'surface', animation: 'none' },
     },
@@ -245,16 +233,16 @@ function HeroShowcase() {
       displaySettings: { layout: 'imageLeft', color: 'brand', animation: 'none' },
     },
     {
-      label: 'Poster Frame · Canvas · with media',
-      note: 'A hairline-framed specimen poster: accent corner register marks, a mono catalog label, an extruded headline, and a contained media plate with a bloom ring.',
-      content: { direction: 'poster', eyebrow: 'Edition 01', headline: 'Printed with intent.', body: 'The frame, register marks, and extruded headline read as a designed poster.', primaryCtaLabel: 'Get the kit', primaryCtaUrl: { default: '#' }, secondaryCtaLabel: 'Preview', secondaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
-      displaySettings: { layout: 'imageRight', color: 'canvas', animation: 'none' },
+      label: 'Diagonal Split · Brand · image right',
+      note: 'A sharp diagonal seam between the brand panel and a contained image; the diagonal edge is accent-lit and the image reveals with a motion-safe slide. Not a full-bleed backdrop (that is the Banner).',
+      content: { direction: 'diagonal', eyebrow: 'Introducing', headline: 'Cut a sharper line.', body: 'The color panel meets the image along a lit diagonal seam, energetic but height-stable.', primaryCtaLabel: 'Get started', primaryCtaUrl: { default: '#' }, secondaryCtaLabel: 'Learn more', secondaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
+      displaySettings: { layout: 'imageRight', color: 'brand', animation: 'none' },
     },
     {
-      label: 'Poster Frame · Brand · no image',
-      note: 'On the brand ground the headline stays the solid on-brand face (extrude is reserved for canvas/surface).',
-      content: { direction: 'poster', eyebrow: 'Edition 02', headline: 'Big type, framed.', body: 'A drenched poster with corner register marks and a catalog label.', primaryCtaLabel: 'Get the kit', primaryCtaUrl: { default: '#' } },
-      displaySettings: { layout: 'imageRight', color: 'brand', animation: 'none' },
+      label: 'Diagonal Split · Canvas · image left',
+      note: 'Mirrored seam on the canvas ground, image on the left.',
+      content: { direction: 'diagonal', eyebrow: 'Introducing', headline: 'Angle into the story.', body: 'The accent-lit diagonal follows the clip silhouette automatically, recoloring with the theme.', primaryCtaLabel: 'See how', primaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
+      displaySettings: { layout: 'imageLeft', color: 'canvas', animation: 'none' },
     },
   ]
 
