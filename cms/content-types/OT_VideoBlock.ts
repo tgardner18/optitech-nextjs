@@ -7,6 +7,18 @@ export const OT_VideoBlock = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    mediaSide: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Media Side',
+      description: 'Which side the media sits on in the editorial layout.',
+      enum: [
+        { value: 'left', displayName: 'Media left (Default)' },
+        { value: 'right', displayName: 'Media right' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     videoUrl: {
       type: 'string',
       displayName: 'Video URL (YouTube or Vimeo)',

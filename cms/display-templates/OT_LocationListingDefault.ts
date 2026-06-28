@@ -12,16 +12,6 @@ export const OT_LocationListingDefault = displayTemplate({
   contentType: 'OT_LocationListingBlock',
   isDefault:   true,
   settings: {
-    defaultView: {
-      displayName: 'Default View',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        map:  { displayName: 'Map (with location rail)', sortOrder: 10 },
-        grid: { displayName: 'Grid (cards)',             sortOrder: 20 },
-        list: { displayName: 'List (rows)',              sortOrder: 30 },
-      },
-    },
     showViewToggle: {
       displayName: 'Show View Toggle',
       editor:      'select',

@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_DividerBlockAdapter({ content, displaySettings = {} }: Props) {
   const { pa }       = getPreviewUtils(content)
-  const styleOptions = getDividerStyles(displaySettings)
+  const styleOptions = getDividerStyles(content.style ? { ...displaySettings, style: content.style } : displaySettings)
 
   // The "draw" reveal rides the shared MotionObserver: data-stagger marks the
   // element for the IntersectionObserver, and the scoped CSS in globals.css

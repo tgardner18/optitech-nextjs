@@ -19,6 +19,19 @@ export const OT_EventListingBlock = contentType({
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    defaultView: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Default View',
+      description: 'Which view loads first.',
+      enum: [
+        { value: 'card', displayName: 'Card Grid' },
+        { value: 'list', displayName: 'List' },
+        { value: 'calendar', displayName: 'Calendar' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     heading: {
       type:        'string',
       isLocalized: true,

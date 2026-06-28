@@ -34,7 +34,7 @@ function buildLogos(content: any): LogoItem[] {
 
 export default function OT_TrustRailAdapter({ content, displaySettings = {} }: Props) {
   const { pa }            = getPreviewUtils(content)
-  const styleOptions      = getTrustRailStyles(displaySettings)
+  const styleOptions      = getTrustRailStyles(content.motion ? { ...displaySettings, motion: content.motion } : displaySettings)
   const logos             = buildLogos(content)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 

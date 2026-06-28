@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
   const { pa, src } = getPreviewUtils(content)
-  const styleOptions = getCardStyles(displaySettings)
+  const styleOptions = getCardStyles(content.imageStyle ? { ...displaySettings, imageStyle: content.imageStyle } : displaySettings)
 
   return (
     <div {...pa(content.__composition)} className="w-full h-full">

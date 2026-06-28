@@ -27,6 +27,19 @@ export const OT_LocationListingBlock = contentType({
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    defaultView: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Default View',
+      description: 'Which view loads first.',
+      enum: [
+        { value: 'map', displayName: 'Map (with location rail)' },
+        { value: 'grid', displayName: 'Grid (cards)' },
+        { value: 'list', displayName: 'List (rows)' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     heading: {
       type:         'string',
       isLocalized:  true,

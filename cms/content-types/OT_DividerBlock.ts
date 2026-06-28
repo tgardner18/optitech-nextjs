@@ -7,6 +7,19 @@ export const OT_DividerBlock = contentType({
   baseType:             '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    style: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Style',
+      description: 'The kind of divider.',
+      enum: [
+        { value: 'mark', displayName: 'Mark — text/ornament with hairline rules (Default)' },
+        { value: 'glow', displayName: 'Glow — luminous chromatic rule' },
+        { value: 'bleed', displayName: 'Bleed — atmospheric light seam' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     label: {
       type:         'string',
       displayName:  'Mark label',

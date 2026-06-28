@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_CalloutBlockAdapter({ content, displaySettings = {} }: Props) {
   const { pa }       = getPreviewUtils(content)
-  const styleOptions = getCalloutStyles(displaySettings)
+  const styleOptions = getCalloutStyles(content.intent ? { ...displaySettings, intent: content.intent } : displaySettings)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -7,16 +7,6 @@ export const OT_TrustRailDefault = displayTemplate({
   isDefault:   true,
   settings: {
     // ── Motion ────────────────────────────────────────────────────────────
-    motion: {
-      displayName: 'Motion',
-      editor:      'select',
-      sortOrder:   10,
-      choices: {
-        scroll: { displayName: 'Scroll — infinite marquee (Default)', sortOrder: 10 },
-        fade:   { displayName: 'Fade — staggered reveal on scroll',   sortOrder: 20 },
-        static: { displayName: 'Static — plain grid, no animation',   sortOrder: 30 },
-      },
-    },
 
     // ── Image treatment ────────────────────────────────────────────────────
     treatment: {

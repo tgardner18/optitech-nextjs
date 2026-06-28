@@ -6,15 +6,6 @@ export const OT_ImageDefault = displayTemplate({
   contentType: 'OT_ImageBlock',
   isDefault: true,
   settings: {
-    mediaSide: {
-      displayName: 'Media side (editorial layout)',
-      editor: 'select',
-      sortOrder: 1,
-      choices: {
-        right: { displayName: 'Media right (Default)', sortOrder: 10 },
-        left:  { displayName: 'Media left',            sortOrder: 20 },
-      },
-    },
     maxHeight: {
       displayName: 'Max height',
       editor: 'select',

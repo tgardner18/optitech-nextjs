@@ -21,7 +21,7 @@ export default async function OT_LocationListingBlockAdapter({
 }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  const styleOptions = getLocationListingStyles(displaySettings)
+  const styleOptions = getLocationListingStyles(content.defaultView ? { ...displaySettings, defaultView: content.defaultView } : displaySettings)
   const locale       = await getRequestLocale()
 
   const groupTag =

@@ -27,7 +27,7 @@ function buildTabs(content: any, src: (ref: any) => string | undefined): TabItem
 
 export default function OT_TabsBlockAdapter({ content, displaySettings = {} }: Props) {
   const { pa, src }       = getPreviewUtils(content)
-  const styleOptions      = getTabsStyles(displaySettings)
+  const styleOptions      = getTabsStyles(content.tabStyle ? { ...displaySettings, tabStyle: content.tabStyle } : displaySettings)
   const tabs              = buildTabs(content, src)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 

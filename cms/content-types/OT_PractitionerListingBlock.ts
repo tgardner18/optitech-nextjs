@@ -22,6 +22,18 @@ export const OT_PractitionerListingBlock = contentType({
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    layout: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Layout',
+      description: 'Which view to use.',
+      enum: [
+        { value: 'grid', displayName: 'Grid (cards)' },
+        { value: 'list', displayName: 'List (rows)' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     heading: {
       type:         'string',
       isLocalized:  true,

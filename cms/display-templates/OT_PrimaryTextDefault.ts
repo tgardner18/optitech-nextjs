@@ -37,22 +37,6 @@ export const OT_PrimaryTextDefault = displayTemplate({
         label:    { displayName: 'Label',              sortOrder: 40 },
       },
     },
-    headerEffect: {
-      displayName: 'Header effect — applied to the heading (best at headline scale & up)',
-      editor: 'select',
-      sortOrder: 40,
-      choices: {
-        none:             { displayName: 'None (Default)',     sortOrder: 10 },
-        gradient:         { displayName: 'Gradient',           sortOrder: 20 },
-        animatedGradient: { displayName: 'Animated Gradient',  sortOrder: 30 },
-        depth3d:          { displayName: '3D Depth',           sortOrder: 40 },
-        embossed:         { displayName: 'Embossed',           sortOrder: 50 },
-        outline:          { displayName: 'Outline',            sortOrder: 60 },
-        neon:             { displayName: 'Neon',               sortOrder: 70 },
-        highlight:        { displayName: 'Highlight',          sortOrder: 80 },
-        glow:             { displayName: 'Glow',               sortOrder: 90 },
-      },
-    },
     entranceAnimation: {
       displayName: 'Entrance animation',
       editor:      'select',

@@ -7,6 +7,22 @@ export const OT_CalloutBlock = contentType({
   baseType:             '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
+    intent: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Intent',
+      description: 'Semantic meaning and color of the callout.',
+      enum: [
+        { value: 'neutral', displayName: 'Neutral' },
+        { value: 'info', displayName: 'Info (Default)' },
+        { value: 'success', displayName: 'Success' },
+        { value: 'warning', displayName: 'Warning' },
+        { value: 'danger', displayName: 'Danger' },
+        { value: 'brand', displayName: 'Brand' },
+      ],
+      group: 'OT_Content',
+      sortOrder: 5,
+    },
     heading: {
       type:         'string',
       displayName:  'Heading',

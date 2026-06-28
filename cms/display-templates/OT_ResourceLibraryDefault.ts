@@ -17,15 +17,6 @@ export const OT_ResourceLibraryDefault = displayTemplate({
         video:     { displayName: 'Video Only',              sortOrder: 40 },
       },
     },
-    layout: {
-      displayName: 'Layout',
-      editor:      'select',
-      sortOrder:   20,
-      choices: {
-        list: { displayName: 'Dense List (Default)', sortOrder: 10 },
-        grid: { displayName: 'Card Grid',            sortOrder: 20 },
-      },
-    },
     color: {
       displayName: 'Background',
       editor:      'select',

@@ -11,7 +11,7 @@ type Props = {
 
 export default function OT_BannerBlock({ content, displaySettings = {} }: Props) {
   const { pa, src } = getPreviewUtils(content)
-  const styleOptions = getBannerStyles(displaySettings)
+  const styleOptions = getBannerStyles(content.treatment ? { ...displaySettings, treatment: content.treatment } : displaySettings)
 
   return (
     <div {...pa(content.__composition)}>
