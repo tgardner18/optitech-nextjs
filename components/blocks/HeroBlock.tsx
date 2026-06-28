@@ -55,7 +55,8 @@ const textPanelCva = cva(
         surface: "bg-surface",
       },
       mode: {
-        split: "lg:w-[55%]",
+        // A touch wider than half so longer display headlines wrap to fewer lines.
+        split: "lg:w-[58%]",
         full:  "w-full",
       },
     },
@@ -367,6 +368,9 @@ function SpotlightHero({
   const hasVisual = !!(visual || visualSrc);
   const anim = entranceClass(animation);
   const imageLeft = layout === "imageLeft";
+  // Give the text the larger track (whichever side it lands on) so headlines get
+  // room; the media keeps the smaller share.
+  const cols = imageLeft ? "lg:grid-cols-[0.9fr_1.1fr]" : "lg:grid-cols-[1.1fr_0.9fr]";
 
   return (
     <section
@@ -375,7 +379,7 @@ function SpotlightHero({
       aria-label="Hero"
     >
       <div className="hero-spotlight-aura" aria-hidden />
-      <div className={`relative z-10 mx-auto grid max-w-7xl items-center gap-lg lg:gap-2xl ${hasVisual ? "lg:grid-cols-2" : "max-w-4xl"}`}>
+      <div className={`relative z-10 grid w-full items-center gap-lg lg:gap-2xl ${hasVisual ? cols : "mx-auto max-w-4xl"}`}>
         <div className={`flex flex-col gap-md lg:gap-lg ${imageLeft ? "lg:order-2" : ""} ${anim}`}>
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
           <h1 className={headlineCva({ color })} {...pa("headline")}>{headline}</h1>
@@ -416,8 +420,8 @@ function OverlapHero({
 
   const plate = (
     <div
-      className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-6 lg:row-start-1 lg:self-center lg:p-xl ${
-        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-7 lg:-ml-[9%]" : "lg:col-start-1 lg:-mr-[9%]"}` : "lg:col-span-12"
+      className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-7 lg:row-start-1 lg:self-center lg:p-xl ${
+        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-6 lg:-ml-[9%]" : "lg:col-start-1 lg:-mr-[9%]"}` : "lg:col-span-12"
       } ${anim}`}
       data-theme={color === "brand" ? "dark" : undefined}
     >
@@ -433,7 +437,7 @@ function OverlapHero({
 
   return (
     <section className="bg-canvas px-md py-lg lg:px-lg lg:py-xl" aria-label="Hero">
-      <div className="mx-auto max-w-7xl">
+      <div className="w-full">
         <div className="grid items-center gap-0 lg:grid-cols-12">
           {hasVisual && (
             <div
@@ -485,17 +489,17 @@ function DiagonalHero({
           </div>
           {/* Solid diagonal panel (desktop only) — the readable text ground + the seam. */}
           <div
-            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[58%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
+            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[62%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
             data-side={side}
             aria-hidden
           />
         </>
       )}
 
-      <div className="relative z-10 mx-auto flex max-w-7xl items-center px-md py-lg lg:min-h-[22rem] lg:px-lg lg:py-xl">
+      <div className="relative z-10 flex w-full items-center px-md py-lg lg:min-h-[22rem] lg:px-lg lg:py-xl">
         <div
           className={`flex flex-col gap-md lg:gap-lg ${anim} ${
-            hasVisual ? `lg:max-w-[42%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+            hasVisual ? `lg:max-w-[48%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
           }`}
         >
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
