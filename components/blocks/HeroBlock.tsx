@@ -421,7 +421,7 @@ function OverlapHero({
   const plate = (
     <div
       className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-7 lg:row-start-1 lg:self-center lg:p-xl ${
-        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-6 lg:-ml-[9%]" : "lg:col-start-1 lg:-mr-[9%]"}` : "lg:col-span-12"
+        hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-6" : "lg:col-start-1"}` : "lg:col-span-12"
       } ${anim}`}
       data-theme={color === "brand" ? "dark" : undefined}
     >
@@ -441,12 +441,12 @@ function OverlapHero({
         <div className="grid items-center gap-0 lg:grid-cols-12">
           {hasVisual && (
             <div
-              className={`relative aspect-[3/2] max-h-[28rem] overflow-hidden lg:row-start-1 ${
-                imageLeft ? "lg:col-span-7 lg:col-start-1" : "lg:col-span-7 lg:col-start-6"
+              className={`relative aspect-[3/2] max-h-[28rem] w-full overflow-hidden lg:row-start-1 lg:aspect-auto lg:h-112 lg:max-h-none ${
+                imageLeft ? "lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"
               }`}
               {...pa("visual")}
             >
-              <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 58vw, 100vw" />
+              <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 50vw, 100vw" />
             </div>
           )}
           {plate}
