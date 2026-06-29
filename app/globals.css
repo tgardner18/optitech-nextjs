@@ -2430,13 +2430,14 @@ body {
   filter: drop-shadow(0 0 30px var(--ot-bloom-brand-ring));
 }
 .hero-diagonal__panel[data-side="right"] {
-  /* Text panel on the LEFT; diagonal on its right edge (panel is 62% wide). */
-  clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  /* Text panel on the LEFT; diagonal on its right edge (panel is ~54% wide). The
+     seam narrows the panel to 90% of its box (~49% of the section) at the bottom. */
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
   filter: drop-shadow(3px 0 0 var(--ot-accent)) drop-shadow(12px 0 30px var(--ot-bloom-brand-ring));
 }
 .hero-diagonal__panel[data-side="left"] {
   /* Text panel on the RIGHT; diagonal on its left edge. */
-  clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
   filter: drop-shadow(-3px 0 0 var(--ot-accent)) drop-shadow(-12px 0 30px var(--ot-bloom-brand-ring));
 }
 /* The panel stays static (animating it would briefly expose the photo under the

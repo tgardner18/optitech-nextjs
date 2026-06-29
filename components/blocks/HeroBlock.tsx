@@ -487,9 +487,11 @@ function DiagonalHero({
           >
             <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="100vw" />
           </div>
-          {/* Solid diagonal panel (desktop only) — the readable text ground + the seam. */}
+          {/* Solid diagonal panel (desktop only) — the readable text ground + the seam.
+              ~54% wide so the image keeps a visible ~half; the diagonal narrows it to
+              ~49% at the seam's near edge, still comfortably wider than the text column. */}
           <div
-            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[62%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
+            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[54%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
             data-side={side}
             aria-hidden
           />
@@ -499,7 +501,7 @@ function DiagonalHero({
       <div className="relative z-10 flex w-full items-center px-md py-lg lg:min-h-[22rem] lg:px-lg lg:py-xl">
         <div
           className={`flex flex-col gap-md lg:gap-lg ${anim} ${
-            hasVisual ? `lg:max-w-[48%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+            hasVisual ? `lg:max-w-[44%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
           }`}
         >
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
