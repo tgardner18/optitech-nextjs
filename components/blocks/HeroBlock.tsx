@@ -480,12 +480,19 @@ function DiagonalHero({
     >
       {hasVisual && (
         <>
-          {/* Image: a clipped top band on mobile; full-bleed behind the panel on desktop. */}
+          {/* Image: a clipped top band on mobile. On desktop it's anchored to the
+              VISIBLE side and covers ~60% (left edge runs to 40%, well under the
+              panel's ~49% seam so there's never a gap). Anchoring to the visible
+              side — rather than full-bleed across the whole section — keeps the
+              photo's focal centre in the exposed area instead of hidden behind the
+              panel, and object-cover crops it cleanly within that region. */}
           <div
-            className="hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-0 lg:h-full"
+            className={`hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-y-0 lg:h-full ${
+              side === "left" ? "lg:left-0 lg:right-[40%]" : "lg:right-0 lg:left-[40%]"
+            }`}
             {...pa("visual")}
           >
-            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="100vw" />
+            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 60vw, 100vw" />
           </div>
           {/* Solid diagonal panel (desktop only) — the readable text ground + the seam.
               ~54% wide so the image keeps a visible ~half; the diagonal narrows it to
