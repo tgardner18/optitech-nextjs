@@ -841,34 +841,28 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* EXTRUDE — INTERACTIVE LAYERED (depth3d)                                      */
 /* Real stacked DOM layers (one duplicate <span> per depth step) instead of    */
-/* flat text-shadow, so the stack genuinely separates in 3D when the headline  */
-/* rotates toward the cursor. Rendered by PrimaryTextDepth3D.client.tsx for     */
-/* effect "depth3d" only. The fill progression mirrors the static .ot-depth-   */
-/* extrude above; on top of it, every layer carries a token-derived OUTLINE     */
-/* stroke so the steps read as stacked ridges (the optimizely.com hero look).   */
+/* flat text-shadow. Rendered by PrimaryTextDepth3D.client.tsx for effect       */
+/* "depth3d" only. The fill progression mirrors the static .ot-depth-extrude    */
+/* above; on top of it, every layer carries a token-derived OUTLINE stroke so   */
+/* the steps read as stacked ridges (the optimizely.com hero look).             */
 /*                                                                              */
-/* Static by default (works with no JS — this is also the touch / reduced-      */
-/* motion resting state): a clean flat offset stack, no perspective. The client */
-/* sets data-interactive on capable devices, which turns on perspective +       */
-/* preserve-3d so the per-layer translateZ produces real parallax on rotate.    */
-/* All colors are token-derived, so theme overrides + light/dark keep working.  */
+/* Motion: the receding layers LEAN LEFT/RIGHT with the cursor's horizontal     */
+/* position (no perspective tilt). The client drives --ext (a lean multiplier); */
+/* each layer's horizontal offset is its vertical depth × --ext, so the stack   */
+/* swings sideways under the pointer. Static by default (works with no JS — also */
+/* the touch / reduced-motion resting state): --ext is 0, a clean straight-down  */
+/* stack. All colors are token-derived, so theme + light/dark keep working.     */
 /* ─────────────────────────────────────────────────────────────────────────── */
 .ot-extrude3d {
   display: inline-block;
-  /* No perspective at rest: translateZ is inert, layers sit at their flat 2D
-     offsets — identical to a clean extrude. Perspective is added only when the
-     client marks the instance interactive (capable pointer + motion allowed). */
+  /* Horizontal-lean multiplier the client sets from cursor X; 0 = straight-down
+     stack at rest. Inherited by every layer below. */
+  --ext: 0;
 }
-.ot-extrude3d[data-interactive] { perspective: 1200px; }
 
 .ot-extrude3d__rot {
   position: relative;
   display: inline-block;
-  transform-origin: center center;
-}
-.ot-extrude3d[data-interactive] .ot-extrude3d__rot {
-  transform-style: preserve-3d;
-  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
 }
 
 /* Each duplicate layer. The face (last child) is in flow and sizes the box; the
@@ -878,7 +872,9 @@ body {
   position: absolute;
   inset: 0;
   margin: 0;
-  transform: translate3d(var(--ox, 0), var(--oy, 0), var(--oz, 0));
+  /* horizontal offset = this layer's vertical depth × the shared lean multiplier */
+  --ox: calc(var(--oy, 0) * var(--ext, 0));
+  transform: translate(var(--ox), var(--oy, 0));
   will-change: transform;
   -webkit-user-select: none;
           user-select: none;
@@ -889,14 +885,15 @@ body {
   position: relative; /* the face: in flow, defines the box the others overlay */
 }
 
-/* Geometry — 5 receding steps + the face. Offsets mirror the static extrude
-   (0.03 → 0.22em); translateZ (≈ offset × 3) drives the parallax when rotated. */
-.ot-extrude3d__layer:nth-child(1) { --ox: 0.22em; --oy: 0.22em; --oz: -0.66em; } /* deepest */
-.ot-extrude3d__layer:nth-child(2) { --ox: 0.16em; --oy: 0.16em; --oz: -0.48em; }
-.ot-extrude3d__layer:nth-child(3) { --ox: 0.10em; --oy: 0.10em; --oz: -0.30em; }
-.ot-extrude3d__layer:nth-child(4) { --ox: 0.06em; --oy: 0.06em; --oz: -0.18em; }
-.ot-extrude3d__layer:nth-child(5) { --ox: 0.03em; --oy: 0.03em; --oz: -0.09em; }
-.ot-extrude3d__layer:nth-child(6) { --ox: 0;      --oy: 0;      --oz: 0;       } /* face */
+/* Geometry — 5 receding steps + the face. --oy is the constant downward depth
+   (0.03 → 0.22em); the horizontal offset (--ox, set above) is that depth × --ext,
+   so the stack is a straight-down extrude at rest and leans with the cursor. */
+.ot-extrude3d__layer:nth-child(1) { --oy: 0.22em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --oy: 0.16em; }
+.ot-extrude3d__layer:nth-child(3) { --oy: 0.10em; }
+.ot-extrude3d__layer:nth-child(4) { --oy: 0.06em; }
+.ot-extrude3d__layer:nth-child(5) { --oy: 0.03em; }
+.ot-extrude3d__layer:nth-child(6) { --oy: 0; } /* face */
 
 /* Dark / canvas (default): near-white face, brand fills graduating deeper, with
    a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
