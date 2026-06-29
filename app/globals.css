@@ -855,9 +855,6 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────── */
 .ot-extrude3d {
   display: inline-block;
-  /* Horizontal-lean multiplier the client sets from cursor X; 0 = straight-down
-     stack at rest. Inherited by every layer below. */
-  --ext: 0;
 }
 
 .ot-extrude3d__rot {
@@ -867,15 +864,13 @@ body {
 
 /* Each duplicate layer. The face (last child) is in flow and sizes the box; the
    shadow layers overlay it (inset:0, same text → identical wrapping) and step
-   down-right + back in Z. paint-order keeps the fill crisp over the ridge stroke. */
+   DOWN-LEFT by a fixed per-layer offset. paint-order keeps the fill crisp over
+   the ridge stroke that separates the steps. Fully static — no cursor tracking. */
 .ot-extrude3d__layer {
   position: absolute;
   inset: 0;
   margin: 0;
-  /* horizontal offset = this layer's vertical depth × the shared lean multiplier */
-  --ox: calc(var(--oy, 0) * var(--ext, 0));
-  transform: translate(var(--ox), var(--oy, 0));
-  will-change: transform;
+  transform: translate(var(--ox, 0), var(--oy, 0));
   -webkit-user-select: none;
           user-select: none;
   paint-order: stroke fill;
@@ -885,15 +880,15 @@ body {
   position: relative; /* the face: in flow, defines the box the others overlay */
 }
 
-/* Geometry — 5 receding steps + the face. --oy is the constant downward depth
-   (0.03 → 0.22em); the horizontal offset (--ox, set above) is that depth × --ext,
-   so the stack is a straight-down extrude at rest and leans with the cursor. */
-.ot-extrude3d__layer:nth-child(1) { --oy: 0.22em; } /* deepest */
-.ot-extrude3d__layer:nth-child(2) { --oy: 0.16em; }
-.ot-extrude3d__layer:nth-child(3) { --oy: 0.10em; }
-.ot-extrude3d__layer:nth-child(4) { --oy: 0.06em; }
-.ot-extrude3d__layer:nth-child(5) { --oy: 0.03em; }
-.ot-extrude3d__layer:nth-child(6) { --oy: 0; } /* face */
+/* Geometry — 5 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
+   LEFT per layer, so the duplicates fan out as clearly separated, evenly-spaced
+   layers (a deep, legible retro extrude) rather than a cramped near-flat stack. */
+.ot-extrude3d__layer:nth-child(1) { --ox: -0.35em; --oy: 0.40em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --ox: -0.28em; --oy: 0.32em; }
+.ot-extrude3d__layer:nth-child(3) { --ox: -0.21em; --oy: 0.24em; }
+.ot-extrude3d__layer:nth-child(4) { --ox: -0.14em; --oy: 0.16em; }
+.ot-extrude3d__layer:nth-child(5) { --ox: -0.07em; --oy: 0.08em; }
+.ot-extrude3d__layer:nth-child(6) { --ox: 0;       --oy: 0;      } /* face */
 
 /* Dark / canvas (default): near-white face, brand fills graduating deeper, with
    a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
