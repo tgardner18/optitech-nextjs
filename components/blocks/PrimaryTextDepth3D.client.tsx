@@ -5,29 +5,28 @@ import { useEffect, useRef } from 'react'
 // ─── depth3d interactive headline ───────────────────────────────────────────────
 //
 // Renders the "3D Depth" header effect as real stacked DOM layers (see the
-// .ot-extrude3d styles in globals.css) so the extrusion genuinely separates in
-// 3D when the headline rotates toward the cursor — a flat text-shadow stack
-// cannot. The layers render statically with no JavaScript (this is also the
-// touch / reduced-motion resting state); JS only adds the cursor-driven tilt.
+// .ot-extrude3d styles in globals.css). The receding layers swing LEFT/RIGHT with
+// the cursor's horizontal position — a retro extrude that leans away from the
+// pointer (the optimizely.com homepage feel), NOT a perspective tilt. The layers
+// render statically as a straight-down stack with no JavaScript; this is also the
+// touch / reduced-motion resting state. JS only drives the horizontal lean.
 //
-// Behaviour, per spec:
+// Behaviour:
 //   • element-relative tracking (this headline's own rect, so multiple instances
 //     respond independently — no shared global mouse store)
-//   • normalized cursor → rotateY ±10° (dominant) and rotateX ±4° (subtle)
-//   • rAF + lerp toward the target each frame (weighted, trailing feel — never a
-//     raw 1:1 jump on every mousemove)
-//   • eases back to neutral when the cursor leaves the headline
-//   • coarse pointer OR prefers-reduced-motion → no listeners at all, static
-//     resting treatment (hard requirement)
+//   • normalized cursor X → --ext, the per-layer horizontal-offset multiplier;
+//     the stack leans AWAY from the cursor. Cursor Y is ignored (left/right only).
+//   • rAF + lerp toward the target each frame (weighted, trailing feel)
+//   • eases back to a straight-down stack when the cursor leaves
+//   • coarse pointer OR prefers-reduced-motion → no listeners, static stack
 //   • IntersectionObserver gates listener + rAF to while the headline is in view
 //
 // No @optimizely/cms-sdk import — pure presentational client component.
 
-const LAYER_COUNT = 6 // 5 receding shadow steps + 1 face (matches the CSS nth-child geometry)
-const MAX_RY = 10 // deg — horizontal tilt, the dominant axis
-const MAX_RX = 4  // deg — vertical tilt, deliberately subtler
-const LERP = 0.1  // per-frame approach toward target (weighted trailing feel)
-const EPS = 0.01  // deg — "settled" threshold
+const LAYER_COUNT = 6  // 5 receding steps + 1 face (matches the CSS nth-child geometry)
+const MAX_EXT = 1.8    // peak horizontal lean, as a multiple of each layer's vertical depth
+const LERP = 0.12      // per-frame approach toward target (weighted trailing feel)
+const EPS = 0.002      // "settled" threshold
 
 const clamp = (v: number, min: number, max: number) => (v < min ? min : v > max ? max : v)
 
@@ -41,30 +40,25 @@ export default function PrimaryTextDepth3D({ text }: { text: string }) {
     if (!wrap || !rot) return
 
     // Capability gate — touch / coarse pointer and reduced-motion both fall back
-    // to the static resting treatment with zero tracking.
+    // to the static straight-down stack with zero tracking.
     const coarse = window.matchMedia('(pointer: coarse)').matches
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (coarse || reduce) return
 
-    wrap.setAttribute('data-interactive', '') // turns on perspective + preserve-3d
+    wrap.setAttribute('data-interactive', '')
 
     let raf = 0
     let running = false
-    let curRx = 0, curRy = 0, tgtRx = 0, tgtRy = 0
+    let cur = 0, tgt = 0
 
-    const apply = () => {
-      rot.style.setProperty('--rx', `${curRx.toFixed(3)}deg`)
-      rot.style.setProperty('--ry', `${curRy.toFixed(3)}deg`)
-    }
+    const apply = () => { rot.style.setProperty('--ext', cur.toFixed(3)) }
 
     const frame = () => {
-      curRx += (tgtRx - curRx) * LERP
-      curRy += (tgtRy - curRy) * LERP
+      cur += (tgt - cur) * LERP
       apply()
-      const settled = Math.abs(tgtRx - curRx) < EPS && Math.abs(tgtRy - curRy) < EPS
-      if (settled) {
+      if (Math.abs(tgt - cur) < EPS) {
         // Snap to the exact target and stop the loop until the next input.
-        curRx = tgtRx; curRy = tgtRy
+        cur = tgt
         apply()
         running = false
         return
@@ -77,14 +71,12 @@ export default function PrimaryTextDepth3D({ text }: { text: string }) {
 
     const onMove = (e: PointerEvent) => {
       const r = wrap.getBoundingClientRect()
-      if (r.width === 0 || r.height === 0) return
+      if (r.width === 0) return
       const nx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1)
-      const ny = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1)
-      tgtRy = nx * MAX_RY        // cursor right → rotateY+ (right edge recedes)
-      tgtRx = -ny * MAX_RX       // cursor up → rotateX+ (top tilts toward viewer)
+      tgt = -nx * MAX_EXT // cursor right → stack leans left, and vice versa
       wake()
     }
-    const rest = () => { tgtRx = 0; tgtRy = 0; wake() }
+    const rest = () => { tgt = 0; wake() }
 
     let attached = false
     const attach = () => {
@@ -98,7 +90,7 @@ export default function PrimaryTextDepth3D({ text }: { text: string }) {
       wrap.removeEventListener('pointermove', onMove)
       wrap.removeEventListener('pointerleave', rest)
       attached = false
-      rest() // ease back to neutral when scrolled out of view
+      rest() // ease back to a straight-down stack when scrolled out of view
     }
 
     // Only track + animate while the headline is on screen.

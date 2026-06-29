@@ -306,13 +306,21 @@ function TriggerBar({
     return () => { el.removeEventListener('scroll', updateFade); ro.disconnect() }
   }, [updateFade, tabs.length])
 
-  // Keep the active trigger in view (centered when the strip overflows).
+  // Keep the active trigger centered WITHIN the strip. Scroll only the strip
+  // element (never via element.scrollIntoView, which bubbles to the document):
+  // otherwise loading a page with a below-the-fold Tabs block jumps the whole
+  // viewport down to it. scrollBy on the strip moves only its own content; the
+  // unused axis clamps to 0, so this works for both the top and side layouts.
   useEffect(() => {
-    buttonsRef.current[activeTab]?.scrollIntoView({
-      behavior: reducedMotion ? 'auto' : 'smooth',
-      inline:   'center',
-      block:    'nearest',
-    })
+    const strip = scrollerRef.current
+    const btn   = buttonsRef.current[activeTab]
+    if (!strip || !btn) return
+    const stripRect = strip.getBoundingClientRect()
+    const btnRect   = btn.getBoundingClientRect()
+    const dx = (btnRect.left + btnRect.width  / 2) - (stripRect.left + stripRect.width  / 2)
+    const dy = (btnRect.top  + btnRect.height / 2) - (stripRect.top  + stripRect.height / 2)
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return
+    strip.scrollBy({ left: dx, top: dy, behavior: reducedMotion ? 'auto' : 'smooth' })
   }, [activeTab, reducedMotion])
 
   // ── Keyboard navigation (WAI-ARIA tabs pattern) ─────────────────────────
