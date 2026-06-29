@@ -480,35 +480,35 @@ function DiagonalHero({
     >
       {hasVisual && (
         <>
-          {/* Image: a clipped top band on mobile. On desktop it's anchored to the
-              VISIBLE side and covers ~60% (left edge runs to 40%, well under the
-              panel's ~49% seam so there's never a gap). Anchoring to the visible
-              side — rather than full-bleed across the whole section — keeps the
-              photo's focal centre in the exposed area instead of hidden behind the
-              panel, and object-cover crops it cleanly within that region. */}
+          {/* Image: a clipped top band on mobile. On desktop it's a CONTAINED block
+              pinned to the visible side (~46%, full height), so object-cover crops it
+              around its own centre — the focal point shows, instead of the photo being
+              stretched full-bleed across the section with its middle hidden. */}
           <div
-            className={`hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-y-0 lg:h-full ${
-              side === "left" ? "lg:left-0 lg:right-[40%]" : "lg:right-0 lg:left-[40%]"
+            className={`hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-y-0 lg:h-full lg:w-[46%] ${
+              side === "left" ? "lg:left-0" : "lg:right-0"
             }`}
             {...pa("visual")}
           >
-            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 60vw, 100vw" />
+            <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 46vw, 100vw" />
           </div>
-          {/* Solid diagonal panel (desktop only) — the readable text ground + the seam.
-              ~54% wide so the image keeps a visible ~half; the diagonal narrows it to
-              ~49% at the seam's near edge, still comfortably wider than the text column. */}
+          {/* Solid color panel (desktop only) — the readable text ground. It's the
+              larger plane (~60%) and its angled edge OVERLAPS the contained image's
+              near edge (Editorial-Overlap composition, but with a diagonal seam). The
+              diagonal narrows it to ~56% at the bottom — still past the image's 54%
+              edge, so the angle always sits over the photo with no gap. */}
           <div
-            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[54%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
+            className={`hero-diagonal__panel absolute inset-y-0 z-[1] hidden w-[60%] lg:block ${groundCva({ color })} ${side === "left" ? "right-0" : "left-0"}`}
             data-side={side}
             aria-hidden
           />
         </>
       )}
 
-      <div className="relative z-10 flex w-full items-center px-md py-lg lg:min-h-[22rem] lg:px-lg lg:py-xl">
+      <div className="relative z-10 flex w-full items-center px-md py-lg lg:min-h-112 lg:px-lg lg:py-xl">
         <div
           className={`flex flex-col gap-md lg:gap-lg ${anim} ${
-            hasVisual ? `lg:max-w-[44%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
+            hasVisual ? `lg:max-w-[52%] ${side === "left" ? "lg:ml-auto" : ""}` : "max-w-(--ot-measure)"
           }`}
         >
           {eyebrow && <p className={eyebrowCva({ color })} {...pa("eyebrow")}>{eyebrow}</p>}
