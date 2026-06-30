@@ -183,7 +183,7 @@ function SpotlightFooter({ view }: { view: FooterView }) {
  * footer. Description reads as a statement (subhead scale).
  * ════════════════════════════════════════════════════════════════════════════ */
 function CenteredFooter({ view }: { view: FooterView }) {
-  const { surfaceAttrs, background, links, descriptionHtml, year } = view
+  const { surfaceAttrs, background, links, descriptionHtml, year, siteName } = view
 
   return (
     <footer {...surfaceAttrs} className="relative overflow-hidden isolate bg-canvas">
@@ -191,49 +191,52 @@ function CenteredFooter({ view }: { view: FooterView }) {
       {/* Top gradient bar */}
       <div aria-hidden className="h-px" style={{ background: topBarBg(background) }} />
 
-      {/* Ambient bloom, bottom-centre */}
+      {/* Ambient bloom, bottom-centre — reads as depth on dark/brand, invisible on light */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
           zIndex: 0,
           backgroundImage:
-            'radial-gradient(ellipse 60% 60% at 50% 125%, var(--ot-bloom-brand-faint) 0%, transparent 70%)',
+            'radial-gradient(ellipse 55% 70% at 50% 135%, var(--ot-bloom-brand-faint) 0%, transparent 68%)',
         }}
       />
 
-      <div className="relative z-10 flex flex-col items-center text-center px-md py-xl lg:px-lg lg:py-2xl gap-y-md">
+      {/* Constrained column so the divider reads as a deliberate width, not edge-to-edge */}
+      <div className="relative z-10 mx-auto max-w-2xl px-md py-lg lg:py-xl flex flex-col items-center text-center">
 
         <FooterLogo view={view} />
 
         {descriptionHtml && (
           <div
-            className={cn(PROSE, 'text-subhead leading-subhead text-fg-muted [&_p+p]:mt-[0.35em] max-w-[42ch] mx-auto')}
+            className={cn(PROSE, 'mt-md text-title leading-title text-balance text-fg-muted max-w-[46ch] [&_p+p]:mt-[0.4em]')}
             dangerouslySetInnerHTML={{ __html: descriptionHtml }}
           />
         )}
 
         {links.length > 0 && (
-          <nav aria-label="Footer navigation">
-            <ul className="flex flex-wrap justify-center gap-x-md gap-y-sm">
-              {links.map(link => (
-                <li key={link.label}>
+          <nav aria-label="Footer navigation" className="mt-lg">
+            <ul className="flex flex-wrap items-center justify-center gap-y-2 text-label tracking-label uppercase">
+              {links.map((link, i) => (
+                <li key={link.label} className="flex items-center">
                   <Link
                     href={link.href}
-                    className="text-[0.875rem] font-medium text-fg-muted underline-offset-2 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
+                    className="font-medium text-fg-muted underline-offset-4 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
                   >
                     {link.label}
                   </Link>
+                  {i < links.length - 1 && (
+                    <span aria-hidden className="mx-3 select-none text-fg-muted/30">·</span>
+                  )}
                 </li>
               ))}
             </ul>
           </nav>
         )}
 
-        <div className="flex flex-col items-center gap-y-sm pt-sm">
-          <span aria-hidden className="block h-px w-12" style={{ background: 'var(--ot-fg)', opacity: 0.12 }} />
-          <p className="text-label tracking-label uppercase text-fg-muted/60">
-            © {year}
+        <div className="mt-lg w-full border-t border-fg/10 pt-md">
+          <p className="text-label tracking-label uppercase text-fg-muted/70">
+            © {year} {siteName}
           </p>
         </div>
 
