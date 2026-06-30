@@ -1,24 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Site Accelerator
 
-## Getting Started
+**Site Accelerator** is a configurable, vertical-agnostic site framework built on the **Next.js App Router** and the **Optimizely SaaS CMS**. It is not a single brand site; it is a system for standing up credible, editorially confident marketing sites in any vertical (financial services, healthcare, retail, legal, and more) by re-theming and composing one shared component library through **ThemeManager**, **Visual Builder**, and **display templates**.
 
-First, run the development server:
+Its primary job is **pre-sales enablement**: solution engineers re-skin and re-compose it to show a prospect, in that prospect's own industry, what the SaaS CMS can do — Visual Builder composition, theme management, display templates, and headless delivery.
+
+> The `OT_` content-type prefix and `--ot-` token prefix are **historical and theme-neutral** — they carry no brand meaning and are intentionally not renamed (renaming content-type keys is a breaking CMS migration).
+
+## Stack
+
+- **Next.js 16.2.6** — App Router, TypeScript (no Pages Router)
+- **React 19.2.4**
+- **Tailwind CSS v4** — configured via `@import "tailwindcss"` in `app/globals.css`; design tokens live in `styles/tokens.css` (there is no `tailwind.config.*`)
+- **@optimizely/cms-sdk ^2.0.0** — headless content client (Optimizely Graph)
+- **@optimizely/cms-cli ^2.0.0** — syncs TypeScript content-type definitions to the CMS (`yarn cms:push` / `cms:pull`)
+- **Recharts** — powers the ChartBlock data visualizations
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn install
+yarn dev        # dev server on http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set the environment variables under **Optimizely CMS Setup** below first — the CMS-driven routes need at least `OPTIMIZELY_GRAPH_SINGLE_KEY` and `OPTIMIZELY_CMS_URL` to render content.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+|---|---|
+| `yarn dev` | Start the dev server |
+| `yarn build` | Production build |
+| `yarn start` | Run the production build |
+| `yarn lint` | ESLint (next core-web-vitals + TypeScript rules) |
+| `yarn lint:tokens` | Flag hard-coded color literals that should be design tokens |
+| `yarn cms:push` | Push TypeScript content types / display templates to the CMS |
+| `yarn cms:pull` | Pull the CMS content-type config back down |
+
+> `cms:push` / `cms:pull` load `.env` then `.env.local` via the wrapper scripts — the CLI does not read env files itself.
+
+## Architecture
+
+The App Router lives under `app/`, with the public marketing site grouped in `app/(site)/`.
+
+- **Design tokens** (`styles/tokens.css`) are the brand. Every color / spacing / type / motion value is a `--ot-*` custom property and components reference tokens, never raw values. Dark mode is the default; `data-theme="light"` flips the grounds.
+- **ThemeManager axes** re-skin the whole system from the CMS with no code changes: **Primary Font** (Poppins by default, swappable to Source Serif 4 / Sora / Bricolage Grotesque), **Corner Style** (Sharp / Soft / Rounded), and **Motion Intensity** (Calm / Default / Energetic). `buildThemeCSS()` in [`lib/optimizely.ts`](lib/optimizely.ts) emits the overrides from the ThemeManager content type. Fixed-purpose fonts sit alongside the themeable primary: Syne (accent moments), Geist Mono (code / data), Caveat (the QuoteBlock signature), and Tilt Neon (the PrimaryText "neon" effect).
+- **Block library** ([`components/blocks/`](components/blocks/)) — the composable Visual Builder blocks (Hero, Card, PrimaryText, Quote, Stat, Feature Grid, Accordion, Tabs, Chart, Blog Feed, and more). Each block follows a fixed four-layer CMS pattern (content type → display template → adapter → React component) and ships a showcase demo in the same task.
+- **Showcase** (**`/showcase`**) — a live gallery of every block and layout plus a theme playground, grouped into Blocks / Pages / Layout / Theme. The fastest way to see what exists and how each variant renders under the current theme.
+- **CMS-driven pages** render through the catch-all at [`app/(site)/[...slug]/page.tsx`](app/(site)/[...slug]/page.tsx), which fetches by slug via Optimizely Graph and renders the SDK composition tree.
+
+### Project docs
+
+| Doc | Covers |
+|---|---|
+| [`PRODUCT.md`](PRODUCT.md) | Product purpose, users, brand voice, strategic principles |
+| [`DESIGN.md`](DESIGN.md) | Color strategy, typography, elevation, motion, component specs |
+| [`Optimizely.md`](Optimizely.md) | CMS integration patterns, page / experience types, Graph queries |
+| [`CLAUDE.md`](CLAUDE.md) | Repo conventions and the CMS block-authoring workflow |
+
+For adding or editing CMS blocks, the **optimizely-block** skill (`.claude/skills/optimizely-block/`) encodes the exact four-layer + showcase + push workflow and the seven artifacts each block needs to be complete.
+
+## Claude Code skills
+
+This repo ships a project-scoped [Claude Code](https://claude.com/claude-code) skill for Optimizely CMS work, under [`.claude/skills/`](.claude/skills/). It is picked up automatically when a request matches — you don't have to name it.
+
+### `optimizely-block`
+
+Encodes this repo's exact workflow for **any** work on a CMS block or section — creating, extending, restyling, or wiring one up. It triggers on requests like *"add a Testimonial block"*, *"add a field to the Card block"*, or *"new hero variant"*, and supersedes the generic `optimizely-model` / `optimizely-model-react` plugin skills for anything touching `cms/` or `components/blocks/`. It captures the **four-layer + showcase + push** workflow and the **seven artifacts** a block needs to be complete: content type, display template, CMS adapter, UI component, three `cms/registry.ts` entries, the showcase demo, and the showcase nav item.
+
+Reference files (`.claude/skills/optimizely-block/references/`):
+
+| Reference | Covers |
+|---|---|
+| `four-layer-pattern.md` | Content type, block + section display templates, adapters, the UI component, and rich-text / image / link / array rendering |
+| `sdk-property-rules.md` | SDK property gotchas: enum `value` not `key`, top-level `maxLength`, `isLocalized`, `richText` not `xhtml`, the CTA-must-be-`url`+`string` rule, property groups, and the atomic property-group rollback |
+| `registration.md` | The three `cms/registry.ts` edits, each failure mode, and the catch-all route note |
+| `showcase-sync.md` | The four showcase-page edits plus the one nav edit every new block needs |
+| `push-checklist.md` | Preflight, push-before-build, instance-decided-by-creds, Graph re-index lag, and the atomic-rollback symptom decoder |
 
 ## Optimizely CMS Setup
 
@@ -161,17 +218,8 @@ The **Analytics** and **Settings** sections in the sidebar are placeholders and 
 | UI components (shell, nav, clients) | [`components/admin/`](components/admin/) |
 | Auth helpers, Graph queries, content-type list | [`lib/admin/`](lib/admin/) |
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+Deployed on **Vercel**. Set every environment variable from the sections above in the Vercel project (Production scope), then deploy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out the [Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy this app is via the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
-
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Content-type and display-template changes are a **separate** step from the app deploy: run `yarn cms:push` to sync them to the CMS. The target instance is decided by the `OPTIMIZELY_CMS_CLIENT_ID` / `OPTIMIZELY_CMS_CLIENT_SECRET` credentials in your environment, so double-check those point at the intended instance before pushing.
