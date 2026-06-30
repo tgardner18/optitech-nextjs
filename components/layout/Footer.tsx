@@ -198,30 +198,31 @@ function CenteredFooter({ view }: { view: FooterView }) {
         style={{
           zIndex: 0,
           backgroundImage:
-            'radial-gradient(ellipse 55% 70% at 50% 135%, var(--ot-bloom-brand-faint) 0%, transparent 68%)',
+            'radial-gradient(ellipse 50% 60% at 50% 115%, var(--ot-bloom-brand-faint) 0%, transparent 70%)',
         }}
       />
 
-      {/* Constrained column so the divider reads as a deliberate width, not edge-to-edge */}
-      <div className="relative z-10 mx-auto max-w-2xl px-md py-lg lg:py-xl flex flex-col items-center text-center">
+      {/* Main area. Arbitrary px width — the named max-w-* scale is broken in this
+          Tailwind v4 setup (collapses to a few px); the repo uses max-w-[Npx]/[Nch]. */}
+      <div className="relative z-10 mx-auto max-w-[640px] px-md py-lg lg:py-xl flex flex-col items-center text-center">
 
         <FooterLogo view={view} />
 
         {descriptionHtml && (
           <div
-            className={cn(PROSE, 'mt-md text-title leading-title text-balance text-fg-muted max-w-[46ch] [&_p+p]:mt-[0.4em]')}
+            className={cn(PROSE, 'mt-sm text-body leading-body text-balance text-fg-muted max-w-[58ch] [&_p+p]:mt-[0.5em]')}
             dangerouslySetInnerHTML={{ __html: descriptionHtml }}
           />
         )}
 
         {links.length > 0 && (
-          <nav aria-label="Footer navigation" className="mt-lg">
-            <ul className="flex flex-wrap items-center justify-center gap-y-2 text-label tracking-label uppercase">
+          <nav aria-label="Footer navigation" className="mt-md">
+            <ul className="flex flex-wrap items-center justify-center gap-y-2">
               {links.map((link, i) => (
                 <li key={link.label} className="flex items-center">
                   <Link
                     href={link.href}
-                    className="font-medium text-fg-muted underline-offset-4 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
+                    className="text-[0.9375rem] font-medium text-fg-muted underline-offset-4 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
                   >
                     {link.label}
                   </Link>
@@ -234,12 +235,15 @@ function CenteredFooter({ view }: { view: FooterView }) {
           </nav>
         )}
 
-        <div className="mt-lg w-full border-t border-fg/10 pt-md">
-          <p className="text-label tracking-label uppercase text-fg-muted/70">
-            © {year} {siteName}
-          </p>
-        </div>
+      </div>
 
+      {/* Brand bottom bar — anchors the footer with the brand color. Uses fixed
+          brand tokens + fg-on-brand so it stays legible on any Footer Background;
+          a faint top rule separates it when the surface itself is Brand. */}
+      <div className="relative z-10 bg-brand-hover border-t border-fg-on-brand/10">
+        <p className="mx-auto max-w-[1120px] px-md py-sm text-center text-label tracking-label uppercase text-fg-on-brand/85">
+          © {year} {siteName}
+        </p>
       </div>
 
     </footer>
