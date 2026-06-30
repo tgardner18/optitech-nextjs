@@ -145,6 +145,7 @@ const THEME_QUERY = `
     OT_FooterBlock(limit: 20, locale: $locale) {
       items {
         _metadata { key locale }
+        footerStyle
         footerLogo { url { default } }
         footerLogoSize
         footerLogoInvertDark

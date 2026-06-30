@@ -128,6 +128,12 @@ html {
 [data-theme="light"] .logo-invert-dark { filter: none; }
 [data-theme="light"] [data-theme="dark"] .logo-invert-dark { filter: brightness(0) invert(1); }
 
+/* Footer description emphasis. <em> renders in accent (signal green); on a Light
+ * footer surface the 82%-L accent is too pale on the near-white canvas, so it
+ * deepens to accent-hover for AA contrast. Dark and brand surfaces keep accent. */
+.footer-prose em { color: var(--ot-accent); font-style: normal; }
+[data-theme="light"] .footer-prose em { color: var(--ot-accent-hover); }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }

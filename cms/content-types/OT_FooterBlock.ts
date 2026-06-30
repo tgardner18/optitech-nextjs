@@ -23,6 +23,22 @@ export const OT_FooterBlock = contentType({
   // never placed directly in a Visual Builder canvas. elementEnabled is intentionally
   // absent because the CMS disallows array/component properties on elementEnabled blocks.
   properties: {
+    // ── Layout ──────────────────────────────────────────────────────────────
+    // Structural arrangement of the footer, independent of its background tone.
+    // The two axes (style + background) combine freely: any style on any surface.
+    footerStyle: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Footer Style',
+      description: 'Layout for the footer. Spotlight is the bold asymmetric layout with a branded link panel; Centered is a calm, symmetrical stacked layout; Minimal is a compact single row. Works with any Footer Background.',
+      group: 'OT_Style',
+      sortOrder: 4,
+      enum: [
+        { value: 'spotlight', displayName: 'Spotlight — bold, branded (default)' },
+        { value: 'centered',  displayName: 'Centered — calm, symmetrical' },
+        { value: 'minimal',   displayName: 'Minimal — compact single row' },
+      ],
+    },
     // ── Logo override ─────────────────────────────────────────────────────────
     // When set, this logo is displayed in the footer instead of the ThemeManager
     // site logo. Editors can use a different visual weight for the footer
@@ -52,20 +68,26 @@ export const OT_FooterBlock = contentType({
     footerLogoInvertDark: {
       type: 'boolean',
       displayName: 'Invert Logo in Dark Mode',
-      description: 'Applies a brightness/invert filter so a dark logo reads as white on dark backgrounds. Automatically disabled when the left panel is set to Light mode (the original logo shows on the light background).',
+      description: 'Applies a brightness/invert filter so a dark logo reads as white on dark or brand backgrounds. Automatically disabled when the Footer Background is set to Light (the original logo shows on the light surface).',
       group: 'OT_Style',
       sortOrder: 7,
     },
+    // Background tone, generalized from the original left-panel-only setting.
+    // Key kept as `footerLeftMode` so existing `dark`/`light` content needs no
+    // migration; `brand` is new. Spotlight tints only its left (logo) panel with
+    // this; Centered and Minimal tint the whole footer. The footer always pins
+    // its own tone via a scoped data-theme, independent of the site's mode.
     footerLeftMode: {
       type: 'string',
       format: 'selectOne',
-      displayName: 'Left Panel Mode',
-      description: 'Color mode for the footer\'s left panel (logo, description, copyright). Light is useful for logos that don\'t read well inverted on a dark background — the canvas lightens and the text/logo adjust automatically. The right (brand) panel is unaffected.',
+      displayName: 'Footer Background',
+      description: 'Surface tone for the footer. In Spotlight this tints the left (logo) panel; in Centered and Minimal it tints the whole footer. Light lightens the surface with dark text; Brand floods it with the brand color. The right (brand) link panel in Spotlight is unaffected.',
       group: 'OT_Style',
       sortOrder: 8,
       enum: [
         { value: 'dark',  displayName: 'Dark (default)' },
         { value: 'light', displayName: 'Light' },
+        { value: 'brand', displayName: 'Brand — drenched in brand color' },
       ],
     },
     // ── Content ───────────────────────────────────────────────────────────────
