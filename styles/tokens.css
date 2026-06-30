@@ -334,3 +334,20 @@
     oklch(from var(--ot-accent) calc(l - 0.26) c h) 100%
   );
 }
+
+/* ── Footer brand surface ─────────────────────────────────────────────────────
+ * Opt-in drench context for the footer's "Brand" background. Paired with
+ * data-theme="dark" on the same element (see footerSurfaceAttrs), so the dark
+ * foreground semantics (light text, inverted logo) hold while the surface and
+ * muted text flip to brand-drench values. Authored AFTER the dark/light blocks
+ * so it wins --ot-canvas / --ot-fg-muted at equal specificity by source order.
+ *
+ * brand-hover (L≈38%) is the surface — not --ot-brand (L≈55%) — so light text
+ * keeps AA contrast. Muted text derives from fg-on-brand at 0.72 alpha rather
+ * than the teal-tinted dark muted, which would dim against the teal surface.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-footer-surface="brand"] {
+  --ot-canvas:   var(--ot-brand-hover);
+  --ot-fg:       var(--ot-fg-on-brand);
+  --ot-fg-muted: oklch(from var(--ot-fg-on-brand) l c h / 0.72);
+}

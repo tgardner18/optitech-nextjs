@@ -128,6 +128,12 @@ html {
 [data-theme="light"] .logo-invert-dark { filter: none; }
 [data-theme="light"] [data-theme="dark"] .logo-invert-dark { filter: brightness(0) invert(1); }
 
+/* Footer description emphasis. <em> renders in accent (signal green); on a Light
+ * footer surface the 82%-L accent is too pale on the near-white canvas, so it
+ * deepens to accent-hover for AA contrast. Dark and brand surfaces keep accent. */
+.footer-prose em { color: var(--ot-accent); font-style: normal; }
+[data-theme="light"] .footer-prose em { color: var(--ot-accent-hover); }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -855,9 +861,6 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────── */
 .ot-extrude3d {
   display: inline-block;
-  /* Horizontal-lean multiplier the client sets from cursor X; 0 = straight-down
-     stack at rest. Inherited by every layer below. */
-  --ext: 0;
 }
 
 .ot-extrude3d__rot {
@@ -867,15 +870,13 @@ body {
 
 /* Each duplicate layer. The face (last child) is in flow and sizes the box; the
    shadow layers overlay it (inset:0, same text → identical wrapping) and step
-   down-right + back in Z. paint-order keeps the fill crisp over the ridge stroke. */
+   DOWN-LEFT by a fixed per-layer offset. paint-order keeps the fill crisp over
+   the ridge stroke that separates the steps. Fully static — no cursor tracking. */
 .ot-extrude3d__layer {
   position: absolute;
   inset: 0;
   margin: 0;
-  /* horizontal offset = this layer's vertical depth × the shared lean multiplier */
-  --ox: calc(var(--oy, 0) * var(--ext, 0));
-  transform: translate(var(--ox), var(--oy, 0));
-  will-change: transform;
+  transform: translate(var(--ox, 0), var(--oy, 0));
   -webkit-user-select: none;
           user-select: none;
   paint-order: stroke fill;
@@ -885,15 +886,15 @@ body {
   position: relative; /* the face: in flow, defines the box the others overlay */
 }
 
-/* Geometry — 5 receding steps + the face. --oy is the constant downward depth
-   (0.03 → 0.22em); the horizontal offset (--ox, set above) is that depth × --ext,
-   so the stack is a straight-down extrude at rest and leans with the cursor. */
-.ot-extrude3d__layer:nth-child(1) { --oy: 0.22em; } /* deepest */
-.ot-extrude3d__layer:nth-child(2) { --oy: 0.16em; }
-.ot-extrude3d__layer:nth-child(3) { --oy: 0.10em; }
-.ot-extrude3d__layer:nth-child(4) { --oy: 0.06em; }
-.ot-extrude3d__layer:nth-child(5) { --oy: 0.03em; }
-.ot-extrude3d__layer:nth-child(6) { --oy: 0; } /* face */
+/* Geometry — 5 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
+   LEFT per layer, so the duplicates fan out as clearly separated, evenly-spaced
+   layers (a deep, legible retro extrude) rather than a cramped near-flat stack. */
+.ot-extrude3d__layer:nth-child(1) { --ox: -0.35em; --oy: 0.40em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --ox: -0.28em; --oy: 0.32em; }
+.ot-extrude3d__layer:nth-child(3) { --ox: -0.21em; --oy: 0.24em; }
+.ot-extrude3d__layer:nth-child(4) { --ox: -0.14em; --oy: 0.16em; }
+.ot-extrude3d__layer:nth-child(5) { --ox: -0.07em; --oy: 0.08em; }
+.ot-extrude3d__layer:nth-child(6) { --ox: 0;       --oy: 0;      } /* face */
 
 /* Dark / canvas (default): near-white face, brand fills graduating deeper, with
    a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
@@ -2430,13 +2431,15 @@ body {
   filter: drop-shadow(0 0 30px var(--ot-bloom-brand-ring));
 }
 .hero-diagonal__panel[data-side="right"] {
-  /* Text panel on the LEFT; diagonal on its right edge (panel is 62% wide). */
-  clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  /* Text panel on the LEFT; diagonal on its right edge (panel is ~60% wide). The
+     seam narrows it to 93% of its box (~56% of the section) at the bottom — still
+     past the contained image's 54% edge, so the angle always overlaps the photo. */
+  clip-path: polygon(0 0, 100% 0, 93% 100%, 0 100%);
   filter: drop-shadow(3px 0 0 var(--ot-accent)) drop-shadow(12px 0 30px var(--ot-bloom-brand-ring));
 }
 .hero-diagonal__panel[data-side="left"] {
   /* Text panel on the RIGHT; diagonal on its left edge. */
-  clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%);
   filter: drop-shadow(-3px 0 0 var(--ot-accent)) drop-shadow(-12px 0 30px var(--ot-bloom-brand-ring));
 }
 /* The panel stays static (animating it would briefly expose the photo under the
