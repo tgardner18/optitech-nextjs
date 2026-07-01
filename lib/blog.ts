@@ -158,7 +158,12 @@ const LATEST_POSTS_QUERY = `
 
 // ─── Data access ────────────────────────────────────────────────────────────────
 
-async function fetchAuthorByKey(key: string): Promise<AuthorData | null> {
+/**
+ * Resolve full author profile data from an author content key. Exported so the
+ * blog detail route can resolve the author in preview/draft mode, where the raw
+ * preview content only carries the unresolved ContentReference ({ key }).
+ */
+export async function fetchAuthorByKey(key: string): Promise<AuthorData | null> {
   try {
     const data = await getClient().request(AUTHOR_QUERY, { key })
     const item = (data as any)?.OT_Author?.items?.[0] ?? null
