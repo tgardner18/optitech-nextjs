@@ -549,12 +549,12 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                           href={authorRef.linkedIn}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted/60 hover:text-brand transition-colors duration-150 ease-quick"
+                          className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted hover:text-brand transition-colors duration-150 ease-quick"
                         >
                           LinkedIn
                           <span
                             aria-hidden
-                            className="text-accent motion-safe:transition-transform duration-150 ease-quick group-hover:translate-x-0.75"
+                            className="accent-ink motion-safe:transition-transform duration-150 ease-quick group-hover:translate-x-0.75"
                           >
                             ↗
                           </span>
@@ -565,12 +565,12 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                           href={authorRef.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted/60 hover:text-brand transition-colors duration-150 ease-quick"
+                          className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted hover:text-brand transition-colors duration-150 ease-quick"
                         >
                           X / Twitter
                           <span
                             aria-hidden
-                            className="text-accent motion-safe:transition-transform duration-150 ease-quick group-hover:translate-x-0.75"
+                            className="accent-ink motion-safe:transition-transform duration-150 ease-quick group-hover:translate-x-0.75"
                           >
                             ↗
                           </span>
@@ -589,14 +589,14 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                     {authorName}
                   </p>
                   {authorRole && (
-                    <p className="text-label uppercase tracking-label font-semibold text-accent/80 mt-xs">
+                    <p className="text-label uppercase tracking-label font-semibold accent-ink mt-xs">
                       {authorRole}
                     </p>
                   )}
 
                   {authorRef.bio?.html && (
                     <div
-                      className="mt-md text-body leading-body text-fg max-w-(--ot-measure-tight) [&_p]:m-0 [&_p+p]:mt-[0.75em] [&_strong]:font-semibold [&_strong]:text-fg [&_em]:not-italic [&_em]:text-accent"
+                      className="accent-ink-prose mt-md text-body leading-body text-fg max-w-(--ot-measure-tight) [&_p]:m-0 [&_p+p]:mt-[0.75em] [&_strong]:font-semibold [&_strong]:text-fg"
                       dangerouslySetInnerHTML={{ __html: authorRef.bio.html }}
                     />
                   )}
@@ -612,7 +612,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                           className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted hover:text-brand transition-colors duration-150 ease-quick"
                         >
                           LinkedIn
-                          <span aria-hidden className="text-accent group-hover:translate-x-0.75 motion-safe:transition-transform duration-150 ease-quick">↗</span>
+                          <span aria-hidden className="accent-ink group-hover:translate-x-0.75 motion-safe:transition-transform duration-150 ease-quick">↗</span>
                         </a>
                       )}
                       {authorRef.twitter && (
@@ -623,7 +623,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                           className="group inline-flex items-center gap-xs text-[13px] font-medium text-fg-muted hover:text-brand transition-colors duration-150 ease-quick"
                         >
                           X / Twitter
-                          <span aria-hidden className="text-accent group-hover:translate-x-0.75 motion-safe:transition-transform duration-150 ease-quick">↗</span>
+                          <span aria-hidden className="accent-ink group-hover:translate-x-0.75 motion-safe:transition-transform duration-150 ease-quick">↗</span>
                         </a>
                       )}
                     </div>
