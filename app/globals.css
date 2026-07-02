@@ -134,6 +134,17 @@ html {
 .footer-prose em { color: var(--ot-accent); font-style: normal; }
 [data-theme="light"] .footer-prose em { color: var(--ot-accent-hover); }
 
+/* Accent-as-ink. Accent is a highlight hue calibrated for dark surfaces; on a
+ * light canvas many vertical accents (yellow, lime, gold) fail WCAG contrast
+ * against the near-white canvas. Render as brand in light mode — every theme
+ * guarantees brand reads on the canvas. Use `.accent-ink` on an element, or
+ * `.accent-ink-prose` to recolor descendant <em> in CMS rich text. */
+.accent-ink,
+.accent-ink-prose em { color: var(--ot-accent); }
+.accent-ink-prose em { font-style: normal; }
+[data-theme="light"] .accent-ink,
+[data-theme="light"] .accent-ink-prose em { color: var(--ot-brand); }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }

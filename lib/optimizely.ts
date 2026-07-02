@@ -138,6 +138,7 @@ const THEME_QUERY = `
           subNavItems {
             menuLink { text title target url { default } }
             description
+            icon
           }
         }
       }

@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { ICON_REGISTRY, type IconKey } from '@/components/icons/iconRegistry'
 
-export type NavSubItem = { label: string; href: string; description?: string }
+export type NavSubItem = { label: string; href: string; description?: string; icon?: IconKey }
 export type NavItem    = { label: string; href: string; children?: NavSubItem[] }
 
 type Props = { navItems: NavItem[] }
@@ -94,14 +96,16 @@ export default function DesktopNav({ navItems }: Props) {
 
             {/* ── Feature dropdown panel ──────────────────────────────────────────
               *
-              * Background system (three stacked absolute layers, same vocabulary
-              * as the site footer):
+              * A single flat `surface` panel — no angled clip-path, no two-zone
+              * brand/canvas dissolve. Because it is built entirely on semantic
+              * tokens (`bg-surface`, `text-fg`, `border-fg/*`), the whole panel
+              * inverts automatically between dark and light mode via the
+              * [data-theme] token blocks — the ground reads correctly on any
+              * theme the ThemeManager configures.
               *
-              * z-0  brand-hover fills the full panel — the right-zone base color
-              * z-1  canvas panel masked with a soft gradient dissolve to the right,
-              *      matching the footer's mist-blend technique
-              * z-2  top-edge elevation glow on the brand-hover side — makes the
-              *      right zone feel raised above the canvas zone
+              * Depth comes from a chromatic brand-hued bloom shadow (never a grey
+              * shadow), and a 1px brand→accent horizon along the top edge — the
+              * same elevation vocabulary as the site footer.
               *
               * Always rendered; visibility controlled by opacity + translate +
               * `inert` (blocks focus and pointer events when closed).
@@ -110,7 +114,7 @@ export default function DesktopNav({ navItems }: Props) {
               role="menu"
               aria-hidden={!isOpen}
               inert={!isOpen}
-              className="absolute top-full left-0 z-50 w-130 overflow-hidden"
+              className="absolute top-full left-0 z-50 w-[24rem] overflow-hidden rounded-ot-surface border-x border-b border-fg/10"
               style={{
                 marginTop: '9px',
                 opacity: isOpen ? 1 : 0,
@@ -119,7 +123,8 @@ export default function DesktopNav({ navItems }: Props) {
                 transition: isOpen
                   ? 'opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1)'
                   : 'opacity 100ms ease-in, transform 100ms ease-in',
-                boxShadow: '0 20px 56px oklch(from var(--ot-brand) calc(l - 0.18) calc(c * 0.45) h / 0.38), 0 4px 16px oklch(4% 0.005 195 / 0.50)',
+                boxShadow:
+                  '0 24px 56px -16px var(--ot-bloom-brand-faint), 0 6px 20px -8px var(--ot-bloom-brand-border)',
                 pointerEvents: isOpen ? 'auto' : 'none',
               }}
             >
@@ -132,66 +137,57 @@ export default function DesktopNav({ navItems }: Props) {
                 }}
               />
 
-              {/* Panel body — layered backgrounds */}
-              <div className="relative overflow-hidden">
-
-                {/* z-0: brand-hover base, full width */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{ zIndex: 0, background: 'var(--ot-brand-hover)' }}
-                />
-
-                {/* z-1: canvas zone, soft dissolve to the right via CSS mask */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{
-                    zIndex: 1,
-                    background: 'var(--ot-canvas)',
-                    WebkitMaskImage:
-                      'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.82) 56%, rgba(0,0,0,0.46) 62%, rgba(0,0,0,0.14) 68%, transparent 73%)',
-                    maskImage:
-                      'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.82) 56%, rgba(0,0,0,0.46) 62%, rgba(0,0,0,0.14) 68%, transparent 73%)',
-                  }}
-                />
-
-                {/* z-2: top-edge elevation glow on the brand-hover side */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{
-                    zIndex: 2,
-                    background:
-                      'linear-gradient(to bottom, oklch(from var(--ot-brand-hover) calc(l + 0.10) c h / 0.42) 0%, transparent 55%)',
-                    clipPath: 'polygon(53% 0, 100% 0, 100% 100%, calc(53% - 3.5rem) 100%)',
-                  }}
-                />
-
-                {/* z-10: sub-link rows */}
-                <div className="relative py-xs" style={{ zIndex: 10 }}>
-                  {item.children!.map(sub => (
+              {/* Panel body — single flat surface, inset rows */}
+              <div className="bg-surface p-sm">
+                {item.children!.map((sub, j) => {
+                  const Icon = sub.icon ? ICON_REGISTRY[sub.icon] : null
+                  return (
                     <Link
                       key={sub.label}
                       href={sub.href}
                       role="menuitem"
                       onClick={close}
-                      className="group/sub flex items-start gap-md px-md py-sm hover:bg-brand/8 transition-colors duration-100 ease-quick"
+                      className="group/sub flex items-center gap-md rounded-ot-control px-sm py-sm hover:bg-fg/[0.05] transition-colors duration-150 ease-quick"
+                      style={{
+                        opacity: isOpen ? 1 : 0,
+                        transform: isOpen ? 'translateY(0)' : 'translateY(4px)',
+                        transition:
+                          'opacity 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+                        transitionDelay: isOpen ? `${60 + j * 45}ms` : '0ms',
+                      }}
                     >
+                      {/* Icon tile — faint brand fill at rest, fills brand on hover */}
+                      {Icon && (
+                        <span
+                          aria-hidden="true"
+                          className="flex items-center justify-center w-11 h-11 shrink-0 rounded-ot-surface bg-brand/10 text-fg group-hover/sub:bg-brand group-hover/sub:text-fg-on-brand transition-colors duration-150 ease-quick"
+                        >
+                          <Icon size={20} strokeWidth={1.75} />
+                        </span>
+                      )}
+
+                      {/* Title + description */}
                       <div className="min-w-0">
-                        <span className="block text-sm font-medium text-fg group-hover/sub:text-brand transition-colors duration-100">
+                        <span className="block text-sm font-semibold text-fg">
                           {sub.label}
                         </span>
                         {sub.description && (
-                          <span className="block text-label text-fg-muted mt-0.75 leading-snug max-w-[38ch]">
+                          <span className="block text-label text-fg-muted mt-0.5 leading-snug">
                             {sub.description}
                           </span>
                         )}
                       </div>
-                    </Link>
-                  ))}
-                </div>
 
+                      {/* Trailing affordance — slides in on hover */}
+                      <ArrowRight
+                        aria-hidden="true"
+                        size={16}
+                        strokeWidth={2}
+                        className="ml-auto shrink-0 text-brand opacity-0 -translate-x-1 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all duration-150 ease-quick"
+                      />
+                    </Link>
+                  )
+                })}
               </div>
             </div>
           </div>

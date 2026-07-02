@@ -101,6 +101,7 @@ export default async function Header() {
               label:       c.menuLink?.text ?? '',
               href:        normalizeNavHref(c.menuLink?.url?.default, locale, domain),
               description: c.description ?? undefined,
+              icon:        c.icon && c.icon !== 'none' ? c.icon : undefined,
             }))
           : undefined,
       }))

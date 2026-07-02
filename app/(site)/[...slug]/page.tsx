@@ -11,7 +11,7 @@ import {
   getSiteSettings,
   setRequestContext,
 } from '@/lib/optimizely'
-import { getBlogPage, getLatestBlogPosts, getAuthorName } from '@/lib/blog'
+import { getBlogPage, getLatestBlogPosts, getAuthorName, fetchAuthorByKey } from '@/lib/blog'
 import { getCampaignPage, getCampaignPageMeta, mapCampaignPageRaw } from '@/lib/campaign'
 import { getEventPage } from '@/lib/events'
 import { getPractitioner } from '@/lib/practitioners'
@@ -242,9 +242,21 @@ async function CmsPage({ params, searchParams }: Props) {
       // For preview, getPreviewContent already returns all fields.
       // For public, make a targeted query to ensure all fields are present
       // (including the new SEO fields added to BLOG_PAGE_QUERY).
-      const blogContent = dm.isEnabled
+      let blogContent = dm.isEnabled
         ? exp
         : (contentKey ? await getBlogPage(contentKey, locale) : null)
+
+      // In preview/draft mode `exp` comes straight from getPreviewContent, so
+      // authorRef is the unresolved ContentReference ({ key }) — BlogPage reads
+      // authorRef.name/role/photo and finds nothing. Resolve it here so the
+      // byline renders in the editor/external preview, matching the public path
+      // (getBlogPage already resolves it for published pages).
+      if (dm.isEnabled && blogContent) {
+        const authorKey = (blogContent.authorRef as any)?.key as string | undefined
+        const resolvedAuthor = authorKey ? await fetchAuthorByKey(authorKey) : null
+        blogContent = { ...blogContent, authorRef: resolvedAuthor } as typeof blogContent
+      }
+
       const latestPosts = await getLatestBlogPosts(contentKey, locale, baseUrl)
 
       if (blogContent) {
