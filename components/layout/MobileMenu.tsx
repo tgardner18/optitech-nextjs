@@ -130,7 +130,7 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
                             className="flex items-start gap-sm pl-md py-xs text-sm font-normal text-fg-muted hover:text-fg transition-colors duration-100 ease-quick"
                           >
                             {Icon && (
-                              <Icon aria-hidden="true" size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-brand" />
+                              <Icon aria-hidden="true" size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-fg-muted" />
                             )}
                             <span className="min-w-0">
                               <span className="block">{sub.label}</span>

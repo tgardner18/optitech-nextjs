@@ -160,7 +160,7 @@ export default function DesktopNav({ navItems }: Props) {
                       {Icon && (
                         <span
                           aria-hidden="true"
-                          className="flex items-center justify-center w-11 h-11 shrink-0 rounded-ot-surface bg-brand/10 text-brand group-hover/sub:bg-brand group-hover/sub:text-fg-on-brand transition-colors duration-150 ease-quick"
+                          className="flex items-center justify-center w-11 h-11 shrink-0 rounded-ot-surface bg-brand/10 text-fg group-hover/sub:bg-brand group-hover/sub:text-fg-on-brand transition-colors duration-150 ease-quick"
                         >
                           <Icon size={20} strokeWidth={1.75} />
                         </span>
