@@ -43,7 +43,7 @@ export default function AreaChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsAreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+      <RechartsAreaChart data={chartData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
         <defs>
           {data.series.map((_, i) => (
             <linearGradient key={i} id={`area-gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
@@ -71,7 +71,7 @@ export default function AreaChart({
           tickLine={false}
           tick={tickStyle}
           tickFormatter={(v: number) => `${valuePrefix}${v}${valueSuffix}`}
-          width={42}
+          width="auto"
         />
         <Tooltip
           cursor={{ fill: theme.cursorFill }}
