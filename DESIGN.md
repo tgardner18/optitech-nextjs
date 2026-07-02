@@ -304,6 +304,8 @@ The layout system is driven by Visual Builder composition settings rather than c
 
 Server component fed by ThemeManager. Dark glass sticky bar — `bg-canvas/80 backdrop-blur-md` with `border-b border-fg/5`. Logo area, primary nav links (desktop: inline; mobile: full-height overlay via `MobileMenu.tsx` client component), and CTA button. All content CMS-driven.
 
+**Desktop dropdown (mega menu).** A single flat `bg-surface` panel — no angled clip-path, no two-zone brand/canvas dissolve. Built entirely on semantic tokens (`bg-surface`, `text-fg`, `border-fg/*`), so the whole panel inverts automatically between dark and light mode and reads correctly on any ThemeManager theme. Structure is a single column of inset rows, each an optional icon tile + title + description, with a trailing `ArrowRight` that slides in on hover. Corners follow the Corner Style axis (`rounded-ot-surface` panel + tiles, `rounded-ot-control` rows) — sharp by default, rounded under a soft/rounded theme. Depth is a chromatic brand-hued bloom shadow (`--ot-bloom-brand-faint` / `--ot-bloom-brand-border`, never grey) plus the 1px brand→accent horizon along the top edge. Rows reveal with a 45ms-per-item kinetic stagger on open; the icon tile fills `bg-brand` on row hover (icon → `fg-on-brand`), the one earned moment of color. Icons are optional per item, sourced from the shared `ICON_REGISTRY` via a `selectOne` field on `OT_NavigationSubItem` (same canonical library as the block icon pickers) and rendered on both desktop and mobile.
+
 ### Blocks (currently built)
 
 | Block | Key display settings | Notable effects |

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import { LocaleSelectorMobile } from '@/components/layout/LocaleSelector'
+import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import type { NavItem } from '@/components/layout/DesktopNav'
 import { useTranslation } from '@/lib/i18n/useTranslation'
 
@@ -119,19 +120,27 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
 
                   {isExpanded && (
                     <div className="pb-md flex flex-col gap-xs">
-                      {item.children!.map(sub => (
-                        <Link
-                          key={sub.label}
-                          href={sub.href}
-                          onClick={close}
-                          className="block pl-md py-xs text-sm font-normal text-fg-muted hover:text-fg transition-colors duration-100 ease-quick"
-                        >
-                          <span>{sub.label}</span>
-                          {sub.description && (
-                            <span className="block text-label text-fg-muted/60 mt-xs">{sub.description}</span>
-                          )}
-                        </Link>
-                      ))}
+                      {item.children!.map(sub => {
+                        const Icon = sub.icon ? ICON_REGISTRY[sub.icon] : null
+                        return (
+                          <Link
+                            key={sub.label}
+                            href={sub.href}
+                            onClick={close}
+                            className="flex items-start gap-sm pl-md py-xs text-sm font-normal text-fg-muted hover:text-fg transition-colors duration-100 ease-quick"
+                          >
+                            {Icon && (
+                              <Icon aria-hidden="true" size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-brand" />
+                            )}
+                            <span className="min-w-0">
+                              <span className="block">{sub.label}</span>
+                              {sub.description && (
+                                <span className="block text-label text-fg-muted/60 mt-xs">{sub.description}</span>
+                              )}
+                            </span>
+                          </Link>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
