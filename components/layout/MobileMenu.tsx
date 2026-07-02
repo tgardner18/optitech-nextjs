@@ -89,7 +89,7 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="block text-headline font-bold text-fg py-md border-b border-fg/10 hover:text-fg-muted transition-colors duration-150 ease-quick"
+                    className="block text-title font-semibold text-fg py-md border-b border-fg/10 hover:text-fg-muted transition-colors duration-150 ease-quick"
                     onClick={close}
                   >
                     {item.label}
@@ -103,7 +103,7 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
                     type="button"
                     aria-expanded={isExpanded}
                     onClick={() => toggleExpanded(i)}
-                    className="w-full flex items-center justify-between text-headline font-bold text-fg py-md hover:text-fg-muted transition-colors duration-150 ease-quick"
+                    className="w-full flex items-center justify-between text-title font-semibold text-fg py-md hover:text-fg-muted transition-colors duration-150 ease-quick"
                   >
                     {item.label}
                     <svg
@@ -127,15 +127,20 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
                             key={sub.label}
                             href={sub.href}
                             onClick={close}
-                            className="flex items-start gap-sm pl-md py-xs text-sm font-normal text-fg-muted hover:text-fg transition-colors duration-100 ease-quick"
+                            className="group/sub flex items-center gap-sm rounded-ot-control px-sm py-sm hover:bg-fg/5 active:bg-fg/8 transition-colors duration-150 ease-quick"
                           >
                             {Icon && (
-                              <Icon aria-hidden="true" size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-fg-muted" />
+                              <span
+                                aria-hidden="true"
+                                className="flex items-center justify-center w-10 h-10 shrink-0 rounded-ot-surface bg-brand/10 text-fg"
+                              >
+                                <Icon size={18} strokeWidth={1.75} />
+                              </span>
                             )}
                             <span className="min-w-0">
-                              <span className="block">{sub.label}</span>
+                              <span className="block text-body font-medium text-fg">{sub.label}</span>
                               {sub.description && (
-                                <span className="block text-label text-fg-muted/60 mt-xs">{sub.description}</span>
+                                <span className="block text-label text-fg-muted mt-0.5 leading-snug">{sub.description}</span>
                               )}
                             </span>
                           </Link>
