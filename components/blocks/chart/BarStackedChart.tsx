@@ -45,7 +45,7 @@ export default function BarStackedChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsBarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+      <RechartsBarChart data={chartData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
         {showGrid && (
           <CartesianGrid
             strokeDasharray="3 3"
@@ -65,7 +65,7 @@ export default function BarStackedChart({
           tickLine={false}
           tick={tickStyle}
           tickFormatter={(v: number) => `${valuePrefix}${v}${valueSuffix}`}
-          width={42}
+          width="auto"
         />
         <Tooltip
           cursor={{ fill: theme.cursorFill }}
