@@ -6,6 +6,7 @@ const TITLES: Record<string, string> = {
   '/opti-admin':                 'Dashboard',
   '/opti-admin/component-usage': 'Component Usage',
   '/opti-admin/calendar':        'Content Calendar',
+  '/opti-admin/demo-controls':   'Demo Controls',
 }
 
 export default function AdminHeaderTitle() {
