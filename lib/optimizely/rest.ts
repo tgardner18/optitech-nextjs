@@ -13,6 +13,7 @@
  *   Paging: page/per_page query params + a `LINK` response header (rel="next")
  */
 import 'server-only'
+import { cache } from 'react'
 
 const BASE = 'https://api.optimizely.com/v2'
 const PER_PAGE = 100
@@ -155,6 +156,8 @@ export interface ProjectSummary {
   id: string
   name: string
   accountId: string
+  /** 'fx' = Feature Experimentation (flags), 'web' = Web Experimentation. */
+  type: 'web' | 'fx'
 }
 
 export interface ExperimentSummary {
@@ -200,9 +203,10 @@ export interface ExperimentBlueprint {
 // ─── Web vs Feature Experimentation ─────────────────────────────────────────
 
 /**
- * The v2 API is shared by Web and Feature Experimentation. We only want Web
- * Experimentation projects (the Event API `campaign_activated` convention is
- * Web-only). Feature Experimentation projects report `is_flags_enabled: true`.
+ * The v2 API is shared by Web and Feature Experimentation. The Event API
+ * `campaign_activated` convention (Experiment Simulator) is Web-only, so that
+ * path filters to Web projects. Feature Experimentation projects report
+ * `is_flags_enabled: true`.
  */
 function isWebExperimentation(p: OptiProject): boolean {
   if (p.is_flags_enabled === true) return false
@@ -210,13 +214,31 @@ function isWebExperimentation(p: OptiProject): boolean {
   return true
 }
 
+function projectType(p: OptiProject): 'web' | 'fx' {
+  return isWebExperimentation(p) ? 'web' : 'fx'
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
-export async function listProjects(): Promise<ProjectSummary[]> {
+/**
+ * List projects. Defaults to Web Experimentation projects only (the Experiment
+ * Simulator relies on this). Pass `includeFeatureExperimentation: true` to also
+ * return FX/flags projects — used by the Traffic Simulator, which fires events
+ * by key through ODP/FX and so can use events from any project (e.g. a central
+ * FX "Events" project).
+ */
+export async function listProjects(
+  opts: { includeFeatureExperimentation?: boolean } = {},
+): Promise<ProjectSummary[]> {
   const projects = await getAll<OptiProject>('/projects')
   return projects
-    .filter(isWebExperimentation)
-    .map((p) => ({ id: String(p.id), name: p.name, accountId: String(p.account_id) }))
+    .filter((p) => opts.includeFeatureExperimentation || isWebExperimentation(p))
+    .map((p) => ({
+      id: String(p.id),
+      name: p.name,
+      accountId: String(p.account_id),
+      type: projectType(p),
+    }))
 }
 
 export async function listExperiments(projectId: string): Promise<ExperimentSummary[]> {
@@ -239,13 +261,14 @@ export async function listEvents(projectId: string): Promise<EventSummary[]> {
 
 /**
  * Union of events across several projects (deduped by event key). An empty
- * `projectIds` resolves to ALL Web Experimentation projects the token sees.
- * Per-project failures are skipped rather than failing the whole request.
+ * `projectIds` resolves to ALL projects the token sees — including Feature
+ * Experimentation projects, so a central FX "Events" project's events are
+ * included. Per-project failures are skipped rather than failing the request.
  */
 export async function listEventsForProjects(projectIds: string[]): Promise<EventSummary[]> {
   let ids = projectIds
   if (ids.length === 0) {
-    ids = (await listProjects()).map((p) => p.id)
+    ids = (await listProjects({ includeFeatureExperimentation: true })).map((p) => p.id)
   }
   const results = await Promise.all(
     ids.map((id) => listEvents(id).catch(() => [] as EventSummary[])),
@@ -258,6 +281,29 @@ export async function listEventsForProjects(projectIds: string[]): Promise<Event
   }
   return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
+
+/**
+ * Global event catalog keyed by event id, unioned across ALL accessible
+ * projects. Event ids are unique across the account, so this resolves a metric's
+ * `event_id` even when the event's home is a different project (cross-project
+ * events — e.g. a central FX "Events" project). React cache()-wrapped so one
+ * request builds it once. Per-project failures are skipped.
+ */
+const buildEventCatalogById = cache(async (): Promise<Map<string, BlueprintEvent>> => {
+  const projects = await listProjects({ includeFeatureExperimentation: true })
+  const perProject = await Promise.all(
+    projects.map((p) => getAll<OptiEvent>('/events', { project_id: p.id }).catch(() => [] as OptiEvent[])),
+  )
+  const byId = new Map<string, BlueprintEvent>()
+  for (const catalog of perProject) {
+    for (const e of catalog) {
+      if (e.archived) continue
+      const id = String(e.id)
+      if (!byId.has(id)) byId.set(id, { entityId: id, key: e.key, name: e.name })
+    }
+  }
+  return byId
+})
 
 /**
  * Assemble the full blueprint for one experiment: variation ids/weights, the
@@ -293,16 +339,17 @@ export async function getExperimentBlueprint(experimentId: string): Promise<Expe
     weight: typeof v.weight === 'number' ? v.weight : 0,
   })).filter((v) => v.id)
 
-  // Resolve metric event_ids → {entityId, key, name} using the project's
-  // event catalog. Preserve metric order (funnel ordering matters).
+  // Resolve metric event_ids → {entityId, key, name} against the GLOBAL event
+  // catalog (unioned across all projects), so metrics that point at
+  // cross-project events (e.g. a central FX "Events" project) still resolve.
+  // Preserve metric order (funnel ordering matters).
   const events: BlueprintEvent[] = []
-  if (projectId && exp.metrics?.length) {
-    const catalog = await getAll<OptiEvent>('/events', { project_id: projectId })
-    const byId = new Map(catalog.map((e) => [String(e.id), e]))
+  if (exp.metrics?.length) {
+    const byId = await buildEventCatalogById()
     for (const m of exp.metrics) {
       if (m.event_id == null) continue
       const ev = byId.get(String(m.event_id))
-      if (ev) events.push({ entityId: String(ev.id), key: ev.key, name: ev.name })
+      if (ev) events.push(ev)
     }
   }
 

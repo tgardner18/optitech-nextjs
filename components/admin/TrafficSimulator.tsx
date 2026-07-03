@@ -14,7 +14,7 @@ import {
   type SimLogEntry,
 } from '@/lib/demo/simulator'
 
-interface ProjectSummary { id: string; name: string; accountId: string }
+interface ProjectSummary { id: string; name: string; accountId: string; type?: 'web' | 'fx' }
 interface EventSummary { id: string; key: string; name: string }
 interface FunnelStepState { stepId: string; eventKey: string; name: string; rate: number } // rate 0..1
 
@@ -161,7 +161,9 @@ export default function TrafficSimulator() {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch('/api/opti-admin/experiments/projects')
+        // scope=all so Feature Experimentation projects (e.g. a central FX
+        // "Events" project) are selectable — the funnel fires events by key.
+        const res = await fetch('/api/opti-admin/experiments/projects?scope=all')
         const data = await res.json()
         if (cancelled) return
         if (!res.ok) { setProjectsError(data.error ?? 'Failed to load projects.'); return }
@@ -367,13 +369,18 @@ export default function TrafficSimulator() {
                   disabled={isRunning}
                   aria-pressed={on}
                   className={[
-                    'px-sm py-[5px] text-[0.8125rem] font-medium border transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed',
+                    'flex items-center gap-1.5 px-sm py-[5px] text-[0.8125rem] font-medium border transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed',
                     on
                       ? 'bg-brand/[0.08] border-brand/30 text-brand'
                       : 'border-fg/[0.12] text-fg-muted hover:text-fg hover:border-fg/25',
                   ].join(' ')}
                 >
                   {p.name}
+                  {p.type && (
+                    <span className="text-[0.5625rem] font-bold uppercase tracking-[0.08em] text-fg-muted/50">
+                      {p.type}
+                    </span>
+                  )}
                 </button>
               )
             })}

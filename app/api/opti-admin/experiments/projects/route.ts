@@ -4,7 +4,7 @@ import { isRestConfigured, listProjects, OptimizelyRestError } from '@/lib/optim
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!(await isValidAdminSession())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -15,8 +15,13 @@ export async function GET() {
     )
   }
 
+  // ?scope=all includes Feature Experimentation projects (e.g. a central FX
+  // "Events" project). Default is Web-Experimentation-only.
+  const scope = new URL(request.url).searchParams.get('scope')
+  const includeFeatureExperimentation = scope === 'all'
+
   try {
-    const projects = await listProjects()
+    const projects = await listProjects({ includeFeatureExperimentation })
     return NextResponse.json({ projects })
   } catch (err) {
     const status = err instanceof OptimizelyRestError ? err.status : 500
