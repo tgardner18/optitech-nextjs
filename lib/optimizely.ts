@@ -136,6 +136,10 @@ const THEME_QUERY = `
         webExperimentationProjectId
         featureExperimentationSdkKey
         odpPublicKey
+        peeriusScriptUrl
+        contentRecsApiKey
+        contentRecsClientId
+        contentRecsDeliveryId
         primaryNavigation {
           menuLink { text title target url { default } }
           subNavItems {

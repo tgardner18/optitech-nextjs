@@ -143,6 +143,26 @@ export default async function RootLayout({
   const rawFxKey = (settings?.featureExperimentationSdkKey as string | null | undefined)?.trim()
   const fxSdkKey = !isPreview && rawFxKey && /^[\w-]+$/.test(rawFxKey) ? rawFxKey : null
 
+  // Recommendations tracking (skipped in preview like FX/ODP). All values are
+  // validated against a safe charset before being interpolated into scripts.
+  // Product Recommendations (Peerius): shim must be set BEFORE the async script
+  // so the engine can call smartRecs → dispatch the `peerius:recs` window event.
+  const rawPeeriusUrl = (settings?.peeriusScriptUrl as string | null | undefined)?.trim()
+  const peeriusScriptUrl = !isPreview && rawPeeriusUrl && /^https:\/\/[\w.\-/]+$/.test(rawPeeriusUrl) ? rawPeeriusUrl : null
+  const peeriusShim = peeriusScriptUrl
+    ? `window.PeeriusCallbacks=window.PeeriusCallbacks||{track:{type:'home',lang:${JSON.stringify(locale)}},apiVersion:'v1_4',smartRecs:function(j){window.__peeriusRecs=j;window.dispatchEvent(new CustomEvent('peerius:recs',{detail:j}))},info:function(j){window.__peeriusInfo=j}};`
+    : null
+
+  // Content Recommendations (Idio): ia.js builds the visitor profile and sets
+  // the `iv` cookie the Content Recommendations block reads server-side.
+  const rawIdioClient = (settings?.contentRecsClientId as string | null | undefined)?.trim()
+  const idioClientId = !isPreview && rawIdioClient && /^[\w-]+$/.test(rawIdioClient) ? rawIdioClient : null
+  const rawIdioDelivery = (settings?.contentRecsDeliveryId as string | null | undefined)?.trim()
+  const idioDeliveryId = !isPreview && rawIdioDelivery && /^\d+$/.test(rawIdioDelivery) ? rawIdioDelivery : null
+  const idioConfig = idioClientId && idioDeliveryId
+    ? `window._iaq=[['client',${JSON.stringify(idioClientId)}],['delivery',${Number(idioDeliveryId)}],['track','consume']];`
+    : null
+
   // Official ODP stub — queues method calls until zaius-min.js loads, so
   // window.zaius is usable immediately (pageview tracking + customer()).
   const odpStub = odpPublicKey
@@ -197,6 +217,20 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: `window.__OPTIMIZELY_FX_SDK_KEY__=${JSON.stringify(fxSdkKey)};` }}
             suppressHydrationWarning
           />
+        )}
+        {/* Content Recommendations (Idio) — profile builder + `iv` cookie. */}
+        {idioConfig && (
+          <>
+            <script dangerouslySetInnerHTML={{ __html: idioConfig }} suppressHydrationWarning />
+            <script async src="//s.usea01.idio.episerver.net/ia.js" suppressHydrationWarning />
+          </>
+        )}
+        {/* Product Recommendations (Peerius) — shim set before the async engine script. */}
+        {peeriusShim && peeriusScriptUrl && (
+          <>
+            <script dangerouslySetInnerHTML={{ __html: peeriusShim }} suppressHydrationWarning />
+            <script async src={peeriusScriptUrl} suppressHydrationWarning />
+          </>
         )}
       </head>
       <body className="min-h-full flex flex-col">
