@@ -14,6 +14,7 @@
     "cms:pull": "node --env-file=.env.$(git branch --show-current | tr / -) node_modules/@optimizely/cms-cli/bin/run.js config pull"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^8.3.1",
     "@optimizely/cms-cli": "^2.0.0",
     "@optimizely/cms-sdk": "^2.0.0",
     "@optimizely/optimizely-sdk": "^6.3.0",
