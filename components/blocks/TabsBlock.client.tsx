@@ -361,11 +361,12 @@ function TriggerBar({
       isGlass && 'bg-white/5 [backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)] [isolation:isolate]',
     ].join(' '),
     tabStyle === 'buttonGroup' && [
-      !isGlass && !isBrand && 'border border-fg/15',
-      isBrand  && 'border border-white/20',
+      'p-[3px] gap-[2px] rounded-lg',
+      !isGlass && !isBrand && 'bg-fg/5 border border-fg/12',
+      isBrand  && 'bg-black/20 border border-white/15',
       isGlass  && [
-        'border border-white/15',
-        'bg-white/5 [backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
+        'bg-black/20 border border-white/15',
+        '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
         '[isolation:isolate]',
       ].join(' '),
       isSide && 'md:flex-col',
@@ -429,7 +430,7 @@ type TriggerButtonProps = {
 function TriggerButton({
   tab, index, isActive, tabStyle, tabPosition, color,
   showAutoPlay, progressKey, isPaused, autoPlayDuration,
-  instanceId, tabCount, buttonRef, onSelect,
+  instanceId, buttonRef, onSelect,
 }: TriggerButtonProps) {
   const isSide = tabPosition === 'side'
 
@@ -597,20 +598,19 @@ function TriggerButton({
   }
 
   // ── buttonGroup ───────────────────────────────────────────────────────
-
-  const isFirst = index === 0
-  const isLast  = index === tabCount - 1
+  // Segmented track control: chips float inside a tinted container.
+  // Active state on dark surfaces (brand/glass) uses a near-white chip
+  // with brand-colored text — distinct from pill's solid brand fill.
 
   const bgActive = cn(
-    color === 'canvas' || color === 'surface' ? 'bg-brand text-fg-on-brand'
-    : color === 'brand' ? 'bg-white/15 text-fg-on-brand'
-    : /* glass */ 'bg-white/15 text-white',
+    'shadow-sm rounded',
+    color === 'canvas' || color === 'surface'
+      ? 'bg-brand text-fg-on-brand'
+      : 'bg-white/95 text-brand',
   )
 
-  const separatorClass = cn(
-    !isLast && 'border-r',
-    color === 'glass' || color === 'brand' ? 'border-white/20' : 'border-fg/15',
-  )
+  const progressOverlay =
+    color === 'canvas' || color === 'surface' ? 'bg-white/25' : 'bg-brand/20'
 
   return (
     <button
@@ -623,21 +623,19 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'px-md py-sm text-sm font-semibold tracking-label uppercase',
-        separatorClass,
-        isSide && 'md:w-full md:text-left md:border-r-0 md:border-b last:md:border-b-0',
-        isSide && (color === 'glass' || color === 'brand') ? 'md:border-white/20' : isSide ? 'md:border-fg/15' : '',
+        'rounded px-md py-sm text-sm font-semibold tracking-label uppercase',
+        isSide && 'md:w-full md:text-left',
         isActive ? bgActive : triggerTextClass(color, 'inactive'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
       <span>{tab.tabLabel}</span>
 
-      {/* Progress bar — bottom edge of active segment */}
+      {/* Progress bar — sweeps over active chip */}
       {isActive && showAutoPlay && (
         <span
           key={progressKey}
-          className={cn('tab-progress-bar', progressBarBg(color))}
+          className={cn('tab-progress-bar', progressOverlay)}
           style={{
             '--tab-dur':  `${autoPlayDuration}s`,
             '--tab-play': isPaused ? 'paused' : 'running',
