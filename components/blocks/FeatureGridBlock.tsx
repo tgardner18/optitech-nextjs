@@ -122,6 +122,17 @@ const featureCtaCva = cva(
   },
 )
 
+const featureCardCva = cva('rounded-xl border p-lg', {
+  variants: {
+    color: {
+      canvas:  'border-fg/10 shadow-sm',
+      surface: 'border-fg/10 shadow-sm',
+      brand:   'bg-fg-on-brand/8 border-fg-on-brand/15',
+    },
+  },
+  defaultVariants: { color: 'canvas' },
+})
+
 const iconCva = cva('flex-shrink-0', {
   variants: {
     color: {
@@ -281,6 +292,7 @@ export default function FeatureGridBlock({
                   'border-t pt-md pb-lg',
                   ruledBorderClass,
                 ],
+                layout === 'grid' && featureCardCva({ color }),
               )}
               style={itemStyle}
             >
