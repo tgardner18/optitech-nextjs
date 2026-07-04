@@ -11,7 +11,7 @@
 //
 // No @optimizely/cms-sdk import — pure presentational component.
 
-const LAYER_COUNT = 6 // 5 receding steps + 1 face (matches the CSS nth-child geometry)
+const LAYER_COUNT = 5 // 4 receding steps + 1 face (matches the CSS nth-child geometry)
 
 export default function PrimaryTextDepth3D({ text }: { text: string }) {
   return (
