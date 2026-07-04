@@ -122,16 +122,19 @@ const featureCtaCva = cva(
   },
 )
 
-const featureCardCva = cva('rounded-xl border p-lg', {
-  variants: {
-    color: {
-      canvas:  'border-fg/10 shadow-sm',
-      surface: 'border-fg/10 shadow-sm',
-      brand:   'bg-fg-on-brand/8 border-fg-on-brand/15',
+const featureCardCva = cva(
+  'rounded-xl border-x border-b border-t-2 p-lg transition-shadow duration-200',
+  {
+    variants: {
+      color: {
+        canvas:  'border-x-fg/10 border-b-fg/10 border-t-brand shadow-sm hover:shadow-md',
+        surface: 'border-x-fg/10 border-b-fg/10 border-t-brand shadow-sm hover:shadow-md',
+        brand:   'bg-fg-on-brand/8 border-x-fg-on-brand/15 border-b-fg-on-brand/15 border-t-fg-on-brand/60',
+      },
     },
+    defaultVariants: { color: 'canvas' },
   },
-  defaultVariants: { color: 'canvas' },
-})
+)
 
 const iconCva = cva('flex-shrink-0', {
   variants: {
