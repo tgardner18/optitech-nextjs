@@ -1033,7 +1033,7 @@ function StatShowcase() {
         <OT_StatBlock content={{ stats: [{ value: '1.2M', label: 'Claims processed', context: 'last 12 months' }, { value: '98.3%', label: 'Satisfaction rate', context: 'post-claim survey' }, { value: '4.8hr', label: 'Avg. resolution', context: 'from first contact' }, { value: '340+', label: 'Partner carriers', context: 'in our network' }] } as any} displaySettings={{ color: 'brand', columns: '4', animate: false }} />
       </div>
 
-      <VariantGroup label="With icons · brand · 3 columns" note="Icons sit above the value at 28px / strokeWidth 1.5. Muted to 55% opacity on brand surfaces." />
+      <VariantGroup label="With icons · brand · 3 columns" note="Icons sit beside the label at 34px / strokeWidth 1.5, muted on brand surfaces." />
       <div className="border-t border-fg/5">
         <OT_StatBlock content={{ stats: [{ value: '40%', label: 'Faster deployment', context: 'vs. baseline', icon: 'zap' }, { value: '99.99%', label: 'Uptime SLA', context: 'across all regions', icon: 'shield' }, { value: '2M+', label: 'Active users', context: 'and growing', icon: 'users' }] } as any} displaySettings={{ color: 'brand', columns: '3', showIcons: true, animate: false }} />
       </div>
