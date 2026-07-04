@@ -263,13 +263,17 @@ html {
 }
 
 /* ── TrustRail marquee ────────────────────────────────────────────────────────
- * Infinite horizontal scroll. Duration is set via --trust-rail-duration on the
- * element itself, allowing the React component to tune speed per logo count.
+ * Infinite horizontal scroll. Duration is set via --trust-rail-duration, and
+ * the travel distance via --trust-rail-copies (the React component renders
+ * the logo set that many times over — enough that the track always over-
+ * fills the viewport, so the loop point in never becomes a visible gap/seam,
+ * regardless of how few logos or how wide the screen). One "lap" of the
+ * animation is always exactly one copy-width, however many copies exist.
  * Paused automatically for prefers-reduced-motion (class not applied).
  * ─────────────────────────────────────────────────────────────────────────── */
 @keyframes trustRailScroll {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to   { transform: translateX(calc(-100% / var(--trust-rail-copies, 2))); }
 }
 
 @media (prefers-reduced-motion: no-preference) {

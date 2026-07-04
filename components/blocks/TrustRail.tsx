@@ -191,6 +191,15 @@ export default function TrustRail({
   const bgToken  = BG_TOKEN[background] ?? 'var(--ot-canvas)'
   const duration = capped.length * DURATION_PER_LOGO
 
+  // Repeating the logo set just twice only reads as truly infinite if that
+  // one set is already wider than the viewport — with few logos (as low as
+  // TRUST_RAIL_MIN_LOGOS) on a wide screen, two copies can run out before the
+  // loop resets, showing a blank gap that looks like "reaching the end."
+  // Rendering enough copies to keep ~16 logo instances on screen guarantees
+  // the track always over-fills any realistic viewport, so the -100%/copies
+  // loop point never becomes visible as a seam.
+  const trackCopies = Math.max(2, Math.ceil(16 / (capped.length || 1)))
+
   // ── Reduced-motion detection + fade observer ────────────────────────────
   const containerRef               = useRef<HTMLDivElement>(null)
   const [fadeTriggered, setFade]   = useState(false)
@@ -289,7 +298,8 @@ export default function TrustRail({
               style={{ background: `linear-gradient(to left, ${bgToken}, transparent)` }}
             />
 
-            {/* Scrolling track — logos doubled for seamless loop.
+            {/* Scrolling track — logos repeated `trackCopies` times for a seam
+                that never becomes visible (see trackCopies comment above).
                 Uses the .animate-trust-rail-scroll class (not an inline animation)
                 so the offscreen-pause rule — a stylesheet declaration — can
                 override its play-state; an inline `animation` shorthand would win
@@ -303,16 +313,22 @@ export default function TrustRail({
               data-pause-offscreen
               style={{
                 gap: `${railGap}px`,
-                // paddingRight = railGap ensures translateX(-50%) lands exactly
-                // at the seam between the two copies — no jitter on loop reset.
+                // paddingRight = railGap ensures translateX(-100%/trackCopies)
+                // lands exactly at the seam between copies — no jitter on reset,
+                // regardless of how many copies are rendered.
                 paddingRight: `${railGap}px`,
-                // Feeds .animate-trust-rail-scroll's animation-duration.
+                // Feeds .animate-trust-rail-scroll's animation-duration and
+                // -distance (the keyframe travels -100%/--trust-rail-copies).
                 ['--trust-rail-duration']: `${duration}s`,
+                ['--trust-rail-copies']: trackCopies,
               } as CSSProperties}
               // Entire track is decorative; screen readers get the list below
               aria-hidden
             >
-              {[...capped, ...capped].map((logo, i) => (
+              {/* Only the first copy (i < capped.length) is hoverable — every
+                  repeat after it is inert, so the spotlight/dim choreography
+                  never looks asymmetric across copies. */}
+              {Array.from({ length: trackCopies }, () => capped).flat().map((logo, i) => (
                 <LogoImg
                   key={i}
                   logo={logo}
@@ -320,7 +336,7 @@ export default function TrustRail({
                   treatment={treatment}
                   onBrand={onBrand}
                   ariaHidden
-                  noHover
+                  noHover={i >= capped.length}
                 />
               ))}
             </div>
