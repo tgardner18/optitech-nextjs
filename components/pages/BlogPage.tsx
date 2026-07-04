@@ -136,11 +136,14 @@ type HeaderProps = {
 }
 
 // ─── Impact Header ────────────────────────────────────────────────────────────
-// Canvas "cover statement". A full-bleed Syne (weight 600) display headline runs
-// the full header width rather than the centered container. Behind it, a
-// chromatic bloom (brand + accent radial light anchored to the edges, so the
-// centre stays legible) gives the canvas depth. Distinct from the Editorial
-// masthead and the Atmospheric media header.
+// Canvas "cover statement" — the poster register. A full-bleed Syne (weight 700)
+// display headline runs the full header width and carries .display-extrude: the
+// 12-layer 45° isometric brand shadow stack with an accent rim stroke and the
+// --display-depth arrive animation (reduced-motion sees full depth immediately).
+// Behind it, a chromatic bloom (brand + accent radial light anchored to the
+// edges, so the centre stays legible) gives the canvas depth. The extrusion is
+// what separates this register from the Editorial masthead — same content,
+// unmistakably different voice.
 
 function ImpactHeader({
   headline, subHeadline, topic,
@@ -155,8 +158,8 @@ function ImpactHeader({
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(62% 85% at 10% -8%, oklch(from var(--ot-brand) l c h / 0.26) 0%, transparent 58%), ' +
-            'radial-gradient(58% 82% at 96% 110%, oklch(from var(--ot-accent) l c h / 0.22) 0%, transparent 58%)',
+            'radial-gradient(62% 85% at 10% -8%, oklch(from var(--ot-brand) l c h / 0.34) 0%, transparent 58%), ' +
+            'radial-gradient(58% 82% at 96% 110%, oklch(from var(--ot-accent) l c h / 0.28) 0%, transparent 58%)',
         }}
       />
 
@@ -167,17 +170,21 @@ function ImpactHeader({
           </div>
         )}
 
-        <h1
-          className="font-syne text-fg text-[clamp(2.75rem,8vw,7rem)] leading-[0.95] tracking-[-0.02em] text-balance motion-safe:animate-slide-up"
-          style={{ fontVariationSettings: "'wght' 600", animationDelay: '60ms' }}
-          {...pa?.('headline')}
-        >
-          {headline}
-        </h1>
+        {/* slide-up rides the wrapper — the h1 itself carries display-extrude's
+            own depth-arrive animation, and the two can't share one element */}
+        <div className="motion-safe:animate-slide-up" style={{ animationDelay: '60ms' }}>
+          <h1
+            className="display-extrude font-syne text-[clamp(2.75rem,8vw,7rem)] leading-[1.02] tracking-[-0.02em] text-balance"
+            style={{ fontVariationSettings: "'wght' 700" }}
+            {...pa?.('headline')}
+          >
+            {headline}
+          </h1>
+        </div>
 
         {subHeadline && (
           <p
-            className="mt-lg text-title leading-title text-fg-muted max-w-(--ot-measure) text-pretty motion-safe:animate-slide-up"
+            className="mt-xl text-title leading-title text-fg-muted max-w-(--ot-measure) text-pretty motion-safe:animate-slide-up"
             style={{ animationDelay: '140ms' }}
             {...pa?.('subHeadline')}
           >
