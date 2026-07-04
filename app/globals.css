@@ -283,6 +283,18 @@ html {
   }
 }
 
+/* --trust-rail-duration is tuned for desktop, where several logos are
+ * visible across the row at once and 5s/logo reads as a deliberate pace.
+ * On a phone-width viewport only one (maybe two) logos fit in the visible
+ * gap between the edge fades, so the same pixel speed shows far less at
+ * once and reads as sluggish. Halving the duration below `sm` restores a
+ * comparable felt pace without touching the desktop tuning. */
+@media (prefers-reduced-motion: no-preference) and (max-width: 639px) {
+  .animate-trust-rail-scroll {
+    animation-duration: calc(var(--trust-rail-duration, 28s) * 0.5);
+  }
+}
+
 /* ── TrustRail "auto" logo treatment ──────────────────────────────────────────
  * Forces every logo to a theme-matched silhouette instead of each file's own
  * colors: white on dark grounds (the default site theme, and any brand fill
