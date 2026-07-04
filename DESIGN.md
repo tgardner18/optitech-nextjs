@@ -319,7 +319,7 @@ Server component fed by ThemeManager. Dark glass sticky bar — `bg-canvas/80 ba
 | **VideoBlock** | aspectRatio, bloom, caption | Same bloom system as ImageBlock |
 | **StatBlock** | color (brand/canvas/surface), layout (row/grid), glass | Animated counters, staggered entrance, divider lines |
 | **FeatureGridBlock** | color, layout (grid/list), glass | Icon + heading + body feature tiles |
-| **TrustRail** | motion (scroll/fade/static), treatment (mono/color), background (canvas/surface/brand), size (sm/md/lg), density, glass | Seamless CSS marquee (doubled track + `paddingRight` seam fix), IntersectionObserver fade, mono grayscale + hover lift, brand-surface white silhouette |
+| **TrustRail** | motion (scroll/fade/static), treatment (mono/color), background (canvas/surface/brand), size (sm/md/lg), density, glass | Seamless CSS marquee (doubled track + `paddingRight` seam fix), IntersectionObserver fade, mono grayscale + hover lift, brand-surface white silhouette. `brand` uses `.bg-brand-fill` (radial gradient, matching every other block) instead of a flat fill, so the `glass` panel has something to blur. Headline renders as a flanking-hairline "mark" (DividerBlock idiom) rather than a bare label. Every logo lifts + catches a brand-bloom `drop-shadow` on hover regardless of treatment. `glass` adds the same 1px brand→accent top-edge horizon as the nav dropdown/footer. |
 
 ### TrustRail logo image guidance
 

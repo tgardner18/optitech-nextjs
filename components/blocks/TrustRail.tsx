@@ -88,6 +88,13 @@ function LogoImg({
       ? cn('grayscale opacity-40', !noHover && 'group-hover:grayscale-0 group-hover:opacity-100')
       : ''
 
+  // Every real (non-duplicate) logo lifts + catches a brand-bloom glow on
+  // hover, regardless of treatment — mono already swaps color/opacity above,
+  // but color-treatment logos had no hover feedback at all before this.
+  const hoverLift = !noHover
+    ? 'motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:drop-shadow-[0_6px_16px_var(--ot-bloom-brand-faint)]'
+    : ''
+
   const img = (
     <img
       src={logo.imageUrl}
@@ -98,13 +105,18 @@ function LogoImg({
         height,
         width: 'auto',
         maxWidth: `${height * 5}px`,
-        transition: !onBrand && treatment === 'mono' && !noHover
-          ? 'filter 280ms var(--ot-ease-quick), opacity 280ms var(--ot-ease-quick)'
+        transition: !noHover
+          ? [
+              'transform 280ms var(--ot-ease-quick)',
+              'filter 280ms var(--ot-ease-quick)',
+              !onBrand && treatment === 'mono' && 'opacity 280ms var(--ot-ease-quick)',
+            ].filter(Boolean).join(', ')
           : undefined,
       }}
       className={cn(
         'object-contain select-none flex-none',
         filterClass,
+        hoverLift,
       )}
     />
   )
@@ -221,9 +233,12 @@ export default function TrustRail({
     density === 'comfortable' ? 'pt-lg'  : 'pt-md'
 
   // ── Section wrapper classes ─────────────────────────────────────────────
+  // brand uses the radial-gradient fill (bg-brand-fill), not the flat bg-brand
+  // — every other block in the system pairs "brand" with the fill, and a flat
+  // fill leaves the glass panel with nothing to blur (see .bg-glass docblock).
   const sectionBg =
-    background === 'brand'   ? 'bg-brand'   :
-    background === 'surface' ? 'bg-surface' : 'bg-canvas'
+    background === 'brand'   ? 'bg-brand-fill' :
+    background === 'surface' ? 'bg-surface'    : 'bg-canvas'
 
   // Glass: frame padding is tighter so the glass panel peeks inside
   const outerFramePy = glass
@@ -237,15 +252,23 @@ export default function TrustRail({
       aria-label={headline ?? 'Trusted partners and customers'}
     >
 
-      {/* ── Headline ────────────────────────────────────────────────────── */}
+      {/* ── Headline ─────────────────────────────────────────────────────
+        * Flanking hairlines around the label — the same "mark" idiom as
+        * DividerBlock's labeled rule — instead of a bare centered line of
+        * text, so the strip reads as a considered editorial beat rather
+        * than an afterthought caption. */}
       {headline && (
-        <div className={cn('text-center px-md', headlinePt, headlinePb)}>
-          <p className={cn(
-            'text-label uppercase tracking-label font-semibold',
-            onBrand ? 'text-fg-on-brand/55' : 'text-fg-muted/55',
-          )}>
-            {headline}
-          </p>
+        <div className={cn('px-md', headlinePt, headlinePb)}>
+          <div className="mx-auto flex max-w-md items-center gap-sm sm:max-w-lg sm:gap-md">
+            <span aria-hidden className={cn('h-px flex-1', onBrand ? 'bg-fg-on-brand/20' : 'bg-fg-muted/20')} />
+            <p className={cn(
+              'shrink-0 text-label uppercase tracking-label font-semibold text-center',
+              onBrand ? 'text-fg-on-brand/55' : 'text-fg-muted/55',
+            )}>
+              {headline}
+            </p>
+            <span aria-hidden className={cn('h-px flex-1', onBrand ? 'bg-fg-on-brand/20' : 'bg-fg-muted/20')} />
+          </div>
         </div>
       )}
 
@@ -260,6 +283,16 @@ export default function TrustRail({
             headline  ? cn(railPy, 'pt-0') : undefined,
           )}
         >
+        {/* 1px brand → accent gradient horizon along the glass panel's top
+          * edge — same elevation vocabulary as the nav dropdown and footer,
+          * marking the rail as a floating panel rather than a flat strip. */}
+        {glass && (
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 z-20 h-px"
+            style={{ background: 'linear-gradient(to right, transparent, var(--ot-brand) 15%, var(--ot-accent) 85%, transparent)' }}
+          />
+        )}
         {tooFew ? (
 
           // ── Empty state ─────────────────────────────────────────────────
