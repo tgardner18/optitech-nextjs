@@ -910,37 +910,34 @@ body {
   position: relative; /* the face: in flow, defines the box the others overlay */
 }
 
-/* Geometry — 5 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
+/* Geometry — 4 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
    LEFT per layer, so the duplicates fan out as clearly separated, evenly-spaced
    layers (a deep, legible retro extrude) rather than a cramped near-flat stack. */
-.ot-extrude3d__layer:nth-child(1) { --ox: -0.35em; --oy: 0.40em; } /* deepest */
-.ot-extrude3d__layer:nth-child(2) { --ox: -0.28em; --oy: 0.32em; }
-.ot-extrude3d__layer:nth-child(3) { --ox: -0.21em; --oy: 0.24em; }
-.ot-extrude3d__layer:nth-child(4) { --ox: -0.14em; --oy: 0.16em; }
-.ot-extrude3d__layer:nth-child(5) { --ox: -0.07em; --oy: 0.08em; }
-.ot-extrude3d__layer:nth-child(6) { --ox: 0;       --oy: 0;      } /* face */
+.ot-extrude3d__layer:nth-child(1) { --ox: -0.28em; --oy: 0.32em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --ox: -0.21em; --oy: 0.24em; }
+.ot-extrude3d__layer:nth-child(3) { --ox: -0.14em; --oy: 0.16em; }
+.ot-extrude3d__layer:nth-child(4) { --ox: -0.07em; --oy: 0.08em; }
+.ot-extrude3d__layer:nth-child(5) { --ox: 0;       --oy: 0;      } /* face */
 
 /* Compact fan — for multi-line display contexts (e.g. the blog impact header).
-   The full 0.40em fan is sized for PrimaryText's short single-line statements;
+   The full 0.32em fan is sized for PrimaryText's short single-line statements;
    across 3+ wrapped lines it floods the interline space (worst in light mode,
    where the receding layers are lighter than the face). ~60% offsets keep the
    stacked-ridge pop while letting the lines separate. Scope by putting
    .extrude3d-compact on any ancestor of the .ot-extrude3d markup. */
-.extrude3d-compact .ot-extrude3d__layer:nth-child(1) { --ox: -0.20em; --oy: 0.25em; } /* deepest */
-.extrude3d-compact .ot-extrude3d__layer:nth-child(2) { --ox: -0.16em; --oy: 0.20em; }
-.extrude3d-compact .ot-extrude3d__layer:nth-child(3) { --ox: -0.12em; --oy: 0.15em; }
-.extrude3d-compact .ot-extrude3d__layer:nth-child(4) { --ox: -0.08em; --oy: 0.10em; }
-.extrude3d-compact .ot-extrude3d__layer:nth-child(5) { --ox: -0.04em; --oy: 0.05em; }
+.extrude3d-compact .ot-extrude3d__layer:nth-child(1) { --ox: -0.16em; --oy: 0.20em; } /* deepest */
+.extrude3d-compact .ot-extrude3d__layer:nth-child(2) { --ox: -0.12em; --oy: 0.15em; }
+.extrude3d-compact .ot-extrude3d__layer:nth-child(3) { --ox: -0.08em; --oy: 0.10em; }
+.extrude3d-compact .ot-extrude3d__layer:nth-child(4) { --ox: -0.04em; --oy: 0.05em; }
 
 /* Dark / canvas (default): near-white face, brand fills graduating deeper, with
    a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
 .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.16) c h); }
 .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h); }
-.ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) calc(l * 0.42) c h); }
-.ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) calc(l * 0.62) c h); }
-.ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) calc(l * 0.82) c h); }
-.ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) l c h); }
-.ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
+.ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) calc(l * 0.48) c h); }
+.ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) calc(l * 0.74) c h); }
+.ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) l c h); }
+.ot-extrude3d__layer:nth-child(5) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
 
 /* Light mode: brand face with a near-white rim (the "3D sticker" face), and
    receding layers that FADE TOWARD THE CANVAS — fixed lightness steps
@@ -953,11 +950,10 @@ body {
    Ridge is a deepened brand so each step still cuts a crisp line. */
 [data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.55) c h); }
 [data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) 0.93 calc(c * 0.30) h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) 0.87 calc(c * 0.45) h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) 0.80 calc(c * 0.60) h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) 0.72 calc(c * 0.75) h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) 0.64 calc(c * 0.90) h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(6) {
+[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) 0.84 calc(c * 0.50) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) 0.74 calc(c * 0.70) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) 0.64 calc(c * 0.90) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(5) {
   color: var(--ot-brand);
   -webkit-text-stroke: 0.03em oklch(from var(--ot-brand) 0.99 0.008 h);
 }
@@ -966,11 +962,10 @@ body {
    ridge. Mirrors the static .bg-brand-fill .ot-depth-extrude. */
 .bg-brand-fill .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.16) c h); }
 .bg-brand-fill .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-accent) calc(l * 0.22) calc(c * 0.80) h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-accent) calc(l * 0.42) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-accent) calc(l * 0.62) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-accent) calc(l * 0.82) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-accent) l c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg-on-brand); --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.30) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-accent) calc(l * 0.48) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-accent) calc(l * 0.74) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-accent) l c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(5) { color: var(--ot-fg-on-brand); --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.30) c h); }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* LIQUID                                                                      */
