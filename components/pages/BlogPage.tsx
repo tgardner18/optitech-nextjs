@@ -174,8 +174,11 @@ function ImpactHeader({
           </div>
         )}
 
+        {/* extrude3d-compact: shallower layer fan + the 1.16 leading give the
+            receding layers room between wrapped lines — the full-depth fan is
+            sized for PrimaryText's single-line statements */}
         <h1
-          className="font-extrabold text-[clamp(2.75rem,8vw,7rem)] leading-[1.05] tracking-[-0.03em] motion-safe:animate-slide-up"
+          className="extrude3d-compact font-extrabold text-[clamp(2.75rem,8vw,7rem)] leading-[1.16] tracking-[-0.03em] motion-safe:animate-slide-up"
           style={{ animationDelay: '60ms' }}
           {...pa?.('headline')}
         >
