@@ -465,7 +465,43 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
       {blogStyle === 'editorial'   && <EditorialHeader    {...headerProps} />}
 
       {/* ── Featured media ───────────────────────────────────────────────── */}
-      {showMedia && (
+      {/* Impact: full-bleed cinematic band. The header's canvas dissolves into
+          the top of the image via a gradient, so the poster header and the
+          artwork read as one continuous surface — the register break from
+          editorial's contained panel. A 2px accent seam closes the band.
+          Token-driven: the blend uses the canvas color, so it adapts to light
+          mode and CMS theme overrides. The blend is shallower over video to
+          keep the frame unobscured. */}
+      {showMedia && blogStyle === 'impact' ? (
+        <div className="relative bg-canvas">
+          <div className="relative w-full h-[clamp(340px,56vh,640px)] overflow-hidden">
+            {mediaType === 'video' ? (
+              <video
+                src={videoUrl!}
+                controls
+                className="absolute inset-0 w-full h-full object-cover"
+                {...pa?.('featuredVideo')}
+              />
+            ) : (
+              <img
+                src={imageUrl!}
+                alt={headline}
+                className="absolute inset-0 w-full h-full object-cover"
+                {...pa?.('featuredImage')}
+              />
+            )}
+            {/* top blend — header canvas dissolves into the artwork */}
+            <div
+              aria-hidden
+              className={`absolute inset-x-0 top-0 bg-linear-to-b from-canvas via-canvas/55 to-transparent pointer-events-none ${
+                mediaType === 'video' ? 'h-1/5' : 'h-2/5'
+              }`}
+            />
+            {/* bottom accent seam */}
+            <div aria-hidden className="absolute inset-x-0 bottom-0 h-[2px] bg-accent/80 pointer-events-none" />
+          </div>
+        </div>
+      ) : showMedia ? (
         <div className="bg-canvas pt-xl pb-0">
           <div className="mx-auto max-w-4xl px-md">
             {mediaType === 'video' ? (
@@ -485,7 +521,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── Article body ─────────────────────────────────────────────────── */}
       <section className={`bg-canvas ${bodyTopPad} pb-2xl`}>
