@@ -14,8 +14,8 @@ export const OT_TrustRailDefault = displayTemplate({
       editor:      'select',
       sortOrder:   20,
       choices: {
-        mono:  { displayName: 'Mono — grayscale, hover to colour (Default)', sortOrder: 10 },
-        color: { displayName: 'Color — full colour',                         sortOrder: 20 },
+        auto:  { displayName: 'Auto — white on dark, grey/black on light (Default)', sortOrder: 10 },
+        color: { displayName: 'Color — full colour (best on white/light backgrounds)', sortOrder: 20 },
       },
     },
 
@@ -49,9 +49,11 @@ export const OT_TrustRailDefault = displayTemplate({
       editor:      'select',
       sortOrder:   50,
       choices: {
-        sm: { displayName: 'Small — 28 px height',          sortOrder: 10 },
-        md: { displayName: 'Medium — 40 px height (Default)', sortOrder: 20 },
-        lg: { displayName: 'Large — 56 px height',          sortOrder: 30 },
+        xs: { displayName: 'Extra small — 20 px height',      sortOrder: 5 },
+        sm: { displayName: 'Small — 28 px height',             sortOrder: 10 },
+        md: { displayName: 'Medium — 40 px height (Default)',  sortOrder: 20 },
+        lg: { displayName: 'Large — 56 px height',             sortOrder: 30 },
+        xl: { displayName: 'Extra large — 72 px height',       sortOrder: 40 },
       },
     },
 

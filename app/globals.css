@@ -279,6 +279,51 @@ html {
   }
 }
 
+/* ── TrustRail "auto" logo treatment ──────────────────────────────────────────
+ * Forces every logo to a theme-matched silhouette instead of each file's own
+ * colors: white on dark grounds (the default site theme, and any brand fill
+ * regardless of the page's theme), a grey-reading-to-black silhouette on
+ * light grounds (pure black at reduced opacity reads as grey; hover brings
+ * it to full black). `color` shows the source hues undimmed — an opt-in
+ * meant for near-white backgrounds, see DESIGN.md's TrustRail guidance.
+ * The third rule re-asserts the dark-ground (white) treatment when a brand
+ * section (data-theme="dark") sits inside an otherwise light-mode page —
+ * same nested-override technique as .logo-invert-dark above. */
+.trust-rail-logo-auto                                          { filter: brightness(0) invert(1); opacity: .55; }
+[data-theme="light"] .trust-rail-logo-auto                     { filter: brightness(0); opacity: .45; }
+[data-theme="light"] [data-theme="dark"] .trust-rail-logo-auto { filter: brightness(0) invert(1); opacity: .55; }
+
+.trust-rail-logo-color { opacity: .92; }
+
+.trust-rail-logo-auto,
+.trust-rail-logo-color {
+  transition: opacity 240ms var(--ot-ease-quick);
+}
+
+/* ── TrustRail hover choreography ─────────────────────────────────────────────
+ * Hovering one logo grows it to full presence; every other logo in the same
+ * row dims, so the hovered mark reads as the momentary focus. :has() degrades
+ * gracefully — no dimming, logos still grow — on the rare browser without it. */
+.trust-rail-logo:hover .trust-rail-logo-auto,
+.trust-rail-logo:hover .trust-rail-logo-color {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .trust-rail-logo-auto,
+  .trust-rail-logo-color {
+    transition: opacity 240ms var(--ot-ease-quick), transform 300ms var(--ot-ease-quick);
+  }
+  .trust-rail-logo:hover .trust-rail-logo-auto,
+  .trust-rail-logo:hover .trust-rail-logo-color {
+    transform: scale(1.12);
+  }
+  .trust-rail-track:has(.trust-rail-logo:hover) .trust-rail-logo:not(:hover) .trust-rail-logo-auto,
+  .trust-rail-track:has(.trust-rail-logo:hover) .trust-rail-logo:not(:hover) .trust-rail-logo-color {
+    opacity: .3;
+  }
+}
+
 /* ── AccordionBlock ──────────────────────────────────────────────────────────
  * Standard Radix accordion animation: height 0 ↔ --radix-accordion-content-height
  * (the height Radix measures and exposes on the open content). Reliable across

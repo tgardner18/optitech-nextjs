@@ -1133,16 +1133,16 @@ function TrustRailShowcase() {
     <>
       <BlockHeader slug="trust-rail" />
 
-      <VariantGroup label="Scroll · mono treatment · canvas · compact" note="Seamless CSS marquee with doubled track. Grayscale at rest, color-on-hover. Respects prefers-reduced-motion." />
+      <VariantGroup label="Scroll · auto treatment · canvas · compact" note="Seamless CSS marquee with doubled track. Auto forces a theme-matched silhouette (white here, on the dark canvas default). Hover a logo: it grows and the rest dim. Respects prefers-reduced-motion." />
       <div className="border-t border-fg/5">
         <TrustRail
           headline="Trusted by teams who move fast"
           logos={TRUST_LOGOS}
-          styleOptions={{ motion: 'scroll', treatment: 'mono', background: 'canvas', density: 'compact', size: 'md', glass: false }}
+          styleOptions={{ motion: 'scroll', treatment: 'auto', background: 'canvas', density: 'compact', size: 'md', glass: false }}
         />
       </div>
 
-      <VariantGroup label="Fade · color treatment · surface" note="Staggered scroll-reveal entrance. Logos appear at full color." />
+      <VariantGroup label="Fade · color treatment · surface" note="Staggered scroll-reveal entrance. Color treatment shows each logo's own hues undimmed — reserve it for a white/light surface." />
       <div className="border-t border-fg/5">
         <TrustRail
           logos={TRUST_LOGOS}
@@ -1150,14 +1150,25 @@ function TrustRailShowcase() {
         />
       </div>
 
-      <VariantGroup label="Static · brand · glass overlay" note="Plain grid, no animation. Glass panel sits over the brand fill." />
+      <VariantGroup label="Static · brand · glass overlay" note="Plain grid, no animation. Brand always forces the white silhouette regardless of the treatment setting — full color never reads against a saturated brand fill." />
       <div className="border-t border-fg/5">
         <TrustRail
           headline="Built on trust. Proven at scale."
           logos={TRUST_LOGOS}
-          styleOptions={{ motion: 'static', treatment: 'mono', background: 'brand', density: 'spacious', size: 'md', glass: true }}
+          styleOptions={{ motion: 'static', treatment: 'auto', background: 'brand', density: 'spacious', size: 'md', glass: true }}
         />
       </div>
+
+      <VariantGroup label="Logo size ladder · auto · canvas" note="Five size steps (xs–xl) for quick, no-slider size control." />
+      {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map(size => (
+        <div key={size} className="border-t border-fg/5">
+          <VariantLabel label={`size: "${size}"`} />
+          <TrustRail
+            logos={TRUST_LOGOS}
+            styleOptions={{ motion: 'static', treatment: 'auto', background: 'canvas', density: 'compact', size }}
+          />
+        </div>
+      ))}
       <div className="pb-xl" />
     </>
   )
