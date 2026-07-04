@@ -14,6 +14,7 @@ import {
   useState,
   useId,
 } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import type { TabsStyleOptions } from '@/cms/styling/OT_TabsBlock.styling'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -94,20 +95,11 @@ export default function TabsBlockClient({
   const [activeTab,    setActiveTab]    = useState(0)
   const [progressKey,  setProgressKey]  = useState(0)
   const [isPaused,     setIsPaused]     = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(false)
+  const reducedMotion = usePrefersReducedMotion()
 
   // Panel height lock — prevents layout shift on tab change
   const panelContentRef              = useRef<HTMLDivElement>(null)
   const [panelMinHeight, setPanelMinHeight] = useState(0)
-
-  // Detect reduced motion
-  useEffect(() => {
-    const mq      = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
 
   // Track max observed panel height to prevent layout shift
   useLayoutEffect(() => {

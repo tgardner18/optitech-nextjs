@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import { cn }            from '@/lib/utils'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import { X, ArrowRight } from 'lucide-react'
@@ -66,16 +67,8 @@ export default function CalloutBlockClient({
   } = styleOptions as CalloutStyleOptions
 
   const [phase,         setPhase]         = useState<DismissPhase>('visible')
-  const [reducedMotion, setReducedMotion] = useState(false)
+  const reducedMotion = usePrefersReducedMotion()
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
 
   useEffect(() => () => { timersRef.current.forEach(clearTimeout) }, [])
 

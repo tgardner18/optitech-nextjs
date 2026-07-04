@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
@@ -183,10 +184,10 @@ export default function FeatureGridBlock({
   const ref = useRef<HTMLElement>(null)
   const [shouldAnim, setShouldAnim] = useState(false)
   const [entered,    setEntered]    = useState(false)
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const willAnimate   = animate && !reducedMotion
+    const willAnimate = animate && !prefersReducedMotion
 
     setShouldAnim(willAnimate)
 
@@ -206,7 +207,7 @@ export default function FeatureGridBlock({
     )
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [animate])
+  }, [animate, prefersReducedMotion])
 
   // ── Grid column class ─────────────────────────────────────────────────────
   const gridColsClass =

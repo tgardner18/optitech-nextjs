@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import dynamic from 'next/dynamic'
 import {
   Search, X, Map as MapIcon, LayoutGrid, List, MapPinned, SlidersHorizontal,
@@ -136,6 +137,7 @@ export default function LocationListingClient({ locations, styleOptions, mapboxT
   const [query, setQuery]             = useState('')
   const [label, setLabel]             = useState<string | null>(null)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const prefersReducedMotion          = usePrefersReducedMotion()
   const searchId = useId()
 
   const onSurface = color === 'surface'
@@ -178,9 +180,9 @@ export default function LocationListingClient({ locations, styleOptions, mapboxT
     const el = railRefs.current.get(effectiveSelectedKey)
     el?.scrollIntoView({
       block: 'nearest',
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
     })
-  }, [effectiveSelectedKey])
+  }, [effectiveSelectedKey, prefersReducedMotion])
 
   const filtersActive = !!query || label !== null
   const clearAll = () => {

@@ -24,6 +24,7 @@
 
 import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 type Props = {
   children:  React.ReactNode
@@ -32,13 +33,14 @@ type Props = {
 
 export default function BannerEntrance({ children, className }: Props) {
   const ref = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
     // Reduced-motion: keep data-static (set by SSR) — content stays visible.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (prefersReducedMotion) return
 
     // Above-fold detection: if the banner top is already in the viewport on
     // initial load, keep data-static so content remains visible without animation.
@@ -86,7 +88,7 @@ export default function BannerEntrance({ children, className }: Props) {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [])
+  }, [prefersReducedMotion])
 
   // data-static is set server-side so the initial HTML shows content immediately.
   // CSS: .banner-wrap[data-static] .banner-heading { opacity: 1 } overrides the

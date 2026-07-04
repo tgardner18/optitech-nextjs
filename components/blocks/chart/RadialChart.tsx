@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import {
   RadialBarChart,
   RadialBar,
@@ -31,16 +32,8 @@ export default function RadialChart({
   const fillPct = Math.min((value / max) * 100, 100)
 
   const [displayValue, setDisplayValue] = useState(0)
-  const [reducedMotion, setReducedMotion] = useState(false)
+  const reducedMotion = usePrefersReducedMotion()
   const rafRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
 
   useEffect(() => {
     if (reducedMotion) {

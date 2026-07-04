@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
@@ -225,10 +226,11 @@ export default function StatBlock({
   // pulsing: briefly true when count completes, triggers .animate-stat-pulse
   const [pulsing,    setPulsing]    = useState(false)
 
+  const prefersReducedMotion = usePrefersReducedMotion()
+
   // ── Step 1: mount — check motion pref, optionally arm observer ───────────
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const willAnimate   = animate && !reducedMotion
+    const willAnimate = animate && !prefersReducedMotion
 
     setShouldAnim(willAnimate)
 
@@ -250,7 +252,7 @@ export default function StatBlock({
     )
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [animate])
+  }, [animate, prefersReducedMotion])
 
   // ── Step 2: after entry, schedule the count-up start ─────────────────────
   useEffect(() => {

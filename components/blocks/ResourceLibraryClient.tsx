@@ -2,10 +2,12 @@
 
 import { useState, useCallback } from 'react'
 import {
-  LayoutGrid, List, ChevronLeft, ChevronRight,
+  LayoutGrid, List,
   File, FileText, Image as LucideImage, Video, Archive, ArrowDownToLine,
   type LucideIcon,
 } from 'lucide-react'
+import Pagination from '@/components/ui/Pagination'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import { cva } from 'class-variance-authority'
 import type { ResourceAsset } from '@/lib/resourceLibrary'
 
@@ -226,89 +228,6 @@ function GridCard({
   )
 }
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({
-  page,
-  totalPages,
-  total,
-  pageSize,
-  onChange,
-}: {
-  page:       number
-  totalPages: number
-  total:      number
-  pageSize:   number
-  onChange:   (p: number) => void
-}) {
-  if (totalPages <= 1) return null
-
-  const from = (page - 1) * pageSize + 1
-  const to   = Math.min(page * pageSize, total)
-
-  const btnBase     = 'inline-flex items-center justify-center w-11 h-11 border text-label font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-  const btnInactive = 'border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg'
-  const btnActive   = 'bg-brand border-transparent text-fg-on-brand'
-  const btnDisabled = 'border-fg/8 text-fg/25 cursor-not-allowed'
-
-  // Always show first, last, and ±1 around current; insert ellipsis for gaps
-  const pages = new Set<number>()
-  pages.add(1)
-  pages.add(totalPages)
-  for (let i = Math.max(1, page - 1); i <= Math.min(totalPages, page + 1); i++) pages.add(i)
-  const pageList = [...pages].sort((a, b) => a - b)
-
-  return (
-    <div className="mt-xl flex flex-col items-center gap-md">
-      <p className="text-label text-fg-muted" aria-live="polite" aria-atomic="true">
-        Showing <strong>{from}–{to}</strong> of <strong>{total}</strong> files
-      </p>
-      <div className="flex items-center gap-xs">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-          className={`${btnBase} ${page <= 1 ? btnDisabled : btnInactive}`}
-        >
-          <ChevronLeft size={16} strokeWidth={2} />
-        </button>
-
-        {pageList.map((p, i) => {
-          const prev    = pageList[i - 1]
-          const showGap = prev !== undefined && p - prev > 1
-          return (
-            <span key={p} className="flex items-center gap-xs">
-              {showGap && (
-                <span className="w-9 text-center text-label select-none text-fg-muted">…</span>
-              )}
-              <button
-                type="button"
-                aria-label={`Page ${p}`}
-                aria-current={p === page ? 'page' : undefined}
-                onClick={() => onChange(p)}
-                className={`${btnBase} ${p === page ? btnActive : btnInactive}`}
-              >
-                {p}
-              </button>
-            </span>
-          )
-        })}
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
-          className={`${btnBase} ${page >= totalPages ? btnDisabled : btnInactive}`}
-        >
-          <ChevronRight size={16} strokeWidth={2} />
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ─── ResourceLibraryClient ────────────────────────────────────────────────────
 
 export type ResourceLibraryClientProps = {
@@ -332,6 +251,7 @@ export default function ResourceLibraryClient({
 }: ResourceLibraryClientProps) {
   const [view, setView] = useState<View>(defaultLayout)
   const [page, setPage] = useState(1)
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   const totalPages = Math.max(1, Math.ceil(assets.length / pageSize))
   const safePage   = Math.min(page, totalPages)
@@ -340,9 +260,8 @@ export default function ResourceLibraryClient({
   const changePage = useCallback((p: number) => {
     setPage(p)
     // Honour prefers-reduced-motion for the JS-driven scroll.
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollBy({ top: -120, behavior: reduce ? 'auto' : 'smooth' })
-  }, [])
+    window.scrollBy({ top: -120, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+  }, [prefersReducedMotion])
 
   const toggleBase     = 'inline-flex items-center justify-center w-11 h-11 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
   const toggleActive   = 'text-brand'
@@ -404,6 +323,7 @@ export default function ResourceLibraryClient({
         totalPages={totalPages}
         total={assets.length}
         pageSize={pageSize}
+        countLabel="files"
         onChange={changePage}
       />
     </div>

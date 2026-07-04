@@ -30,6 +30,7 @@
  */
 
 import { useEffect, useRef } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,13 +44,14 @@ type Props = {
 
 export default function LaserSignature({ name, color, epiProps }: Props) {
   const wrapRef = useRef<HTMLSpanElement>(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
     const wrap = wrapRef.current
     if (!wrap) return
 
     // Reduced-motion: reveal all characters statically, no laser effect
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReducedMotion) {
       wrap.dataset.static = 'true'
       return
     }
@@ -69,7 +71,7 @@ export default function LaserSignature({ name, color, epiProps }: Props) {
     )
     io.observe(wrap)
     return () => io.disconnect()
-  }, [])
+  }, [prefersReducedMotion])
 
   const isBrand = color === 'brand'
   const chars = name.split('')

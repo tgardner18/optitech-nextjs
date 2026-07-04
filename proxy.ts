@@ -38,7 +38,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
-import { computeSessionToken, SESSION_COOKIE } from '@/lib/admin/auth'
+import { verifySessionToken, SESSION_COOKIE } from '@/lib/admin/auth'
 
 /** Header name used by next-intl server APIs (getLocale, getRequestConfig). */
 const LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
@@ -73,8 +73,7 @@ export default async function proxy(request: NextRequest) {
       if (!session) {
         return redirectToLogin(request, pathname)
       }
-      const expected = await computeSessionToken()
-      if (session !== expected) {
+      if (!await verifySessionToken(session)) {
         return redirectToLogin(request, pathname)
       }
     }

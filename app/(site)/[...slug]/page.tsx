@@ -32,6 +32,8 @@ import { buildJsonLd }         from '@/lib/structured-data'
 import JsonLd                  from '@/components/seo/JsonLd'
 import type { Locale }         from '@/lib/i18n/config'
 
+export const revalidate = 60
+
 type Props = {
   params:       Promise<{ slug: string[] }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -232,7 +234,12 @@ async function CmsPage({ params, searchParams }: Props) {
     }
   } else {
     // Shared cache with generateMetadata when both run in the same render.
-    exp = await fetchPageContent(path, locale, baseUrl)
+    try {
+      exp = await fetchPageContent(path, locale, baseUrl)
+    } catch (err) {
+      console.error('[slug] Content Graph fetch failed:', err)
+      notFound()
+    }
   }
 
   if (!exp?.composition?.nodes) {

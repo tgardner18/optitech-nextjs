@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid username or password.' }, { status: 401 })
   }
 
-  const token = await computeSessionToken()
+  const expiresAt = Math.floor(Date.now() / 1000) + SESSION_MAX_AGE
+  const token = await computeSessionToken(expiresAt)
 
   const response = NextResponse.json({ ok: true })
   response.cookies.set(SESSION_COOKIE, token, {

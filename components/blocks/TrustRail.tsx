@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -191,15 +192,12 @@ export default function TrustRail({
   // ── Reduced-motion detection + fade observer ────────────────────────────
   const containerRef               = useRef<HTMLDivElement>(null)
   const [fadeTriggered, setFade]   = useState(false)
-  const [prefersReduced, setMQ]    = useState(false)
+  const prefersReducedMotion       = usePrefersReducedMotion()
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setMQ(mq.matches)
-
     if (motion === 'scroll' || motion === 'static') return
     // Fade mode: show immediately if reduced motion, else observe
-    if (mq.matches) { setFade(true); return }
+    if (prefersReducedMotion) { setFade(true); return }
 
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setFade(true); obs.disconnect() } },
@@ -207,7 +205,7 @@ export default function TrustRail({
     )
     if (containerRef.current) obs.observe(containerRef.current)
     return () => obs.disconnect()
-  }, [motion])
+  }, [motion, prefersReducedMotion])
 
   // ── Density → vertical padding ────────────────────────────────────────
   const railPy =
@@ -294,7 +292,7 @@ export default function TrustRail({
                 @media (prefers-reduced-motion: no-preference); we also drop the
                 class under reduced motion to mirror the prior inline gating. */}
             <div
-              className={cn('flex items-center', !prefersReduced && 'animate-trust-rail-scroll')}
+              className={cn('flex items-center', !prefersReducedMotion && 'animate-trust-rail-scroll')}
               data-pause-offscreen
               style={{
                 gap: `${railGap}px`,
@@ -349,7 +347,7 @@ export default function TrustRail({
                   treatment={treatment}
                   onBrand={onBrand}
                   style={
-                    prefersReduced
+                    prefersReducedMotion
                       ? undefined
                       : {
                           opacity:    fadeTriggered ? 1 : 0,
