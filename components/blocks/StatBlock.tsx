@@ -186,10 +186,11 @@ const iconBadgeCva = cva('shrink-0', {
 
 // ─── Animation constants ──────────────────────────────────────────────────────
 
-const ENTER_MS   = 600   // column entrance duration
-const STAGGER_MS = 110   // per-column stagger
-const COUNT_LAG  = 150   // ms after entry before count-up begins
-const COUNT_MS   = 1400  // count-up duration
+const ENTER_MS      = 600   // column entrance duration
+const STAGGER_MS    = 110   // per-column stagger
+const COUNT_LAG     = 150   // ms after entry before count-up begins
+const COUNT_MS      = 1400  // count-up duration
+const COUNT_STAGGER = 110   // per-column count-up start offset — matches entrance stagger
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -223,10 +224,12 @@ export default function StatBlock({
   const [entered,    setEntered]    = useState(false)
   // countOn: true after COUNT_LAG following entry
   const [countOn,    setCountOn]    = useState(false)
-  // progress: 0→1 driven by RAF (starts at 1 = SSR final-value safe)
-  const [progress,   setProgress]   = useState(1)
-  // pulsing: briefly true when count completes, triggers .animate-stat-pulse
-  const [pulsing,    setPulsing]    = useState(false)
+  // per-column count progress, 0→1 driven by RAF (starts at 1 = SSR final-value
+  // safe). Columns start COUNT_STAGGER apart so the counts land left-to-right,
+  // completing the choreography the entrance stagger begins.
+  const [colProgress, setColProgress] = useState<number[]>(() => stats.map(() => 1))
+  // per-column completion pulse — briefly true, triggers .animate-stat-pulse
+  const [colPulse,    setColPulse]    = useState<boolean[]>(() => stats.map(() => false))
 
   const prefersReducedMotion = usePrefersReducedMotion()
 
@@ -241,7 +244,7 @@ export default function StatBlock({
       return
     }
 
-    setProgress(0)
+    setColProgress(prev => prev.map(() => 0))
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -263,30 +266,44 @@ export default function StatBlock({
     return () => clearTimeout(t)
   }, [entered, shouldAnim])
 
-  // ── Step 3: RAF count-up loop ─────────────────────────────────────────────
+  // ── Step 3: RAF count-up loop — one loop drives every column, each offset
+  // by COUNT_STAGGER so completions land left-to-right ──────────────────────
+  const colCount = stats.length
   useEffect(() => {
     if (!countOn) return
-    const start = performance.now()
+    const start   = performance.now()
+    const total   = COUNT_MS + (colCount - 1) * COUNT_STAGGER
+    const settled = Array.from({ length: colCount }, () => false)
+    const timers: ReturnType<typeof setTimeout>[] = []
     let raf: number
 
     const tick = (now: number) => {
       const elapsed = now - start
-      const t       = Math.min(elapsed / COUNT_MS, 1)
-      setProgress(easeOutQuart(t))
-      if (t < 1) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        setPulsing(true)
-        setTimeout(() => setPulsing(false), 280)
+      setColProgress(Array.from({ length: colCount }, (_, i) => {
+        const t = Math.min(Math.max((elapsed - i * COUNT_STAGGER) / COUNT_MS, 0), 1)
+        return easeOutQuart(t)
+      }))
+      for (let i = 0; i < colCount; i++) {
+        if (!settled[i] && elapsed >= i * COUNT_STAGGER + COUNT_MS) {
+          settled[i] = true
+          setColPulse(prev => prev.map((v, j) => (j === i ? true : v)))
+          timers.push(setTimeout(() => {
+            setColPulse(prev => prev.map((v, j) => (j === i ? false : v)))
+          }, 280))
+        }
       }
+      if (elapsed < total) raf = requestAnimationFrame(tick)
     }
 
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [countOn])
+    return () => {
+      cancelAnimationFrame(raf)
+      timers.forEach(clearTimeout)
+    }
+  }, [countOn, colCount])
 
-  const displayFor = (p: Parsed) =>
-    shouldAnim && !countOn ? 0 : p.number * progress
+  const displayFor = (p: Parsed, i: number) =>
+    shouldAnim && !countOn ? 0 : p.number * (colProgress[i] ?? 1)
 
   const mobileBorderClass = color === 'brand' ? 'border-fg-on-brand/15' : 'border-fg/10'
   const dividerBgClass    = color === 'brand' ? 'bg-fg-on-brand/15'     : 'bg-fg/10'
@@ -352,7 +369,7 @@ export default function StatBlock({
         // (watermark icon removed — icons now render inline with the label)
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
-        const disp = displayFor(p)
+        const disp = displayFor(p, i)
 
         return (
           <li
@@ -389,7 +406,7 @@ export default function StatBlock({
             <p
               className={cn(
                 valueCva({ color, columns }),
-                pulsing && shouldAnim && 'animate-stat-pulse',
+                colPulse[i] && shouldAnim && 'animate-stat-pulse',
               )}
               aria-hidden="true"
             >
