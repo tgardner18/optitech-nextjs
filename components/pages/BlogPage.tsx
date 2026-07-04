@@ -1,4 +1,5 @@
 import type { BlogPageContent, BlogPostSummary } from '@/lib/blog'
+import PrimaryTextDepth3D from '@/components/blocks/PrimaryTextDepth3D.client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -136,14 +137,17 @@ type HeaderProps = {
 }
 
 // ─── Impact Header ────────────────────────────────────────────────────────────
-// Canvas "cover statement" — the poster register. A full-bleed Syne (weight 700)
-// display headline runs the full header width and carries .display-extrude: the
-// 12-layer 45° isometric brand shadow stack with an accent rim stroke and the
-// --display-depth arrive animation (reduced-motion sees full depth immediately).
-// Behind it, a chromatic bloom (brand + accent radial light anchored to the
-// edges, so the centre stays legible) gives the canvas depth. The extrusion is
-// what separates this register from the Editorial masthead — same content,
-// unmistakably different voice.
+// Canvas "cover statement" — the poster register. An oversized primary-font
+// (--ot-font-sans via font-sans) display headline runs the full header width and
+// carries the same layered 3D extrude as the PrimaryText block's "3D Depth"
+// effect: PrimaryTextDepth3D renders real stacked DOM layers (.ot-extrude3d) —
+// a bright face over evenly-stepped receding duplicates, each with a ridge
+// outline stroke. Token-derived, theme-aware (light mode gets the 3D-sticker
+// look), fully static so it is reduced-motion safe by construction. Behind it,
+// a chromatic bloom (brand + accent radial light anchored to the edges, so the
+// centre stays legible) gives the canvas depth. The extrusion is what separates
+// this register from the Editorial masthead — same content, unmistakably
+// different voice.
 
 function ImpactHeader({
   headline, subHeadline, topic,
@@ -170,17 +174,13 @@ function ImpactHeader({
           </div>
         )}
 
-        {/* slide-up rides the wrapper — the h1 itself carries display-extrude's
-            own depth-arrive animation, and the two can't share one element */}
-        <div className="motion-safe:animate-slide-up" style={{ animationDelay: '60ms' }}>
-          <h1
-            className="display-extrude font-syne text-[clamp(2.75rem,8vw,7rem)] leading-[1.02] tracking-[-0.02em] text-balance"
-            style={{ fontVariationSettings: "'wght' 700" }}
-            {...pa?.('headline')}
-          >
-            {headline}
-          </h1>
-        </div>
+        <h1
+          className="font-extrabold text-[clamp(2.75rem,8vw,7rem)] leading-[1.05] tracking-[-0.03em] motion-safe:animate-slide-up"
+          style={{ animationDelay: '60ms' }}
+          {...pa?.('headline')}
+        >
+          <PrimaryTextDepth3D text={headline} />
+        </h1>
 
         {subHeadline && (
           <p

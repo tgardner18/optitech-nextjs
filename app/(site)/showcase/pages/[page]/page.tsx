@@ -88,7 +88,7 @@ function BlogPageShowcase() {
           <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">01</p>
           <h3 className="text-title font-semibold leading-title tracking-title text-fg">Impact</h3>
           <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
-            <code className="font-mono text-accent">blogStyle: impact</code> — poster-format header at display scale with a 3D extruded text-shadow. Suited to announcements and flagship engineering posts.
+            <code className="font-mono text-accent">blogStyle: impact</code> — poster-format header at display scale with the layered 3D extrude from the PrimaryText depth effect. Suited to announcements and flagship engineering posts.
           </p>
         </div>
         <BlogPage content={{ ...MOCK_BASE, blogStyle: 'impact' }} latestPosts={[]} />
