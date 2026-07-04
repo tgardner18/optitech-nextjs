@@ -181,6 +181,19 @@ html {
   }
 }
 
+/* ── StatBlock — value affix (prefix/suffix) ─────────────────────────────────
+ * Annual-report numeral treatment: the currency sign / unit scales down so the
+ * figure reads as number + unit ("99.99" + "%"), not one undifferentiated run
+ * of glyphs. One weight step up from the 300-weight numerals so the smaller
+ * glyphs keep their stroke presence at reduced size.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.stat-affix {
+  font-size: 0.55em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
 /* ── ScrollToTop ─────────────────────────────────────────────────────────────
  *
  * .scroll-top-btn
@@ -2482,6 +2495,19 @@ body {
   }
 }
 
+/* Directional variants — the panel enters from the side the selection moved
+ * toward, so autoplay visibly advances and manual jumps read as navigation.
+ * data-dir is set by TabsBlock.client from the index delta. */
+@keyframes tab-panel-in-right {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tab-panel-in-left {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .tab-progress-bar {
   position: absolute;
   bottom: 0;
@@ -2506,6 +2532,37 @@ body {
 
 .tab-panel-enter {
   animation: tab-panel-in var(--ot-dur-quick) ease-out forwards;
+}
+
+.tab-panel-enter[data-dir="right"] { animation-name: tab-panel-in-right; }
+.tab-panel-enter[data-dir="left"]  { animation-name: tab-panel-in-left; }
+
+/* ── TabsBlock — sliding active indicator ────────────────────────────────────
+ * One element per tablist, sized to the strip's full scroll content and
+ * revealed through an animated clip-path inset matching the active trigger
+ * (underline: its bottom/left 3px strip; pill/buttonGroup: the whole chip,
+ * with the corner radius carried by `round`). clip-path is paint-level — no
+ * layout animation — and preserves the radius that a scaleX slide would
+ * distort. JS only renders this after mount and when motion is allowed; the
+ * per-button static indicators are the SSR / reduced-motion fallback.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition: clip-path var(--ot-dur-base) var(--ot-ease-kinetic);
+}
+
+/* ── TabsBlock — panel surface depth ─────────────────────────────────────────
+ * Resting ambient shadow from the bloom tokens plus a top-edge catchlight, so
+ * the panel reads as a lit surface in the depth system rather than an outlined
+ * wireframe box. Catchlight derives from fg so it adapts to light mode.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.tab-panel-surface {
+  box-shadow:
+    0 8px 32px var(--ot-bloom-brand-faint),
+    inset 0 1px 0 oklch(from var(--ot-fg) l c h / 0.10);
 }
 
 /* ── Tab trigger scroll strip — edge-fade overflow affordance ──────────────────

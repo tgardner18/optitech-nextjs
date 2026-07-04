@@ -116,7 +116,7 @@ const valueCva = cva('font-light leading-none tabular-nums', {
       surface: 'text-fg',
     },
     columns: {
-      2: 'text-display tracking-[-0.035em]',
+      2: 'text-[clamp(4rem,9vw,7.5rem)] tracking-[-0.035em]',
       3: 'text-display tracking-[-0.035em]',
       4: 'text-[clamp(2.5rem,5.5vw,4.75rem)] tracking-[-0.035em]',
     },
@@ -127,7 +127,7 @@ const valueCva = cva('font-light leading-none tabular-nums', {
 const labelCva = cva('text-label tracking-label uppercase font-semibold', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/70',
+      brand:   'text-fg-on-brand/85',
       canvas:  'text-fg-muted',
       surface: 'text-fg-muted',
     },
@@ -139,7 +139,7 @@ const labelCva = cva('text-label tracking-label uppercase font-semibold', {
 const eyebrowCva = cva('text-label tracking-label uppercase font-semibold', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/70',
+      brand:   'text-fg-on-brand/85',
       canvas:  'text-brand',
       surface: 'text-brand',
     },
@@ -159,12 +159,14 @@ const headingCva = cva('text-headline font-bold tracking-headline leading-headli
   defaultVariants: { color: 'brand' },
 })
 
+// Context opacities sit at the AA floor, not below it — /70 on brand and full
+// fg-muted on light grounds keep the supporting line legible in every theme.
 const contextCva = cva('text-label font-normal', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/45',
-      canvas:  'text-fg-muted/60',
-      surface: 'text-fg-muted/60',
+      brand:   'text-fg-on-brand/70',
+      canvas:  'text-fg-muted',
+      surface: 'text-fg-muted',
     },
   },
   defaultVariants: { color: 'brand' },
@@ -338,6 +340,15 @@ export default function StatBlock({
             }
           : {}
 
+        // ── Hairline rule draws in from the left (scaleX) ─────────────────
+        const ruleStyle: React.CSSProperties = shouldAnim
+          ? {
+              transform:       entered ? 'scaleX(1)' : 'scaleX(0)',
+              transformOrigin: 'left',
+              transition:      `transform 0.55s var(--ot-ease-kinetic) ${staggerMs + COUNT_LAG + 60}ms`,
+            }
+          : {}
+
         // (watermark icon removed — icons now render inline with the label)
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
@@ -382,7 +393,9 @@ export default function StatBlock({
               )}
               aria-hidden="true"
             >
-              {p.prefix}{fmtNumber(disp, p.decimals)}{p.suffix}
+              {p.prefix && <span className="stat-affix mr-[0.05em]">{p.prefix}</span>}
+              {fmtNumber(disp, p.decimals)}
+              {p.suffix && <span className="stat-affix ml-[0.05em]">{p.suffix}</span>}
             </p>
             <span className="sr-only">{stat.value}</span>
 
@@ -393,7 +406,7 @@ export default function StatBlock({
                 'block h-px w-8 mt-sm shrink-0',
                 color === 'brand' ? 'bg-fg-on-brand/20' : 'bg-brand/25',
               )}
-              style={labelStyle}
+              style={ruleStyle}
             />
 
             {/* ── Label + context — icon left / text right when icon is on ── */}
@@ -440,8 +453,12 @@ export default function StatBlock({
       data-theme={isDarkSurface ? 'dark' : undefined}
       aria-label="Key metrics"
     >
-      {header}
-      {grid}
+      {/* Section color bleeds full width; content is capped so whitespace at
+          the margins reads as composed rather than stretched on wide screens. */}
+      <div className="max-w-[80rem] mx-auto">
+        {header}
+        {grid}
+      </div>
     </section>
   )
 }

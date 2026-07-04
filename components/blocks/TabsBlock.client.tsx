@@ -23,7 +23,8 @@ export type TabItemData = {
   tabLabel:  string
   tabIcon?:  string
   heading?:  string
-  body?:     Parameters<typeof RichText>[0]['content'] | null
+  /** Rich-text JSON from the CMS, or a plain string (showcase / fallback). */
+  body?:     Parameters<typeof RichText>[0]['content'] | string | null
   imageSrc?: string
   imageAlt?: string
   ctaLabel?: string
@@ -42,15 +43,40 @@ export type TabsBlockClientProps = {
 type ColorCtx = 'canvas' | 'surface' | 'brand' | 'glass'
 type TriggerState = 'inactive' | 'active'
 
+// Inactive triggers are interactive controls — they hold the AA floor (no
+// sub-70% opacity stacking); the hover step moves toward full strength.
 function triggerTextClass(color: ColorCtx, state: TriggerState): string {
   if (state === 'inactive') {
-    return color === 'brand'  ? 'text-fg-on-brand/55 hover:text-fg-on-brand/80'
-         : color === 'glass'  ? 'text-white/45 hover:text-white/70'
-         : 'text-fg-muted/60 hover:text-fg-muted'
+    return color === 'brand'  ? 'text-fg-on-brand/75 hover:text-fg-on-brand'
+         : color === 'glass'  ? 'text-white/70 hover:text-white/95'
+         : 'text-fg-muted hover:text-fg'
   }
   return color === 'brand'  ? 'text-fg-on-brand'
        : color === 'glass'  ? 'text-white'
        : 'text-fg'
+}
+
+/** Active trigger text when the sliding indicator carries the background. */
+function activeTextClass(tabStyle: TabsStyleOptions['tabStyle'], color: ColorCtx): string {
+  if (tabStyle === 'pill') {
+    return color === 'glass' ? 'text-white' : 'text-fg-on-brand'
+  }
+  if (tabStyle === 'buttonGroup') {
+    return color === 'canvas' || color === 'surface' ? 'text-fg-on-brand' : 'text-brand'
+  }
+  return triggerTextClass(color, 'active')
+}
+
+/** Fill of the sliding indicator per trigger style. */
+function indicatorBgClass(tabStyle: TabsStyleOptions['tabStyle'], color: ColorCtx): string {
+  if (tabStyle === 'underline') return staticActiveLine(color)
+  if (tabStyle === 'pill') {
+    return color === 'canvas' || color === 'surface'
+      ? 'bg-brand'
+      : 'bg-white/15 [backdrop-filter:blur(16px)] [-webkit-backdrop-filter:blur(16px)]'
+  }
+  // buttonGroup
+  return color === 'canvas' || color === 'surface' ? 'bg-brand' : 'bg-white/95'
 }
 
 function progressBarBg(color: ColorCtx): string {
@@ -95,6 +121,8 @@ export default function TabsBlockClient({
   const [activeTab,    setActiveTab]    = useState(0)
   const [progressKey,  setProgressKey]  = useState(0)
   const [isPaused,     setIsPaused]     = useState(false)
+  // Direction of the last tab change — drives the panel's directional entrance.
+  const [dir,          setDir]          = useState<'left' | 'right' | null>(null)
   const reducedMotion = usePrefersReducedMotion()
 
   // Panel height lock — prevents layout shift on tab change
@@ -110,9 +138,10 @@ export default function TabsBlockClient({
   })
 
   const goToTab = useCallback((idx: number) => {
+    if (idx !== activeTab) setDir(idx > activeTab ? 'right' : 'left')
     setActiveTab(idx)
     setProgressKey(k => k + 1)
-  }, [])
+  }, [activeTab])
 
   // Auto-play interval
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -124,6 +153,7 @@ export default function TabsBlockClient({
     }
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = setInterval(() => {
+      setDir('right') // autoplay always advances forward
       setActiveTab(prev => {
         const next = (prev + 1) % tabCount
         setProgressKey(k => k + 1)
@@ -156,14 +186,18 @@ export default function TabsBlockClient({
       onMouseLeave={() => setIsPaused(false)}
     >
 
+      {/* Section color bleeds full width; content is capped so whitespace at
+          the margins reads as composed rather than stretched on wide screens. */}
+      <div className="max-w-[80rem] mx-auto">
+
       {/* ── Block header ─────────────────────────────────────────────────── */}
       {(eyebrow || heading) && (
         <header className="mb-xl max-w-screen-md">
           {eyebrow && (
             <p className={cn(
               'text-label tracking-label uppercase font-semibold mb-xs',
-              color === 'brand'  ? 'text-fg-on-brand/70'
-              : color === 'glass' ? 'text-white/60'
+              color === 'brand'  ? 'text-fg-on-brand/85'
+              : color === 'glass' ? 'text-white/75'
               : 'text-brand',
             )}>
               {eyebrow}
@@ -186,6 +220,9 @@ export default function TabsBlockClient({
       <div className={cn(
         'flex',
         tabPosition === 'side' ? 'flex-col md:flex-row' : 'flex-col',
+        // Detached trigger styles breathe away from the panel; underline stays
+        // flush so its trigger row and the panel share a single hairline.
+        tabStyle !== 'underline' && 'gap-sm md:gap-md',
       )}>
 
         {/* ── Trigger area ───────────────────────────────────────────────── */}
@@ -208,7 +245,7 @@ export default function TabsBlockClient({
         {/* ── Panel area ─────────────────────────────────────────────────── */}
         <div
           className={cn(
-            'flex-1 min-w-0',
+            'flex-1 min-w-0 tab-panel-surface',
             color === 'canvas'  && 'bg-surface border border-fg/10 p-lg',
             color === 'surface' && 'bg-canvas  border border-fg/10 p-lg',
             color === 'brand'   && 'bg-white/10 border border-white/15 p-lg',
@@ -217,6 +254,14 @@ export default function TabsBlockClient({
               '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
               '[isolation:isolate] [will-change:transform]',
             ].join(' '),
+            // Underline style: the trigger row's border and the panel edge merge
+            // into one hairline (with the active indicator riding on top of it)
+            // instead of stacking two parallel lines.
+            tabStyle === 'underline' && (
+              tabPosition === 'side'
+                ? 'border-t-0 md:border-t md:border-l-0'
+                : 'border-t-0'
+            ),
           )}
           style={panelMinHeight > 0 ? { minHeight: `${panelMinHeight}px` } : undefined}
           role="tabpanel"
@@ -227,6 +272,7 @@ export default function TabsBlockClient({
             key={activeTab}
             ref={panelContentRef}
             className={reducedMotion ? undefined : 'tab-panel-enter'}
+            data-dir={dir ?? undefined}
           >
             <PanelContent
               tab={visibleTabs[activeTab]}
@@ -235,6 +281,8 @@ export default function TabsBlockClient({
             />
           </div>
         </div>
+
+      </div>
 
       </div>
     </section>
@@ -278,6 +326,74 @@ function TriggerBar({
   const scrollerRef = useRef<HTMLDivElement>(null)
   const buttonsRef  = useRef<(HTMLButtonElement | null)[]>([])
   const [fade, setFade] = useState({ left: false, right: false })
+
+  // ── Sliding active indicator ────────────────────────────────────────────
+  // One element per tablist, sized to the strip's scroll content and revealed
+  // through an animated clip-path matching the active trigger (see
+  // .tab-indicator in globals.css). Measured in the strip's content
+  // coordinates, so it scrolls with the triggers. null until first measure —
+  // the per-button static indicators cover SSR and reduced-motion.
+  const [rect, setRect] = useState<
+    { x: number; y: number; w: number; h: number; sw: number; sh: number } | null
+  >(null)
+
+  // The side layout switches the underline indicator's axis at md.
+  const [mdUp, setMdUp] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const sync = () => setMdUp(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  const measure = useCallback(() => {
+    const el  = scrollerRef.current
+    const btn = buttonsRef.current[activeTab]
+    if (!el || !btn) return
+    setRect({
+      x:  btn.offsetLeft - el.clientLeft,
+      y:  btn.offsetTop  - el.clientTop,
+      w:  btn.offsetWidth,
+      h:  btn.offsetHeight,
+      sw: el.scrollWidth,
+      sh: el.scrollHeight,
+    })
+  }, [activeTab])
+
+  useLayoutEffect(() => { measure() }, [measure, tabs.length, mdUp])
+
+  // Re-measure when the strip or any trigger resizes (viewport, font load).
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    buttonsRef.current.slice(0, tabs.length).forEach(b => b && ro.observe(b))
+    return () => ro.disconnect()
+  }, [measure, tabs.length])
+
+  // Underline + autoplay: the progress bar itself is the active line (it fills
+  // 0→100% in the same color), so the sliding line would sit under it invisibly
+  // — defer to the sweep there. Pill/buttonGroup progress overlays translucently
+  // on top of the sliding chip, so those keep both.
+  const slideIndicator =
+    !reducedMotion && rect !== null && !(tabStyle === 'underline' && showAutoPlay)
+
+  let indicatorClip: string | undefined
+  if (rect) {
+    const { x, y, w, h, sw, sh } = rect
+    const bottom = sh - y - h
+    let top = y, right = sw - x - w, left = x
+    let radius = '0'
+    if (tabStyle === 'underline') {
+      if (isSide && mdUp) { left = 0; right = sw - 3 }  // vertical bar on the strip's left edge
+      else                { top = y + h - 3 }           // 3px strip under the active trigger
+    } else {
+      radius = tabStyle === 'pill' ? '9999px' : '4px'
+    }
+    indicatorClip = `inset(${top}px ${right}px ${bottom}px ${left}px round ${radius})`
+  }
 
   const updateFade = useCallback(() => {
     const el = scrollerRef.current
@@ -339,7 +455,8 @@ function TriggerBar({
 
   const rowClass = cn(
     // Mobile: always horizontal scroll strip, with snap + edge feather
-    'flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+    // (relative: positioning context for the sliding indicator)
+    'relative flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
     'tab-scroller snap-x snap-proximity',
     // Side position: stack vertically at md+, fixed width column
     isSide && 'md:flex-col md:overflow-x-visible md:w-[220px] md:shrink-0',
@@ -385,6 +502,14 @@ function TriggerBar({
         '--fade-r': fade.right ? 'var(--tab-fade-size)' : '0px',
       } as React.CSSProperties}
     >
+      {/* Sliding active indicator — first in DOM so triggers paint above it */}
+      {slideIndicator && (
+        <span
+          aria-hidden="true"
+          className={cn('tab-indicator', indicatorBgClass(tabStyle, color))}
+          style={{ width: rect!.sw, height: rect!.sh, clipPath: indicatorClip }}
+        />
+      )}
       {tabs.map((tab, i) => (
         <TriggerButton
           key={i}
@@ -400,6 +525,7 @@ function TriggerBar({
           autoPlayDuration={autoPlayDuration}
           instanceId={instanceId}
           tabCount={tabs.length}
+          slideIndicator={slideIndicator}
           buttonRef={(el) => { buttonsRef.current[i] = el }}
           onSelect={onSelect}
         />
@@ -423,6 +549,8 @@ type TriggerButtonProps = {
   autoPlayDuration: number
   instanceId:       string
   tabCount:         number
+  /** True when the tablist-level sliding indicator carries the active visuals. */
+  slideIndicator:   boolean
   buttonRef:        (el: HTMLButtonElement | null) => void
   onSelect:         (idx: number) => void
 }
@@ -430,7 +558,7 @@ type TriggerButtonProps = {
 function TriggerButton({
   tab, index, isActive, tabStyle, tabPosition, color,
   showAutoPlay, progressKey, isPaused, autoPlayDuration,
-  instanceId, buttonRef, onSelect,
+  instanceId, slideIndicator, buttonRef, onSelect,
 }: TriggerButtonProps) {
   const isSide = tabPosition === 'side'
 
@@ -446,7 +574,7 @@ function TriggerButton({
   const baseClass = cn(
     'relative flex items-center gap-xs shrink-0 snap-start transition-colors duration-150',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
-    'focus-visible:ring-offset-transparent cursor-pointer',
+    'focus-visible:ring-offset-transparent cursor-pointer group',
     focusRing,
   )
 
@@ -466,8 +594,9 @@ function TriggerButton({
           baseClass,
           'px-lg py-md text-base font-semibold',
           triggerTextClass(color, isActive ? 'active' : 'inactive'),
-          // Glass active: frosted bg
-          isActive && color === 'glass' && [
+          // Glass active: frosted bg (static fallback only — the sliding
+          // indicator's line + text color carry the active state when live)
+          isActive && !slideIndicator && color === 'glass' && [
             'bg-white/15',
             '[backdrop-filter:blur(16px)] [-webkit-backdrop-filter:blur(16px)]',
             '[isolation:isolate]',
@@ -479,16 +608,30 @@ function TriggerButton({
         {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
         <span>{tab.tabLabel}</span>
 
-        {/* Static active underline (top position, autoPlay off) */}
-        {isActive && !showAutoPlay && !isSide && (
+        {/* Hover ghost — a low-opacity underline grows from center on hover,
+            so hover feels kinetic rather than a bare color nudge */}
+        {!isActive && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'absolute bottom-0 h-[2px] bg-current pointer-events-none',
+              isSide ? 'left-lg right-lg md:left-md md:right-md' : 'left-lg right-lg',
+              'opacity-0 scale-x-0 origin-center transition-[transform,opacity] duration-200',
+              'group-hover:opacity-30 group-hover:scale-x-100 motion-reduce:transition-none',
+            )}
+          />
+        )}
+
+        {/* Static active underline (top position, sliding indicator off) */}
+        {isActive && !slideIndicator && !showAutoPlay && !isSide && (
           <span className={cn(
             'absolute bottom-0 left-0 right-0 h-[3px]',
             staticActiveLine(color),
           )} />
         )}
 
-        {/* Static active left bar (side position, autoPlay off) */}
-        {isActive && !showAutoPlay && isSide && (
+        {/* Static active left bar (side position, sliding indicator off) */}
+        {isActive && !slideIndicator && !showAutoPlay && isSide && (
           <span className={cn(
             'hidden md:block absolute left-0 top-0 bottom-0 w-[3px]',
             staticActiveLine(color),
@@ -572,8 +715,12 @@ function TriggerButton({
         onClick={() => onSelect(index)}
         className={cn(
           baseClass,
-          'px-md py-sm text-sm font-semibold tracking-label uppercase',
-          isActive ? pillActive : pillInactive,
+          // Actual pill geometry — matches the sliding indicator's round 9999px.
+          // overflow-hidden keeps the autoplay sweep inside the curved ends.
+          'rounded-full overflow-hidden px-md py-sm text-sm font-semibold tracking-label uppercase',
+          isActive
+            ? (slideIndicator ? activeTextClass('pill', color) : pillActive)
+            : pillInactive,
         )}
       >
         {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
@@ -625,7 +772,9 @@ function TriggerButton({
         baseClass,
         'rounded px-md py-sm text-sm font-semibold tracking-label uppercase',
         isSide && 'md:w-full md:text-left',
-        isActive ? bgActive : triggerTextClass(color, 'inactive'),
+        isActive
+          ? (slideIndicator ? activeTextClass('buttonGroup', color) : bgActive)
+          : triggerTextClass(color, 'inactive'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
@@ -677,13 +826,13 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
 
   const eyebrowClass = cn(
     'text-label tracking-label uppercase font-semibold',
-    color === 'brand'  ? 'text-fg-on-brand/70'
-    : color === 'glass' ? 'text-white/60'
+    color === 'brand'  ? 'text-fg-on-brand/85'
+    : color === 'glass' ? 'text-white/75'
     : 'text-brand',
   )
 
   const textContent = (
-    <div className="flex flex-col gap-sm flex-1">
+    <div className="flex flex-col gap-sm flex-1 max-w-[65ch]">
       <p className={eyebrowClass}>{tab.tabLabel}</p>
       {tab.heading && <h3 className={headingClass}>{tab.heading}</h3>}
       {tab.body    && (
@@ -692,7 +841,9 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
           data-color={color === 'brand' ? 'brand' : color === 'glass' ? 'glass' : undefined}
           className={bodyClass}
         >
-          <RichText content={tab.body} />
+          {typeof tab.body === 'string'
+            ? <p>{tab.body}</p>
+            : <RichText content={tab.body} />}
         </div>
       )}
       {tab.ctaLabel && tab.ctaUrl && (
