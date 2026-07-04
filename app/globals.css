@@ -942,15 +942,21 @@ body {
 .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) l c h); }
 .ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
 
-/* Light mode: navy face with a near-white rim (the "3D sticker" look), steps
-   stepping LIGHTER (clamped) so they read as a soft colored shadow, ridge in
-   true brand. Mirrors the static [data-theme="light"] .ot-depth-extrude. */
-[data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) l c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.16), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.21), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.31), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.36), 0.74) c h); }
+/* Light mode: brand face with a near-white rim (the "3D sticker" face), and
+   receding layers that FADE TOWARD THE CANVAS — fixed lightness steps
+   (0.64 → 0.93) with chroma fading in step, the atmospheric-perspective depth
+   cue. This mirrors dark mode's LOGIC (layers bridge face → canvas with real
+   value separation between steps) rather than its colors. The previous
+   clamp(0.46…0.74) ramp collapsed four of the five layers to one identical
+   color for any mid-lightness brand, which is why the stack read as mud.
+   Fixed lightness (not brand-relative) keeps the fade correct for any brand.
+   Ridge is a deepened brand so each step still cuts a crisp line. */
+[data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.55) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) 0.93 calc(c * 0.30) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) 0.87 calc(c * 0.45) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) 0.80 calc(c * 0.60) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) 0.72 calc(c * 0.75) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) 0.64 calc(c * 0.90) h); }
 [data-theme="light"] .ot-extrude3d__layer:nth-child(6) {
   color: var(--ot-brand);
   -webkit-text-stroke: 0.03em oklch(from var(--ot-brand) 0.99 0.008 h);
