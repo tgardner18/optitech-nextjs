@@ -1118,21 +1118,14 @@ function FeatureGridShowcase() {
 
 // ─── Trust Rail (simplified) ──────────────────────────────────────────────────
 
-function makeSvgLogo(text: string): string {
-  const w    = text.length * 9 + 24
-  const svg  = `<svg viewBox="0 0 ${w} 32" xmlns="http://www.w3.org/2000/svg" width="${w}" height="32"><text x="${w / 2}" y="22" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-weight="700" font-size="15" letter-spacing="0.04em" fill="currentColor">${text}</text></svg>`
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
-}
-
 const TRUST_LOGOS = [
-  { imageUrl: makeSvgLogo('MERIDIAN'), altText: 'Meridian' },
-  { imageUrl: makeSvgLogo('FOLIO'),    altText: 'Folio'    },
-  { imageUrl: makeSvgLogo('VERTEX'),   altText: 'Vertex'   },
-  { imageUrl: makeSvgLogo('NEXUS'),    altText: 'Nexus'    },
-  { imageUrl: makeSvgLogo('PRISM'),    altText: 'Prism'    },
-  { imageUrl: makeSvgLogo('APEX'),     altText: 'Apex'     },
-  { imageUrl: makeSvgLogo('ORBIT'),    altText: 'Orbit'    },
-  { imageUrl: makeSvgLogo('STRATA'),   altText: 'Strata'   },
+  { imageUrl: '/SVG/northwind.svg',      altText: 'Northwind'      },
+  { imageUrl: '/SVG/quanta.svg',         altText: 'Quanta'         },
+  { imageUrl: '/SVG/vantage.svg',        altText: 'Vantage'        },
+  { imageUrl: '/SVG/mosey-bank.svg',     altText: 'Mosey Bank'     },
+  { imageUrl: '/SVG/forge-company.svg',  altText: 'Forge & Company'},
+  { imageUrl: '/SVG/atlas-retail.svg',   altText: 'Atlas Retail'   },
+  { imageUrl: '/SVG/bloom.svg',          altText: 'Bloom'          },
 ]
 
 function TrustRailShowcase() {
