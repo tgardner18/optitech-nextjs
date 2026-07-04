@@ -181,6 +181,19 @@ html {
   }
 }
 
+/* ── StatBlock — value affix (prefix/suffix) ─────────────────────────────────
+ * Annual-report numeral treatment: the currency sign / unit scales down so the
+ * figure reads as number + unit ("99.99" + "%"), not one undifferentiated run
+ * of glyphs. One weight step up from the 300-weight numerals so the smaller
+ * glyphs keep their stroke presence at reduced size.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.stat-affix {
+  font-size: 0.55em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
 /* ── ScrollToTop ─────────────────────────────────────────────────────────────
  *
  * .scroll-top-btn
@@ -250,19 +263,68 @@ html {
 }
 
 /* ── TrustRail marquee ────────────────────────────────────────────────────────
- * Infinite horizontal scroll. Duration is set via --trust-rail-duration on the
- * element itself, allowing the React component to tune speed per logo count.
+ * Infinite horizontal scroll. Duration is set via --trust-rail-duration, and
+ * the travel distance via --trust-rail-copies (the React component renders
+ * the logo set that many times over — enough that the track always over-
+ * fills the viewport, so the loop point in never becomes a visible gap/seam,
+ * regardless of how few logos or how wide the screen). One "lap" of the
+ * animation is always exactly one copy-width, however many copies exist.
  * Paused automatically for prefers-reduced-motion (class not applied).
  * ─────────────────────────────────────────────────────────────────────────── */
 @keyframes trustRailScroll {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to   { transform: translateX(calc(-100% / var(--trust-rail-copies, 2))); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .animate-trust-rail-scroll {
     animation: trustRailScroll var(--trust-rail-duration, 28s) linear infinite;
     will-change: transform;
+  }
+}
+
+/* ── TrustRail "auto" logo treatment ──────────────────────────────────────────
+ * Forces every logo to a theme-matched silhouette instead of each file's own
+ * colors: white on dark grounds (the default site theme, and any brand fill
+ * regardless of the page's theme), a grey-reading-to-black silhouette on
+ * light grounds (pure black at reduced opacity reads as grey; hover brings
+ * it to full black). `color` shows the source hues undimmed — an opt-in
+ * meant for near-white backgrounds, see DESIGN.md's TrustRail guidance.
+ * The third rule re-asserts the dark-ground (white) treatment when a brand
+ * section (data-theme="dark") sits inside an otherwise light-mode page —
+ * same nested-override technique as .logo-invert-dark above. */
+.trust-rail-logo-auto                                          { filter: brightness(0) invert(1); opacity: .55; }
+[data-theme="light"] .trust-rail-logo-auto                     { filter: brightness(0); opacity: .45; }
+[data-theme="light"] [data-theme="dark"] .trust-rail-logo-auto { filter: brightness(0) invert(1); opacity: .55; }
+
+.trust-rail-logo-color { opacity: .92; }
+
+.trust-rail-logo-auto,
+.trust-rail-logo-color {
+  transition: opacity 240ms var(--ot-ease-quick);
+}
+
+/* ── TrustRail hover choreography ─────────────────────────────────────────────
+ * Hovering one logo grows it to full presence; every other logo in the same
+ * row dims, so the hovered mark reads as the momentary focus. :has() degrades
+ * gracefully — no dimming, logos still grow — on the rare browser without it. */
+.trust-rail-logo:hover .trust-rail-logo-auto,
+.trust-rail-logo:hover .trust-rail-logo-color {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .trust-rail-logo-auto,
+  .trust-rail-logo-color {
+    transition: opacity 240ms var(--ot-ease-quick), transform 300ms var(--ot-ease-quick);
+  }
+  .trust-rail-logo:hover .trust-rail-logo-auto,
+  .trust-rail-logo:hover .trust-rail-logo-color {
+    transform: scale(1.12);
+  }
+  .trust-rail-track:has(.trust-rail-logo:hover) .trust-rail-logo:not(:hover) .trust-rail-logo-auto,
+  .trust-rail-track:has(.trust-rail-logo:hover) .trust-rail-logo:not(:hover) .trust-rail-logo-color {
+    opacity: .3;
   }
 }
 
@@ -897,36 +959,50 @@ body {
   position: relative; /* the face: in flow, defines the box the others overlay */
 }
 
-/* Geometry — 5 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
+/* Geometry — 4 receding steps + the face. Even ~0.08em steps DOWN and ~0.07em
    LEFT per layer, so the duplicates fan out as clearly separated, evenly-spaced
    layers (a deep, legible retro extrude) rather than a cramped near-flat stack. */
-.ot-extrude3d__layer:nth-child(1) { --ox: -0.35em; --oy: 0.40em; } /* deepest */
-.ot-extrude3d__layer:nth-child(2) { --ox: -0.28em; --oy: 0.32em; }
-.ot-extrude3d__layer:nth-child(3) { --ox: -0.21em; --oy: 0.24em; }
-.ot-extrude3d__layer:nth-child(4) { --ox: -0.14em; --oy: 0.16em; }
-.ot-extrude3d__layer:nth-child(5) { --ox: -0.07em; --oy: 0.08em; }
-.ot-extrude3d__layer:nth-child(6) { --ox: 0;       --oy: 0;      } /* face */
+.ot-extrude3d__layer:nth-child(1) { --ox: -0.28em; --oy: 0.32em; } /* deepest */
+.ot-extrude3d__layer:nth-child(2) { --ox: -0.21em; --oy: 0.24em; }
+.ot-extrude3d__layer:nth-child(3) { --ox: -0.14em; --oy: 0.16em; }
+.ot-extrude3d__layer:nth-child(4) { --ox: -0.07em; --oy: 0.08em; }
+.ot-extrude3d__layer:nth-child(5) { --ox: 0;       --oy: 0;      } /* face */
+
+/* Compact fan — for multi-line display contexts (e.g. the blog impact header).
+   The full 0.32em fan is sized for PrimaryText's short single-line statements;
+   across 3+ wrapped lines it floods the interline space (worst in light mode,
+   where the receding layers are lighter than the face). ~60% offsets keep the
+   stacked-ridge pop while letting the lines separate. Scope by putting
+   .extrude3d-compact on any ancestor of the .ot-extrude3d markup. */
+.extrude3d-compact .ot-extrude3d__layer:nth-child(1) { --ox: -0.16em; --oy: 0.20em; } /* deepest */
+.extrude3d-compact .ot-extrude3d__layer:nth-child(2) { --ox: -0.12em; --oy: 0.15em; }
+.extrude3d-compact .ot-extrude3d__layer:nth-child(3) { --ox: -0.08em; --oy: 0.10em; }
+.extrude3d-compact .ot-extrude3d__layer:nth-child(4) { --ox: -0.04em; --oy: 0.05em; }
 
 /* Dark / canvas (default): near-white face, brand fills graduating deeper, with
    a near-black-brand ridge stroke. Mirrors the static .ot-depth-extrude fills. */
 .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.16) c h); }
 .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h); }
-.ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) calc(l * 0.42) c h); }
-.ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) calc(l * 0.62) c h); }
-.ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) calc(l * 0.82) c h); }
-.ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) l c h); }
-.ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
+.ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) calc(l * 0.48) c h); }
+.ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) calc(l * 0.74) c h); }
+.ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) l c h); }
+.ot-extrude3d__layer:nth-child(5) { color: var(--ot-fg); --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.32) c h); }
 
-/* Light mode: navy face with a near-white rim (the "3D sticker" look), steps
-   stepping LIGHTER (clamped) so they read as a soft colored shadow, ridge in
-   true brand. Mirrors the static [data-theme="light"] .ot-depth-extrude. */
-[data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) l c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.16), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.21), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.31), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.36), 0.74) c h); }
-[data-theme="light"] .ot-extrude3d__layer:nth-child(6) {
+/* Light mode: brand face with a near-white rim (the "3D sticker" face), and
+   receding layers that FADE TOWARD THE CANVAS — fixed lightness steps
+   (0.64 → 0.93) with chroma fading in step, the atmospheric-perspective depth
+   cue. This mirrors dark mode's LOGIC (layers bridge face → canvas with real
+   value separation between steps) rather than its colors. The previous
+   clamp(0.46…0.74) ramp collapsed four of the five layers to one identical
+   color for any mid-lightness brand, which is why the stack read as mud.
+   Fixed lightness (not brand-relative) keeps the fade correct for any brand.
+   Ridge is a deepened brand so each step still cuts a crisp line. */
+[data-theme="light"] .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-brand) calc(l * 0.55) c h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-brand) 0.93 calc(c * 0.30) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-brand) 0.84 calc(c * 0.50) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-brand) 0.74 calc(c * 0.70) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-brand) 0.64 calc(c * 0.90) h); }
+[data-theme="light"] .ot-extrude3d__layer:nth-child(5) {
   color: var(--ot-brand);
   -webkit-text-stroke: 0.03em oklch(from var(--ot-brand) 0.99 0.008 h);
 }
@@ -935,11 +1011,10 @@ body {
    ridge. Mirrors the static .bg-brand-fill .ot-depth-extrude. */
 .bg-brand-fill .ot-extrude3d__layer { --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.16) c h); }
 .bg-brand-fill .ot-extrude3d__layer:nth-child(1) { color: oklch(from var(--ot-accent) calc(l * 0.22) calc(c * 0.80) h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-accent) calc(l * 0.42) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-accent) calc(l * 0.62) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-accent) calc(l * 0.82) c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(5) { color: oklch(from var(--ot-accent) l c h); }
-.bg-brand-fill .ot-extrude3d__layer:nth-child(6) { color: var(--ot-fg-on-brand); --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.30) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(2) { color: oklch(from var(--ot-accent) calc(l * 0.48) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(3) { color: oklch(from var(--ot-accent) calc(l * 0.74) c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(4) { color: oklch(from var(--ot-accent) l c h); }
+.bg-brand-fill .ot-extrude3d__layer:nth-child(5) { color: var(--ot-fg-on-brand); --ot-extrude-ridge: oklch(from var(--ot-accent) calc(l * 0.30) c h); }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* LIQUID                                                                      */
@@ -2482,6 +2557,19 @@ body {
   }
 }
 
+/* Directional variants — the panel enters from the side the selection moved
+ * toward, so autoplay visibly advances and manual jumps read as navigation.
+ * data-dir is set by TabsBlock.client from the index delta. */
+@keyframes tab-panel-in-right {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tab-panel-in-left {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .tab-progress-bar {
   position: absolute;
   bottom: 0;
@@ -2506,6 +2594,37 @@ body {
 
 .tab-panel-enter {
   animation: tab-panel-in var(--ot-dur-quick) ease-out forwards;
+}
+
+.tab-panel-enter[data-dir="right"] { animation-name: tab-panel-in-right; }
+.tab-panel-enter[data-dir="left"]  { animation-name: tab-panel-in-left; }
+
+/* ── TabsBlock — sliding active indicator ────────────────────────────────────
+ * One element per tablist, sized to the strip's full scroll content and
+ * revealed through an animated clip-path inset matching the active trigger
+ * (underline: its bottom/left 3px strip; pill/buttonGroup: the whole chip,
+ * with the corner radius carried by `round`). clip-path is paint-level — no
+ * layout animation — and preserves the radius that a scaleX slide would
+ * distort. JS only renders this after mount and when motion is allowed; the
+ * per-button static indicators are the SSR / reduced-motion fallback.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition: clip-path var(--ot-dur-base) var(--ot-ease-kinetic);
+}
+
+/* ── TabsBlock — panel surface depth ─────────────────────────────────────────
+ * Resting ambient shadow from the bloom tokens plus a top-edge catchlight, so
+ * the panel reads as a lit surface in the depth system rather than an outlined
+ * wireframe box. Catchlight derives from fg so it adapts to light mode.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.tab-panel-surface {
+  box-shadow:
+    0 8px 32px var(--ot-bloom-brand-faint),
+    inset 0 1px 0 oklch(from var(--ot-fg) l c h / 0.10);
 }
 
 /* ── Tab trigger scroll strip — edge-fade overflow affordance ──────────────────

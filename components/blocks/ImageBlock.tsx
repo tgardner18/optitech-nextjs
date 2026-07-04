@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 import { Maximize2, X } from "lucide-react";
 
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
@@ -88,6 +89,7 @@ export default function ImageBlock({
   const containerRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (!animate) return;
@@ -95,7 +97,7 @@ export default function ImageBlock({
     const el = containerRef.current;
     if (!el) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion) {
       const rafId = requestAnimationFrame(() => setRevealed(true));
       return () => cancelAnimationFrame(rafId);
     }
@@ -111,7 +113,7 @@ export default function ImageBlock({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [animate]);
+  }, [animate, prefersReducedMotion]);
 
   useEffect(() => {
     if (!lightboxOpen) return;

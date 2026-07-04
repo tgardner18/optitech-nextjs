@@ -17,8 +17,10 @@ function buildTabs(content: any, src: (ref: any) => string | undefined): TabItem
     tabLabel:  String(item.tabLabel  ?? ''),
     tabIcon:   item.tabIcon          ?? undefined,
     heading:   item.heading          ?? undefined,
-    body:      item.body?.json        ?? undefined,
-    imageSrc:  src(item.image)       ?? undefined,
+    // CMS delivers rich text as { json }; showcase/mock data passes a plain
+    // string or a ready-made imageSrc — accept both shapes.
+    body:      item.body?.json ?? (typeof item.body === 'string' ? item.body : undefined),
+    imageSrc:  src(item.image) ?? item.imageSrc ?? undefined,
     imageAlt:  item.imageAlt         ?? '',
     ctaLabel:  item.ctaLabel         ?? undefined,
     ctaUrl:    item.ctaUrl?.default  ?? item.ctaUrl ?? undefined,

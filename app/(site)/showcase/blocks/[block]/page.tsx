@@ -1040,7 +1040,7 @@ function StatShowcase() {
         <OT_StatBlock content={{ stats: [{ value: '1.2M', label: 'Claims processed', context: 'last 12 months' }, { value: '98.3%', label: 'Satisfaction rate', context: 'post-claim survey' }, { value: '4.8hr', label: 'Avg. resolution', context: 'from first contact' }, { value: '340+', label: 'Partner carriers', context: 'in our network' }] } as any} displaySettings={{ color: 'brand', columns: '4', animate: false }} />
       </div>
 
-      <VariantGroup label="With icons · brand · 3 columns" note="Icons sit above the value at 28px / strokeWidth 1.5. Muted to 55% opacity on brand surfaces." />
+      <VariantGroup label="With icons · brand · 3 columns" note="Icons sit beside the label at 34px / strokeWidth 1.5, muted on brand surfaces." />
       <div className="border-t border-fg/5">
         <OT_StatBlock content={{ stats: [{ value: '40%', label: 'Faster deployment', context: 'vs. baseline', icon: 'zap' }, { value: '99.99%', label: 'Uptime SLA', context: 'across all regions', icon: 'shield' }, { value: '2M+', label: 'Active users', context: 'and growing', icon: 'users' }] } as any} displaySettings={{ color: 'brand', columns: '3', showIcons: true, animate: false }} />
       </div>
@@ -1125,21 +1125,14 @@ function FeatureGridShowcase() {
 
 // ─── Trust Rail (simplified) ──────────────────────────────────────────────────
 
-function makeSvgLogo(text: string): string {
-  const w    = text.length * 9 + 24
-  const svg  = `<svg viewBox="0 0 ${w} 32" xmlns="http://www.w3.org/2000/svg" width="${w}" height="32"><text x="${w / 2}" y="22" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-weight="700" font-size="15" letter-spacing="0.04em" fill="currentColor">${text}</text></svg>`
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
-}
-
 const TRUST_LOGOS = [
-  { imageUrl: makeSvgLogo('MERIDIAN'), altText: 'Meridian' },
-  { imageUrl: makeSvgLogo('FOLIO'),    altText: 'Folio'    },
-  { imageUrl: makeSvgLogo('VERTEX'),   altText: 'Vertex'   },
-  { imageUrl: makeSvgLogo('NEXUS'),    altText: 'Nexus'    },
-  { imageUrl: makeSvgLogo('PRISM'),    altText: 'Prism'    },
-  { imageUrl: makeSvgLogo('APEX'),     altText: 'Apex'     },
-  { imageUrl: makeSvgLogo('ORBIT'),    altText: 'Orbit'    },
-  { imageUrl: makeSvgLogo('STRATA'),   altText: 'Strata'   },
+  { imageUrl: '/SVG/northwind.svg',      altText: 'Northwind'      },
+  { imageUrl: '/SVG/quanta.svg',         altText: 'Quanta'         },
+  { imageUrl: '/SVG/vantage.svg',        altText: 'Vantage'        },
+  { imageUrl: '/SVG/mosey-bank.svg',     altText: 'Mosey Bank'     },
+  { imageUrl: '/SVG/forge-company.svg',  altText: 'Forge & Company'},
+  { imageUrl: '/SVG/atlas-retail.svg',   altText: 'Atlas Retail'   },
+  { imageUrl: '/SVG/bloom.svg',          altText: 'Bloom'          },
 ]
 
 function TrustRailShowcase() {
@@ -1147,16 +1140,16 @@ function TrustRailShowcase() {
     <>
       <BlockHeader slug="trust-rail" />
 
-      <VariantGroup label="Scroll · mono treatment · canvas · compact" note="Seamless CSS marquee with doubled track. Grayscale at rest, color-on-hover. Respects prefers-reduced-motion." />
+      <VariantGroup label="Scroll · auto treatment · canvas · compact" note="Seamless CSS marquee with doubled track. Auto forces a theme-matched silhouette (white here, on the dark canvas default). Hover a logo: it grows and the rest dim. Respects prefers-reduced-motion." />
       <div className="border-t border-fg/5">
         <TrustRail
           headline="Trusted by teams who move fast"
           logos={TRUST_LOGOS}
-          styleOptions={{ motion: 'scroll', treatment: 'mono', background: 'canvas', density: 'compact', size: 'md', glass: false }}
+          styleOptions={{ motion: 'scroll', treatment: 'auto', background: 'canvas', density: 'compact', size: 'md', glass: false }}
         />
       </div>
 
-      <VariantGroup label="Fade · color treatment · surface" note="Staggered scroll-reveal entrance. Logos appear at full color." />
+      <VariantGroup label="Fade · color treatment · surface" note="Staggered scroll-reveal entrance. Color treatment shows each logo's own hues undimmed — reserve it for a white/light surface." />
       <div className="border-t border-fg/5">
         <TrustRail
           logos={TRUST_LOGOS}
@@ -1164,14 +1157,25 @@ function TrustRailShowcase() {
         />
       </div>
 
-      <VariantGroup label="Static · brand · glass overlay" note="Plain grid, no animation. Glass panel sits over the brand fill." />
+      <VariantGroup label="Static · brand · glass overlay" note="Plain grid, no animation. Brand always forces the white silhouette regardless of the treatment setting — full color never reads against a saturated brand fill." />
       <div className="border-t border-fg/5">
         <TrustRail
           headline="Built on trust. Proven at scale."
           logos={TRUST_LOGOS}
-          styleOptions={{ motion: 'static', treatment: 'mono', background: 'brand', density: 'spacious', size: 'md', glass: true }}
+          styleOptions={{ motion: 'static', treatment: 'auto', background: 'brand', density: 'spacious', size: 'md', glass: true }}
         />
       </div>
+
+      <VariantGroup label="Logo size ladder · auto · canvas" note="Five size steps (xs–xl) for quick, no-slider size control." />
+      {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map(size => (
+        <div key={size} className="border-t border-fg/5">
+          <VariantLabel label={`size: "${size}"`} />
+          <TrustRail
+            logos={TRUST_LOGOS}
+            styleOptions={{ motion: 'static', treatment: 'auto', background: 'canvas', density: 'compact', size }}
+          />
+        </div>
+      ))}
       <div className="pb-xl" />
     </>
   )

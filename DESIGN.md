@@ -319,19 +319,19 @@ Server component fed by ThemeManager. Dark glass sticky bar — `bg-canvas/80 ba
 | **VideoBlock** | aspectRatio, bloom, caption | Same bloom system as ImageBlock |
 | **StatBlock** | color (brand/canvas/surface), layout (row/grid), glass | Animated counters, staggered entrance, divider lines |
 | **FeatureGridBlock** | color, layout (grid/list), glass | Icon + heading + body feature tiles |
-| **TrustRail** | motion (scroll/fade/static), treatment (mono/color), background (canvas/surface/brand), size (sm/md/lg), density, glass | Seamless CSS marquee (doubled track + `paddingRight` seam fix), IntersectionObserver fade, mono grayscale + hover lift, brand-surface white silhouette |
+| **TrustRail** | motion (scroll/fade/static), treatment (auto/color), background (canvas/surface/brand), size (xs/sm/md/lg/xl), density, glass | Seamless CSS marquee (doubled track + `paddingRight` seam fix), IntersectionObserver fade. `auto` (default) forces a theme-matched silhouette — white on dark grounds and any `brand` fill, grey-reading-to-black on a light-mode canvas/surface — via `.trust-rail-logo-auto`; `color` shows each logo's own hues, undimmed, for near-white backgrounds only (`brand` always overrides back to the silhouette). Hovering any logo grows it (`scale(1.12)`) and dims every other logo in the row via a `:has()`-driven spotlight (`.trust-rail-track` / `.trust-rail-logo` in globals.css) — degrades gracefully (no dimming) without `:has()` support. `brand` uses `.bg-brand-fill` (radial gradient, matching every other block) instead of a flat fill. |
 
 ### TrustRail logo image guidance
 
-**Format: SVG is strongly preferred.** The component applies `grayscale`, `opacity`, and `brightness`/`invert` CSS filters depending on the treatment setting. These filters produce clean, crisp results on vector SVG files. Raster images (PNG, JPG) look acceptable but may show filter artifacts at small sizes and on retina displays.
+**Format: SVG is strongly preferred.** The component applies `brightness`/`invert`/`opacity` CSS filters for the `auto` treatment. These filters produce clean, crisp results on vector SVG files. Raster images (PNG, JPG) look acceptable but may show filter artifacts at small sizes and on retina displays.
 
 - **SVG** — best results at any size; filters are perfectly sharp; file size is usually smaller than PNG
 - **Transparent PNG** — acceptable fallback when SVG is unavailable; use the highest resolution available (2× or 3× the display size)
-- **JPG or opaque PNG** — avoid; the grayscale filter will expose the background color, breaking the mono treatment
+- **JPG or opaque PNG** — avoid; the forced silhouette will expose the background color, breaking the `auto` treatment
 
-**Recommended dimensions:** logos vary in proportions, but a height of 80–160px in the source SVG viewBox works well across all three size settings (sm/md/lg). Width is unconstrained — the component respects natural aspect ratio up to `5 × height`.
+**Recommended dimensions:** logos vary in proportions, but a height of 80–160px in the source SVG viewBox works well across all five size settings (xs/sm/md/lg/xl). Width is unconstrained — the component respects natural aspect ratio up to `5 × height`.
 
-**Transparency is required** for the `mono` and `brand` treatments to work correctly. On a `brand` background, logos are forced to white silhouette via `brightness(0) invert(1)` — a transparent background is mandatory for this to produce the correct result.
+**Transparency is required** for the `auto` treatment (and on any `brand` background) to work correctly — logos are forced to a silhouette via `brightness(0)` (optionally `invert(1)` for white); a transparent background is mandatory for this to produce the correct result.
 
 ### Composition structure
 

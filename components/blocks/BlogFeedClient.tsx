@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutGrid, List, ChevronRight } from 'lucide-react'
 import type { BlogFeedPost } from '@/lib/blogFeed'
+import Pagination from '@/components/ui/Pagination'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -203,113 +205,6 @@ function TopicChip({
   )
 }
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
-
-function Pagination({
-  page,
-  totalPages,
-  total,
-  pageSize,
-  onBrand,
-  onChange,
-}: {
-  page:       number
-  totalPages: number
-  total:      number
-  pageSize:   number
-  onBrand:    boolean
-  onChange:   (p: number) => void
-}) {
-  if (totalPages <= 1) return null
-
-  const from = (page - 1) * pageSize + 1
-  const to   = Math.min(page * pageSize, total)
-
-  const btnBase = 'inline-flex items-center justify-center w-11 h-11 border text-label font-semibold transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-
-  const btnInactive = onBrand
-    ? 'border-fg-on-brand/20 text-fg-on-brand/70 hover:bg-fg/15 hover:text-fg-on-brand'
-    : 'border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg'
-
-  const btnActive = onBrand
-    ? 'bg-fg/25 border-fg-on-brand/50 text-fg-on-brand'
-    : 'bg-brand border-transparent text-fg-on-brand'
-
-  const btnDisabled = onBrand
-    ? 'border-fg-on-brand/10 text-fg-on-brand/25 cursor-not-allowed'
-    : 'border-fg/8 text-fg/25 cursor-not-allowed'
-
-  // Build page number windows — always show first, last, and ±1 around current
-  const pages = new Set<number>()
-  pages.add(1)
-  pages.add(totalPages)
-  for (let i = Math.max(1, page - 1); i <= Math.min(totalPages, page + 1); i++) {
-    pages.add(i)
-  }
-  const pageList = [...pages].sort((a, b) => a - b)
-
-  const countClass = onBrand ? 'text-fg-on-brand/55' : 'text-fg-muted'
-
-  return (
-    <div className="mt-xl flex flex-col items-center gap-md">
-      {/* Result count — aria-live so SR users hear the update when a topic filter
-          or page change swaps the grid (the grid swap itself is silent). */}
-      <p className={`text-label ${countClass}`} aria-live="polite" aria-atomic="true">
-        Showing <strong>{from}–{to}</strong> of <strong>{total}</strong> posts
-      </p>
-
-      {/* Controls */}
-      <div className="flex items-center gap-xs">
-        {/* Prev */}
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-          className={`${btnBase} ${page <= 1 ? btnDisabled : btnInactive}`}
-        >
-          <ChevronLeft size={16} strokeWidth={2} />
-        </button>
-
-        {/* Page numbers with ellipsis gaps */}
-        {pageList.map((p, i) => {
-          const prev    = pageList[i - 1]
-          const showGap = prev !== undefined && p - prev > 1
-          return (
-            <span key={p} className="flex items-center gap-xs">
-              {showGap && (
-                <span className={`w-9 text-center text-label select-none ${countClass}`}>
-                  …
-                </span>
-              )}
-              <button
-                type="button"
-                aria-label={`Page ${p}`}
-                aria-current={p === page ? 'page' : undefined}
-                onClick={() => onChange(p)}
-                className={`${btnBase} ${p === page ? btnActive : btnInactive}`}
-              >
-                {p}
-              </button>
-            </span>
-          )
-        })}
-
-        {/* Next */}
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
-          className={`${btnBase} ${page >= totalPages ? btnDisabled : btnInactive}`}
-        >
-          <ChevronRight size={16} strokeWidth={2} />
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyState({ onBrand, filtered }: { onBrand: boolean; filtered: boolean }) {
@@ -364,6 +259,7 @@ export default function BlogFeedClient({
   const [view,        setView]   = useState<View>('grid')
   const [activeTopic, setTopic]  = useState<string | null>(null)
   const [page,        setPage]   = useState(1)
+  const prefersReducedMotion     = usePrefersReducedMotion()
 
   // ── Filtering ──────────────────────────────────────────────────────────────
   const filtered = useMemo(
@@ -385,9 +281,8 @@ export default function BlogFeedClient({
     setPage(p)
     // Scroll to the feed heading anchor — honour prefers-reduced-motion (the CSS
     // animations are motion-safe gated; this JS-driven scroll must be too).
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    document.getElementById(anchorId)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' })
-  }, [anchorId])
+    document.getElementById(anchorId)?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+  }, [anchorId, prefersReducedMotion])
 
   // ── Styles ─────────────────────────────────────────────────────────────────
   const gridClass = columns === 2
@@ -479,6 +374,7 @@ export default function BlogFeedClient({
         totalPages={totalPages}
         total={filtered.length}
         pageSize={pageSize}
+        countLabel="posts"
         onBrand={onBrand}
         onChange={changePage}
       />

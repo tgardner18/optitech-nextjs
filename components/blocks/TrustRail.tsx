@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -10,16 +11,20 @@ export const TRUST_RAIL_MAX_LOGOS = 12
 
 /** Logo height in px per size setting */
 const LOGO_HEIGHT: Record<string, number> = {
+  xs: 20,
   sm: 28,
   md: 40,
   lg: 56,
+  xl: 72,
 }
 
 /** Gap between logos in the marquee track (px) per size */
 const MARQUEE_GAP: Record<string, number> = {
+  xs: 40,
   sm: 48,
   md: 72,
   lg: 96,
+  xl: 120,
 }
 
 /** Scroll duration in seconds per logo slot — slower = more time to read each logo */
@@ -38,9 +43,16 @@ export type LogoItem = {
 
 export type TrustRailStyleOptions = {
   motion?:     'scroll' | 'fade' | 'static'
-  treatment?:  'mono' | 'color'
+  /**
+   * auto  — forces a theme-matched silhouette: white on dark grounds
+   *         (the default site theme, and any brand fill regardless of the
+   *         page's theme), grey/black on light grounds. Recommended default.
+   * color — each logo's own hues, undimmed. Only reads well on a white or
+   *         very light background; auto-forced back to `auto` on `brand`.
+   */
+  treatment?:  'auto' | 'color'
   background?: 'canvas' | 'surface' | 'brand'
-  size?:       'sm' | 'md' | 'lg'
+  size?:       'xs' | 'sm' | 'md' | 'lg' | 'xl'
   /** Vertical height of the strip */
   density?:    'compact' | 'comfortable' | 'spacious'
   /** Frosted glass overlay on the rail — lifts it off the background */
@@ -69,7 +81,7 @@ type LogoImgProps = {
   treatment:  TrustRailStyleOptions['treatment']
   onBrand:    boolean
   style?:     React.CSSProperties
-  /** Suppresses hover effect — used in duplicated marquee track copy */
+  /** Suppresses the hover/spotlight choreography — used in duplicated marquee track copy */
   noHover?:   boolean
   /** aria-hidden — used in marquee duplicate */
   ariaHidden?: boolean
@@ -78,14 +90,10 @@ type LogoImgProps = {
 function LogoImg({
   logo, height, treatment, onBrand, style, noHover, ariaHidden,
 }: LogoImgProps) {
-  // On-brand surface: all logos → white silhouette at 75% opacity
-  // Mono treatment: grayscale + 40% opacity, hover → full color/opacity
-  // Color treatment: full color, no filter
-  const filterClass = onBrand
-    ? 'brightness-0 invert opacity-75'
-    : treatment === 'mono'
-      ? cn('grayscale opacity-40', !noHover && 'group-hover:grayscale-0 group-hover:opacity-100')
-      : ''
+  // A saturated brand fill always wins — full color never reads well
+  // against a committed brand ground, so `brand` forces the same
+  // theme-matched silhouette as `auto` regardless of the chosen treatment.
+  const effectiveTreatment = onBrand ? 'auto' : treatment
 
   const img = (
     <img
@@ -93,20 +101,18 @@ function LogoImg({
       alt={ariaHidden ? '' : (logo.altText ?? '')}
       aria-hidden={ariaHidden}
       draggable={false}
-      style={{
-        height,
-        width: 'auto',
-        maxWidth: `${height * 5}px`,
-        transition: !onBrand && treatment === 'mono' && !noHover
-          ? 'filter 280ms var(--ot-ease-quick), opacity 280ms var(--ot-ease-quick)'
-          : undefined,
-      }}
+      style={{ height, width: 'auto', maxWidth: `${height * 5}px` }}
       className={cn(
         'object-contain select-none flex-none',
-        filterClass,
+        effectiveTreatment === 'auto' ? 'trust-rail-logo-auto' : 'trust-rail-logo-color',
       )}
     />
   )
+
+  // The `trust-rail-logo` class is what makes an item hoverable/dimmable
+  // (see globals.css) — omitted on the duplicate marquee copy so it stays
+  // visually inert, matching the seamless-loop copy's decorative role.
+  const wrapperClass = cn('shrink-0 flex items-center', !noHover && 'group trust-rail-logo')
 
   if (logo.url && !ariaHidden) {
     return (
@@ -115,7 +121,8 @@ function LogoImg({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          'group shrink-0 flex items-center focus-visible:outline-none focus-visible:ring-2',
+          wrapperClass,
+          'focus-visible:outline-none focus-visible:ring-2',
           onBrand ? 'focus-visible:ring-fg-on-brand' : 'focus-visible:ring-brand',
         )}
         style={style}
@@ -127,11 +134,7 @@ function LogoImg({
   }
 
   return (
-    <span
-      className="group shrink-0 flex items-center"
-      style={style}
-      aria-hidden={ariaHidden}
-    >
+    <span className={wrapperClass} style={style} aria-hidden={ariaHidden}>
       {img}
     </span>
   )
@@ -173,7 +176,7 @@ export default function TrustRail({
 }: TrustRailProps) {
   const {
     motion     = 'scroll',
-    treatment  = 'mono',
+    treatment  = 'auto',
     background = 'canvas',
     size       = 'md',
     density    = 'compact',
@@ -188,18 +191,24 @@ export default function TrustRail({
   const bgToken  = BG_TOKEN[background] ?? 'var(--ot-canvas)'
   const duration = capped.length * DURATION_PER_LOGO
 
+  // Repeating the logo set just twice only reads as truly infinite if that
+  // one set is already wider than the viewport — with few logos (as low as
+  // TRUST_RAIL_MIN_LOGOS) on a wide screen, two copies can run out before the
+  // loop resets, showing a blank gap that looks like "reaching the end."
+  // Rendering enough copies to keep ~16 logo instances on screen guarantees
+  // the track always over-fills any realistic viewport, so the -100%/copies
+  // loop point never becomes visible as a seam.
+  const trackCopies = Math.max(2, Math.ceil(16 / (capped.length || 1)))
+
   // ── Reduced-motion detection + fade observer ────────────────────────────
   const containerRef               = useRef<HTMLDivElement>(null)
   const [fadeTriggered, setFade]   = useState(false)
-  const [prefersReduced, setMQ]    = useState(false)
+  const prefersReducedMotion       = usePrefersReducedMotion()
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setMQ(mq.matches)
-
     if (motion === 'scroll' || motion === 'static') return
     // Fade mode: show immediately if reduced motion, else observe
-    if (mq.matches) { setFade(true); return }
+    if (prefersReducedMotion) { setFade(true); return }
 
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setFade(true); obs.disconnect() } },
@@ -207,7 +216,7 @@ export default function TrustRail({
     )
     if (containerRef.current) obs.observe(containerRef.current)
     return () => obs.disconnect()
-  }, [motion])
+  }, [motion, prefersReducedMotion])
 
   // ── Density → vertical padding ────────────────────────────────────────
   const railPy =
@@ -223,9 +232,12 @@ export default function TrustRail({
     density === 'comfortable' ? 'pt-lg'  : 'pt-md'
 
   // ── Section wrapper classes ─────────────────────────────────────────────
+  // brand uses the radial-gradient fill (bg-brand-fill), not the flat bg-brand
+  // — every other block in the system pairs "brand" with the fill, and a flat
+  // fill leaves the glass panel with nothing to blur (see .bg-glass docblock).
   const sectionBg =
-    background === 'brand'   ? 'bg-brand'   :
-    background === 'surface' ? 'bg-surface' : 'bg-canvas'
+    background === 'brand'   ? 'bg-brand-fill' :
+    background === 'surface' ? 'bg-surface'    : 'bg-canvas'
 
   // Glass: frame padding is tighter so the glass panel peeks inside
   const outerFramePy = glass
@@ -286,28 +298,37 @@ export default function TrustRail({
               style={{ background: `linear-gradient(to left, ${bgToken}, transparent)` }}
             />
 
-            {/* Scrolling track — logos doubled for seamless loop.
+            {/* Scrolling track — logos repeated `trackCopies` times for a seam
+                that never becomes visible (see trackCopies comment above).
                 Uses the .animate-trust-rail-scroll class (not an inline animation)
                 so the offscreen-pause rule — a stylesheet declaration — can
                 override its play-state; an inline `animation` shorthand would win
                 on specificity and never pause. The class is already gated by
                 @media (prefers-reduced-motion: no-preference); we also drop the
-                class under reduced motion to mirror the prior inline gating. */}
+                class under reduced motion to mirror the prior inline gating.
+                `trust-rail-track` scopes the :has()-driven hover/dim choreography
+                (see globals.css) to this row. */}
             <div
-              className={cn('flex items-center', !prefersReduced && 'animate-trust-rail-scroll')}
+              className={cn('flex items-center trust-rail-track', !prefersReducedMotion && 'animate-trust-rail-scroll')}
               data-pause-offscreen
               style={{
                 gap: `${railGap}px`,
-                // paddingRight = railGap ensures translateX(-50%) lands exactly
-                // at the seam between the two copies — no jitter on loop reset.
+                // paddingRight = railGap ensures translateX(-100%/trackCopies)
+                // lands exactly at the seam between copies — no jitter on reset,
+                // regardless of how many copies are rendered.
                 paddingRight: `${railGap}px`,
-                // Feeds .animate-trust-rail-scroll's animation-duration.
+                // Feeds .animate-trust-rail-scroll's animation-duration and
+                // -distance (the keyframe travels -100%/--trust-rail-copies).
                 ['--trust-rail-duration']: `${duration}s`,
+                ['--trust-rail-copies']: trackCopies,
               } as CSSProperties}
               // Entire track is decorative; screen readers get the list below
               aria-hidden
             >
-              {[...capped, ...capped].map((logo, i) => (
+              {/* Only the first copy (i < capped.length) is hoverable — every
+                  repeat after it is inert, so the spotlight/dim choreography
+                  never looks asymmetric across copies. */}
+              {Array.from({ length: trackCopies }, () => capped).flat().map((logo, i) => (
                 <LogoImg
                   key={i}
                   logo={logo}
@@ -315,7 +336,7 @@ export default function TrustRail({
                   treatment={treatment}
                   onBrand={onBrand}
                   ariaHidden
-                  noHover
+                  noHover={i >= capped.length}
                 />
               ))}
             </div>
@@ -337,7 +358,7 @@ export default function TrustRail({
 
           // ── Staggered fade-in ────────────────────────────────────────────
           <ul
-            className="flex flex-wrap justify-center items-center px-md"
+            className="flex flex-wrap justify-center items-center px-md trust-rail-track"
             style={{ gap: `${railGap}px` }}
             role="list"
           >
@@ -349,7 +370,7 @@ export default function TrustRail({
                   treatment={treatment}
                   onBrand={onBrand}
                   style={
-                    prefersReduced
+                    prefersReducedMotion
                       ? undefined
                       : {
                           opacity:    fadeTriggered ? 1 : 0,
@@ -371,7 +392,7 @@ export default function TrustRail({
 
           // ── Static grid ──────────────────────────────────────────────────
           <ul
-            className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 items-center justify-items-center px-md"
+            className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 items-center justify-items-center px-md trust-rail-track"
             style={{ gap: `${railGap * 0.75}px` }}
             role="list"
           >

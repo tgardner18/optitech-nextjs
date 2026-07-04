@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
@@ -115,7 +116,7 @@ const valueCva = cva('font-light leading-none tabular-nums', {
       surface: 'text-fg',
     },
     columns: {
-      2: 'text-display tracking-[-0.035em]',
+      2: 'text-[clamp(4rem,9vw,7.5rem)] tracking-[-0.035em]',
       3: 'text-display tracking-[-0.035em]',
       4: 'text-[clamp(2.5rem,5.5vw,4.75rem)] tracking-[-0.035em]',
     },
@@ -126,7 +127,7 @@ const valueCva = cva('font-light leading-none tabular-nums', {
 const labelCva = cva('text-label tracking-label uppercase font-semibold', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/70',
+      brand:   'text-fg-on-brand/85',
       canvas:  'text-fg-muted',
       surface: 'text-fg-muted',
     },
@@ -138,7 +139,7 @@ const labelCva = cva('text-label tracking-label uppercase font-semibold', {
 const eyebrowCva = cva('text-label tracking-label uppercase font-semibold', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/70',
+      brand:   'text-fg-on-brand/85',
       canvas:  'text-brand',
       surface: 'text-brand',
     },
@@ -158,12 +159,14 @@ const headingCva = cva('text-headline font-bold tracking-headline leading-headli
   defaultVariants: { color: 'brand' },
 })
 
+// Context opacities sit at the AA floor, not below it — /70 on brand and full
+// fg-muted on light grounds keep the supporting line legible in every theme.
 const contextCva = cva('text-label font-normal', {
   variants: {
     color: {
-      brand:   'text-fg-on-brand/45',
-      canvas:  'text-fg-muted/60',
-      surface: 'text-fg-muted/60',
+      brand:   'text-fg-on-brand/70',
+      canvas:  'text-fg-muted',
+      surface: 'text-fg-muted',
     },
   },
   defaultVariants: { color: 'brand' },
@@ -183,10 +186,11 @@ const iconBadgeCva = cva('shrink-0', {
 
 // ─── Animation constants ──────────────────────────────────────────────────────
 
-const ENTER_MS   = 600   // column entrance duration
-const STAGGER_MS = 110   // per-column stagger
-const COUNT_LAG  = 150   // ms after entry before count-up begins
-const COUNT_MS   = 1400  // count-up duration
+const ENTER_MS      = 600   // column entrance duration
+const STAGGER_MS    = 110   // per-column stagger
+const COUNT_LAG     = 150   // ms after entry before count-up begins
+const COUNT_MS      = 1400  // count-up duration
+const COUNT_STAGGER = 110   // per-column count-up start offset — matches entrance stagger
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -220,15 +224,18 @@ export default function StatBlock({
   const [entered,    setEntered]    = useState(false)
   // countOn: true after COUNT_LAG following entry
   const [countOn,    setCountOn]    = useState(false)
-  // progress: 0→1 driven by RAF (starts at 1 = SSR final-value safe)
-  const [progress,   setProgress]   = useState(1)
-  // pulsing: briefly true when count completes, triggers .animate-stat-pulse
-  const [pulsing,    setPulsing]    = useState(false)
+  // per-column count progress, 0→1 driven by RAF (starts at 1 = SSR final-value
+  // safe). Columns start COUNT_STAGGER apart so the counts land left-to-right,
+  // completing the choreography the entrance stagger begins.
+  const [colProgress, setColProgress] = useState<number[]>(() => stats.map(() => 1))
+  // per-column completion pulse — briefly true, triggers .animate-stat-pulse
+  const [colPulse,    setColPulse]    = useState<boolean[]>(() => stats.map(() => false))
+
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   // ── Step 1: mount — check motion pref, optionally arm observer ───────────
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const willAnimate   = animate && !reducedMotion
+    const willAnimate = animate && !prefersReducedMotion
 
     setShouldAnim(willAnimate)
 
@@ -237,7 +244,7 @@ export default function StatBlock({
       return
     }
 
-    setProgress(0)
+    setColProgress(prev => prev.map(() => 0))
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -250,7 +257,7 @@ export default function StatBlock({
     )
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [animate])
+  }, [animate, prefersReducedMotion])
 
   // ── Step 2: after entry, schedule the count-up start ─────────────────────
   useEffect(() => {
@@ -259,30 +266,44 @@ export default function StatBlock({
     return () => clearTimeout(t)
   }, [entered, shouldAnim])
 
-  // ── Step 3: RAF count-up loop ─────────────────────────────────────────────
+  // ── Step 3: RAF count-up loop — one loop drives every column, each offset
+  // by COUNT_STAGGER so completions land left-to-right ──────────────────────
+  const colCount = stats.length
   useEffect(() => {
     if (!countOn) return
-    const start = performance.now()
+    const start   = performance.now()
+    const total   = COUNT_MS + (colCount - 1) * COUNT_STAGGER
+    const settled = Array.from({ length: colCount }, () => false)
+    const timers: ReturnType<typeof setTimeout>[] = []
     let raf: number
 
     const tick = (now: number) => {
       const elapsed = now - start
-      const t       = Math.min(elapsed / COUNT_MS, 1)
-      setProgress(easeOutQuart(t))
-      if (t < 1) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        setPulsing(true)
-        setTimeout(() => setPulsing(false), 280)
+      setColProgress(Array.from({ length: colCount }, (_, i) => {
+        const t = Math.min(Math.max((elapsed - i * COUNT_STAGGER) / COUNT_MS, 0), 1)
+        return easeOutQuart(t)
+      }))
+      for (let i = 0; i < colCount; i++) {
+        if (!settled[i] && elapsed >= i * COUNT_STAGGER + COUNT_MS) {
+          settled[i] = true
+          setColPulse(prev => prev.map((v, j) => (j === i ? true : v)))
+          timers.push(setTimeout(() => {
+            setColPulse(prev => prev.map((v, j) => (j === i ? false : v)))
+          }, 280))
+        }
       }
+      if (elapsed < total) raf = requestAnimationFrame(tick)
     }
 
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [countOn])
+    return () => {
+      cancelAnimationFrame(raf)
+      timers.forEach(clearTimeout)
+    }
+  }, [countOn, colCount])
 
-  const displayFor = (p: Parsed) =>
-    shouldAnim && !countOn ? 0 : p.number * progress
+  const displayFor = (p: Parsed, i: number) =>
+    shouldAnim && !countOn ? 0 : p.number * (colProgress[i] ?? 1)
 
   const mobileBorderClass = color === 'brand' ? 'border-fg-on-brand/15' : 'border-fg/10'
   const dividerBgClass    = color === 'brand' ? 'bg-fg-on-brand/15'     : 'bg-fg/10'
@@ -336,10 +357,19 @@ export default function StatBlock({
             }
           : {}
 
+        // ── Hairline rule draws in from the left (scaleX) ─────────────────
+        const ruleStyle: React.CSSProperties = shouldAnim
+          ? {
+              transform:       entered ? 'scaleX(1)' : 'scaleX(0)',
+              transformOrigin: 'left',
+              transition:      `transform 0.55s var(--ot-ease-kinetic) ${staggerMs + COUNT_LAG + 60}ms`,
+            }
+          : {}
+
         // (watermark icon removed — icons now render inline with the label)
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
-        const disp = displayFor(p)
+        const disp = displayFor(p, i)
 
         return (
           <li
@@ -376,11 +406,13 @@ export default function StatBlock({
             <p
               className={cn(
                 valueCva({ color, columns }),
-                pulsing && shouldAnim && 'animate-stat-pulse',
+                colPulse[i] && shouldAnim && 'animate-stat-pulse',
               )}
               aria-hidden="true"
             >
-              {p.prefix}{fmtNumber(disp, p.decimals)}{p.suffix}
+              {p.prefix && <span className="stat-affix mr-[0.05em]">{p.prefix}</span>}
+              {fmtNumber(disp, p.decimals)}
+              {p.suffix && <span className="stat-affix ml-[0.05em]">{p.suffix}</span>}
             </p>
             <span className="sr-only">{stat.value}</span>
 
@@ -391,7 +423,7 @@ export default function StatBlock({
                 'block h-px w-8 mt-sm shrink-0',
                 color === 'brand' ? 'bg-fg-on-brand/20' : 'bg-brand/25',
               )}
-              style={labelStyle}
+              style={ruleStyle}
             />
 
             {/* ── Label + context — icon left / text right when icon is on ── */}
@@ -438,8 +470,12 @@ export default function StatBlock({
       data-theme={isDarkSurface ? 'dark' : undefined}
       aria-label="Key metrics"
     >
-      {header}
-      {grid}
+      {/* Section color bleeds full width; content is capped so whitespace at
+          the margins reads as composed rather than stretched on wide screens. */}
+      <div className="max-w-[80rem] mx-auto">
+        {header}
+        {grid}
+      </div>
     </section>
   )
 }

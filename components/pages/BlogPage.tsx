@@ -1,4 +1,5 @@
 import type { BlogPageContent, BlogPostSummary } from '@/lib/blog'
+import PrimaryTextDepth3D from '@/components/blocks/PrimaryTextDepth3D.client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -136,11 +137,17 @@ type HeaderProps = {
 }
 
 // ─── Impact Header ────────────────────────────────────────────────────────────
-// Canvas "cover statement". A full-bleed Syne (weight 600) display headline runs
-// the full header width rather than the centered container. Behind it, a
-// chromatic bloom (brand + accent radial light anchored to the edges, so the
-// centre stays legible) gives the canvas depth. Distinct from the Editorial
-// masthead and the Atmospheric media header.
+// Canvas "cover statement" — the poster register. An oversized primary-font
+// (--ot-font-sans via font-sans) display headline runs the full header width and
+// carries the same layered 3D extrude as the PrimaryText block's "3D Depth"
+// effect: PrimaryTextDepth3D renders real stacked DOM layers (.ot-extrude3d) —
+// a bright face over evenly-stepped receding duplicates, each with a ridge
+// outline stroke. Token-derived, theme-aware (light mode gets the 3D-sticker
+// look), fully static so it is reduced-motion safe by construction. Behind it,
+// a chromatic bloom (brand + accent radial light anchored to the edges, so the
+// centre stays legible) gives the canvas depth. The extrusion is what separates
+// this register from the Editorial masthead — same content, unmistakably
+// different voice.
 
 function ImpactHeader({
   headline, subHeadline, topic,
@@ -155,8 +162,8 @@ function ImpactHeader({
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(62% 85% at 10% -8%, oklch(from var(--ot-brand) l c h / 0.26) 0%, transparent 58%), ' +
-            'radial-gradient(58% 82% at 96% 110%, oklch(from var(--ot-accent) l c h / 0.22) 0%, transparent 58%)',
+            'radial-gradient(62% 85% at 10% -8%, oklch(from var(--ot-brand) l c h / 0.34) 0%, transparent 58%), ' +
+            'radial-gradient(58% 82% at 96% 110%, oklch(from var(--ot-accent) l c h / 0.28) 0%, transparent 58%)',
         }}
       />
 
@@ -167,17 +174,20 @@ function ImpactHeader({
           </div>
         )}
 
+        {/* extrude3d-compact: shallower layer fan + the 1.16 leading give the
+            receding layers room between wrapped lines — the full-depth fan is
+            sized for PrimaryText's single-line statements */}
         <h1
-          className="font-syne text-fg text-[clamp(2.75rem,8vw,7rem)] leading-[0.95] tracking-[-0.02em] text-balance motion-safe:animate-slide-up"
-          style={{ fontVariationSettings: "'wght' 600", animationDelay: '60ms' }}
+          className="extrude3d-compact font-extrabold text-[clamp(2.75rem,8vw,7rem)] leading-[1.16] tracking-[-0.03em] motion-safe:animate-slide-up"
+          style={{ animationDelay: '60ms' }}
           {...pa?.('headline')}
         >
-          {headline}
+          <PrimaryTextDepth3D text={headline} />
         </h1>
 
         {subHeadline && (
           <p
-            className="mt-lg text-title leading-title text-fg-muted max-w-(--ot-measure) text-pretty motion-safe:animate-slide-up"
+            className="mt-xl text-title leading-title text-fg-muted max-w-(--ot-measure) text-pretty motion-safe:animate-slide-up"
             style={{ animationDelay: '140ms' }}
             {...pa?.('subHeadline')}
           >
@@ -455,7 +465,43 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
       {blogStyle === 'editorial'   && <EditorialHeader    {...headerProps} />}
 
       {/* ── Featured media ───────────────────────────────────────────────── */}
-      {showMedia && (
+      {/* Impact: full-bleed cinematic band. The header's canvas dissolves into
+          the top of the image via a gradient, so the poster header and the
+          artwork read as one continuous surface — the register break from
+          editorial's contained panel. A 2px accent seam closes the band.
+          Token-driven: the blend uses the canvas color, so it adapts to light
+          mode and CMS theme overrides. The blend is shallower over video to
+          keep the frame unobscured. */}
+      {showMedia && blogStyle === 'impact' ? (
+        <div className="relative bg-canvas">
+          <div className="relative w-full h-[clamp(340px,56vh,640px)] overflow-hidden">
+            {mediaType === 'video' ? (
+              <video
+                src={videoUrl!}
+                controls
+                className="absolute inset-0 w-full h-full object-cover"
+                {...pa?.('featuredVideo')}
+              />
+            ) : (
+              <img
+                src={imageUrl!}
+                alt={headline}
+                className="absolute inset-0 w-full h-full object-cover"
+                {...pa?.('featuredImage')}
+              />
+            )}
+            {/* top blend — header canvas dissolves into the artwork */}
+            <div
+              aria-hidden
+              className={`absolute inset-x-0 top-0 bg-linear-to-b from-canvas via-canvas/55 to-transparent pointer-events-none ${
+                mediaType === 'video' ? 'h-1/5' : 'h-2/5'
+              }`}
+            />
+            {/* bottom accent seam */}
+            <div aria-hidden className="absolute inset-x-0 bottom-0 h-[2px] bg-accent/80 pointer-events-none" />
+          </div>
+        </div>
+      ) : showMedia ? (
         <div className="bg-canvas pt-xl pb-0">
           <div className="mx-auto max-w-4xl px-md">
             {mediaType === 'video' ? (
@@ -475,7 +521,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── Article body ─────────────────────────────────────────────────── */}
       <section className={`bg-canvas ${bodyTopPad} pb-2xl`}>

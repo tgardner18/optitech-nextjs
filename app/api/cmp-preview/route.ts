@@ -105,12 +105,15 @@ export async function POST(req: NextRequest) {
 
   const body = await readBody(req)
 
+  const REDACT = new Set(['callback-secret', 'authorization', 'cookie'])
   const meta: CapturedMeta = {
     receivedAt: new Date().toISOString(),
     method: req.method,
     contentType: req.headers.get('content-type') ?? '',
     query: Object.fromEntries(req.nextUrl.searchParams.entries()),
-    headers: Object.fromEntries(req.headers.entries()),
+    headers: Object.fromEntries(
+      [...req.headers.entries()].filter(([k]) => !REDACT.has(k.toLowerCase())),
+    ),
   }
 
   const previewId = (body as { data?: { preview_id?: string } })?.data?.preview_id
@@ -118,7 +121,9 @@ export async function POST(req: NextRequest) {
   // ── 2. Persist (durable) so the render page can load it later ───────────────
   await putDelivery({ receivedAt: meta.receivedAt, meta, payload: body }, previewId)
 
-  console.log('[cmp-preview] webhook received:\n' + JSON.stringify({ meta, body }, null, 2))
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[cmp-preview] webhook received:\n' + JSON.stringify({ meta, body }, null, 2))
+  }
 
   // ── 3 + 4. Acknowledge + complete the preview back to CMP ───────────────────
   const mapped = mapCmpPreviewToBlog(body)

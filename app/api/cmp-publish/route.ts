@@ -166,12 +166,15 @@ export async function POST(req: NextRequest) {
 
   const body = await readBody(req)
 
+  const REDACT = new Set(['callback-secret', 'authorization', 'cookie'])
   const meta: CapturedMeta = {
     receivedAt: new Date().toISOString(),
     method: req.method,
     contentType: req.headers.get('content-type') ?? '',
     query: Object.fromEntries(req.nextUrl.searchParams.entries()),
-    headers: Object.fromEntries(req.headers.entries()),
+    headers: Object.fromEntries(
+      [...req.headers.entries()].filter(([k]) => !REDACT.has(k.toLowerCase())),
+    ),
   }
 
   const eventName = (body as { event_name?: string })?.event_name
@@ -186,7 +189,9 @@ export async function POST(req: NextRequest) {
 
   await putPublishDelivery({ receivedAt: meta.receivedAt, meta: { ...meta, cmsWrite }, payload: body })
 
-  console.log('[cmp-publish] webhook received:\n' + JSON.stringify({ meta, cmsWrite, body }, null, 2))
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[cmp-publish] webhook received:\n' + JSON.stringify({ meta, cmsWrite, body }, null, 2))
+  }
 
   return NextResponse.json({ ok: true, eventName, cmsWrite, captured: meta })
 }

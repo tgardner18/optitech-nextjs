@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { computeSessionToken, SESSION_COOKIE } from '@/lib/admin/auth'
+import { verifySessionToken, SESSION_COOKIE } from '@/lib/admin/auth'
 import { getComponentInstances } from '@/lib/admin/graph'
 import { ALLOWED_QUERY_KEYS } from '@/lib/admin/contentTypes'
 
@@ -11,8 +11,7 @@ export async function GET(request: Request) {
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const expected = await computeSessionToken()
-  if (session !== expected) {
+  if (!await verifySessionToken(session)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

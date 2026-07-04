@@ -7,7 +7,7 @@ import { OT_LogoItem } from './OT_LogoItem'
  * Shows partner, customer, or integration logos in a scrolling marquee,
  * staggered fade, or static grid. Editors add 3–12 OT_LogoItem entries.
  *
- * Motion style, image treatment (grayscale / color), background,
+ * Motion style, image treatment (auto silhouette / color), background,
  * logo size, density, and glass overlay are all controlled via the
  * OT_TrustRailDefault display template — not as content properties.
  *
