@@ -148,8 +148,7 @@ export default function QuoteBlock({
               aria-hidden="true"
               className={cn(
                 quoteMarkCva({ color }),
-                "top-[-0.2em] z-0",
-                alignment === "center" ? "-left-6" : "left-0",
+                "top-[-0.2em] left-0 z-0",
               )}
               style={{ fontSize: bgMarkSize }}
             >
