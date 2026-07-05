@@ -288,13 +288,13 @@ export default function TrustRail({
             {/* Left edge fade */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 lg:w-28"
+              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-20 lg:w-28"
               style={{ background: `linear-gradient(to right, ${bgToken}, transparent)` }}
             />
             {/* Right edge fade */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 lg:w-28"
+              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-20 lg:w-28"
               style={{ background: `linear-gradient(to left, ${bgToken}, transparent)` }}
             />
 
@@ -309,7 +309,7 @@ export default function TrustRail({
                 `trust-rail-track` scopes the :has()-driven hover/dim choreography
                 (see globals.css) to this row. */}
             <div
-              className={cn('flex items-center trust-rail-track', !prefersReducedMotion && 'animate-trust-rail-scroll')}
+              className={cn('flex w-max items-center trust-rail-track', !prefersReducedMotion && 'animate-trust-rail-scroll')}
               data-pause-offscreen
               style={{
                 gap: `${railGap}px`,

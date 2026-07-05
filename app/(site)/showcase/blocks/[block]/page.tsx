@@ -430,7 +430,7 @@ function PrimaryTextShowcase() {
     { content: { eyebrow: 'Gradient',         headline: 'Build once, ship everywhere.' }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'gradient' } },
     { content: { eyebrow: 'Animated Gradient', headline: 'Momentum you can see.'        }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'animatedGradient' } },
     { content: { eyebrow: '3D Depth',          headline: 'Depth is a statement.'       }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'depth3d' } },
-    { content: { eyebrow: 'Embossed',          headline: 'Pressed into the surface.'   }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'embossed' } },
+    { content: { eyebrow: 'Glitch',            headline: 'Interrupt the signal.'       }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'glitch' } },
     { content: { eyebrow: 'Outline',           headline: 'Drawn in wire.'              }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'outline' } },
     { content: { eyebrow: 'Neon',              headline: 'After hours.'                }, displaySettings: { size: 'display',  color: 'canvas', alignment: 'left', headerEffect: 'neon' } },
     { content: { eyebrow: 'Highlight',         headline: 'Call it out.'                }, displaySettings: { size: 'headline', color: 'canvas', alignment: 'left', headerEffect: 'highlight' } },
