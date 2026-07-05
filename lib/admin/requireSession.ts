@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { computeSessionToken, SESSION_COOKIE } from './auth'
+import { verifySessionToken, SESSION_COOKIE } from './auth'
 
 /**
  * Server-side admin session check for API routes. Mirrors the inline guard in
@@ -8,5 +8,5 @@ import { computeSessionToken, SESSION_COOKIE } from './auth'
 export async function isValidAdminSession(): Promise<boolean> {
   const session = (await cookies()).get(SESSION_COOKIE)?.value
   if (!session) return false
-  return session === (await computeSessionToken())
+  return verifySessionToken(session)
 }

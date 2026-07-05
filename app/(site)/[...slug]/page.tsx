@@ -240,7 +240,7 @@ async function CmsPage({ params, searchParams }: Props) {
     } catch (err) {
       console.error('[slug] Content Graph fetch failed:', err)
       notFound()
-    exp = await fetchPageContent(path, locale, baseUrl)
+    }
 
     // ── FX content experiment ──────────────────────────────────────────────
     // When the experience binds an FX flag (BlankExperience.FxFlagKey) and the
