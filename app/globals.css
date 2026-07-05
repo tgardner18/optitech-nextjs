@@ -266,10 +266,13 @@ html {
  * Infinite horizontal scroll. Duration is set via --trust-rail-duration, and
  * the travel distance via --trust-rail-copies (the React component renders
  * the logo set that many times over — enough that the track always over-
- * fills the viewport, so the loop point in never becomes a visible gap/seam,
- * regardless of how few logos or how wide the screen). One "lap" of the
- * animation is always exactly one copy-width, however many copies exist.
- * Paused automatically for prefers-reduced-motion (class not applied).
+ * fills the viewport). One "lap" is always exactly one copy-width.
+ *
+ * IMPORTANT: translateX(-100%/copies) uses the element's OWN width, not the
+ * viewport. The track div must have `width: max-content` (w-max in Tailwind)
+ * so 100% = content width, not the block container's viewport-wide fallback.
+ * Without it, mobile animations crawl because 100% = 375px instead of the
+ * actual track width. Paused by prefers-reduced-motion (class not applied).
  * ─────────────────────────────────────────────────────────────────────────── */
 @keyframes trustRailScroll {
   from { transform: translateX(0); }
@@ -280,18 +283,6 @@ html {
   .animate-trust-rail-scroll {
     animation: trustRailScroll var(--trust-rail-duration, 28s) linear infinite;
     will-change: transform;
-  }
-}
-
-/* --trust-rail-duration is tuned for desktop, where several logos are
- * visible across the row at once and 5s/logo reads as a deliberate pace.
- * On a phone-width viewport only one (maybe two) logos fit in the visible
- * gap between the edge fades, so the same pixel speed shows far less at
- * once and reads as sluggish. Halving the duration below `sm` restores a
- * comparable felt pace without touching the desktop tuning. */
-@media (prefers-reduced-motion: no-preference) and (max-width: 639px) {
-  .animate-trust-rail-scroll {
-    animation-duration: calc(var(--trust-rail-duration, 28s) * 0.5);
   }
 }
 
