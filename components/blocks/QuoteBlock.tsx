@@ -40,10 +40,13 @@ const containerCva = cva("mx-auto w-full", {
 });
 
 // Blockquote — carries the mark as an absolutely positioned child.
-// `pl-[3rem]` creates the gutter the mark sits in; both modes use the same indent.
+// `pl-16` creates the gutter the mark sits in; both modes use the same indent.
+// The mark's own ink runs close to its full glyph box at this font size, so
+// the gutter needs real headroom beyond it — pl-12 left virtually no gap
+// before the first letter.
 // Center: `mx-auto max-w-[65ch]` centers the reading block, text is left-aligned
 // so `left: 0` on the mark is always immediately left of the first letter.
-const blockquoteCva = cva("relative pl-12", {
+const blockquoteCva = cva("relative pl-16", {
   variants: {
     alignment: {
       left:   "max-w-(--ot-measure)",
@@ -148,8 +151,7 @@ export default function QuoteBlock({
               aria-hidden="true"
               className={cn(
                 quoteMarkCva({ color }),
-                "top-[-0.2em] z-0",
-                alignment === "center" ? "-left-6" : "left-0",
+                "top-[-0.2em] left-0 z-0",
               )}
               style={{ fontSize: bgMarkSize }}
             >
@@ -168,7 +170,7 @@ export default function QuoteBlock({
           {/* Signature & attribution */}
           <figcaption className={cn(
             "mt-lg",
-            alignment === "center" ? "flex flex-col items-center" : "pl-12"
+            alignment === "center" ? "flex flex-col items-center" : "pl-16"
           )}>
             <LaserSignature
               name={attribution.name}
