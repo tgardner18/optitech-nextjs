@@ -11,7 +11,7 @@ import PrimaryTextDepth3D from './PrimaryTextDepth3D.client'
  *   gradient          — static brand→accent diagonal fill (background-clip:text)
  *   animatedGradient  — the same fill, animated as a slow shimmer/sweep
  *   depth3d           — hard isometric 3D offset shadow stack ("pop-out")
- *   embossed          — pressed/carved into the surface
+ *   glitch            — chromatic smear: RGB-split ghosts + vertical motion streaks
  *   outline           — hollow wire letterforms with brand stroke + glow
  *   neon              — retro-disco glowing tube (dual-tone brand+accent, buzz flicker)
  *   highlight         — accent marker swipe behind the text (inline)
@@ -19,7 +19,7 @@ import PrimaryTextDepth3D from './PrimaryTextDepth3D.client'
  */
 export type HeaderEffect =
   | "none" | "gradient" | "animatedGradient" | "depth3d"
-  | "embossed" | "outline" | "neon" | "highlight" | "glow";
+  | "glitch" | "outline" | "neon" | "highlight" | "glow";
 
 export type PrimaryTextStyleOptions = {
   /** Horizontal alignment of the content column within the section */
@@ -38,7 +38,7 @@ const EFFECT_CLASS: Record<HeaderEffect, string> = {
   gradient:         "ot-fx-gradient",
   animatedGradient: "ot-depth-liquid",
   depth3d:          "ot-depth-extrude",
-  embossed:         "ot-depth-emboss",
+  glitch:           "ot-fx-chromatic",
   outline:          "ot-depth-outline",
   neon:             "ot-fx-neon",
   highlight:        "ot-fx-highlight",
@@ -177,6 +177,7 @@ export default function PrimaryTextBlock({
               isHighlight ? ' mb-sm' : isDepth3d ? '' : effectClass ? ` ${effectClass}` : ''
             }`}
             {...(effect === 'animatedGradient' ? { 'data-pause-offscreen': '' } : {})}
+            {...(effect === 'glitch' ? { 'data-text': headline, 'data-pause-offscreen': '' } : {})}
             {...pa('headline')}
           >
             {headingChildren}

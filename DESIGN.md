@@ -367,9 +367,9 @@ The heading block (`OT_PrimaryTextBlock`) exposes a single **Header effect** sel
 | Gradient | `.ot-fx-gradient` | Static brand→accent diagonal `background-clip:text` fill; light mode darkens both stops |
 | Animated Gradient | `.ot-depth-liquid` | The fill animated as a slow shimmer/sweep; freezes mid-sweep under reduced-motion |
 | 3D Depth | `.ot-depth-extrude` | Hard isometric 45° offset shadow stack; `[data-theme=light]` + `.bg-brand-fill` variants |
-| Embossed | `.ot-depth-emboss` | Carved-into-surface: opposing cavity shadow + rim highlight |
+| Glitch | `.ot-fx-chromatic` | Chromatic smear: fg face with RGB-split fringe over a vertically stretched accent streak layer + hard ghost pair (pseudo-element copies via `data-text`); sparse motion-safe twitch |
 | Outline | `.ot-depth-outline` | Hollow wire letterforms, brand stroke + `drop-shadow` glow |
-| Glitch | `.ot-fx-chromatic` | RGB channel-split fringe (brand/accent offsets) on an fg face; subtle motion-safe jitter |
+| Neon | `.ot-fx-neon` | Single-tube neon: Tilt Neon monoline face, white-hot core + accent bloom; brand tube on light grounds |
 | Highlight | `.ot-fx-highlight` | Accent marker swipe behind the text (inline span, `box-decoration-break: clone`); fg-on-accent text |
 | Glow | `.ot-fx-glow` | Backlit aurora halo (brand + accent bloom `drop-shadow`); tightened on light grounds |
 

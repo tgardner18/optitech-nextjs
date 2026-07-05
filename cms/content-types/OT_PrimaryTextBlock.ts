@@ -17,7 +17,7 @@ export const OT_PrimaryTextBlock = contentType({
         { value: 'gradient', displayName: 'Gradient' },
         { value: 'animatedGradient', displayName: 'Animated Gradient' },
         { value: 'depth3d', displayName: '3D Depth' },
-        { value: 'embossed', displayName: 'Embossed' },
+        { value: 'glitch', displayName: 'Glitch' },
         { value: 'outline', displayName: 'Outline' },
         { value: 'neon', displayName: 'Neon' },
         { value: 'highlight', displayName: 'Highlight' },

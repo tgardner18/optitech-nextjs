@@ -1096,43 +1096,111 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* EMBOSS                                                                      */
-/* Carved-into-surface illusion. Opposing shadow offsets: dark edge bottom-   */
-/* right (cavity shadow), bright rim top-left (cavity highlight). Bloom glow  */
-/* makes the brand color appear lit from within.                              */
-/* No animation. Fully static. Scales gracefully from display to label.       */
+/* GLITCH (chromatic smear)                                                    */
+/* Broadcast-interference read: a solid fg face carrying a hard RGB-split      */
+/* fringe, over two pseudo-element copies of the heading —                     */
+/*   ::before  a vertically stretched, blurred accent wash (the frame dragged  */
+/*             mid-refresh: streaks bleeding above and below the letterforms)  */
+/*   ::after   a hard-offset ghost pair (hue-warmed accent right, brand left)  */
+/* All color derives from the brand/accent tokens (hue nudged ±26° for the     */
+/* channel-split dual tone), so the smear re-tints per theme. The copies read  */
+/* the heading's data-text attribute (set by PrimaryTextBlock) and are muted   */
+/* from the accessibility tree via the `content: … / ''` alt syntax; browsers  */
+/* without it drop the declaration and degrade to the fringe-only face.        */
+/* Motion-safe: a sparse signal twitch every ~6.5s; fully static otherwise.    */
 /* ─────────────────────────────────────────────────────────────────────────── */
-.ot-depth-emboss {
-  color: var(--ot-brand);
+.ot-fx-chromatic {
+  position: relative;
+  isolation: isolate; /* keep the z-index:-1 layers inside the heading's box */
+  color: var(--ot-fg);
+  /* Hard chromatic fringe on the face itself — the effect's legible floor */
   text-shadow:
-    /* Dark cavity shadow — bottom-right edge */
-    0.026em  0.026em  0    oklch(from var(--ot-brand) calc(l * 0.18) c h / 0.88),
-    /* Bright rim highlight — top-left edge */
-   -0.014em -0.014em  0    oklch(from var(--ot-brand) calc(l + 0.28) c h / 0.44),
-    /* Tight inner bloom */
-    0        0        0.5em oklch(from var(--ot-brand) l c h / 0.22),
-    /* Soft ambient drop */
-    0        0.09em   0.32em oklch(from var(--ot-brand) calc(l * 0.38) c h / 0.16);
+   -0.028em  0.010em 0 oklch(from var(--ot-brand)  l calc(c * 1.10) h / 0.60),
+    0.028em -0.010em 0 oklch(from var(--ot-accent) l calc(c * 1.15) calc(h + 26) / 0.60);
+}
+.ot-fx-chromatic::before,
+.ot-fx-chromatic::after {
+  content: attr(data-text) / '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+}
+/* Vertical motion smear — stretched, blurred, with trailing vertical bleed */
+.ot-fx-chromatic::before {
+  color: oklch(from var(--ot-accent) calc(l * 0.88) calc(c * 1.20) h / 0.40);
+  transform: scaleY(1.45);
+  filter: blur(0.045em);
+  text-shadow:
+    0 -0.14em 0.10em oklch(from var(--ot-accent) calc(l * 0.90) c h / 0.34),
+    0  0.16em 0.12em oklch(from var(--ot-accent) calc(l * 0.78) c h / 0.28);
+}
+/* Hard RGB-split ghost pair riding just behind the face */
+.ot-fx-chromatic::after {
+  color: oklch(from var(--ot-accent) calc(l * 0.92) calc(c * 1.25) calc(h + 26) / 0.68);
+  transform: translate(0.045em, 0.015em);
+  text-shadow: -0.10em -0.02em 0.02em oklch(from var(--ot-brand) l c h / 0.50);
 }
 
-/* Light mode: same directions, tighter rim (light bg needs less pop), deeper shadow */
-[data-theme="light"] .ot-depth-emboss {
-  color: var(--ot-brand);
+/* Light mode: deepen the ghost tones so the smear registers on a near-white
+   canvas (the face's fg token already flips dark on its own). */
+[data-theme="light"] .ot-fx-chromatic {
   text-shadow:
-    0.026em  0.026em  0    oklch(from var(--ot-brand) calc(l * 0.14) c h / 0.95),
-   -0.014em -0.014em  0    oklch(from var(--ot-brand) calc(l + 0.28) c h / 0.28),
-    0        0        0.4em oklch(from var(--ot-brand) l c h / 0.14),
-    0        0.09em   0.28em oklch(from var(--ot-brand) calc(l * 0.32) c h / 0.12);
+   -0.028em  0.010em 0 oklch(from var(--ot-brand)  calc(l * 0.80) calc(c * 1.10) h / 0.50),
+    0.028em -0.010em 0 oklch(from var(--ot-accent) calc(l * 0.72) calc(c * 1.15) calc(h + 26) / 0.50);
+}
+[data-theme="light"] .ot-fx-chromatic::before {
+  color: oklch(from var(--ot-accent) calc(l * 0.70) calc(c * 1.15) h / 0.28);
+  text-shadow:
+    0 -0.14em 0.10em oklch(from var(--ot-accent) calc(l * 0.72) c h / 0.24),
+    0  0.16em 0.12em oklch(from var(--ot-accent) calc(l * 0.60) c h / 0.20);
+}
+[data-theme="light"] .ot-fx-chromatic::after {
+  color: oklch(from var(--ot-accent) calc(l * 0.68) calc(c * 1.20) calc(h + 26) / 0.55);
+  text-shadow: -0.10em -0.02em 0.02em oklch(from var(--ot-brand) calc(l * 0.75) c h / 0.40);
 }
 
-/* Brand background: accent face, accent-derived cavity shadows */
-.bg-brand-fill .ot-depth-emboss {
-  color: var(--ot-accent);
+/* Brand background: fg-on-brand face; ghosts go all-accent (a brand-colored
+   ghost would vanish into the brand fill). */
+.bg-brand-fill .ot-fx-chromatic {
+  color: var(--ot-fg-on-brand);
   text-shadow:
-    0.026em  0.026em  0    oklch(from var(--ot-accent) calc(l * 0.18) c h / 0.85),
-   -0.014em -0.014em  0    oklch(from var(--ot-accent) calc(l + 0.24) c h / 0.42),
-    0        0        0.5em oklch(from var(--ot-accent) l c h / 0.20),
-    0        0.09em   0.32em oklch(from var(--ot-accent) calc(l * 0.38) c h / 0.15);
+   -0.028em  0.010em 0 oklch(from var(--ot-accent) l c h / 0.55),
+    0.028em -0.010em 0 oklch(from var(--ot-accent) l c calc(h + 26) / 0.55);
+}
+.bg-brand-fill .ot-fx-chromatic::before {
+  color: oklch(from var(--ot-accent) l calc(c * 1.10) h / 0.42);
+  text-shadow:
+    0 -0.14em 0.10em oklch(from var(--ot-accent) l c h / 0.32),
+    0  0.16em 0.12em oklch(from var(--ot-accent) calc(l * 0.85) c h / 0.26);
+}
+.bg-brand-fill .ot-fx-chromatic::after {
+  color: oklch(from var(--ot-accent) l calc(c * 1.15) calc(h + 26) / 0.68);
+  text-shadow: -0.10em -0.02em 0.02em oklch(from var(--ot-fg-on-brand) l c h / 0.35);
+}
+
+/* Sparse twitch: the split snaps wider for two frames every ~6.5s, then locks
+   back. steps(1) = hard signal jumps, no tweening. transform-only (compositor-
+   friendly, never layout). Paused offscreen via MotionObserver, like the other
+   infinite paint-bound effects. */
+@media (prefers-reduced-motion: no-preference) {
+  .ot-fx-chromatic::before { animation: otChromaticSurge  6.5s steps(1, end) infinite; }
+  .ot-fx-chromatic::after  { animation: otChromaticTwitch 6.5s steps(1, end) infinite; }
+  .ot-fx-chromatic[data-offscreen]::before,
+  .ot-fx-chromatic[data-offscreen]::after { animation-play-state: paused; }
+}
+@keyframes otChromaticTwitch {
+  0%, 91%     { transform: translate( 0.045em,  0.015em); }
+  91.8%       { transform: translate(-0.085em, -0.020em); }
+  93.2%       { transform: translate( 0.100em,  0.035em); }
+  94.4%, 100% { transform: translate( 0.045em,  0.015em); }
+}
+@keyframes otChromaticSurge {
+  0%, 91%     { transform: scaleY(1.45); }
+  91.8%       { transform: scaleY(1.58) translateY(-0.02em); }
+  93.2%       { transform: scaleY(1.40) translateY( 0.02em); }
+  94.4%, 100% { transform: scaleY(1.45); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
