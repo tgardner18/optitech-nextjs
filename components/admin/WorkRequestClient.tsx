@@ -86,7 +86,6 @@ export default function WorkRequestClient() {
     e.preventDefault()
     if (!template) return
 
-    setSubmitting(true)
     setStatus('idle')
     setStatusMessage(null)
 
@@ -105,6 +104,24 @@ export default function WorkRequestClient() {
       email:      String(data.get('requester-email') ?? ''),
       department: String(data.get('requester-department') ?? ''),
     }
+
+    // The form has noValidate (native browser tooltips don't match the rest of
+    // OptiAdmin's error styling), so required fields need an explicit check here.
+    const missingLabels = [
+      ...(!requester.name.trim() ? ['Name'] : []),
+      ...(!requester.email.trim() ? ['Email'] : []),
+      ...template.fields
+        .filter(f => f.required && !formFields.find(ff => ff.identifier === f.identifier)?.values.some(v => v.trim()))
+        .map(f => f.label),
+    ]
+
+    if (missingLabels.length > 0) {
+      setStatus('error')
+      setStatusMessage(`Please fill in: ${missingLabels.join(', ')}.`)
+      return
+    }
+
+    setSubmitting(true)
 
     try {
       const res  = await fetch('/api/opti-admin/work-requests', {

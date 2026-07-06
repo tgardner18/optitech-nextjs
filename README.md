@@ -166,6 +166,12 @@ CMP_BLOG_CONTAINER_KEY=        # CMS content key of the container/folder under w
                                # OT_BlogPage entries are created (e.g. the "Blog"
                                # folder). Without it the publish webhook captures
                                # but skips the CMS write (cmsWrite.status === 'skipped').
+
+# OptiAdmin "Work Requests" (see below). Required ONLY for that feature —
+# preview/publish above don't use it.
+CMP_DEFAULT_ASSIGNEE_ID=       # CMP user or team id every work request is assigned to.
+                               # CMP rejects a work request with zero assignees, and an
+                               # external requester has no CMP id of their own to supply.
 ```
 
 If `CMP_*` are unset the webhook still captures and the renderer still works locally — it just skips verification and the acknowledge/complete round-trip.
@@ -246,11 +252,12 @@ This uses CMP's **Requests** REST API (`/v3/templates`, `/v3/work-requests`), wh
 
 **CMP-side setup:**
 
-1. **Reuse (or create) the CMP OAuth2 client-credentials App** — CMP → **Settings → Apps & Webhooks**. This is the same app used by [CMP Content Preview](#cmp-content-preview) above; both share `CMP_CLIENT_ID` / `CMP_CLIENT_SECRET`. No new env vars are needed for this feature.
-2. **Find a template id to test against** — CMP → **Requests → Templates**. Open the Request Type template you want to demo and copy its id (or hit `GET /api/opti-admin/cmp-templates` once logged into OptiAdmin, which lists every template CMP returns).
-3. Open `/opti-admin/work-requests`, pick that template from the dropdown, fill in the fields it renders, and submit — it lands in CMP under **Requests**.
+1. **Reuse (or create) the CMP OAuth2 client-credentials App** — CMP → **Settings → Apps & Webhooks**. This is the same app used by [CMP Content Preview](#cmp-content-preview) above; both share `CMP_CLIENT_ID` / `CMP_CLIENT_SECRET`.
+2. **Set `CMP_DEFAULT_ASSIGNEE_ID`** — CMP rejects a work request with no assignee (`assignees` must have at least one entry), and an external requester has no way to know a CMP user/team id, so this app assigns every submission to one operator-configured default. Find a user or team id in CMP (e.g. from its profile URL or the CMP API) and set it as `CMP_DEFAULT_ASSIGNEE_ID`. Without it, submissions fail with a 503 naming the missing var.
+3. **Find a template id to test against** — CMP → **Requests → Templates**. Open the Request Type template you want to demo and copy its id (or hit `GET /api/opti-admin/cmp-templates` once logged into OptiAdmin, which lists every template CMP returns).
+4. Open `/opti-admin/work-requests`, pick that template from the dropdown, fill in the fields it renders, and submit — it lands in CMP under **Requests**, assigned to `CMP_DEFAULT_ASSIGNEE_ID`.
 
-**Requester context:** name / email / department are collected outside the CMP template (CMP's `form_fields` has no separate "requester" concept). The API route folds a "Submitted via external request form by …" line into the first `brief` / `text_area` / `richtext` field the template defines; if the template has none, that context is logged server-side but not attached to the CMP payload.
+**Requester context:** name / email / department are collected outside the CMP template (CMP's `form_fields` has no separate "requester" concept). The API route folds a "Submitted via external request form by …" line into the first `brief` / `text_area` / `richtext` field the template defines (joined into that field's single value — CMP rejects more than one value per non-multi-select field); if the template has none, that context is logged server-side but not attached to the CMP payload.
 
 ### Where things live
 

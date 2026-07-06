@@ -26,9 +26,12 @@ function foldRequesterContext(
   const targetIndex = formFields.findIndex(f => TEXT_LIKE_TYPES.has(f.type))
   if (targetIndex === -1) return { fields: formFields, folded: false }
 
+  // CMP rejects a non-multi-value field with more than one array entry, so the
+  // context line has to be joined into the field's single value, not prepended
+  // as an extra array element.
   const fields = formFields.map((f, i) =>
     i === targetIndex
-      ? { ...f, values: [contextLine, ...f.values] }
+      ? { ...f, values: [[contextLine, ...f.values].filter(Boolean).join('\n\n')] }
       : f
   )
   return { fields, folded: true }
@@ -60,6 +63,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'templateId, formFields, and requester.name/email are required.' }, { status: 400 })
   }
 
+  // CMP requires at least one assignee per work request. The external requester
+  // has no way to know a CMP user/team id, so this falls back to an
+  // operator-configured default rather than exposing an assignee picker in the UI.
+  const assignees = payload.assignees && payload.assignees.length > 0
+    ? payload.assignees
+    : process.env.CMP_DEFAULT_ASSIGNEE_ID ? [process.env.CMP_DEFAULT_ASSIGNEE_ID] : []
+
+  if (assignees.length === 0) {
+    return NextResponse.json({
+      error: 'No assignee configured. Set CMP_DEFAULT_ASSIGNEE_ID in the environment — CMP requires at least one assignee per work request.',
+    }, { status: 503 })
+  }
+
   const { fields, folded } = foldRequesterContext(payload.formFields, payload.requester)
 
   console.log(
@@ -71,11 +87,12 @@ export async function POST(request: Request) {
   try {
     const result = await createCmpWorkRequest({
       templateId: payload.templateId,
-      assignees:  payload.assignees,
+      assignees,
       formFields: fields,
     })
 
     if (!result.ok) {
+      console.error(`[work-requests] CMP rejected (${result.status}):`, JSON.stringify(result.body))
       return NextResponse.json({ error: 'CMP rejected the work request.', status: result.status, body: result.body }, { status: 502 })
     }
 
