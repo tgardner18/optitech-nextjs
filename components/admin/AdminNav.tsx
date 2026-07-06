@@ -10,6 +10,7 @@ import {
   Activity,
   Globe,
   Users,
+  ClipboardList,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -33,6 +34,12 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/opti-admin',                 label: 'Dashboard',        icon: LayoutDashboard, exact: true },
       { href: '/opti-admin/calendar',        label: 'Content Calendar', icon: CalendarDays    },
       { href: '/opti-admin/component-usage', label: 'Components',       icon: BarChart3       },
+    ],
+  },
+  {
+    label: 'CMP',
+    items: [
+      { href: '/opti-admin/work-requests', label: 'Work Requests', icon: ClipboardList },
     ],
   },
   {
