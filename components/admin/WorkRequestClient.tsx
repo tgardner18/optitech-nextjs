@@ -131,7 +131,7 @@ export default function WorkRequestClient() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-168">
       {/* ── Template picker ── */}
       <div className="flex flex-col gap-xs">
         <label htmlFor="template-select" className="text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-fg-muted">
