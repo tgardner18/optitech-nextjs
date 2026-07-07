@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, CheckCircle2, AlertCircle, Send, FileBox } from 'lucide-react'
 import DynamicCmpField from './DynamicCmpField'
 import TextboxField from '@/components/forms/TextboxField'
-import type { CmpTemplateSummary, CmpTemplateDetail } from '@/lib/admin/cmpWorkRequests'
+import type { CmpTemplateSummary, CmpTemplateDetail, CmpFieldDef } from '@/lib/admin/cmpWorkRequests'
 import type { CmpWorkRequestFormField } from '@/lib/cmpApi'
 
 // ── Shared class strings ────────────────────────────────────────────────────
@@ -42,6 +42,27 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </div>
     </div>
   )
+}
+
+// ── Field grouping ───────────────────────────────────────────────────────────
+// CMP `section` type fields are visual delimiters, not inputs. Split the flat
+// field list into groups: each section type opens a new named group; fields
+// before the first section form an unnamed (flat) group.
+type FieldGroup = { title: string | null; fields: CmpFieldDef[] }
+
+function groupFields(fields: CmpFieldDef[]): FieldGroup[] {
+  const groups: FieldGroup[] = []
+  let current: FieldGroup = { title: null, fields: [] }
+  for (const field of fields) {
+    if (field.type === 'section') {
+      if (current.fields.length > 0) groups.push(current)
+      current = { title: field.label, fields: [] }
+    } else {
+      current.fields.push(field)
+    }
+  }
+  if (current.fields.length > 0 || current.title) groups.push(current)
+  return groups
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -244,20 +265,26 @@ export default function WorkRequestClient() {
             </div>
           </Section>
 
-          {/* Template fields */}
-          <Section title={template.name}>
-            {template.fields.length === 0 ? (
-              <p className="text-[0.875rem] text-fg-muted/60">
-                This template returned no field definitions — check server logs for the raw CMP response
-                and confirm the shape in{' '}
-                <code className="font-mono text-[0.8em]">lib/admin/cmpWorkRequests.ts</code>.
-              </p>
-            ) : (
-              template.fields.map(field => (
-                <DynamicCmpField key={field.identifier} field={field} />
-              ))
-            )}
-          </Section>
+          {/* Template fields — grouped by CMP section delimiters */}
+          {template.fields.length === 0 ? (
+            <p className="text-[0.875rem] text-fg-muted/60">
+              This template returned no field definitions — check server logs for the raw CMP response
+              and confirm the shape in{' '}
+              <code className="font-mono text-[0.8em]">lib/admin/cmpWorkRequests.ts</code>.
+            </p>
+          ) : groupFields(template.fields).map((group, i) => {
+            const fieldNodes = group.fields.map(f => (
+              <DynamicCmpField key={f.identifier} field={f} />
+            ))
+            // Named group → bordered Section card, same treatment as "Your details"
+            if (group.title) {
+              return <Section key={group.title} title={group.title}>{fieldNodes}</Section>
+            }
+            // Pre-section fields (before any CMP section delimiter) render flat
+            return fieldNodes.length > 0 ? (
+              <div key={`flat-${i}`} className="flex flex-col gap-lg">{fieldNodes}</div>
+            ) : null
+          })}
 
           {/* Submit row */}
           <div className="pt-sm flex flex-col gap-md">
