@@ -398,9 +398,9 @@ The Optimizely Visual Builder opens a preview iframe pointing at the Next.js app
 
 A script served from the CMS instance itself (`${OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`). It must be loaded on every preview page. It sets up `window.epi`, the message bridge between the CMS editor and the front-end iframe.
 
-### `<PreviewComponent />`
+### `<NextPreviewComponent />`
 
-Imported from `@optimizely/cms-sdk/react/client`. A client component that subscribes to CMS events (content saved, selection changed) and triggers full re-renders by updating URL search params. This is how the preview iframe refreshes when an editor makes a change.
+Imported from `@optimizely/cms-sdk/react/nextjs`. The Next.js-optimised preview client that integrates with the App Router: when an editor saves a change that resolves to the same URL, it calls `router.refresh()` (a soft RSC re-render) instead of a full navigation, giving seamless in-place updates. For same-origin navigations (e.g. switching to a different experience page) it calls `router.push()`. Use this in all preview and draft-mode routes; the generic `PreviewComponent` from `@optimizely/cms-sdk/react/client` is the fallback for non-Next.js frameworks.
 
 ### On-page editing (`components/draft/OnPageEdit.tsx`)
 
