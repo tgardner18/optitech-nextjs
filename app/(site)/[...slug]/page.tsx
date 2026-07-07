@@ -18,7 +18,7 @@ import { getPractitioner } from '@/lib/practitioners'
 import { practitionerName, primaryArea, bioPreview } from '@/lib/practitionerFormat'
 import PractitionerHeader from '@/components/practitioner/PractitionerHeader'
 import { withAppContext }       from '@optimizely/cms-sdk/react/server'
-import { PreviewComponent }    from '@optimizely/cms-sdk/react/client'
+import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
 import type { PreviewParams }  from '@optimizely/cms-sdk'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import BlogPage                from '@/components/pages/BlogPage'
@@ -325,7 +325,7 @@ async function CmsPage({ params, searchParams }: Props) {
             {dm.isEnabled && cmsUrl && (
               <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
             )}
-            {dm.isEnabled && <PreviewComponent />}
+            {dm.isEnabled && <NextPreviewComponent />}
 
             {/* External reviewer's draft-state banner */}
             {isExternalPreview && (
@@ -412,7 +412,7 @@ async function CmsPage({ params, searchParams }: Props) {
           {dm.isEnabled && cmsUrl && (
             <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
           )}
-          {dm.isEnabled && <PreviewComponent />}
+          {dm.isEnabled && <NextPreviewComponent />}
 
           {isExternalPreview && (
             <DraftStateBanner
@@ -456,7 +456,7 @@ async function CmsPage({ params, searchParams }: Props) {
             {dm.isEnabled && cmsUrl && (
               <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
             )}
-            {dm.isEnabled && <PreviewComponent />}
+            {dm.isEnabled && <NextPreviewComponent />}
             <EventPage content={eventContent as any} />
           </>
         )
@@ -508,7 +508,7 @@ async function CmsPage({ params, searchParams }: Props) {
         {dm.isEnabled && cmsUrl && (
           <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
         )}
-        {dm.isEnabled && <PreviewComponent />}
+        {dm.isEnabled && <NextPreviewComponent />}
         {practitioner && (
           <PractitionerHeader
             practitioner={practitioner}
@@ -538,7 +538,7 @@ async function CmsPage({ params, searchParams }: Props) {
       {dm.isEnabled && cmsUrl && (
         <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       )}
-      {dm.isEnabled && <PreviewComponent />}
+      {dm.isEnabled && <NextPreviewComponent />}
       <CompositionRenderer nodes={exp.composition.nodes} />
     </>
   )
