@@ -114,7 +114,7 @@ export type QuoteBlockProps = {
   quote: string;
   attribution: { name: string; title?: string };
   styleOptions?: QuoteStyleOptions;
-  pa?: (prop: string) => { "data-epi-property-name"?: string };
+  pa?: (prop?: string | { key: string }) => Record<string, string | undefined>;
 };
 
 export default function QuoteBlock({

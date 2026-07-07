@@ -128,7 +128,7 @@ export type PrimaryTextBlockProps = {
   headingLevel?: 'h1' | 'h2';
   body?: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: PrimaryTextStyleOptions;
-  pa?: (prop: string) => { "data-epi-property-name"?: string };
+  pa?: (prop?: string | { key: string }) => Record<string, string | undefined>;
 };
 
 export default function PrimaryTextBlock({
