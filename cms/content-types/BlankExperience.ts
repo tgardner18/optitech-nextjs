@@ -74,5 +74,19 @@ export const BlankExperience = contentType({
       group: 'OT_SEO',
       sortOrder: 80,
     },
+
+    // ── Experimentation ────────────────────────────────────────────────────────
+    // Binds this page to an Optimizely Feature Experimentation flag for
+    // server-side CMS content experiments. When set (and the visitor is bucketed
+    // into a variation), the [...slug] router serves the matching CMS variation
+    // of this experience instead of the default. Leave blank for no experiment.
+    FxFlagKey: {
+      type: 'string',
+      maxLength: 100,
+      displayName: 'FX Content Experiment Flag Key',
+      description: 'Optimizely Feature Experimentation flag key controlling which CMS variation of this page is served. The FX variation key must match the CMS variation slug (lowercased) — e.g. FX variation "hero_alt" ↔ CMS variation "hero_alt". Leave blank to always serve the default content.',
+      group: 'OT_Integrations',
+      sortOrder: 90,
+    },
   },
 })

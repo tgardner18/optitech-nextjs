@@ -8,12 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "lint:tokens": "node scripts/check-color-literals.mjs",
-    "cms:push": "node --env-file=.env --env-file-if-exists=.env.local node_modules/@optimizely/cms-cli/bin/run.js config push",
-    "cms:pull": "node --env-file=.env --env-file-if-exists=.env.local node_modules/@optimizely/cms-cli/bin/run.js config pull"
+    "cms:push": "node scripts/cms-push.mjs",
+    "cms:push:dry": "node scripts/cms-push.mjs --dryRun",
+    "cms:push:bootstrap": "node scripts/cms-push.mjs --ignore-circular-dependency",
+    "cms:pull": "node --env-file=.env.$(git branch --show-current | tr / -) node_modules/@optimizely/cms-cli/bin/run.js config pull"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^8.3.1",
     "@optimizely/cms-cli": "^2.0.0",
     "@optimizely/cms-sdk": "2.1.0",
+    "@optimizely/optimizely-sdk": "^6.3.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-tabs": "^1.1.13",

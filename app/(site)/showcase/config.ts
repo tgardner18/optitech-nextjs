@@ -41,6 +41,8 @@ export const CATEGORIES: ShowcaseCategory[] = [
       { label: 'Event Listing',    slug: 'event-listing'    },
       { label: 'Practitioner Listing', slug: 'practitioner-listing' },
       { label: 'Location Listing',     slug: 'location-listing'     },
+      { label: 'Content Recommendations', slug: 'content-recommendations' },
+      { label: 'Product Recommendations', slug: 'product-recommendations' },
     ],
   },
   {
