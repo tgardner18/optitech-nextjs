@@ -16,7 +16,7 @@ export default function ChoiceField({ id, name, label, tooltip, options, allowMu
   return (
     <fieldset className="flex flex-col gap-3 w-full">
       {label && (
-        <legend className="text-label font-semibold text-brand mb-md">
+        <legend className="text-label font-medium text-fg-muted tracking-label uppercase mb-xs">
           {label}
           {required && <span className="text-brand ml-1.5" aria-hidden="true">*</span>}
         </legend>
@@ -33,9 +33,9 @@ export default function ChoiceField({ id, name, label, tooltip, options, allowMu
                 value={opt.value}
                 defaultChecked={opt.checked}
                 required={!allowMultiSelect && required}
-                className="w-4 h-4 shrink-0 rounded-none accent-brand disabled:opacity-50"
+                className="w-4 h-4 shrink-0 rounded-none accent-[var(--ot-brand)] disabled:opacity-50"
               />
-              <span className="text-fg-muted group-has-checked:text-fg transition-colors duration-150 ease-quick">
+              <span className="text-fg-muted group-has-[:checked]:text-fg transition-colors duration-150 ease-quick">
                 {opt.caption}
               </span>
             </label>

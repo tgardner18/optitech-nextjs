@@ -1,9 +1,8 @@
 // ─── Optimizely CMP API client ──────────────────────────────────────────────
 //
 // Server-to-server access to CMP via the OAuth2 client-credentials flow. Used by
-// the preview webhook to acknowledge/complete a preview, to resolve a CMP
-// asset (library image) to a public CDN URL, and by the OptiAdmin "Work
-// Requests" demo to look up Request Type templates and file a work request.
+// the preview webhook to acknowledge/complete a preview and to resolve a CMP
+// asset (library image) to a public CDN URL.
 //
 // Verified against the live API:
 //   • token   — POST (form-encoded) accounts.cmp.optimizely.com/o/oauth2/v1/token
@@ -12,21 +11,8 @@
 //               `url` is a PUBLIC CDN image (is_public:true) + `alt_text`
 //   • ack/cmp — POST to the absolute acknowledge/complete links from the webhook
 //               payload, Bearer auth (request body shapes per documented contract)
-//
-// The templates/work-requests surface below is marked "Experimental" in
-// Optimizely's docs and has NOT been verified live yet — shapes are best-effort
-// per lib/admin/cmpWorkRequests.ts, and the API routes log the raw response so
-// the real contract can be confirmed against a live CMP instance.
-
-import {
-  normalizeTemplateSummaries,
-  normalizeTemplateDetail,
-  type CmpTemplateSummary,
-  type CmpTemplateDetail,
-} from './admin/cmpWorkRequests'
 
 const TOKEN_URL = 'https://accounts.cmp.optimizely.com/o/oauth2/v1/token'
-const API_BASE  = 'https://api.cmp.optimizely.com/v3'
 
 // Module-scoped token cache. Survives within a warm serverless instance; a cold
 // start just re-mints. Refreshed 60s before expiry.
@@ -121,70 +107,5 @@ export async function completePreview(
     body: JSON.stringify({ keyedPreviews }),
   })
   const body = await res.text()
-  return { ok: res.ok, status: res.status, body }
-}
-
-// ─── Requests: templates + work-request creation (Experimental) ────────────
-
-// GET /v3/templates — list of Request Type templates a work request can target.
-export async function listCmpTemplates(): Promise<{ templates: CmpTemplateSummary[]; raw: unknown }> {
-  const token = await getCmpAccessToken()
-  const res = await fetch(`${API_BASE}/templates`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) {
-    throw new Error(`CMP list templates failed: ${res.status} ${await res.text()}`)
-  }
-  const raw = await res.json()
-  return { templates: normalizeTemplateSummaries(raw), raw }
-}
-
-// GET /v3/templates/{id} — field definitions for one template. Shape is
-// unconfirmed (Experimental API) — see normalizeTemplateDetail.
-export async function getCmpTemplateDetail(templateId: string): Promise<{ detail: CmpTemplateDetail; raw: unknown }> {
-  const token = await getCmpAccessToken()
-  const res = await fetch(`${API_BASE}/templates/${encodeURIComponent(templateId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) {
-    throw new Error(`CMP get template failed: ${res.status} ${await res.text()}`)
-  }
-  const raw = await res.json()
-  return { detail: normalizeTemplateDetail(raw, templateId), raw }
-}
-
-export type CmpWorkRequestFormField = {
-  identifier: string
-  type:       string
-  values:     string[]
-}
-
-export type CmpWorkRequestPayload = {
-  templateId:  string
-  assignees?:  string[]
-  formFields:  CmpWorkRequestFormField[]
-}
-
-// POST /v3/work-requests — creates the work request in CMP.
-export async function createCmpWorkRequest(
-  payload: CmpWorkRequestPayload,
-): Promise<{ ok: boolean; status: number; body: unknown }> {
-  const token = await getCmpAccessToken()
-  const res = await fetch(`${API_BASE}/work-requests`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      template_id: payload.templateId,
-      assignees:   payload.assignees ?? [],
-      form_fields: payload.formFields.map(f => ({
-        identifier: f.identifier,
-        type:       f.type,
-        values:     f.values,
-      })),
-    }),
-  })
-  const text = await res.text()
-  let body: unknown = text
-  try { body = JSON.parse(text) } catch { /* not JSON — keep raw text */ }
   return { ok: res.ok, status: res.status, body }
 }

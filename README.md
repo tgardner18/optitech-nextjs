@@ -241,24 +241,8 @@ Visit **`/opti-admin`** on any deployment (e.g. [http://localhost:3000/opti-admi
 - **Dashboard** (`/opti-admin`) — a block-type inventory of the registered content types (grouped by content / media / data / layout category) plus a list of the most recently published/scheduled content.
 - **Component Usage** (`/opti-admin/component-usage`) — pick a block type and see which pages use it. Block types are counted by recursively scanning Visual Builder compositions (Section → Row → Column → Component); page types (`BlankExperience`, `OT_BlogPage`) are queried directly. Only content type keys in [`lib/admin/contentTypes.ts`](lib/admin/contentTypes.ts) may be queried.
 - **Content Calendar** (`/opti-admin/calendar`) — browse published and scheduled content by date across the CMS.
-- **Work Requests** (`/opti-admin/work-requests`) — an external-facing form (Sales, HR, Product, …) that creates a work request directly in **Optimizely CMP**, without giving the requester CMP access. Pick a CMP Request Type template, the form adapts to that template's fields, and submitting POSTs a work request to CMP server-side. See "Submitting a CMP Work Request" below — this is a presales demo, not production hardened, and it talks to CMP's Requests API, which is marked **Experimental** in Optimizely's docs.
 
 The **Analytics** and **Settings** sections in the sidebar are placeholders and are marked "Soon" — they are not yet wired up.
-
-### Submitting a CMP Work Request
-
-`/opti-admin/work-requests` lets someone outside CMP (Sales, HR, Product, …) file a work request into **Optimizely Content Marketing Platform** without needing a CMP seat. It's a template-driven form: pick a CMP **Request Type** template, the form renders that template's actual fields, and submitting creates the work request in CMP through server-side API routes — the requester never sees or holds a CMP credential.
-
-This uses CMP's **Requests** REST API (`/v3/templates`, `/v3/work-requests`), which Optimizely's docs mark **"Experimental"** — the contract could shift. The field-definition shape returned by `GET /v3/templates/{id}` wasn't confirmed ahead of time; [`app/api/opti-admin/cmp-templates/[id]/route.ts`](<app/api/opti-admin/cmp-templates/[id]/route.ts>) logs the raw response (non-production) so it can be checked against a live template, and [`lib/admin/cmpWorkRequests.ts`](lib/admin/cmpWorkRequests.ts) normalizes across a few plausible key-name variants rather than assuming one.
-
-**CMP-side setup:**
-
-1. **Reuse (or create) the CMP OAuth2 client-credentials App** — CMP → **Settings → Apps & Webhooks**. This is the same app used by [CMP Content Preview](#cmp-content-preview) above; both share `CMP_CLIENT_ID` / `CMP_CLIENT_SECRET`.
-2. **Set `CMP_DEFAULT_ASSIGNEE_ID`** — CMP rejects a work request with no assignee (`assignees` must have at least one entry), and an external requester has no way to know a CMP user/team id, so this app assigns every submission to one operator-configured default. Find a user or team id in CMP (e.g. from its profile URL or the CMP API) and set it as `CMP_DEFAULT_ASSIGNEE_ID`. Without it, submissions fail with a 503 naming the missing var.
-3. **Find a template id to test against** — CMP → **Requests → Templates**. Open the Request Type template you want to demo and copy its id (or hit `GET /api/opti-admin/cmp-templates` once logged into OptiAdmin, which lists every template CMP returns).
-4. Open `/opti-admin/work-requests`, pick that template from the dropdown, fill in the fields it renders, and submit — it lands in CMP under **Requests**, assigned to `CMP_DEFAULT_ASSIGNEE_ID`.
-
-**Requester context:** name / email / department are collected outside the CMP template (CMP's `form_fields` has no separate "requester" concept). The API route folds a "Submitted via external request form by …" line into the first `brief` / `text_area` / `richtext` field the template defines (joined into that field's single value — CMP rejects more than one value per non-multi-select field); if the template has none, that context is logged server-side but not attached to the CMP payload.
 
 ### Where things live
 
@@ -268,9 +252,6 @@ This uses CMP's **Requests** REST API (`/v3/templates`, `/v3/work-requests`), wh
 | Data / auth API routes | [`app/api/opti-admin/`](app/api/opti-admin/) |
 | UI components (shell, nav, clients) | [`components/admin/`](components/admin/) |
 | Auth helpers, Graph queries, content-type list | [`lib/admin/`](lib/admin/) |
-| CMP templates + work-request API routes | [`app/api/opti-admin/cmp-templates/`](app/api/opti-admin/cmp-templates/), [`app/api/opti-admin/work-requests/`](app/api/opti-admin/work-requests/) |
-| CMP templates/work-request API client (token reused from CMP Preview) | [`lib/cmpApi.ts`](lib/cmpApi.ts) |
-| Template field-shape types + normalization (Experimental API) | [`lib/admin/cmpWorkRequests.ts`](lib/admin/cmpWorkRequests.ts) |
 
 ## Deployment
 
