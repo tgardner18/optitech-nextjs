@@ -96,7 +96,12 @@ export default function WorkRequestClient() {
       .map(f => ({
         identifier: f.identifier,
         type:       f.type,
-        values:     data.getAll(f.identifier).map(String),
+        values:     data.getAll(f.identifier).map(v => {
+          const s = String(v)
+          // CMP requires full ISO datetime; date inputs return YYYY-MM-DD only.
+          if (f.type === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(s)) return `${s}T00:00:00`
+          return s
+        }),
       }))
 
     const requester = {
