@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import { getLocalizedContentByPath, getRequestBaseUrl, getRequestLocale } from '@/lib/optimizely'
 import { withAppContext } from '@optimizely/cms-sdk/react/server'
-import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
+import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import Script from 'next/script'
 
@@ -27,7 +27,7 @@ async function HomePage() {
       {dm.isEnabled && cmsUrl && (
         <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
       )}
-      {dm.isEnabled && <PreviewComponent />}
+      {dm.isEnabled && <NextPreviewComponent />}
       <CompositionRenderer nodes={exp.composition.nodes} />
     </>
   )

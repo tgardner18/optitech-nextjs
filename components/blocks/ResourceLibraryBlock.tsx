@@ -57,7 +57,7 @@ export type ResourceLibraryBlockProps = {
   title?:        string
   assets:        ResourceAsset[] | null
   styleOptions?: Partial<ResourceLibraryStyleOptions>
-  pa?:           (prop: string) => { 'data-epi-property-name'?: string }
+  pa?:           (prop?: string | { key: string }) => Record<string, string | undefined>
 }
 
 export default function ResourceLibraryBlock({

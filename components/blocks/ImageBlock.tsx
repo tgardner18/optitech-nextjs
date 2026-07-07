@@ -46,7 +46,7 @@ export type ImageBlockProps = {
   alt: string;
   caption?: string;
   styleOptions?: ImageStyleOptions;
-  previewAttrs?: Record<string, { "data-epi-property-name"?: string }>;
+  previewAttrs?: Record<string, Record<string, string | undefined>>;
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────

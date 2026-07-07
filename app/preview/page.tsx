@@ -3,7 +3,7 @@ import {
   OptimizelyComponent,
   withAppContext,
 } from '@optimizely/cms-sdk/react/server'
-import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
+import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
 import { getClient, getRequestBaseUrl } from '@/lib/optimizely'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import { getPractitioner } from '@/lib/practitioners'
@@ -208,7 +208,7 @@ async function PreviewPage({ searchParams }: Props) {
           id="optimizely-communication-injector"
         />
       )}
-      <PreviewComponent />
+      <NextPreviewComponent />
 
       {/* CMS-side external preview link — above all site chrome */}
       {externalPreviewUrl && (

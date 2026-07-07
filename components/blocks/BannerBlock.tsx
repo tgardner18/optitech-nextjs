@@ -174,7 +174,7 @@ export type BannerBlockProps = {
   primaryCta?:   { label: string; href: string }
   secondaryCta?: { label: string; href: string }
   styleOptions?: BannerStyleOptions
-  pa?:           (prop: string) => { 'data-epi-property-name'?: string }
+  pa?:           (prop?: string | { key: string }) => Record<string, string | undefined>
 }
 
 export default function BannerBlock({
