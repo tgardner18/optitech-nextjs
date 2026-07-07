@@ -72,15 +72,15 @@ function glowLine(tone: DividerTone): string {
   }
 }
 
-// Bloom gradient: same horizontal shape, tone color carried at ~28% alpha (baked
-// in so the resting opacity is 1 and the reveal can fade opacity 0 → 1 cleanly).
+// Bloom gradient: same horizontal shape. Brand/accent use the system bloom tokens
+// so they follow CMS theme overrides. Spectrum/aurora blend both hues at a fixed
+// alpha — no single token covers the multi-stop mix, so they stay hand-crafted.
 function glowBloom(tone: DividerTone): string {
-  const a = '0.28'
   switch (tone) {
-    case 'brand':    return `linear-gradient(to right, transparent 0%, oklch(from var(--ot-brand) l c h / ${a}) 15%, oklch(from var(--ot-brand) l c h / ${a}) 85%, transparent 100%)`
-    case 'accent':   return `linear-gradient(to right, transparent 0%, oklch(from var(--ot-accent) l c h / ${a}) 15%, oklch(from var(--ot-accent) l c h / ${a}) 85%, transparent 100%)`
-    case 'spectrum': return `linear-gradient(to right, transparent 0%, oklch(from var(--ot-brand) l c h / ${a}) 15%, oklch(from var(--ot-accent) l c h / ${a}) 85%, transparent 100%)`
-    case 'aurora':   return `linear-gradient(to right, transparent 0%, oklch(from var(--ot-brand) l c h / ${a}) 15%, oklch(from var(--ot-accent) l c h / ${a}) 50%, oklch(from var(--ot-brand) l c h / ${a}) 85%, transparent 100%)`
+    case 'brand':    return 'linear-gradient(to right, transparent 0%, var(--ot-bloom-brand-faint) 15%, var(--ot-bloom-brand-faint) 85%, transparent 100%)'
+    case 'accent':   return 'linear-gradient(to right, transparent 0%, var(--ot-bloom-accent-faint) 15%, var(--ot-bloom-accent-faint) 85%, transparent 100%)'
+    case 'spectrum': return 'linear-gradient(to right, transparent 0%, oklch(from var(--ot-brand) l c h / 0.28) 15%, oklch(from var(--ot-accent) l c h / 0.28) 85%, transparent 100%)'
+    case 'aurora':   return 'linear-gradient(to right, transparent 0%, oklch(from var(--ot-brand) l c h / 0.28) 15%, oklch(from var(--ot-accent) l c h / 0.28) 50%, oklch(from var(--ot-brand) l c h / 0.28) 85%, transparent 100%)'
     case 'neutral':
     default:         return 'linear-gradient(to right, transparent 0%, oklch(from var(--ot-fg-muted) l c h / 0.12) 15%, oklch(from var(--ot-fg-muted) l c h / 0.12) 85%, transparent 100%)'
   }
