@@ -390,7 +390,7 @@ function TriggerBar({
       if (isSide && mdUp) { left = 0; right = sw - 3 }  // vertical bar on the strip's left edge
       else                { top = y + h - 3 }           // 3px strip under the active trigger
     } else {
-      radius = tabStyle === 'pill' ? '9999px' : '4px'
+      radius = tabStyle === 'pill' ? '9999px' : 'var(--radius-ot-control)'
     }
     indicatorClip = `inset(${top}px ${right}px ${bottom}px ${left}px round ${radius})`
   }
@@ -478,7 +478,9 @@ function TriggerBar({
       isGlass && 'bg-white/5 [backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)] [isolation:isolate]',
     ].join(' '),
     tabStyle === 'buttonGroup' && [
-      'p-1 gap-0.5 rounded-xl',
+      // rounded-ot-surface ties border-radius to the site's Corner Style axis:
+      // 0px on Sharp, 4px on Soft, 10px on Rounded.
+      'p-1 gap-0.5 rounded-ot-surface',
       !isGlass && !isBrand && 'bg-fg/[0.07] border border-fg/[0.10]',
       isBrand  && 'bg-black/25 border border-white/15',
       isGlass  && [
@@ -750,8 +752,9 @@ function TriggerButton({
   // with brand-colored text — distinct from pill's solid brand fill.
 
   const bgActive = cn(
-    // Slightly raised: shadow layers give depth; translate-y lifts the chip above the track
-    'rounded-lg transition-[box-shadow,transform] duration-150',
+    // Slightly raised: shadow layers give depth; translate-y lifts the chip above the track.
+    // rounded-ot-control follows the Corner Style axis: 0px Sharp, 4px Soft, 8px Rounded.
+    'rounded-ot-control transition-[box-shadow,transform] duration-150',
     color === 'canvas' || color === 'surface'
       ? [
           'bg-brand text-fg-on-brand',
@@ -779,11 +782,11 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'flex-1 justify-center rounded-lg px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
+        'flex-1 justify-center rounded-ot-control px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
         isSide && 'md:flex-none md:w-full md:justify-start md:text-left',
         isActive
           ? (slideIndicator ? activeTextClass('buttonGroup', color) : bgActive)
-          : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/6 rounded-lg'),
+          : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/6 rounded-ot-control'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
