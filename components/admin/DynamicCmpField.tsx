@@ -35,6 +35,16 @@ export default function DynamicCmpField({ field }: { field: CmpFieldDef }) {
   }
 
   switch (type) {
+    case 'section':
+      return (
+        <div className="flex items-center gap-md pt-xs">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-fg-muted/50 whitespace-nowrap">
+            {label}
+          </span>
+          <div className="h-px flex-1 bg-fg/[0.07]" />
+        </div>
+      )
+
     case 'text_area':
     case 'brief':
     case 'richtext':
@@ -84,9 +94,9 @@ export default function DynamicCmpField({ field }: { field: CmpFieldDef }) {
             id={identifier}
             name={identifier}
             value="true"
-            className="w-4 h-4 shrink-0 rounded-none accent-[var(--ot-brand)]"
+            className="w-4 h-4 shrink-0 rounded-none accent-brand"
           />
-          <span className="text-fg-muted group-has-[:checked]:text-fg transition-colors duration-150 ease-quick">
+          <span className="text-fg-muted group-has-checked:text-fg transition-colors duration-150 ease-quick">
             {label}
             {required && <span className="text-brand ml-1.5" aria-hidden="true">*</span>}
           </span>

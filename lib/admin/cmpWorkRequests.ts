@@ -37,9 +37,10 @@ export type CmpFieldOption = {
 
 export type CmpFieldDef = {
   identifier:     string
-  type:           string // text | text_area | brief | date | file | dropdown | radio_button | checkbox | simple_number | currency_number | percentage_number | richtext | label | ...
+  type:           string // text | text_area | brief | date | file | dropdown | radio_button | checkbox | simple_number | currency_number | percentage_number | richtext | label | section | ...
   label:          string
   required:       boolean
+  isReadonly?:    boolean
   options?:       CmpFieldOption[]
   isMultiSelect?: boolean
 }
@@ -139,11 +140,14 @@ export function normalizeTemplateDetail(raw: unknown, fallbackId: string): CmpTe
 
       const isMultiSelect = meta ? pickBool(meta, ['is_multi_select', 'isMultiSelect']) : false
 
+      const isReadonly = pickBool(entry, ['is_readonly', 'isReadonly'])
+
       return {
         identifier,
         type,
         label: pickString(entry, ['label', 'name', 'title']) ?? identifier,
         required: pickBool(entry, ['is_required', 'required', 'isRequired']),
+        ...(isReadonly ? { isReadonly } : {}),
         ...(options.length > 0 ? { options, isMultiSelect } : {}),
       }
     })

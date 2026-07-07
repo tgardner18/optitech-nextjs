@@ -92,7 +92,7 @@ export default function WorkRequestClient() {
     const data = new FormData(e.currentTarget)
 
     const formFields: CmpWorkRequestFormField[] = template.fields
-      .filter(f => f.type !== 'file') // no input rendered for these — see DynamicCmpField
+      .filter(f => f.type !== 'file' && f.type !== 'section') // no input rendered for these — see DynamicCmpField
       .map(f => ({
         identifier: f.identifier,
         type:       f.type,
