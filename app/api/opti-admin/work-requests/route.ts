@@ -8,7 +8,8 @@ import { cmpConfigured, createCmpWorkRequest, type CmpWorkRequestFormField } fro
 // body only accepts template_id/assignees/form_fields (no separate "requester"
 // concept), so this is the fold-in point described in the product spec.
 // brief/richtext are excluded from submission (CMP proprietary value format).
-const TEXT_LIKE_TYPES = new Set(['text_area', 'text'])
+// Only fold requester context into text_area — short `text` fields (e.g. Title) must not be contaminated.
+const TEXT_LIKE_TYPES = new Set(['text_area'])
 
 type RequestBody = {
   templateId: string

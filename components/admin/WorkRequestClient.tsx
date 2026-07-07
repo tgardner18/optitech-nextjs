@@ -294,10 +294,10 @@ export default function WorkRequestClient() {
               <div
                 role="status"
                 className="flex items-start gap-sm px-md py-sm border text-[0.8125rem]"
-                style={{ background: 'oklch(from var(--ot-brand) calc(l * 0.25) calc(c * 0.6) h / 0.18)', borderColor: 'oklch(from var(--ot-brand) calc(l * 0.9) c h / 0.3)' }}
+                style={{ background: 'oklch(96% 0.06 145)', borderColor: 'oklch(72% 0.14 145)' }}
               >
-                <CheckCircle2 size={14} strokeWidth={2} className="shrink-0 mt-px text-brand" aria-hidden="true" />
-                <span className="text-fg">{statusMessage}</span>
+                <CheckCircle2 size={14} strokeWidth={2} className="shrink-0 mt-px" style={{ color: 'oklch(48% 0.17 145)' }} aria-hidden="true" />
+                <span style={{ color: 'oklch(28% 0.08 145)' }}>{statusMessage}</span>
               </div>
             )}
             {status === 'error' && (
