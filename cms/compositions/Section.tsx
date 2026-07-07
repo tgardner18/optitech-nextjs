@@ -13,7 +13,7 @@ type Props = {
 function BlockWrapper({ children, node }: { children: ReactNode; node: any }) {
   const { pa } = getPreviewUtils(node)
   return (
-    <div {...pa(node)} style={{ display: 'flex', flexDirection: 'column', flex: '1', minWidth: 0 }}>
+    <div {...pa(node)} style={{ display: 'flex', flexDirection: 'column', flex: '1', width: '100%', minWidth: 0 }}>
       {children}
     </div>
   )
