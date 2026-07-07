@@ -478,15 +478,13 @@ function TriggerBar({
       isGlass && 'bg-white/5 [backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)] [isolation:isolate]',
     ].join(' '),
     tabStyle === 'buttonGroup' && [
-      // w-fit makes the track hug its content (proper segmented-control look).
-      // max-w-full + overflow-x-auto preserve mobile scroll when tabs overflow.
-      'w-fit max-w-full p-1 gap-0.5 rounded-lg',
-      !isGlass && !isBrand && 'bg-fg/[0.07] border border-fg/[0.12] shadow-sm',
+      'p-1 gap-0.5 rounded-xl',
+      !isGlass && !isBrand && 'bg-fg/[0.07] border border-fg/[0.10]',
       isBrand  && 'bg-black/25 border border-white/15',
       isGlass  && [
         'bg-black/25 border border-white/15',
         '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
-        '[isolation:isolate]',
+        'isolate',
       ].join(' '),
       isSide && 'md:flex-col md:w-full',
     ].join(' '),
@@ -752,10 +750,19 @@ function TriggerButton({
   // with brand-colored text — distinct from pill's solid brand fill.
 
   const bgActive = cn(
-    'rounded',
+    // Slightly raised: shadow layers give depth; translate-y lifts the chip above the track
+    'rounded-lg transition-[box-shadow,transform] duration-150',
     color === 'canvas' || color === 'surface'
-      ? 'bg-brand text-fg-on-brand shadow-[0_1px_8px_color-mix(in_oklch,var(--ot-brand)_45%,transparent)]'
-      : 'bg-white/95 text-brand shadow-sm',
+      ? [
+          'bg-brand text-fg-on-brand',
+          'shadow-[0_1px_2px_rgba(0,0,0,0.25),0_4px_18px_color-mix(in_oklch,var(--ot-brand)_45%,transparent)]',
+          '-translate-y-px',
+        ].join(' ')
+      : [
+          'bg-white/95 text-brand',
+          'shadow-[0_1px_2px_rgba(0,0,0,0.2),0_3px_10px_rgba(255,255,255,0.12)]',
+          '-translate-y-px',
+        ].join(' '),
   )
 
   const progressOverlay =
@@ -772,11 +779,11 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'rounded px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
-        isSide && 'md:w-full md:text-left',
+        'flex-1 justify-center rounded-lg px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
+        isSide && 'md:flex-none md:w-full md:justify-start md:text-left',
         isActive
           ? (slideIndicator ? activeTextClass('buttonGroup', color) : bgActive)
-          : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/5 rounded'),
+          : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/6 rounded-lg'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}

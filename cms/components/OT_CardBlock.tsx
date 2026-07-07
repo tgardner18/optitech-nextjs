@@ -15,7 +15,7 @@ export default function OT_CardBlock({ content, displaySettings = {} }: Props) {
   const imageSrc = content.image ? src(content.image) : undefined
 
   return (
-    <div {...pa(content.__composition)} className="w-full h-full">
+    <div {...pa(content.__composition)} className="w-full h-full flex-1">
       <CardBlock
         heading={content.Heading ?? ''}
         eyebrow={content.Eyebrow ?? undefined}
