@@ -40,7 +40,7 @@ export type CardBlockProps = {
   cta?:          { label: string; href: string };
   className?:    string;
   styleOptions?: CardStyleOptions;
-  pa?: (prop: string) => { "data-epi-property-name"?: string };
+  pa?: (prop?: string | { key: string }) => Record<string, string | undefined>;
 };
 
 // ─── Color scheme ─────────────────────────────────────────────────────────────

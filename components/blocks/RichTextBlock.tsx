@@ -164,7 +164,7 @@ const innerCva = cva("w-full", {
 export type RichTextBlockProps = {
   content: Parameters<typeof RichText>[0]['content'] | null;
   styleOptions?: RichTextStyleOptions;
-  pa?: (prop: string) => { "data-epi-property-name"?: string };
+  pa?: (prop?: string | { key: string }) => Record<string, string | undefined>;
 };
 
 export default function RichTextBlock({

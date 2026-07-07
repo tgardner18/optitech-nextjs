@@ -164,7 +164,7 @@ export type HeroBlockProps = {
   /** Non-image override — SVG, code sample, illustration, etc. Takes precedence over visualSrc */
   visual?: ReactNode;
   styleOptions?: HeroStyleOptions;
-  pa?: (prop: string) => { "data-epi-property-name"?: string };
+  pa?: (prop?: string | { key: string }) => Record<string, string | undefined>;
 };
 
 export default function HeroBlock({

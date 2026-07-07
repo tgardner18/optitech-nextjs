@@ -29,7 +29,7 @@ export type VideoBlockProps = {
   title: string;
   caption?: string;
   styleOptions?: VideoStyleOptions;
-  previewAttrs?: Record<string, { "data-epi-property-name"?: string }>;
+  previewAttrs?: Record<string, Record<string, string | undefined>>;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
