@@ -176,30 +176,37 @@ export default function ShowcaseNav() {
       {hasSubItems && (
         <>
           {/* Search/filter row — sits between category tabs and item chips */}
-          <div className="flex items-center gap-sm px-md py-1.5 border-b border-fg/8">
-            <Search size={12} className="text-fg-muted/35 shrink-0" aria-hidden />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={`Filter ${allItems.length} ${activeCategory?.label.toLowerCase() ?? 'items'}…`}
-              aria-label="Filter showcase items"
-              className="flex-1 min-w-0 bg-transparent text-label text-fg placeholder:text-fg-muted/30 outline-none"
-            />
-            {query && (
-              <>
-                <span className="text-label tabular-nums text-fg-muted/35 shrink-0">
-                  {filteredItems.length}/{allItems.length}
-                </span>
-                <button
-                  onClick={() => setQuery('')}
-                  aria-label="Clear filter"
-                  className="text-fg-muted/40 hover:text-fg-muted transition-colors shrink-0"
-                >
-                  <X size={12} />
-                </button>
-              </>
-            )}
+          <div className="px-md py-2 border-b border-fg/10">
+            <div className={[
+              'flex items-center gap-sm rounded border px-sm py-1.5',
+              'bg-fg/4 border-fg/15',
+              'focus-within:border-brand/50 focus-within:bg-brand/3',
+              'transition-colors duration-150 ease-quick',
+            ].join(' ')}>
+              <Search size={13} className="text-fg-muted/55 shrink-0" aria-hidden />
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={`Filter ${allItems.length} ${activeCategory?.label.toLowerCase() ?? 'items'}…`}
+                aria-label="Filter showcase items"
+                className="flex-1 min-w-0 bg-transparent text-label text-fg placeholder:text-fg-muted/50 outline-none"
+              />
+              {query && (
+                <>
+                  <span className="text-label tabular-nums text-fg-muted/50 shrink-0 font-mono">
+                    {filteredItems.length}/{allItems.length}
+                  </span>
+                  <button
+                    onClick={() => setQuery('')}
+                    aria-label="Clear filter"
+                    className="text-fg-muted/50 hover:text-fg transition-colors shrink-0"
+                  >
+                    <X size={12} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Item chip row with desktop scroll chevrons */}

@@ -12,16 +12,22 @@ export type ButtonsControl = {
   key: string
   label: string
   options: { label: string; value: string }[]
-  /** Hide this control when predicate returns false */
   visible?: (state: ControlState) => boolean
 }
 
-export type ControlDef = ButtonsControl
+export type SelectControl = {
+  type: 'select'
+  key: string
+  label: string
+  options: { label: string; value: string }[]
+  visible?: (state: ControlState) => boolean
+}
+
+export type ControlDef = ButtonsControl | SelectControl
 
 export interface BlockPlaygroundProps {
   controls: ControlDef[]
   defaults: ControlState
-  /** Render function receives current control state */
   children: (state: ControlState) => React.ReactNode
 }
 
@@ -42,7 +48,6 @@ export function BlockPlayground({ controls, defaults, children }: BlockPlaygroun
 
   const visibleControls = controls.filter(c => c.visible?.(state) !== false)
 
-  // Compact state readout in monospace
   const stateLabel = visibleControls
     .map(c => `${c.key}: "${state[c.key]}"`)
     .join(' · ')
@@ -56,31 +61,42 @@ export function BlockPlayground({ controls, defaults, children }: BlockPlaygroun
             <span className="text-label tracking-label uppercase text-fg-muted/50 font-semibold shrink-0 select-none">
               {control.label}
             </span>
-            {/* Segmented button group */}
-            <div className="flex items-stretch divide-x divide-fg/10 border border-fg/10 overflow-hidden">
-              {control.options.map(opt => {
-                const isActive = state[control.key] === opt.value
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => set(control.key, opt.value)}
-                    className={[
-                      'px-2.5 py-1 text-label font-semibold tracking-label uppercase whitespace-nowrap',
-                      'transition-colors duration-100 ease-quick',
-                      isActive
-                        ? 'bg-brand text-fg-on-brand'
-                        : 'text-fg-muted hover:text-fg hover:bg-fg/5 bg-transparent',
-                    ].join(' ')}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
+
+            {control.type === 'select' ? (
+              <select
+                value={state[control.key]}
+                onChange={e => set(control.key, e.target.value)}
+                className="bg-canvas border border-fg/15 text-label text-fg font-semibold px-2 py-1 outline-none focus:border-brand/50 transition-colors duration-100 cursor-pointer"
+              >
+                {control.options.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="flex items-stretch divide-x divide-fg/10 border border-fg/10 overflow-hidden">
+                {control.options.map(opt => {
+                  const isActive = state[control.key] === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => set(control.key, opt.value)}
+                      className={[
+                        'px-2.5 py-1 text-label font-semibold tracking-label uppercase whitespace-nowrap',
+                        'transition-colors duration-100 ease-quick',
+                        isActive
+                          ? 'bg-brand text-fg-on-brand'
+                          : 'text-fg-muted hover:text-fg hover:bg-fg/5 bg-transparent',
+                      ].join(' ')}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
         ))}
 
-        {/* Reset — only shown when state differs from defaults */}
         {isDirty && (
           <button
             onClick={reset}
