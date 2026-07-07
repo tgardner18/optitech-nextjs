@@ -44,9 +44,19 @@ export default function DynamicCmpField({ field }: { field: CmpFieldDef }) {
       )
 
     case 'text_area':
+      return <TextareaField id={identifier} name={identifier} label={label} required={required} />
+
     case 'brief':
     case 'richtext':
-      return <TextareaField id={identifier} name={identifier} label={label} required={required} />
+      // CMP expects a proprietary structured value for brief/richtext fields that
+      // plain text can't satisfy — excluded from submission, fill in CMP after creation.
+      return (
+        <FieldWrapper id={identifier} label={label}>
+          <p className="text-[0.8125rem] text-fg-muted/60 italic">
+            This field uses CMP&apos;s rich-text editor — add your {label.toLowerCase()} directly in CMP after the request is created.
+          </p>
+        </FieldWrapper>
+      )
 
     case 'date':
       return (
