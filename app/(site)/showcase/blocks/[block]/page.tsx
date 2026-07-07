@@ -38,6 +38,8 @@ import type { BlogFeedPost }         from '@/lib/blogFeed'
 import type { EventCardData }        from '@/lib/events'
 import type { PractitionerCardData } from '@/lib/practitioners'
 import type { LocationData }          from '@/lib/locations'
+import HeroPlayground    from '../hero-playground'
+import DividerPlayground from '../divider-playground'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -2698,7 +2700,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
   switch (block as BlockSlug) {
-    case 'hero':         return <HeroShowcase />
+    case 'hero':         return <><BlockHeader slug="hero" /><HeroPlayground /></>
     case 'card':         return <CardShowcase />
     case 'primary-text': return <PrimaryTextShowcase />
     case 'quote':        return <QuoteShowcase />
@@ -2716,7 +2718,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'banner':            return <BannerShowcase />
     case 'resource-library': return <ResourceLibraryShowcase />
     case 'callout':          return <CalloutShowcase />
-    case 'divider':          return <DividerShowcase />
+    case 'divider':          return <><BlockHeader slug="divider" /><DividerPlayground /></>
     case 'event-listing':    return <EventListingShowcase />
     case 'practitioner-listing': return <PractitionerListingShowcase />
     case 'location-listing':     return <LocationListingShowcase />
