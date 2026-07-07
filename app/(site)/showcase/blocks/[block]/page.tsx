@@ -26,6 +26,10 @@ import BlogFeedBlock                 from '@/components/blocks/BlogFeedBlock'
 import EventListingBlock             from '@/components/blocks/EventListingBlock'
 import PractitionerListingBlock      from '@/components/blocks/PractitionerListingBlock'
 import LocationListingBlock          from '@/components/blocks/LocationListingBlock'
+import ContentRecommendationsBlock    from '@/components/blocks/ContentRecommendationsBlock'
+import type { ContentRecItem }         from '@/components/blocks/ContentRecommendationsBlock'
+import ProductRecommendationsBlock     from '@/components/blocks/ProductRecommendationsBlock'
+import type { ProductRec }             from '@/components/blocks/ProductRecommendationsBlock'
 import {
   ArrowRight, Zap, ChevronRight, Play, Download,
   Sparkles, Send, Rocket, Star, Plus,
@@ -34,6 +38,21 @@ import type { BlogFeedPost }         from '@/lib/blogFeed'
 import type { EventCardData }        from '@/lib/events'
 import type { PractitionerCardData } from '@/lib/practitioners'
 import type { LocationData }          from '@/lib/locations'
+import HeroPlayground        from '../hero-playground'
+import DividerPlayground     from '../divider-playground'
+import CardPlayground        from '../card-playground'
+import PrimaryTextPlayground from '../primary-text-playground'
+import QuotePlayground       from '../quote-playground'
+import ImagePlayground       from '../image-playground'
+import VideoPlayground       from '../video-playground'
+import StatPlayground        from '../stat-playground'
+import FeatureGridPlayground from '../feature-grid-playground'
+import AccordionPlayground   from '../accordion-playground'
+import TabsPlayground        from '../tabs-playground'
+import BannerPlayground      from '../banner-playground'
+import CalloutPlayground     from '../callout-playground'
+import ButtonPlayground      from '../button-playground'
+import TrustRailPlayground   from '../trust-rail-playground'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -42,6 +61,7 @@ const BLOCK_SLUGS = [
   'image', 'video', 'stat', 'feature-grid', 'trust-rail',
   'accordion', 'tabs', 'blog-feed', 'button', 'chart', 'banner', 'resource-library',
   'callout', 'divider', 'event-listing', 'practitioner-listing', 'location-listing',
+  'content-recommendations', 'product-recommendations',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -69,6 +89,8 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'event-listing':    { label: 'EventListingBlock',     cmsKey: 'OT_EventListingBlock',     description: 'CMS-driven listing of Event Pages with three toggleable views: card grid, list (calendar-style date blocks), and a monthly calendar with day agenda. A segmented icon control switches views; type-filter chips and a past-events toggle refine the set. Works across technology, healthcare, legal, and financial events on both canvas and surface grounds. In production, events are fetched at render time from published Event Pages; the showcase uses static fixtures.' },
   'practitioner-listing': { label: 'PractitionerListingBlock', cmsKey: 'OT_PractitionerListingBlock', description: 'CMS-driven, vertical-agnostic people directory pulled from Practitioner Profiles. Grid (cards) or list (rows) layout, client-side search across name / credentials / specialty, and three multi-select filters — specialty, location, and language — derived dynamically from the loaded set, never a fixed list. Values OR within a filter and AND across filters. Scope it to one vertical with the Group Tag Filter (e.g. "medical"). Squared portraits with a chromatic brand bloom and a designed initials fallback. In production, practitioners are fetched at render time; the showcase uses static fixtures spanning medical, legal, and technology verticals.' },
   'location-listing': { label: 'LocationListingBlock', cmsKey: 'OT_LocationListingBlock', description: 'CMS-driven, vertical-agnostic location directory pulled from Location Profiles. Three toggleable views: a Mapbox dark map paired with a synchronized scrollable location rail (click a marker or rail card to fly + open its popup), an image-plate card grid, and a compact list. Client-side search across name / label / address, and a single-select label filter derived dynamically from the loaded set — never a fixed list, "All" always first. Scope it to one vertical with the Group Tag Filter (e.g. "optimedical"). Custom brand-beacon markers and fully-restyled dark-glass popups. In production, addresses are geocoded via the Mapbox API at render time (24h ISR cache); the showcase uses static fixtures with pre-resolved coordinates, so it makes no API calls.' },
+  'content-recommendations': { label: 'ContentRecommendationsBlock', cmsKey: 'OT_ContentRecommendationsBlock', description: 'Personalized content grid from Optimizely Content Recommendations (Idio). The ia.js tracker builds a per-visitor profile and the block fetches recommendations server-side at render time using the delivery key configured on the ThemeManager. Three color schemes. In production, items are personalized per visitor; the showcase uses static sample articles to demonstrate the layout.' },
+  'product-recommendations': { label: 'ProductRecommendationsBlock', cmsKey: 'OT_ProductRecommendationsBlock', description: 'Live product recommendations from Optimizely Product Recommendations (Peerius). The engine returns recommendations client-side (via the peerius:recs event) for the configured widget position; the widget renders a card grid with a "Show all" expand. When the engine returns nothing it shows an empty state. In production, recs are live and personalized; the showcase uses static sample products.' },
 }
 
 export function generateStaticParams() {
@@ -2602,32 +2624,119 @@ function LocationListingShowcase() {
   )
 }
 
+// ─── Content Recommendations ────────────────────────────────────────────────
+
+const SAMPLE_CONTENT_RECS: ContentRecItem[] = [
+  { title: 'How editorial teams ship faster with a headless CMS', abstract: 'A field guide to decoupling content from presentation without losing the WYSIWYG comfort editors expect.', linkUrl: '#', imageUrl: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80&fit=crop', topic: 'Insights', source: 'OptiTech Journal', author: 'Dana Okafor' },
+  { title: 'Personalization that respects the reader', abstract: 'Relevance beats volume. Here is how to tune content recommendations so every visit feels considered, not creepy.', linkUrl: '#', imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80&fit=crop', topic: 'Strategy', source: 'OptiTech Journal', author: 'Marcus Lee' },
+  { title: 'Measuring what a recommendation is worth', abstract: 'Click-through is a vanity metric. Tie recommendations to downstream conversion to know their real lift.', linkUrl: '#', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80&fit=crop', topic: 'Analytics', source: 'OptiTech Journal', author: 'Priya Nair' },
+]
+
+function ContentRecommendationsShowcase() {
+  return (
+    <>
+      <BlockHeader slug="content-recommendations" />
+
+      <div className="px-md pb-sm lg:px-lg pt-md">
+        <p className="text-label text-fg-muted/60 leading-body max-w-[65ch]">
+          In production, items are fetched server-side per visitor using the Content Recommendations delivery key on the ThemeManager. The showcase uses static sample articles to demonstrate the layout across color schemes.
+        </p>
+      </div>
+
+      <VariantGroup label="Color schemes" />
+      {(['canvas', 'surface', 'brand'] as const).map(color => (
+        <div key={color} className="border-t border-fg/5">
+          <VariantLabel label={`color: "${color}"`} />
+          <ContentRecommendationsBlock
+            heading="Recommended for you"
+            subheading="Handpicked reading based on what you have been exploring."
+            items={SAMPLE_CONTENT_RECS}
+            color={color}
+          />
+        </div>
+      ))}
+
+      <VariantGroup label="Empty state" note="Rendered when the delivery API returns no items for the visitor." />
+      <div className="border-t border-fg/5">
+        <ContentRecommendationsBlock heading="Recommended for you" items={[]} color="canvas" />
+      </div>
+      <div className="pb-xl" />
+    </>
+  )
+}
+
+// ─── Product Recommendations ─────────────────────────────────────────────────
+
+const SAMPLE_PRODUCT_RECS: ProductRec[] = [
+  { id: 1, title: 'OptiTech Analytics Cloud', url: '#', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80&fit=crop', description: 'Real-time product analytics with warehouse-native modeling and no sampling.', price: 'From $499/mo' },
+  { id: 2, title: 'OptiTech Edge CDN', url: '#', img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80&fit=crop', description: 'Sub-20ms global delivery with programmable edge functions.', price: 'From $99/mo' },
+  { id: 3, title: 'OptiTech Identity', url: '#', img: 'https://images.unsplash.com/photo-1618044733300-9472054094ee?w=600&q=80&fit=crop', description: 'Passwordless auth, SSO, and fine-grained authorization in one SDK.', price: 'From $199/mo' },
+  { id: 4, title: 'OptiTech Data Pipeline', url: '#', img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80&fit=crop', description: 'Streaming ETL with schema enforcement and one-click connectors.', price: 'From $299/mo' },
+]
+
+function ProductRecommendationsShowcase() {
+  return (
+    <>
+      <BlockHeader slug="product-recommendations" />
+
+      <div className="px-md pb-sm lg:px-lg pt-md">
+        <p className="text-label text-fg-muted/60 leading-body max-w-[65ch]">
+          In production, recommendations arrive live from the Peerius engine via the <code className="font-mono">peerius:recs</code> event. The showcase passes static sample products so the card grid and &ldquo;Show all&rdquo; behavior render without a live engine.
+        </p>
+      </div>
+
+      <VariantGroup label="Color schemes · initial count 3" />
+      {(['canvas', 'surface', 'brand'] as const).map(color => (
+        <div key={color} className="border-t border-fg/5">
+          <VariantLabel label={`color: "${color}"`} />
+          <ProductRecommendationsBlock
+            heading="You might also like"
+            subheading="Recommended for teams like yours."
+            initialCount={3}
+            showAllLabel="Show all"
+            color={color}
+            initialRecs={SAMPLE_PRODUCT_RECS}
+          />
+        </div>
+      ))}
+
+      <VariantGroup label="Show-all expand · initialCount 3 of 4" note="When the engine returns more than the initial count, a Show-all control reveals the rest." />
+      <div className="border-t border-fg/5">
+        <ProductRecommendationsBlock initialCount={3} showAllLabel="Show all 4" color="canvas" initialRecs={SAMPLE_PRODUCT_RECS} />
+      </div>
+      <div className="pb-xl" />
+    </>
+  )
+}
+
 export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
   switch (block as BlockSlug) {
-    case 'hero':         return <HeroShowcase />
-    case 'card':         return <CardShowcase />
-    case 'primary-text': return <PrimaryTextShowcase />
-    case 'quote':        return <QuoteShowcase />
+    case 'hero':         return <><BlockHeader slug="hero" /><HeroPlayground /></>
+    case 'card':         return <><BlockHeader slug="card" /><CardPlayground /></>
+    case 'primary-text': return <><BlockHeader slug="primary-text" /><PrimaryTextPlayground /></>
+    case 'quote':        return <><BlockHeader slug="quote" /><QuotePlayground /></>
     case 'rich-text':    return <RichTextShowcase />
-    case 'image':        return <ImageShowcase />
-    case 'video':        return <VideoShowcase />
-    case 'stat':         return <StatShowcase />
-    case 'feature-grid': return <FeatureGridShowcase />
-    case 'trust-rail':   return <TrustRailShowcase />
-    case 'accordion':    return <AccordionShowcase />
-    case 'tabs':         return <TabsShowcase />
+    case 'image':        return <><BlockHeader slug="image" /><ImagePlayground /></>
+    case 'video':        return <><BlockHeader slug="video" /><VideoPlayground /></>
+    case 'stat':         return <><BlockHeader slug="stat" /><StatPlayground /></>
+    case 'feature-grid': return <><BlockHeader slug="feature-grid" /><FeatureGridPlayground /></>
+    case 'trust-rail':   return <><BlockHeader slug="trust-rail" /><TrustRailPlayground /></>
+    case 'accordion':    return <><BlockHeader slug="accordion" /><AccordionPlayground /></>
+    case 'tabs':         return <><BlockHeader slug="tabs" /><TabsPlayground /></>
     case 'blog-feed':    return <BlogFeedShowcase />
-    case 'button':       return <ButtonShowcase />
+    case 'button':       return <><BlockHeader slug="button" /><ButtonPlayground /></>
     case 'chart':        return <ChartShowcase />
-    case 'banner':            return <BannerShowcase />
+    case 'banner':            return <><BlockHeader slug="banner" /><BannerPlayground /></>
     case 'resource-library': return <ResourceLibraryShowcase />
-    case 'callout':          return <CalloutShowcase />
-    case 'divider':          return <DividerShowcase />
+    case 'callout':          return <><BlockHeader slug="callout" /><CalloutPlayground /></>
+    case 'divider':          return <><BlockHeader slug="divider" /><DividerPlayground /></>
     case 'event-listing':    return <EventListingShowcase />
     case 'practitioner-listing': return <PractitionerListingShowcase />
     case 'location-listing':     return <LocationListingShowcase />
+    case 'content-recommendations': return <ContentRecommendationsShowcase />
+    case 'product-recommendations': return <ProductRecommendationsShowcase />
     default:                 return notFound()
   }
 }

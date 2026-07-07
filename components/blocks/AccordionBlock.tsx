@@ -222,7 +222,7 @@ export default function AccordionBlock({
   // Default value for Radix (single mode opens first item; multiple opens none)
   const defaultValue =
     defaultOpen && visibleItems.length > 0
-      ? (openMode === 'single' ? 'item-0' : ['item-0'])
+      ? (openMode === 'single' ? 'item-0' : visibleItems.length >= 2 ? ['item-0', 'item-1'] : ['item-0'])
       : (openMode === 'single' ? undefined  : [])
 
   return (
@@ -230,7 +230,7 @@ export default function AccordionBlock({
       className={sectionCva({ color })}
       data-theme={isDarkSurface ? 'dark' : undefined}
     >
-      <div className="max-w-screen-md mx-auto">
+      <div className="max-w-3xl mx-auto">
 
         {/* ── Block header ─────────────────────────────────────────────────── */}
         {(eyebrow || headline) && (

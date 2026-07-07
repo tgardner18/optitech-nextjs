@@ -10,7 +10,7 @@ import {
   Activity,
   Globe,
   Users,
-  ClipboardList,
+  FlaskConical,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -37,9 +37,9 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'CMP',
+    label: 'Demo',
     items: [
-      { href: '/opti-admin/work-requests', label: 'Work Requests', icon: ClipboardList },
+      { href: '/opti-admin/demo-controls', label: 'Demo Controls', icon: FlaskConical },
     ],
   },
   {

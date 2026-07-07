@@ -162,8 +162,8 @@ function ImpactHeader({
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(62% 85% at 10% -8%, oklch(from var(--ot-brand) l c h / 0.34) 0%, transparent 58%), ' +
-            'radial-gradient(58% 82% at 96% 110%, oklch(from var(--ot-accent) l c h / 0.28) 0%, transparent 58%)',
+            'radial-gradient(62% 85% at 10% -8%, var(--ot-bloom-brand-faint) 0%, transparent 58%), ' +
+            'radial-gradient(58% 82% at 96% 110%, var(--ot-bloom-accent-faint) 0%, transparent 58%)',
         }}
       />
 

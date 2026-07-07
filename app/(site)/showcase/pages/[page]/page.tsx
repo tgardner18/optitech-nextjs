@@ -1,8 +1,8 @@
 import type { Metadata }       from 'next'
 import { notFound }             from 'next/navigation'
 import { SectionLabel }         from '../../components'
-import BlogPage from '@/components/pages/BlogPage'
 import EventPage from '@/components/pages/EventPage'
+import BlogPlayground from '../blog-playground'
 
 // ─── Static params ─────────────────────────────────────────────────────────
 
@@ -24,104 +24,6 @@ export async function generateMetadata({
   const label = labels[page]
   if (!label) return {}
   return { title: `${label} — Pages — Showcase — Site Accelerator` }
-}
-
-// ─── Mock data ─────────────────────────────────────────────────────────────
-
-const MOCK_AUTHOR = {
-  name:  'Nadia Okafor',
-  role:  'Staff Platform Engineer',
-  photo: { url: { default: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80&fit=crop&crop=faces' } },
-  bio:   { html: '<p>Nadia leads platform reliability at Acme, specialising in resilient systems and fast, dependable delivery. She speaks at industry conferences and writes about systems design on her personal blog.</p>' },
-  linkedIn: 'https://linkedin.com',
-  twitter:  'https://x.com',
-}
-
-const MOCK_BASE = {
-  _metadata: {
-    key:       'showcase-blog-article',
-    published: '2026-05-15T09:00:00Z',
-    url:       { default: '/blog/architecture-sub-millisecond-delivery' },
-  },
-  headline:    'Built for Speed: How We Keep Every Experience Fast at Any Scale',
-  subHeadline: 'A look inside the choices that keep the platform quick and dependable, even at the busiest moments.',
-  topic:       'engineering',
-  authorRef:   MOCK_AUTHOR,
-  readTime:    '8 min read',
-  featuredImage: { url: { default: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80&fit=crop' } },
-  body: {
-    html: `
-      <p>At Acme, we have spent the last three years obsessing over a single question: what does it take to deliver a fast, reliable experience at global scale, even at the busiest moments, without ever cutting corners?</p>
-      <p>The answer is not a single clever trick. It is a commitment to speed at every layer — from how we store your content to how we deliver changes everywhere your audience is.</p>
-      <h2>Where speed comes from</h2>
-      <p>Every page request follows the same path. A visitor arrives, we find the right content, match it to who they are, and serve the right experience. Simple to describe, demanding in practice when you are doing it thousands of times every second.</p>
-      <p>The insight that unlocked our performance is that content changes far less often than it is viewed. A page might change once a day; it is seen thousands of times. That difference is the foundation of everything else.</p>
-      <h2>Ready close to your audience</h2>
-      <p>We keep your content ready to serve wherever your audience is, so there is no waiting behind the scenes. Updates reach every region within moments of you pressing publish.</p>
-      <h2>The right experience, instantly</h2>
-      <p>The work of matching each visitor to the right experience is done ahead of time, not while they wait. That keeps every page fast, no matter how detailed the targeting behind it.</p>
-    `,
-  },
-}
-
-const MOCK_LATEST = [
-  { _metadata: { key: 'sc-blog-1', published: '2026-05-10T08:00:00Z', url: { default: '/blog/future-of-personalization' } }, headline: 'The Future of Personalization: How AI Is Reshaping Customer Experiences', topic: 'innovation', featuredImage: { url: { default: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&fit=crop' } }, authorRef: { name: 'Marcus Webb' }, readTime: '5 min read' },
-  { _metadata: { key: 'sc-blog-2', published: '2026-05-06T10:30:00Z', url: { default: '/blog/zero-downtime-deployments' } }, headline: 'Why Continuous Improvement Is the Foundation of Modern Teams', topic: 'product', featuredImage: { url: { default: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&fit=crop' } }, authorRef: { name: 'Priya Nair' }, readTime: '6 min read' },
-  { _metadata: { key: 'sc-blog-3', published: '2026-04-28T14:00:00Z', url: { default: '/blog/observability-trends-2026' } }, headline: 'Measurement in 2026: Five Trends Redefining How Teams Track What Works', topic: 'trends', featuredImage: undefined, authorRef: { name: 'James Okonkwo' }, readTime: '4 min read' },
-]
-
-// ─── Blog page showcase ─────────────────────────────────────────────────────
-
-function BlogPageShowcase() {
-  return (
-    <>
-      <section className="px-md pt-xl pb-lg lg:px-lg">
-        <SectionLabel index="Pages · OT_BlogPage" title="Blog Page" />
-        <p className="text-body leading-body text-fg-muted max-w-[65ch]">
-          Three display styles for the blog article page type, each serving a different editorial register. Style is a display template setting — the same content renders differently depending on which style the author chooses.
-        </p>
-      </section>
-
-      {/* Impact */}
-      <section className="pt-xl border-t border-fg/5">
-        <div className="px-md lg:px-lg pb-lg">
-          <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">01</p>
-          <h3 className="text-title font-semibold leading-title tracking-title text-fg">Impact</h3>
-          <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
-            <code className="font-mono text-accent">blogStyle: impact</code> — poster-format header at display scale with the layered 3D extrude from the PrimaryText depth effect. Suited to announcements and flagship engineering posts.
-          </p>
-        </div>
-        <BlogPage content={{ ...MOCK_BASE, blogStyle: 'impact' }} latestPosts={[]} />
-        <div className="pb-xl" />
-      </section>
-
-      {/* Atmospheric */}
-      <section className="pt-xl border-t border-fg/5">
-        <div className="px-md lg:px-lg pb-lg">
-          <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">02</p>
-          <h3 className="text-title font-semibold leading-title tracking-title text-fg">Atmospheric</h3>
-          <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
-            <code className="font-mono text-accent">blogStyle: atmospheric</code> — featured image bleeds full-height into the header; a glass panel anchors the article metadata over the blurred backdrop.
-          </p>
-        </div>
-        <BlogPage content={{ ...MOCK_BASE, blogStyle: 'atmospheric' }} latestPosts={[]} />
-        <div className="pb-xl" />
-      </section>
-
-      {/* Editorial */}
-      <section className="pt-xl border-t border-fg/5">
-        <div className="px-md lg:px-lg pb-lg">
-          <p className="text-label tracking-label uppercase text-brand font-semibold mb-xs">03</p>
-          <h3 className="text-title font-semibold leading-title tracking-title text-fg">Editorial</h3>
-          <p className="text-body text-fg-muted mt-sm max-w-[60ch]">
-            <code className="font-mono text-accent">blogStyle: editorial</code> — asymmetric two-column header: headline occupies the wide left column, topic mark and author stack in the right sidebar.
-          </p>
-        </div>
-        <BlogPage content={{ ...MOCK_BASE, blogStyle: 'editorial' }} latestPosts={MOCK_LATEST} />
-        <div className="pb-xl" />
-      </section>
-    </>
-  )
 }
 
 // ─── Event page showcase ────────────────────────────────────────────────────
@@ -257,7 +159,17 @@ export default async function ShowcasePageTypePage({ params }: Props) {
   const { page } = await params
 
   switch (page) {
-    case 'blog':   return <BlogPageShowcase />
+    case 'blog':   return (
+      <>
+        <section className="px-md pt-xl pb-lg lg:px-lg">
+          <SectionLabel index="Pages · OT_BlogPage" title="Blog Page" />
+          <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+            Three display styles — same content, different editorial register. Toggle the style below to compare. Impact is a poster-format header; Atmospheric bleeds the image full-height with a glass panel; Editorial uses an asymmetric two-column layout.
+          </p>
+        </section>
+        <BlogPlayground />
+      </>
+    )
     case 'event':  return <EventPageShowcase />
     case 'folder': return <FolderPageShowcase />
     default:       return notFound()

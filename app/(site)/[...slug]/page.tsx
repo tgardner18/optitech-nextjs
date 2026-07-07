@@ -21,6 +21,7 @@ import { withAppContext }       from '@optimizely/cms-sdk/react/server'
 import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
 import type { PreviewParams }  from '@optimizely/cms-sdk'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
+import { resolveContentVariant } from '@/lib/fx'
 import BlogPage                from '@/components/pages/BlogPage'
 import CampaignPage            from '@/components/pages/CampaignPage'
 import EventPage               from '@/components/pages/EventPage'
@@ -239,6 +240,26 @@ async function CmsPage({ params, searchParams }: Props) {
     } catch (err) {
       console.error('[slug] Content Graph fetch failed:', err)
       notFound()
+    }
+
+    // ── FX content experiment ──────────────────────────────────────────────
+    // When the experience binds an FX flag (BlankExperience.FxFlagKey) and the
+    // visitor is bucketed into a CMS variation, re-fetch that variation and
+    // serve it instead of the default. The variation slug == the FX variation
+    // key (lowercased). Never runs in preview/draft mode. The SDK key is
+    // resolved per-domain from OT_ThemeManager.featureExperimentationSdkKey.
+    if (exp?.FxFlagKey) {
+      const decision = await resolveContentVariant({
+        flagKey: exp.FxFlagKey,
+        sdkKey:  settings?.featureExperimentationSdkKey,
+        locale,
+      })
+      if (decision.contentVariation) {
+        const variant = await getLocalizedContentByPath(
+          path, locale, baseUrl, decision.contentVariation,
+        )
+        if (variant?.composition?.nodes) exp = variant
+      }
     }
   }
 

@@ -31,6 +31,8 @@ import { OT_DividerBlockDefault }    from '@/cms/display-templates/OT_DividerBlo
 import { OT_EventListingDefault }    from '@/cms/display-templates/OT_EventListingDefault'
 import { OT_PractitionerListingDefault } from '@/cms/display-templates/OT_PractitionerListingDefault'
 import { OT_LocationListingDefault } from '@/cms/display-templates/OT_LocationListingDefault'
+import { OT_ContentRecommendationsDefault } from '@/cms/display-templates/OT_ContentRecommendationsDefault'
+import { OT_ProductRecommendationsDefault } from '@/cms/display-templates/OT_ProductRecommendationsDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -80,6 +82,8 @@ import { OT_PractitionerPage }        from '@/cms/content-types/OT_PractitionerP
 import { OT_PractitionerListingBlock } from '@/cms/content-types/OT_PractitionerListingBlock'
 import { OT_LocationProfile }            from '@/cms/content-types/OT_LocationProfile'
 import { OT_LocationListingBlock }       from '@/cms/content-types/OT_LocationListingBlock'
+import { OT_ContentRecommendationsBlock } from '@/cms/content-types/OT_ContentRecommendationsBlock'
+import { OT_ProductRecommendationsBlock } from '@/cms/content-types/OT_ProductRecommendationsBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -127,6 +131,8 @@ import OT_PractitionerListingBlockAdapter from '@/cms/components/OT_Practitioner
 import OT_PractitionerProfileAdapter      from '@/cms/components/OT_PractitionerProfile'
 import OT_LocationListingBlockAdapter        from '@/cms/components/OT_LocationListingBlock'
 import OT_LocationProfileAdapter             from '@/cms/components/OT_LocationProfile'
+import OT_ContentRecommendationsBlockAdapter from '@/cms/components/OT_ContentRecommendationsBlock'
+import OT_ProductRecommendationsBlockAdapter from '@/cms/components/OT_ProductRecommendationsBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -175,6 +181,8 @@ initDisplayTemplateRegistry([
   OT_EventListingDefault,
   OT_PractitionerListingDefault,
   OT_LocationListingDefault,
+  OT_ContentRecommendationsDefault,
+  OT_ProductRecommendationsDefault,
 ])
 
 initContentTypeRegistry([
@@ -224,6 +232,8 @@ initContentTypeRegistry([
   OT_PractitionerListingBlock,
   OT_LocationProfile,
   OT_LocationListingBlock,
+  OT_ContentRecommendationsBlock,
+  OT_ProductRecommendationsBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -271,6 +281,8 @@ initReactComponentRegistry({
     OT_EventListingBlock:     OT_EventListingBlockAdapter,
     OT_PractitionerListingBlock: OT_PractitionerListingBlockAdapter,
     OT_LocationListingBlock:     OT_LocationListingBlockAdapter,
+    OT_ContentRecommendationsBlock: OT_ContentRecommendationsBlockAdapter,
+    OT_ProductRecommendationsBlock: OT_ProductRecommendationsBlockAdapter,
     // Preview-only: lets /preview render the shared profile record (not used in compositions)
     OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     OT_LocationProfile:          OT_LocationProfileAdapter,
