@@ -917,6 +917,11 @@
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
 
+"@opentelemetry/api@^1.9.0":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.1.tgz#c1b0346de336ba55af2d5a7970882037baedec05"
+  integrity sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==
+
 "@optimizely/cms-cli@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@optimizely/cms-cli/-/cms-cli-2.0.0.tgz#5b4be836df2c6460c10e5b1d122f6e50f4e415e1"
@@ -935,10 +940,17 @@
     ora "^8.2.0"
     zod "^3.24.2"
 
-"@optimizely/cms-sdk@2.0.0", "@optimizely/cms-sdk@^2.0.0":
+"@optimizely/cms-sdk@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@optimizely/cms-sdk/-/cms-sdk-2.0.0.tgz#b582ab3dcbe823e0ed9c41f63a48bbc70e51d401"
   integrity sha512-IWH4gAJjUdLPHx4WGC5k2UF5vnqt31wUyoECvmmXUkbx9mcSMID2n8bT9OqARZFucqN6Euz6l9sscfxmloTbpw==
+
+"@optimizely/cms-sdk@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@optimizely/cms-sdk/-/cms-sdk-2.1.0.tgz#726522767980e772106aaa594ff73f152c3b2185"
+  integrity sha512-lTzwqLTfKm3m2/y3BKO+OQ10ufpm2meaCUn1X2GwG4TAR8SvwyQjNK31sANnVg8NgZjKCo6lsr+KQKNq5R6IEQ==
+  dependencies:
+    "@opentelemetry/api" "^1.9.0"
 
 "@parcel/watcher-android-arm64@2.5.6":
   version "2.5.6"
