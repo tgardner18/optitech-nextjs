@@ -49,7 +49,7 @@ export default function AccordionPlayground() {
       {s => (
         <OT_AccordionBlock
           content={{ headline: 'Frequently asked questions', items: ITEMS } as any}
-          displaySettings={{ color: s.color, borderStyle: s.border, openMode: s.mode, defaultOpen: false }}
+          displaySettings={{ color: s.color, borderStyle: s.border, openMode: s.mode, defaultOpen: s.mode === 'multiple' }}
         />
       )}
     </BlockPlayground>

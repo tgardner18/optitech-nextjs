@@ -488,7 +488,7 @@ function TriggerBar({
         '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
         'isolate',
       ].join(' '),
-      isSide && 'md:flex-col md:w-full',
+      isSide && 'md:flex-col',
     ].join(' '),
   )
 

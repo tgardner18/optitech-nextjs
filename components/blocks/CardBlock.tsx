@@ -295,10 +295,10 @@ export default function CardBlock({
       )}
 
       {/* ── Float image ───────────────────────────────────────────────────────── */}
-      {/* Content slides up 2rem with the card's fill background, overlapping    */}
-      {/* the image bottom. Creates editorial depth without static shadows.       */}
+      {/* Cinema-ratio crop; the content panel will ride up ~5rem over the       */}
+      {/* image bottom with a multi-layer shadow to create readable depth.       */}
       {isFloat && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-video")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-3/2")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -344,8 +344,12 @@ export default function CardBlock({
           </div>
         </div>
       ) : isFloat ? (
-        // Float: content box slides up over the image bottom with an explicit background
-        <div className={cn("relative z-10 flex flex-col flex-1 -mt-8", floatContentBg, padding)}>
+        // Float: content panel slides 5rem into the image. The two-layer upward shadow
+        // (diffuse spread + tight contact) makes the depth readable at a glance.
+        <div
+          className={cn("relative z-10 flex flex-col flex-1 -mt-20", floatContentBg, padding)}
+          style={{ boxShadow: '0 -10px 30px rgba(0,0,0,0.30), 0 -2px 8px rgba(0,0,0,0.18)' }}
+        >
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>
