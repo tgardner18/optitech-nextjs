@@ -478,15 +478,17 @@ function TriggerBar({
       isGlass && 'bg-white/5 [backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)] [isolation:isolate]',
     ].join(' '),
     tabStyle === 'buttonGroup' && [
-      'p-[3px] gap-[2px] rounded-lg',
-      !isGlass && !isBrand && 'bg-fg/5 border border-fg/12',
-      isBrand  && 'bg-black/20 border border-white/15',
+      // w-fit makes the track hug its content (proper segmented-control look).
+      // max-w-full + overflow-x-auto preserve mobile scroll when tabs overflow.
+      'w-fit max-w-full p-1 gap-0.5 rounded-lg',
+      !isGlass && !isBrand && 'bg-fg/[0.07] border border-fg/[0.12] shadow-sm',
+      isBrand  && 'bg-black/25 border border-white/15',
       isGlass  && [
-        'bg-black/20 border border-white/15',
+        'bg-black/25 border border-white/15',
         '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
         '[isolation:isolate]',
       ].join(' '),
-      isSide && 'md:flex-col',
+      isSide && 'md:flex-col md:w-full',
     ].join(' '),
   )
 
@@ -599,7 +601,7 @@ function TriggerButton({
           isActive && !slideIndicator && color === 'glass' && [
             'bg-white/15',
             '[backdrop-filter:blur(16px)] [-webkit-backdrop-filter:blur(16px)]',
-            '[isolation:isolate]',
+            'isolate',
           ].join(' '),
           // Side position: no bottom border indicator, uses left bar instead
           isSide && 'md:px-md md:py-sm md:w-full md:text-left',
@@ -614,7 +616,7 @@ function TriggerButton({
           <span
             aria-hidden="true"
             className={cn(
-              'absolute bottom-0 h-[2px] bg-current pointer-events-none',
+              'absolute bottom-0 h-0.5 bg-current pointer-events-none',
               isSide ? 'left-lg right-lg md:left-md md:right-md' : 'left-lg right-lg',
               'opacity-0 scale-x-0 origin-center transition-[transform,opacity] duration-200',
               'group-hover:opacity-30 group-hover:scale-x-100 motion-reduce:transition-none',
@@ -625,7 +627,7 @@ function TriggerButton({
         {/* Static active underline (top position, sliding indicator off) */}
         {isActive && !slideIndicator && !showAutoPlay && !isSide && (
           <span className={cn(
-            'absolute bottom-0 left-0 right-0 h-[3px]',
+            'absolute bottom-0 left-0 right-0 h-0.75',
             staticActiveLine(color),
           )} />
         )}
@@ -633,7 +635,7 @@ function TriggerButton({
         {/* Static active left bar (side position, sliding indicator off) */}
         {isActive && !slideIndicator && !showAutoPlay && isSide && (
           <span className={cn(
-            'hidden md:block absolute left-0 top-0 bottom-0 w-[3px]',
+            'hidden md:block absolute left-0 top-0 bottom-0 w-0.75',
             staticActiveLine(color),
           )} />
         )}
@@ -750,10 +752,10 @@ function TriggerButton({
   // with brand-colored text — distinct from pill's solid brand fill.
 
   const bgActive = cn(
-    'shadow-sm rounded',
+    'rounded',
     color === 'canvas' || color === 'surface'
-      ? 'bg-brand text-fg-on-brand'
-      : 'bg-white/95 text-brand',
+      ? 'bg-brand text-fg-on-brand shadow-[0_1px_8px_color-mix(in_oklch,var(--ot-brand)_45%,transparent)]'
+      : 'bg-white/95 text-brand shadow-sm',
   )
 
   const progressOverlay =
@@ -770,11 +772,11 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'rounded px-md py-sm text-sm font-semibold tracking-label uppercase',
+        'rounded px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
         isSide && 'md:w-full md:text-left',
         isActive
           ? (slideIndicator ? activeTextClass('buttonGroup', color) : bgActive)
-          : triggerTextClass(color, 'inactive'),
+          : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/5 rounded'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
@@ -876,7 +878,7 @@ function PanelContent({ tab, color, contentLayout }: PanelContentProps) {
         {textContent}
       </div>
       <div className="w-full md:basis-[45%] md:max-w-[45%] shrink-0">
-        <div className="relative w-full aspect-[4/3] overflow-hidden">
+        <div className="relative w-full aspect-4/3 overflow-hidden">
           <Image
             src={tab.imageSrc!}
             alt={tab.imageAlt || ''}
