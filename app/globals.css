@@ -3244,6 +3244,27 @@ body {
   --ot-fg-muted: oklch(from var(--ot-brand) 45% 0.03 h);   /* labels, metadata          */
 }
 
+/* ── Admin form fields — light-surface treatment ─────────────────────────────
+ * The admin canvas is near-white (98.5% L) and fg is near-black (16% L), so
+ * the default .ot-field values (bg-fg/5, border-fg/8) read as nearly-invisible
+ * grey. This unlayered rule wins over Tailwind utility classes and overrides
+ * only within .opti-admin, leaving marketing-site forms untouched.
+ * ──────────────────────────────────────────────────────────────────────────── */
+.opti-admin .ot-field {
+  background-color: oklch(from var(--ot-brand) 99.4% 0.003 h);
+  border-color:     oklch(from var(--ot-brand) 80% 0.032 h);
+  box-shadow:       inset 0 1.5px 3px oklch(from var(--ot-brand) 16% 0.02 h / 0.05);
+}
+.opti-admin .ot-field:hover:not(:focus-visible) {
+  border-color: oklch(from var(--ot-brand) 64% 0.07 h);
+  background-color: oklch(from var(--ot-brand) 99.8% 0.001 h);
+}
+.opti-admin .ot-field:focus-visible {
+  background-color: oklch(from var(--ot-brand) 99.8% 0.001 h);
+  border-color:     var(--ot-brand);
+  box-shadow:       0 0 0 3px color-mix(in oklch, var(--ot-brand) 18%, transparent);
+}
+
 /* ── Section overlap ─────────────────────────────────────────────────────────
  * Controlled by sectionOverlap on OT_LandingSection.
  * The overlapping section pulls up into the one above it via negative margin-top.
