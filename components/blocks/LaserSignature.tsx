@@ -37,7 +37,7 @@ import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 type Props = {
   name:      string
   color:     'none' | 'brand' | 'canvas' | 'surface'
-  epiProps?: { 'data-epi-property-name'?: string }
+  epiProps?: Record<string, string | undefined>
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

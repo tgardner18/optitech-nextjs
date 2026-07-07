@@ -1,8 +1,22 @@
+import type { ReactNode } from 'react'
 import { getPreviewUtils, OptimizelyGridSection } from '@optimizely/cms-sdk/react/server'
 
 type Props = {
   content: any
   displaySettings?: Record<string, string | boolean>
+}
+
+// SDK 2.1.0 added DefaultComponentWrapper which injects `display:block` around
+// every block, breaking the flex height chain (column → block → h-full). This
+// replacement keeps the CMS editing attributes while staying a flex item so
+// h-full / flex-1 on block wrappers correctly fill the column height.
+function BlockWrapper({ children, node }: { children: ReactNode; node: any }) {
+  const { pa } = getPreviewUtils(node)
+  return (
+    <div {...pa(node)} style={{ display: 'flex', flexDirection: 'column', flex: '1', width: '100%', minWidth: 0 }}>
+      {children}
+    </div>
+  )
 }
 
 const widthClasses: Record<string, string> = {
@@ -57,7 +71,7 @@ export default function Section({ content, displaySettings = {} }: Props) {
       data-stagger={isAnimated ? entranceAnimation : undefined}
     >
       <div className={`flex flex-col flex-1 ${widthClass} ${vSpaceClass}`}>
-        <OptimizelyGridSection nodes={content.nodes ?? []} />
+        <OptimizelyGridSection nodes={content.nodes ?? []} ComponentWrapper={BlockWrapper} />
       </div>
     </section>
   )

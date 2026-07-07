@@ -16,7 +16,7 @@
   "dependencies": {
     "@google-cloud/bigquery": "^8.3.1",
     "@optimizely/cms-cli": "^2.0.0",
-    "@optimizely/cms-sdk": "^2.0.0",
+    "@optimizely/cms-sdk": "2.1.0",
     "@optimizely/optimizely-sdk": "^6.3.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { PreviewParams } from '@optimizely/cms-sdk'
-import { PreviewComponent } from '@optimizely/cms-sdk/react/client'
+import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
 import { getClient } from '@/lib/optimizely'
 import BlockRenderer from '@/components/preview/BlockRenderer'
 
@@ -45,7 +45,7 @@ export default async function DraftBlockPage({ params, searchParams }: Props) {
       <div className="mx-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto">
         <BlockRenderer content={content} contentKey={key} />
       </div>
-      <PreviewComponent />
+      <NextPreviewComponent />
     </div>
   )
 }
