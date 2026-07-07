@@ -37,11 +37,9 @@ export default function DynamicCmpField({ field }: { field: CmpFieldDef }) {
   switch (type) {
     case 'section':
       return (
-        <div className="flex items-center gap-md pt-xs">
-          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-fg-muted/50 whitespace-nowrap">
-            {label}
-          </span>
-          <div className="h-px flex-1 bg-fg/[0.07]" />
+        <div className="border-t border-brand/20 pt-md flex items-center gap-sm">
+          <span className="text-[0.8125rem] font-semibold text-brand/70">{label}</span>
+          <div className="h-px flex-1 bg-brand/10" />
         </div>
       )
 

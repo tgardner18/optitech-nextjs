@@ -27,14 +27,19 @@ const submitBtnCls = [
   'disabled:opacity-50 disabled:cursor-not-allowed',
 ].join(' ')
 
-// ── Section divider used for "Your Details" and the template block ──────────
-function SectionHeader({ label }: { label: string }) {
+// ── Bordered section card ────────────────────────────────────────────────────
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-md">
-      <span className="text-[0.6875rem] font-bold uppercase tracking-widest text-brand/60 whitespace-nowrap shrink-0">
-        {label}
-      </span>
-      <div className="h-px flex-1 bg-fg/[0.07]" />
+    <div className="border border-brand/25 rounded-sm">
+      <div
+        className="px-lg py-md border-b border-brand/20"
+        style={{ background: 'oklch(from var(--ot-brand) 96.5% 0.012 h)' }}
+      >
+        <h2 className="text-[0.9375rem] font-bold text-brand">{title}</h2>
+      </div>
+      <div className="p-lg flex flex-col gap-lg">
+        {children}
+      </div>
     </div>
   )
 }
@@ -226,11 +231,10 @@ export default function WorkRequestClient() {
 
       {/* ── Dynamic form ── */}
       {template && (
-        <form key={template.id} onSubmit={handleSubmit} noValidate className="mt-2xl flex flex-col gap-xl">
+        <form key={template.id} onSubmit={handleSubmit} noValidate className="mt-xl flex flex-col gap-lg">
 
           {/* Your details */}
-          <div className="flex flex-col gap-lg">
-            <SectionHeader label="Your details" />
+          <Section title="Your details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <TextboxField id="requester-name" name="requester-name" label="Name" required autoComplete="name" />
               <TextboxField id="requester-email" name="requester-email" label="Email" required autoComplete="email" />
@@ -238,11 +242,10 @@ export default function WorkRequestClient() {
                 <TextboxField id="requester-department" name="requester-department" label="Department" placeholder="Sales, HR, Product…" />
               </div>
             </div>
-          </div>
+          </Section>
 
           {/* Template fields */}
-          <div className="flex flex-col gap-lg">
-            <SectionHeader label={template.name} />
+          <Section title={template.name}>
             {template.fields.length === 0 ? (
               <p className="text-[0.875rem] text-fg-muted/60">
                 This template returned no field definitions — check server logs for the raw CMP response
@@ -250,16 +253,14 @@ export default function WorkRequestClient() {
                 <code className="font-mono text-[0.8em]">lib/admin/cmpWorkRequests.ts</code>.
               </p>
             ) : (
-              <div className="flex flex-col gap-lg">
-                {template.fields.map(field => (
-                  <DynamicCmpField key={field.identifier} field={field} />
-                ))}
-              </div>
+              template.fields.map(field => (
+                <DynamicCmpField key={field.identifier} field={field} />
+              ))
             )}
-          </div>
+          </Section>
 
           {/* Submit row */}
-          <div className="border-t border-fg/[0.07] pt-lg flex flex-col gap-md">
+          <div className="pt-sm flex flex-col gap-md">
             {status === 'success' && (
               <div
                 role="status"
