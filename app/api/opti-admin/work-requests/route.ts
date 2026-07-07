@@ -76,7 +76,19 @@ export async function POST(request: Request) {
     }, { status: 503 })
   }
 
-  const { fields, folded } = foldRequesterContext(payload.formFields, payload.requester)
+  // CMP's POST /work-requests validates `type` against a stricter enum than the
+  // types returned by GET /templates. Map display-only types to their accepted
+  // submission equivalents before sending.
+  const TYPE_MAP: Record<string, string> = {
+    brief:   'text_area',
+    richtext: 'text_area',
+  }
+  const normalizedFields = payload.formFields.map(f => ({
+    ...f,
+    type: TYPE_MAP[f.type] ?? f.type,
+  }))
+
+  const { fields, folded } = foldRequesterContext(normalizedFields, payload.requester)
 
   console.log(
     `[work-requests] creating from template ${payload.templateId} — requester ${payload.requester.name} ` +
