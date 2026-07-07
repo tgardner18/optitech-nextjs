@@ -10,10 +10,10 @@ import type { CmpWorkRequestFormField } from '@/lib/cmpApi'
 // ── Shared class strings ────────────────────────────────────────────────────
 
 const selectCls = [
-  'w-full appearance-none bg-fg/[0.05] border border-fg/[0.09] rounded-input',
+  'w-full appearance-none bg-fg/5 border border-fg/9 rounded-input ot-field',
   'px-md pr-10 py-[10px]',
   'text-[0.9375rem] font-medium text-fg',
-  'focus:outline-none focus-visible:border-brand focus-visible:bg-fg/[0.08] focus-visible:ring-2 focus-visible:ring-brand/20',
+  'focus:outline-none focus-visible:border-brand focus-visible:bg-fg/8 focus-visible:ring-2 focus-visible:ring-brand/20',
   'transition-[border-color,background-color,box-shadow] duration-150 ease-quick',
   'disabled:opacity-40',
 ].join(' ')
@@ -170,7 +170,7 @@ export default function WorkRequestClient() {
   }
 
   return (
-    <div className="w-full max-w-215">
+    <div className="w-full max-w-215 mx-auto">
 
       {/* ── Page header ── */}
       <div className="mb-xl">
