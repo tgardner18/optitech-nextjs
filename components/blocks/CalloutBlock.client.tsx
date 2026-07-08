@@ -159,7 +159,7 @@ export default function CalloutBlockClient({
       aria-label="Dismiss"
       style={{ color: fg, borderColor: border } as React.CSSProperties}
       className={cn(
-        'shrink-0 rounded-none border flex items-center justify-center cursor-pointer',
+        'shrink-0 rounded-ot-control border flex items-center justify-center cursor-pointer',
         'transition-colors hover:bg-fg/5',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 outline-none',
         // Brand-intent bar resolves dark tokens; a brand ring would vanish on the
@@ -266,7 +266,7 @@ export default function CalloutBlockClient({
   const calloutInner = (
     <div
       className={cn(
-        'w-full flex gap-md',
+        'w-full flex gap-md rounded-ot-surface',
         padClass,
         rootClass,
         isCompactRow ? 'items-center' : 'items-start',

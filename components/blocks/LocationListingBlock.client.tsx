@@ -23,7 +23,7 @@ import LocationRailCard from '@/components/location/LocationRailCard'
 const LocationMap = dynamic(() => import('@/components/location/LocationMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-(--map-h) w-full items-center justify-center border border-fg/10 bg-surface">
+    <div className="flex h-(--map-h) w-full items-center justify-center rounded-ot-surface border border-fg/10 bg-surface">
       <span className="text-label uppercase tracking-label text-fg-muted/60">Loading map…</span>
     </div>
   ),
@@ -60,7 +60,7 @@ function ViewToggle({
   onChange: (v: LocationListingView) => void
 }) {
   return (
-    <div className="inline-flex flex-none border border-fg/15" role="group" aria-label="Choose layout">
+    <div className="inline-flex flex-none rounded-ot-control overflow-hidden border border-fg/15" role="group" aria-label="Choose layout">
       {VIEW_META.map(({ view: v, label, Icon }, i) => {
         const active = view === v
         return (
@@ -101,7 +101,7 @@ function LabelChips({
   // Matches the Event block's TypeChip rhythm so filter chips read identically
   // across the listing family.
   const chip = (active: boolean) =>
-    'inline-flex items-center whitespace-nowrap text-label font-semibold uppercase tracking-label px-sm py-[5px] ' +
+    'inline-flex items-center whitespace-nowrap text-label font-semibold uppercase tracking-label rounded-ot-control px-sm py-1.25 ' +
     'border transition-colors duration-150 ease-quick cursor-pointer ' +
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ' +
     (active
@@ -284,7 +284,7 @@ export default function LocationListingClient({ locations, styleOptions, mapboxT
                 mapHeight={mapPx}
               />
             ) : (
-              <div className="flex w-full flex-col items-center justify-center gap-sm border border-fg/10 bg-surface p-lg text-center" style={{ height: mapPx }}>
+              <div className="flex w-full flex-col items-center justify-center gap-sm rounded-ot-surface border border-fg/10 bg-surface p-lg text-center" style={{ height: mapPx }}>
                 <MapPinned size={26} strokeWidth={1.5} className="text-fg-muted/60" aria-hidden />
                 <p className="text-title font-semibold text-fg">Map unavailable</p>
                 <p className="max-w-[40ch] text-sm text-fg-muted">
@@ -324,7 +324,7 @@ function EmptyState({ message, filtersActive, onClear }: { message: string; filt
   return (
     <div className="flex flex-col items-center justify-center gap-sm py-2xl text-center">
       <span
-        className="flex h-14 w-14 items-center justify-center text-brand"
+        className="flex h-14 w-14 items-center justify-center rounded-ot-surface text-brand"
         style={{ background: 'oklch(from var(--ot-brand) l c h / 0.12)', border: '1px solid var(--ot-bloom-brand-border)' }}
         aria-hidden
       >
@@ -335,7 +335,7 @@ function EmptyState({ message, filtersActive, onClear }: { message: string; filt
         <button
           type="button"
           onClick={onClear}
-          className="btn-signal mt-xs inline-flex items-center gap-xs bg-brand text-fg-on-brand px-md py-sm text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="btn-signal mt-xs inline-flex items-center gap-xs rounded-ot-control bg-brand text-fg-on-brand px-md py-sm text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           Clear search &amp; filters
         </button>

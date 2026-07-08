@@ -383,7 +383,7 @@ export default function SiteSearch() {
           ].join(' ')}
         >
           {/* Thumbnail */}
-          <div className={`shrink-0 ${thumbSize} overflow-hidden bg-surface/60 flex items-center justify-center mt-[3px]`}>
+          <div className={`shrink-0 ${thumbSize} overflow-hidden rounded-ot-surface bg-surface/60 flex items-center justify-center mt-0.75`}>
             {hasThumbnail ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -487,7 +487,7 @@ export default function SiteSearch() {
           type="button"
           onClick={() => handleResultClick(result)}
           className={[
-            'group w-full text-left overflow-hidden',
+            'group w-full text-left overflow-hidden rounded-ot-surface',
             'border border-fg/8',
             'hover:border-brand/30 hover:shadow-[0_4px_24px_var(--ot-bloom-brand-faint)]',
             'focus-visible:outline-none focus-visible:border-brand/40',
@@ -601,7 +601,7 @@ export default function SiteSearch() {
             type="button"
             onClick={toggleMode}
             aria-label={t('search.compact')}
-            className="flex items-center gap-1.25 px-sm h-9 bg-brand text-fg-on-brand hover:opacity-90 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+            className="flex items-center gap-1.25 px-sm h-9 rounded-ot-control bg-brand text-fg-on-brand hover:opacity-90 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
           >
             <Minimize2 size={16} />
             <span className="text-[10px] uppercase tracking-[0.08em] font-semibold hidden sm:inline">Compact</span>
