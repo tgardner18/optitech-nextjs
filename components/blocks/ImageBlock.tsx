@@ -309,7 +309,7 @@ export default function ImageBlock({
             type="button"
             onClick={() => setLightboxOpen(false)}
             aria-label="Close full size image"
-            className="absolute top-4 right-4 z-10 p-2 bg-surface/80 hover:bg-surface text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand"
+            className="absolute top-4 right-4 z-10 rounded-ot-control p-2 bg-surface/80 hover:bg-surface text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand"
           >
             <X className="w-5 h-5" />
           </button>
