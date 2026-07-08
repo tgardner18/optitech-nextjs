@@ -54,7 +54,7 @@ export default function LocationCard({ location, density = 'comfortable' }: Prop
         className={
           'absolute inset-x-0 bottom-0 z-10 ' +
           revealClass +
-          ' motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[var(--ot-ease-kinetic)] motion-safe:group-hover:translate-y-0'
+          ' motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-(--ot-ease-kinetic) motion-safe:group-hover:translate-y-0'
         }
       >
         <div aria-hidden className="card-bg-frost absolute inset-0" />
@@ -83,7 +83,7 @@ export default function LocationCard({ location, density = 'comfortable' }: Prop
   )
 
   const className =
-    'location-card group relative block aspect-4/3 w-full overflow-hidden bg-surface ' +
+    'location-card group relative block aspect-4/3 w-full overflow-hidden rounded-ot-surface bg-surface ' +
     'focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand'
 
   return l.url ? (

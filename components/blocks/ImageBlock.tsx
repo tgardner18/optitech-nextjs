@@ -244,7 +244,7 @@ export default function ImageBlock({
 
         <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
           {frame === "offset" && (
-            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand" />
+            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}
 
           {lightbox ? (

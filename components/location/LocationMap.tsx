@@ -119,7 +119,7 @@ export default function LocationMap({ locations, selectedKey, onSelectKey, token
   }, [mappable])
 
   return (
-    <div className="relative w-full overflow-hidden border border-fg/10" style={{ height: mapHeight }}>
+    <div className="relative w-full overflow-hidden rounded-ot-surface border border-fg/10" style={{ height: mapHeight }}>
       <Map
         ref={mapRef}
         mapboxAccessToken={token}
@@ -173,7 +173,7 @@ export default function LocationMap({ locations, selectedKey, onSelectKey, token
             {/* Horizontal card — image left, details right — so it reads wide and
                 short and stays inside the map. No fixed anchor: Mapbox auto-flips
                 it (above / below / beside the marker) to keep it in view. */}
-            <article className="relative flex w-90 max-w-[78vw]">
+            <article className="relative flex w-90 max-w-[78vw] overflow-hidden rounded-ot-surface">
               <button
                 type="button"
                 onClick={() => onSelectKey(null)}

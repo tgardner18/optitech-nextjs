@@ -33,7 +33,7 @@ export default function LocationRailCard({ location, active, onSelect, onHover, 
       aria-pressed={mappable ? active : undefined}
       aria-disabled={!mappable}
       className={
-        'group flex w-full items-stretch overflow-hidden border text-left ' +
+        'group flex w-full items-stretch overflow-hidden rounded-ot-surface border text-left ' +
         'transition-[background-color,border-color] duration-150 ease-[var(--ot-ease-quick)] ' +
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ' +
         (active

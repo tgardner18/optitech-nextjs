@@ -103,10 +103,28 @@
 }
 
 /* Content wrapper that shifts right of the sidebar rail on large viewports.
- * The margin is driven by --ot-sidebar-width (0px default → no shift in top-bar/split-bar). */
+ * The margin is driven by --ot-sidebar-width (0px default → no shift in top-bar/split-bar).
+ * Transitions with the sidebar when the toggle button collapses/expands it. */
 @media (min-width: 1024px) {
   .ot-sidebar-content {
     margin-left: var(--ot-sidebar-width, 0px);
+    transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Collapsed state — JS sets data-sidebar-open="false" on <html> */
+  html[data-sidebar-open="false"] .ot-sidebar-content {
+    margin-left: 0px;
+  }
+
+  /* Compact search panel — push right of the open sidebar so it's not hidden behind it.
+   * The panel renders in a portal (child of body), so html[...] selector reaches it. */
+  html[data-sidebar-open="true"] .search-compact-panel {
+    left: var(--ot-sidebar-width, 0px);
+    transition: left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html[data-sidebar-open="false"] .search-compact-panel {
+    left: 0px;
+    transition: left 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
