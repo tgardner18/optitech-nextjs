@@ -608,7 +608,7 @@ function TriggerButton({
         )}
       >
         {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
-        <span>{tab.tabLabel}</span>
+        <span className="whitespace-nowrap">{tab.tabLabel}</span>
 
         {/* Hover ghost — a low-opacity underline grows from center on hover,
             so hover feels kinetic rather than a bare color nudge */}
@@ -726,7 +726,7 @@ function TriggerButton({
         )}
       >
         {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
-        <span>{tab.tabLabel}</span>
+        <span className="whitespace-nowrap">{tab.tabLabel}</span>
 
         {/* Progress bar — inset within pill, sweeps over active fill */}
         {isActive && showAutoPlay && (
@@ -782,15 +782,17 @@ function TriggerButton({
       onClick={() => onSelect(index)}
       className={cn(
         baseClass,
-        'flex-1 justify-center rounded-ot-control px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
-        isSide && 'md:flex-none md:w-full md:justify-start md:text-left',
+        'justify-center rounded-ot-control px-md py-sm text-sm font-semibold tracking-label uppercase overflow-hidden',
+        // Mobile: natural content width so long labels never wrap — container scrolls.
+        // Desktop top layout: equal-width chips fill the track. Side overrides to full-width column items.
+        !isSide ? 'md:flex-1' : 'md:flex-none md:w-full md:justify-start md:text-left',
         isActive
           ? (slideIndicator ? activeTextClass('buttonGroup', color) : bgActive)
           : cn(triggerTextClass(color, 'inactive'), 'hover:bg-fg/6 rounded-ot-control'),
       )}
     >
       {IconComp && <IconComp className="w-4 h-4 shrink-0" strokeWidth={1.75} aria-hidden />}
-      <span>{tab.tabLabel}</span>
+      <span className="whitespace-nowrap">{tab.tabLabel}</span>
 
       {/* Progress bar — sweeps over active chip */}
       {isActive && showAutoPlay && (

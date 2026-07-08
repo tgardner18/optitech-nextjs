@@ -123,13 +123,15 @@ const featureCtaCva = cva(
 )
 
 const featureCardCva = cva(
-  'rounded-xl border-x border-b border-t-2 p-lg transition-shadow duration-200',
+  // feature-card-lift (globals.css) owns resting shadow + transition for transform,
+  // box-shadow, and border-color — so hover:border-* here gets animated for free.
+  'feature-card-lift rounded-ot-surface border p-lg',
   {
     variants: {
       color: {
-        canvas:  'border-x-fg/10 border-b-fg/10 border-t-brand shadow-sm hover:shadow-md',
-        surface: 'border-x-fg/10 border-b-fg/10 border-t-brand shadow-sm hover:shadow-md',
-        brand:   'bg-fg-on-brand/8 border-x-fg-on-brand/15 border-b-fg-on-brand/15 border-t-fg-on-brand/60',
+        canvas:  'bg-surface border-fg/10 hover:border-fg/22',
+        surface: 'bg-fg/6 border-fg/10 hover:border-fg/22',
+        brand:   'bg-fg-on-brand/10 border-fg-on-brand/15 hover:border-fg-on-brand/30',
       },
     },
     defaultVariants: { color: 'canvas' },
@@ -299,13 +301,17 @@ export default function FeatureGridBlock({
               )}
               style={itemStyle}
             >
-              {/* ── Structural icon: above headline ─────────────────── */}
+              {/* ── Structural icon: tiled container above headline ─── */}
               {showIcon && iconStyle === 'structural' && (
                 <span
                   aria-hidden="true"
-                  className={cn(iconCva({ color }), 'block mb-sm opacity-70')}
+                  className={cn(
+                    'inline-flex items-center justify-center w-10 h-10 mb-md rounded-ot-control',
+                    color === 'brand' ? 'bg-fg-on-brand/10' : 'bg-fg/8',
+                    iconCva({ color }),
+                  )}
                 >
-                  <Icon size={32} strokeWidth={1.5} />
+                  <Icon size={20} strokeWidth={1.5} />
                 </span>
               )}
 

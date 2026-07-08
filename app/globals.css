@@ -2058,6 +2058,29 @@ body {
     0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
 }
 
+/* ── Feature grid card lift ───────────────────────────────────────────────────
+ * Resting chromatic elevation + lift-and-intensify on hover. Separated from
+ * card-hover-lift because this variant also transitions border-color (the border
+ * ring brightens on hover, matching the user's design intent). All three
+ * properties share one transition so they move in choreographed lockstep.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.feature-card-lift {
+  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+  transition:
+    transform var(--ot-dur-quick) var(--ot-ease-quick),
+    box-shadow var(--ot-dur-quick) var(--ot-ease-quick),
+    border-color var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.feature-card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 32px var(--ot-bloom-brand-faint),
+    0 16px 48px oklch(from var(--ot-accent) l c h / 0.10);
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-card-lift:hover { transform: none; }
+}
+
 /* ── Practitioner portrait card ───────────────────────────────────────────────
  * The portrait-first directory card. A resting chromatic elevation (brand-hued,
  * never grey) deepens and lifts on hover. The glass footer's reveal slide and
@@ -3242,27 +3265,6 @@ body {
   --ot-surface: oklch(from var(--ot-brand) 96%   0.007 h); /* elevated panels          */
   --ot-fg:       oklch(from var(--ot-brand) 16% 0.02 h);   /* near-black, max contrast  */
   --ot-fg-muted: oklch(from var(--ot-brand) 45% 0.03 h);   /* labels, metadata          */
-}
-
-/* ── Admin form fields — light-surface treatment ─────────────────────────────
- * The admin canvas is near-white (98.5% L) and fg is near-black (16% L), so
- * the default .ot-field values (bg-fg/5, border-fg/8) read as nearly-invisible
- * grey. This unlayered rule wins over Tailwind utility classes and overrides
- * only within .opti-admin, leaving marketing-site forms untouched.
- * ──────────────────────────────────────────────────────────────────────────── */
-.opti-admin .ot-field {
-  background-color: oklch(from var(--ot-brand) 99.4% 0.003 h);
-  border-color:     oklch(from var(--ot-brand) 80% 0.032 h);
-  box-shadow:       inset 0 1.5px 3px oklch(from var(--ot-brand) 16% 0.02 h / 0.05);
-}
-.opti-admin .ot-field:hover:not(:focus-visible) {
-  border-color: oklch(from var(--ot-brand) 64% 0.07 h);
-  background-color: oklch(from var(--ot-brand) 99.8% 0.001 h);
-}
-.opti-admin .ot-field:focus-visible {
-  background-color: oklch(from var(--ot-brand) 99.8% 0.001 h);
-  border-color:     var(--ot-brand);
-  box-shadow:       0 0 0 3px color-mix(in oklch, var(--ot-brand) 18%, transparent);
 }
 
 /* ── Section overlap ─────────────────────────────────────────────────────────
