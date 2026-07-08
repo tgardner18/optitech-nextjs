@@ -7,16 +7,19 @@ import {
   CORNER_STYLES,
   PRIMARY_FONTS,
   MOTION_INTENSITIES,
+  NAVBAR_STYLES,
   type CornerStyleKey,
   type PrimaryFontKey,
   type MotionIntensityKey,
+  type NavbarStyleKey,
 } from '@/lib/theme-axes'
 import { ColorControl } from './ColorControl'
 import { PreviewSurface } from './PreviewSurface'
 import type { Axes, ColorState, Grounds } from './model'
 
-const CORNER_LABELS: Record<CornerStyleKey, string> = { sharp: 'Sharp', soft: 'Soft', rounded: 'Rounded' }
-const MOTION_LABELS: Record<MotionIntensityKey, string> = { calm: 'Calm', default: 'Default', energetic: 'Energetic' }
+const CORNER_LABELS: Record<CornerStyleKey, string>       = { sharp: 'Sharp', soft: 'Soft', rounded: 'Rounded' }
+const MOTION_LABELS: Record<MotionIntensityKey, string>    = { calm: 'Calm', default: 'Default', energetic: 'Energetic' }
+const NAVBAR_LABELS: Record<NavbarStyleKey, string>        = { 'top-bar': 'Top Bar', 'split-bar': 'Split Bar', 'sidebar': 'Sidebar' }
 
 function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -73,6 +76,11 @@ export default function ThemePlayground({
       ? (initialAxes.motionIntensity as MotionIntensityKey)
       : 'default',
   )
+  const [navbarStyle, setNavbarStyle] = useState<NavbarStyleKey>(
+    (initialAxes.navbarStyle as NavbarStyleKey) in NAVBAR_STYLES
+      ? (initialAxes.navbarStyle as NavbarStyleKey)
+      : 'top-bar',
+  )
 
   // Mode-invariant color setter
   const setTop = (key: keyof ColorState) => (v: string) => setColors((p) => ({ ...p, [key]: v }))
@@ -88,6 +96,11 @@ export default function ThemePlayground({
       (initialAxes.motionIntensity as MotionIntensityKey) in MOTION_INTENSITIES
         ? (initialAxes.motionIntensity as MotionIntensityKey)
         : 'default',
+    )
+    setNavbarStyle(
+      (initialAxes.navbarStyle as NavbarStyleKey) in NAVBAR_STYLES
+        ? (initialAxes.navbarStyle as NavbarStyleKey)
+        : 'top-bar',
     )
   }
 
@@ -159,6 +172,13 @@ export default function ThemePlayground({
               {(Object.keys(MOTION_INTENSITIES) as MotionIntensityKey[]).map((k) => (
                 <Pill key={k} active={motion === k} onClick={() => setMotion(k)}>
                   {MOTION_LABELS[k]}
+                </Pill>
+              ))}
+            </Field>
+            <Field label="Navbar Style">
+              {(Object.keys(NAVBAR_STYLES) as NavbarStyleKey[]).map((k) => (
+                <Pill key={k} active={navbarStyle === k} onClick={() => setNavbarStyle(k)}>
+                  {NAVBAR_LABELS[k]}
                 </Pill>
               ))}
             </Field>

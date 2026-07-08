@@ -95,6 +95,19 @@
   --ot-btn-ghost-border-hover: oklch(from var(--ot-fg-on-brand) l c h / 0.70);
   --ot-btn-ghost-bg-hover:     oklch(from var(--ot-fg-on-brand) l c h / 0.08);
   --ot-btn-clear-fg:           var(--ot-fg);
+
+  /* Sidebar nav rail width — 0px when top-bar or split-bar is active.
+   * buildThemeCSS() overrides to 240px when navbarStyle === 'sidebar'.
+   * Safe to reference everywhere: calc(100vw - var(--ot-sidebar-width)) always resolves. */
+  --ot-sidebar-width: 0px;
+}
+
+/* Content wrapper that shifts right of the sidebar rail on large viewports.
+ * The margin is driven by --ot-sidebar-width (0px default → no shift in top-bar/split-bar). */
+@media (min-width: 1024px) {
+  .ot-sidebar-content {
+    margin-left: var(--ot-sidebar-width, 0px);
+  }
 }
 
 /* In-page anchor scrolling — offset the scroll target so it clears the sticky

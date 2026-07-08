@@ -152,6 +152,19 @@ export const OT_ThemeManager = contentType({
         { value: 'energetic', displayName: 'Energetic — faster (0.7×)' },
       ],
     },
+    navbarStyle: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Navbar Style — structural layout of the primary navigation',
+      description: 'Changes the spatial grammar of the entire page. Top Bar is the default sticky header. Split Bar centers the logo with nav split left/right — heritage and editorial brands. Sidebar moves navigation to a fixed left rail — product, portal, or SaaS-adjacent brands.',
+      group: 'OT_Theme',
+      sortOrder: 195,
+      enum: [
+        { value: 'top-bar',   displayName: 'Top Bar — sticky glass header, logo left (default)' },
+        { value: 'split-bar', displayName: 'Split Bar — logo centered, nav split left/right' },
+        { value: 'sidebar',   displayName: 'Sidebar — fixed left rail, content shifts right' },
+      ],
+    },
 
     // ── SEO / Search & Discovery ──────────────────────────────────────────────
     siteName: {
