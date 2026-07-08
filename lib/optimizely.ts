@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { config, getClient as _getClient } from '@optimizely/cms-sdk'
 import type { GraphVariationInput } from '@optimizely/cms-sdk'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n/config'
-import { resolveCornerStyle, resolvePrimaryFont, resolveMotionScale } from '@/lib/theme-axes'
+import { resolveCornerStyle, resolvePrimaryFont, resolveMotionScale, resolveNavbarStyle, NAVBAR_STYLES } from '@/lib/theme-axes'
 import type { Locale } from '@/lib/i18n/config'
 import { getLocale as getNextIntlLocale } from 'next-intl/server'
 
@@ -128,6 +128,7 @@ const THEME_QUERY = `
         cornerStyle
         primaryFont
         motionIntensity
+        navbarStyle
         siteName
         defaultSeoDescription
         defaultSocialImage { url { default } }
@@ -504,6 +505,14 @@ export function buildThemeCSS(settings: any): string {
   // a visitor disabled — the reduce-motion static blocks are independent of this.
   const motionScale = resolveMotionScale(settings.motionIntensity)
   if (motionScale != null) root.push(`--ot-motion-scale: ${motionScale}`)
+
+  // Sidebar layout emits the rail width so the content wrapper and any full-bleed
+  // section math can consume it. Non-sidebar variants leave the token at its 0px
+  // default (defined in globals.css), so calc(100vw - var(--ot-sidebar-width)) is
+  // always safe without a per-site fallback.
+  const navbarStyle = resolveNavbarStyle(settings.navbarStyle)
+  const sidebarWidth = NAVBAR_STYLES[navbarStyle].sidebarWidth
+  if (sidebarWidth) root.push(`--ot-sidebar-width: ${sidebarWidth}`)
 
   if (!root.length && !dark.length && !light.length) return ''
 

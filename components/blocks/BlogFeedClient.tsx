@@ -43,7 +43,7 @@ function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
   return (
     <a
       href={postUrl}
-      className={`group block card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      className={`group block rounded-ot-surface overflow-hidden card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
         onBrand ? 'bg-fg/8 border border-fg-on-brand/15' : 'bg-canvas border border-fg/8'
       }`}
     >
@@ -116,7 +116,7 @@ function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }
     >
       {/* Thumbnail — only rendered when a featured image is set */}
       {imageUrl && (
-        <div className="shrink-0 w-20 h-14 sm:w-28 sm:h-18 overflow-hidden">
+        <div className="shrink-0 w-20 h-14 sm:w-28 sm:h-18 overflow-hidden rounded-ot-surface">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
@@ -183,7 +183,7 @@ function TopicChip({
   onBrand: boolean
   onClick: () => void
 }) {
-  const base = 'text-label uppercase tracking-label font-semibold px-sm py-[5px] border transition-colors duration-150 ease-quick cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const base = 'rounded-ot-control text-label uppercase tracking-label font-semibold px-sm py-[5px] border transition-colors duration-150 ease-quick cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
 
   const variant = active
     ? (onBrand
@@ -289,7 +289,7 @@ export default function BlogFeedClient({
     ? 'grid grid-cols-1 sm:grid-cols-2 gap-lg'
     : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg'
 
-  const toggleBase = `inline-flex items-center justify-center w-11 h-11 transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 ${onBrand ? 'focus-visible:outline-fg-on-brand' : 'focus-visible:outline-brand'}`
+  const toggleBase = `inline-flex items-center justify-center w-11 h-11 rounded-ot-control transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 ${onBrand ? 'focus-visible:outline-fg-on-brand' : 'focus-visible:outline-brand'}`
 
   const toggleActive   = onBrand ? 'text-fg-on-brand' : 'text-brand'
   const toggleInactive = onBrand ? 'text-fg-on-brand/40 hover:text-fg-on-brand/70' : 'text-fg-muted/50 hover:text-fg-muted'

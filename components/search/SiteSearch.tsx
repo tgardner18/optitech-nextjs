@@ -374,7 +374,7 @@ export default function SiteSearch() {
           type="button"
           onClick={() => handleResultClick(result)}
           className={[
-            'group w-full text-left flex items-start gap-md',
+            'group w-full text-left flex items-start gap-md rounded-ot-surface',
             isCompact ? 'px-md py-[12px]' : 'py-[18px]',
             'border-b border-fg/8 last:border-0',
             'hover:bg-brand/5 focus-visible:outline-none focus-visible:bg-brand/5',
@@ -383,7 +383,7 @@ export default function SiteSearch() {
           ].join(' ')}
         >
           {/* Thumbnail */}
-          <div className={`shrink-0 ${thumbSize} overflow-hidden bg-surface/60 flex items-center justify-center mt-[3px]`}>
+          <div className={`shrink-0 ${thumbSize} overflow-hidden rounded-ot-surface bg-surface/60 flex items-center justify-center mt-0.75`}>
             {hasThumbnail ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -487,7 +487,7 @@ export default function SiteSearch() {
           type="button"
           onClick={() => handleResultClick(result)}
           className={[
-            'group w-full text-left overflow-hidden',
+            'group w-full text-left overflow-hidden rounded-ot-surface',
             'border border-fg/8',
             'hover:border-brand/30 hover:shadow-[0_4px_24px_var(--ot-bloom-brand-faint)]',
             'focus-visible:outline-none focus-visible:border-brand/40',
@@ -601,7 +601,7 @@ export default function SiteSearch() {
             type="button"
             onClick={toggleMode}
             aria-label={t('search.compact')}
-            className="flex items-center gap-1.25 px-sm h-9 bg-brand text-fg-on-brand hover:opacity-90 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+            className="flex items-center gap-1.25 px-sm h-9 rounded-ot-control bg-brand text-fg-on-brand hover:opacity-90 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
           >
             <Minimize2 size={16} />
             <span className="text-[10px] uppercase tracking-[0.08em] font-semibold hidden sm:inline">Compact</span>
@@ -820,7 +820,7 @@ export default function SiteSearch() {
         {/* Input area — visually boxed so it reads as a text field, not a label row */}
         <div className="px-md pt-[8px] pb-[10px] border-b border-fg/8 shrink-0">
           <label htmlFor="search-input-compact" className="sr-only">{t('search.inputLabel')}</label>
-          <div className="flex items-center gap-[8px] rounded-[4px] border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-[10px] py-[9px] transition-colors duration-150">
+          <div className="flex items-center gap-[8px] rounded-ot-control border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-2.5 py-2.25 transition-colors duration-150">
             <Search size={14} className="shrink-0 text-fg-muted/45" aria-hidden />
             <input
               ref={inputRef}
@@ -937,7 +937,7 @@ export default function SiteSearch() {
             className={
               mode === 'immersive'
                 ? 'fixed inset-0 z-[60] bg-canvas flex flex-col'
-                : 'fixed left-0 right-0 top-20 z-[49] flex flex-col'
+                : 'search-compact-panel fixed left-0 right-0 top-20 z-[49] flex flex-col'
             }
           >
             {mode === 'immersive' ? ImmersivePanel() : CompactPanel()}

@@ -191,7 +191,7 @@ export default function ImageBlock({
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
+      className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
       style={glowStyle}
       {...(previewAttrs?.image ?? {})}
     >
@@ -228,7 +228,7 @@ export default function ImageBlock({
       {lightbox && (
         <div
           aria-hidden="true"
-          className="absolute top-2 right-2 z-30 p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
+          className="absolute top-2 right-2 z-30 rounded-ot-control p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
         >
           <Maximize2 className="w-4 h-4" />
         </div>
@@ -244,7 +244,7 @@ export default function ImageBlock({
 
         <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
           {frame === "offset" && (
-            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand" />
+            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}
 
           {lightbox ? (
@@ -309,7 +309,7 @@ export default function ImageBlock({
             type="button"
             onClick={() => setLightboxOpen(false)}
             aria-label="Close full size image"
-            className="absolute top-4 right-4 z-10 p-2 bg-surface/80 hover:bg-surface text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand"
+            className="absolute top-4 right-4 z-10 rounded-ot-control p-2 bg-surface/80 hover:bg-surface text-fg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-brand"
           >
             <X className="w-5 h-5" />
           </button>

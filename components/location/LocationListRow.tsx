@@ -67,9 +67,9 @@ export default function LocationListRow({ location, onSurface = false, density =
   )
 
   const className =
-    `group flex items-stretch overflow-hidden ${rowBg} border border-fg/10 ` +
+    `group flex items-stretch overflow-hidden rounded-ot-surface ${rowBg} border border-fg/10 ` +
     'transition-[background-color,border-color] duration-150 ease-[var(--ot-ease-quick)] ' +
-    'hover:border-brand/60 hover:bg-brand/[0.04]'
+    'hover:border-brand/60 hover:bg-brand/4'
 
   return l.url ? (
     <a

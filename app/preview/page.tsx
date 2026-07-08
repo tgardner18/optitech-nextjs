@@ -4,11 +4,13 @@ import {
   withAppContext,
 } from '@optimizely/cms-sdk/react/server'
 import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs'
-import { getClient, getRequestBaseUrl } from '@/lib/optimizely'
+import { getClient, getRequestBaseUrl, getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
+import { resolveNavbarStyle } from '@/lib/theme-axes'
 import { CompositionRenderer } from '@/lib/CompositionRenderer'
 import { getPractitioner } from '@/lib/practitioners'
 import PractitionerHeader from '@/components/practitioner/PractitionerHeader'
 import Header from '@/components/layout/Header'
+import SplitHeader from '@/components/layout/SplitHeader'
 import Footer from '@/components/layout/Footer'
 import Script from 'next/script'
 import { redirect } from 'next/navigation'
@@ -199,6 +201,14 @@ async function PreviewPage({ searchParams }: Props) {
   }
   // ─────────────────────────────────────────────────────────────────────────────
 
+  // Resolve which header variant the site is configured to use. Sidebar is
+  // deliberately excluded — it would overlay the Visual Builder canvas.
+  const previewDomain      = await getRequestDomain()
+  const previewLocale      = await getRequestLocale()
+  const previewSettings    = await getSiteSettings(previewDomain, previewLocale)
+  const navbarStyle        = resolveNavbarStyle(previewSettings?.navbarStyle)
+  const PreviewHeader      = navbarStyle === 'split-bar' ? SplitHeader : Header
+
   return (
     <>
       {cmsUrl && (
@@ -220,7 +230,7 @@ async function PreviewPage({ searchParams }: Props) {
 
       {isExperience ? (
         <>
-          <Header />
+          <PreviewHeader />
           <main className="flex-1">
             {practitioner && (
               <PractitionerHeader

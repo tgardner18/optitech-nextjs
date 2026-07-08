@@ -175,13 +175,13 @@ export default function VideoBlock({
         {frame === "offset" && (
           <div
             aria-hidden="true"
-            className="absolute top-3 left-3 right-0 bottom-0 bg-brand"
+            className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface"
           />
         )}
 
         {/* Aspect-ratio container */}
         <div
-          className={`relative overflow-hidden ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
+          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
           style={glowStyle}
         >
           {playing ? (
@@ -256,13 +256,12 @@ export default function VideoBlock({
                 aria-label={`Play: ${title}`}
                 className="absolute inset-0 flex items-center justify-center group/play focus-visible:outline-none"
               >
-                {/* Brand square — sharp-cornered, default-theme-native.
-                    Focus indicator rides the button's focus-visible state via
+                {/* Focus indicator rides the button's focus-visible state via
                     group/play so the ring frames the square, not the whole poster. */}
                 <span
                   className={[
                     "relative flex items-center justify-center w-16 h-16",
-                    "bg-brand",
+                    "bg-brand rounded-ot-control",
                     "motion-safe:transition-[transform,background-color]",
                     "motion-safe:duration-200 motion-safe:ease-quick",
                     "group-hover/play:bg-brand-hover",

@@ -48,7 +48,7 @@ function ViewToggle({
     (active ? 'bg-brand text-fg-on-brand' : 'text-fg-muted hover:text-fg')
 
   return (
-    <div className="inline-flex flex-none border border-fg/15" role="group" aria-label="Choose layout">
+    <div className="inline-flex flex-none rounded-ot-control overflow-hidden border border-fg/15" role="group" aria-label="Choose layout">
       <button type="button" aria-label="Grid view" aria-pressed={view === 'grid'} onClick={() => onChange('grid')} className={btn(view === 'grid')}>
         <LayoutGrid size={16} strokeWidth={2} aria-hidden />
       </button>
@@ -279,7 +279,7 @@ export default function PractitionerListingClient({
             <button
               type="button"
               onClick={clearAll}
-              className="btn-signal mt-xs inline-flex items-center gap-xs bg-brand text-fg-on-brand px-md py-sm text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="btn-signal mt-xs inline-flex items-center gap-xs rounded-ot-control bg-brand text-fg-on-brand px-md py-sm text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Clear search & filters
             </button>

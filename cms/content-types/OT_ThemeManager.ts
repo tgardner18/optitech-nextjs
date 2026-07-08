@@ -129,14 +129,15 @@ export const OT_ThemeManager = contentType({
       type: 'string',
       format: 'selectOne',
       displayName: 'Primary Font — the whole type hierarchy (display, headline, body, labels)',
-      description: 'Sets the primary typeface for the entire site — display headers down to body and labels. All four ship the same 300–800 weight range and hold up under the display, gradient-fill, and bloom treatments. Syne stays reserved for select accent areas.',
+      description: 'Sets the primary typeface for the entire site — display headers down to body and labels. All options ship the same 300–800 weight range and hold up under the display, gradient-fill, and bloom treatments. Syne stays reserved for select accent areas.',
       group: 'OT_Theme',
       sortOrder: 185,
       enum: [
         { value: 'poppins',       displayName: 'Poppins — geometric, friendly (default)' },
-        { value: 'sourceSerif', displayName: 'Source Serif — editorial, trustworthy (serif)' },
+        { value: 'sourceSerif',   displayName: 'Source Serif — editorial, trustworthy (serif)' },
         { value: 'sora',          displayName: 'Sora — squared, technical' },
-        { value: 'bricolage',     displayName: 'Bricolage Grotesque — expressive, characterful' },
+        { value: 'plusJakarta',   displayName: 'Plus Jakarta Sans — warm, modern' },
+        { value: 'manrope',       displayName: 'Manrope — clean, minimal' },
       ],
     },
     motionIntensity: {
@@ -150,6 +151,19 @@ export const OT_ThemeManager = contentType({
         { value: 'calm',      displayName: 'Calm — slower (1.3×)' },
         { value: 'default',   displayName: 'Default — current timing (1×)' },
         { value: 'energetic', displayName: 'Energetic — faster (0.7×)' },
+      ],
+    },
+    navbarStyle: {
+      type: 'string',
+      format: 'selectOne',
+      displayName: 'Navbar Style — structural layout of the primary navigation',
+      description: 'Changes the spatial grammar of the entire page. Top Bar is the default sticky header. Split Bar centers the logo with nav split left/right — heritage and editorial brands. Sidebar moves navigation to a fixed left rail — product, portal, or SaaS-adjacent brands.',
+      group: 'OT_Theme',
+      sortOrder: 195,
+      enum: [
+        { value: 'top-bar',   displayName: 'Top Bar — sticky glass header, logo left (default)' },
+        { value: 'split-bar', displayName: 'Split Bar — logo centered, nav split left/right' },
+        { value: 'sidebar',   displayName: 'Sidebar — fixed left rail, content shifts right' },
       ],
     },
 

@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Caveat, Geist_Mono, Poppins, Sora, Source_Serif_4, Syne, Tilt_Neon } from "next/font/google";
+import { Plus_Jakarta_Sans, Caveat, Geist_Mono, Manrope, Poppins, Sora, Source_Serif_4, Syne, Tilt_Neon } from "next/font/google";
 import "./globals.css";
 import { draftMode } from "next/headers";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -55,10 +55,19 @@ const sora = Sora({
   display: "swap",
 });
 
-// Primary C — Bricolage Grotesque: contemporary grotesque with irregular detail.
-// The character / expressive pole; exceptional display presence under gradient fills.
-const bricolage = Bricolage_Grotesque({
+// Primary C — Plus Jakarta Sans: geometric humanist with wide weight ladder and
+// strong legibility at all sizes. Warm, modern alternative to Poppins.
+const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-primary-c",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Primary D — Manrope: variable-axis geometric sans. Clean, minimal, excellent
+// legibility at small sizes and strong presence at display scale.
+const manrope = Manrope({
+  variable: "--font-primary-d",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
@@ -182,7 +191,7 @@ export default async function RootLayout({
       // client/server diff when localStorage overrides the CMS default.
       data-default-theme={defaultMode}
       data-theme={defaultMode}
-      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${sourceSerif.variable} ${sora.variable} ${bricolage.variable} ${caveat.variable} ${tiltNeon.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${sourceSerif.variable} ${sora.variable} ${plusJakarta.variable} ${manrope.variable} ${caveat.variable} ${tiltNeon.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

@@ -95,6 +95,37 @@
   --ot-btn-ghost-border-hover: oklch(from var(--ot-fg-on-brand) l c h / 0.70);
   --ot-btn-ghost-bg-hover:     oklch(from var(--ot-fg-on-brand) l c h / 0.08);
   --ot-btn-clear-fg:           var(--ot-fg);
+
+  /* Sidebar nav rail width — 0px when top-bar or split-bar is active.
+   * buildThemeCSS() overrides to 240px when navbarStyle === 'sidebar'.
+   * Safe to reference everywhere: calc(100vw - var(--ot-sidebar-width)) always resolves. */
+  --ot-sidebar-width: 0px;
+}
+
+/* Content wrapper that shifts right of the sidebar rail on large viewports.
+ * The margin is driven by --ot-sidebar-width (0px default → no shift in top-bar/split-bar).
+ * Transitions with the sidebar when the toggle button collapses/expands it. */
+@media (min-width: 1024px) {
+  .ot-sidebar-content {
+    margin-left: var(--ot-sidebar-width, 0px);
+    transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Collapsed state — JS sets data-sidebar-open="false" on <html> */
+  html[data-sidebar-open="false"] .ot-sidebar-content {
+    margin-left: 0px;
+  }
+
+  /* Compact search panel — push right of the open sidebar so it's not hidden behind it.
+   * The panel renders in a portal (child of body), so html[...] selector reaches it. */
+  html[data-sidebar-open="true"] .search-compact-panel {
+    left: var(--ot-sidebar-width, 0px);
+    transition: left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html[data-sidebar-open="false"] .search-compact-panel {
+    left: 0px;
+    transition: left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 /* In-page anchor scrolling — offset the scroll target so it clears the sticky
@@ -595,7 +626,7 @@ body {
   background: var(--ot-canvas);
   color: var(--ot-fg);
   font-family: var(--ot-font-sans);
-  /* Let optical faces (e.g. Bricolage Grotesque, selected as the Primary Font via
+  /* Let optical faces (e.g. Plus Jakarta Sans, selected as the Primary Font via
    * ThemeManager) adapt their optical size to the rendered size, and keep kerning
    * on so display pairs sit correctly. Cheap, global, no visual change to Poppins. */
   font-optical-sizing: auto;
@@ -1457,6 +1488,7 @@ body {
 /* Blockquote — full border + background tint; no side stripe */
 [data-rich-text] blockquote {
   border: 1px solid oklch(from var(--ot-brand) l c h / 0.35);
+  border-radius: var(--ot-radius-surface);
   background: oklch(from var(--ot-brand) l c h / 0.07);
   padding: var(--ot-space-lg);
   margin: var(--ot-space-lg) 0;

@@ -82,7 +82,7 @@ const bodyCva = cva(
 
 const primaryCtaCva = cva(
   [
-    'inline-block text-label font-semibold tracking-label uppercase',
+    'inline-block rounded-ot-control text-label font-semibold tracking-label uppercase',
     'px-12 py-4 transition duration-150 ease-quick',
     'hover:-translate-y-0.5 hover:shadow-hover-lift active:translate-y-0',
     'focus-visible:outline-2 focus-visible:outline-offset-[3px]',
@@ -101,7 +101,7 @@ const primaryCtaCva = cva(
 
 const secondaryCtaCva = cva(
   [
-    'inline-block border text-label font-semibold tracking-label uppercase',
+    'inline-block rounded-ot-control border text-label font-semibold tracking-label uppercase',
     'px-12 py-4 transition duration-150 ease-quick',
     'hover:-translate-y-0.5 active:translate-y-0',
     'focus-visible:outline-2 focus-visible:outline-offset-[3px]',
@@ -212,7 +212,7 @@ export default function BannerBlock({
   const eyebrowEl = eyebrow ? (
     hasImage ? (
       <p className="banner-eyebrow" {...pa('eyebrow')}>
-        <span className="inline-flex items-center px-sm py-0.75 bg-accent text-fg-on-accent text-label uppercase tracking-label font-semibold">
+        <span className="inline-flex items-center rounded-ot-control px-sm py-0.75 bg-accent text-fg-on-accent text-label uppercase tracking-label font-semibold">
           {eyebrow}
         </span>
       </p>
@@ -223,7 +223,7 @@ export default function BannerBlock({
       // a filled accent pill with fg-on-accent text (rule in globals.css). The
       // nested span lets the pill hug the text while the <p> stays centered.
       <p className={cn('banner-eyebrow', eyebrowCva({ color }))} {...pa('eyebrow')}>
-        <span className="banner-eyebrow-pill inline-flex items-center text-label uppercase tracking-label font-semibold">
+        <span className="banner-eyebrow-pill inline-flex items-center rounded-ot-control text-label uppercase tracking-label font-semibold">
           {eyebrow}
         </span>
       </p>

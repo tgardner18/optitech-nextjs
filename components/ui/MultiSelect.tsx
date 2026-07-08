@@ -179,7 +179,7 @@ export default function MultiSelect({
         onClick={() => (open ? close() : openMenu())}
         onKeyDown={onTriggerKeyDown}
         className={
-          `${idle} inline-flex h-12 items-center gap-sm border px-md ` +
+          `${idle} inline-flex h-12 items-center gap-sm rounded-ot-control border px-md ` +
           'text-label uppercase tracking-label font-semibold ' +
           'motion-safe:transition-colors duration-150 ' +
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ' +
@@ -208,7 +208,7 @@ export default function MultiSelect({
 
       {open && (
         <div
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-40 w-[min(20rem,calc(100vw-2rem))] border border-fg/15 shadow-[0_12px_40px_var(--ot-bloom-brand-faint),0_2px_8px_var(--ot-bloom-brand-faint)] motion-safe:animate-[multiselect-in_160ms_var(--ot-ease-kinetic)]"
+          className="absolute left-0 top-[calc(100%+0.5rem)] z-40 w-[min(20rem,calc(100vw-2rem))] rounded-ot-surface overflow-hidden border border-fg/15 shadow-[0_12px_40px_var(--ot-bloom-brand-faint),0_2px_8px_var(--ot-bloom-brand-faint)] motion-safe:animate-[multiselect-in_160ms_var(--ot-ease-kinetic)]"
           style={panelStyle}
         >
           {showFilter && (

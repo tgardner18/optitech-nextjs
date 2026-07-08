@@ -246,13 +246,19 @@ export default function TabsBlockClient({
         <div
           className={cn(
             'flex-1 min-w-0 tab-panel-surface',
+            // Underline: only round corners that don't abut the trigger strip's border.
+            // Top position (default + mobile): bottom corners only.
+            // Side position at md+: right corners only (left edge joins trigger column).
+            tabStyle !== 'underline' && 'rounded-ot-surface',
+            tabStyle === 'underline' && tabPosition !== 'side' && 'rounded-b-ot-surface',
+            tabStyle === 'underline' && tabPosition === 'side' && 'rounded-b-ot-surface md:rounded-bl-none md:rounded-tr-ot-surface',
             color === 'canvas'  && 'bg-surface border border-fg/10 p-lg',
             color === 'surface' && 'bg-canvas  border border-fg/10 p-lg',
             color === 'brand'   && 'bg-white/10 border border-white/15 p-lg',
             color === 'glass'   && [
               'bg-white/10 border border-white/12 p-lg',
               '[backdrop-filter:blur(12px)] [-webkit-backdrop-filter:blur(12px)]',
-              '[isolation:isolate] [will-change:transform]',
+              'isolate will-change-transform',
             ].join(' '),
             // Underline style: the trigger row's border and the panel edge merge
             // into one hairline (with the active indicator riding on top of it)
