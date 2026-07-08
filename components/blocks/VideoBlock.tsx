@@ -256,13 +256,12 @@ export default function VideoBlock({
                 aria-label={`Play: ${title}`}
                 className="absolute inset-0 flex items-center justify-center group/play focus-visible:outline-none"
               >
-                {/* Brand square — sharp-cornered, default-theme-native.
-                    Focus indicator rides the button's focus-visible state via
+                {/* Focus indicator rides the button's focus-visible state via
                     group/play so the ring frames the square, not the whole poster. */}
                 <span
                   className={[
                     "relative flex items-center justify-center w-16 h-16",
-                    "bg-brand",
+                    "bg-brand rounded-ot-control",
                     "motion-safe:transition-[transform,background-color]",
                     "motion-safe:duration-200 motion-safe:ease-quick",
                     "group-hover/play:bg-brand-hover",

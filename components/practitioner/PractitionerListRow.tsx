@@ -109,9 +109,9 @@ export default function PractitionerListRow({ practitioner, onSurface = false, d
   // wash. 150ms quick ease. items-stretch lets the portrait fill the row height;
   // overflow-hidden clips the flush square to the bordered edge.
   const className =
-    `group flex items-stretch overflow-hidden ${rowBg} border border-fg/10 ` +
-    'transition-[background-color,border-color] duration-150 ease-[var(--ot-ease-quick)] ' +
-    'hover:border-brand/60 hover:bg-brand/[0.04]'
+    `group flex items-stretch overflow-hidden rounded-ot-surface ${rowBg} border border-fg/10 ` +
+    'transition-[background-color,border-color] duration-150 ease-(--ot-ease-quick) ' +
+    'hover:border-brand/60 hover:bg-brand/4'
 
   return p.url ? (
     <a

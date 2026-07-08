@@ -123,7 +123,7 @@ export default function PractitionerHeader({ practitioner, profileLabel, pa }: P
           {/* ── Floating editorial portrait ── */}
           <div className="mx-auto w-full max-w-80 lg:mx-0 lg:max-w-none">
             <div
-              className="@container relative aspect-3/4 w-full overflow-hidden bg-surface"
+              className="@container relative aspect-3/4 w-full overflow-hidden rounded-ot-surface bg-surface"
               style={{ boxShadow: PORTRAIT_SHADOW }}
               {...pa?.('practitionerRef')}
             >
@@ -161,7 +161,7 @@ export default function PractitionerHeader({ practitioner, profileLabel, pa }: P
             {/* Profile label — arrives first as the eye scans; reserves no space when absent */}
             {profileLabel && (
               <span
-                className="mb-md self-start inline-flex items-center bg-accent px-sm py-1 text-label font-bold uppercase tracking-label text-fg-on-accent"
+                className="mb-md self-start inline-flex items-center rounded-ot-control bg-accent px-sm py-1 text-label font-bold uppercase tracking-label text-fg-on-accent"
                 style={{ boxShadow: '0 0 0 1px var(--ot-bloom-accent-border), 0 4px 18px var(--ot-bloom-accent-faint)' }}
                 {...pa?.('profileLabel')}
               >
