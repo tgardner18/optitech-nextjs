@@ -344,11 +344,13 @@ export default function CardBlock({
           </div>
         </div>
       ) : isFloat ? (
-        // Float: content panel slides 5rem into the image. The two-layer upward shadow
-        // (diffuse spread + tight contact) makes the depth readable at a glance.
+        // Float: content panel is horizontally inset (mx-md) so card fill is visible on
+        // the sides and bottom, making the panel read as a distinct elevated surface above
+        // the image rather than a seamless content extension. The four-layer shadow (upward
+        // diffuse + contact + downward ambient + tight drop) sells the Z-lift.
         <div
-          className={cn("relative z-10 flex flex-col flex-1 -mt-20", floatContentBg, padding)}
-          style={{ boxShadow: '0 -10px 30px rgba(0,0,0,0.30), 0 -2px 8px rgba(0,0,0,0.18)' }}
+          className={cn("relative z-10 flex flex-col flex-1 -mt-16 mx-md mb-md rounded-ot-surface", floatContentBg, padding)}
+          style={{ boxShadow: '0 -12px 36px rgba(0,0,0,0.30), 0 -2px 6px rgba(0,0,0,0.20), 0 8px 24px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.14)' }}
         >
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
