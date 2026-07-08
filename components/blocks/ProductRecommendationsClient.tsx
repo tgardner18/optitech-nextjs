@@ -127,7 +127,7 @@ export default function ProductRecommendationsClient({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg" aria-hidden="true">
         {Array.from({ length: initialCount }).map((_, i) => (
-          <div key={i} className="rounded-card border border-fg/[0.08] overflow-hidden">
+          <div key={i} className="rounded-ot-surface border border-fg/8 overflow-hidden">
             <div className="aspect-[3/2] w-full bg-fg/[0.06] motion-safe:animate-pulse" />
             <div className="p-lg space-y-2">
               <div className="h-4 w-3/4 bg-fg/[0.06] motion-safe:animate-pulse" />
@@ -152,7 +152,7 @@ export default function ProductRecommendationsClient({
             key={`${rec.id ?? rec.refCode ?? i}`}
             href={rec.url || '#'}
             onClick={() => handleClick(rec)}
-            className="group flex flex-col overflow-hidden rounded-card border border-fg/[0.08] bg-surface transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+            className="group flex flex-col overflow-hidden rounded-ot-surface border border-fg/8 bg-surface transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
           >
             <div
               className="aspect-[3/2] w-full bg-fg/[0.05] bg-cover bg-center"

@@ -65,7 +65,7 @@ export default function ContentRecommendationsBlock({
               <a
                 key={`${item.linkUrl}-${i}`}
                 href={item.linkUrl}
-                className="group flex flex-col overflow-hidden rounded-card border border-fg/[0.08] bg-surface transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                className="group flex flex-col overflow-hidden rounded-ot-surface border border-fg/8 bg-surface transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               >
                 {/* Image (background-image avoids remote-pattern config for arbitrary hosts) */}
                 <div

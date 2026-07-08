@@ -100,7 +100,7 @@ function EventCard({ event, color }: { event: EventCardData; color: Color }) {
   return (
     <a
       href={href}
-      className={`group flex flex-col card-hover-lift border border-fg/10 ${cardSurface(color)}
+      className={`group flex flex-col rounded-ot-surface overflow-hidden card-hover-lift border border-fg/10 ${cardSurface(color)}
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
     >
       {/* Media / date panel */}
