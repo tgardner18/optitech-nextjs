@@ -26,7 +26,7 @@ function TypeBadge({ type, onImage = false }: { type: string; onImage?: boolean 
     <span
       className={
         onImage
-          ? 'inline-flex items-center px-sm py-0.75 bg-accent text-fg-on-accent text-label uppercase tracking-label font-semibold'
+          ? 'inline-flex items-center rounded-ot-control px-sm py-0.75 bg-brand text-fg-on-brand text-label uppercase tracking-label font-semibold'
           : 'inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-accent'
       }
     >
@@ -274,7 +274,7 @@ export default function EventPage({ content, pa }: Props) {
                       const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
                       const initials = getInitials(sp.name)
                       return (
-                        <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 bg-surface border border-fg/10 px-6 py-5">
+                        <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 rounded-ot-surface overflow-hidden bg-surface border border-fg/10 px-6 py-5">
                           {/* Headshot — 96px circle with a chromatic bloom ring */}
                           {photo ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -323,7 +323,7 @@ export default function EventPage({ content, pa }: Props) {
 
             {/* Event details card — sticky on desktop, above content on mobile */}
             <aside className="order-1 lg:order-2 lg:sticky lg:top-24 min-w-0">
-              <div className="bg-surface border border-fg/10">
+              <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10">
                 <div className="p-lg flex flex-col">
                   {rows.map((row, i) => (
                     <div key={i} className={i > 0 ? 'mt-md pt-md border-t border-fg/10' : ''}>
@@ -334,7 +334,7 @@ export default function EventPage({ content, pa }: Props) {
                 {regUrl && (
                   <a
                     href={regUrl}
-                    className="btn-signal group flex items-center justify-center gap-xs bg-brand text-fg-on-brand px-lg py-md text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    className="btn-signal group flex items-center justify-center gap-xs rounded-ot-control bg-brand text-fg-on-brand px-lg py-md text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
                     {isVirtual ? 'Join' : 'Register'}
                     <ArrowRight size={16} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
