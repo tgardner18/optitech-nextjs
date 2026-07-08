@@ -39,10 +39,16 @@ function normalizeNavHref(rawUrl: string | null | undefined, locale: Locale, dom
 }
 
 /**
- * Split Bar nav variant — logo is horizontally centered in a three-column grid.
- * Nav links are split: Math.floor(n/2) on the left, remainder on the right toward the CTA.
- * Same glass shell and sticky behavior as the default Header; only the flex layout changes.
- * Below lg, collapses to logo-left + hamburger (identical to top-bar mobile behavior).
+ * Split-bar nav variant — transparent header on desktop, logo bare left, floating pill right.
+ *
+ * The pill (bg-surface/90 + backdrop-blur + rounded-full) contains nav links, icon
+ * utilities, and the CTA. No full-width background band on desktop; content reads
+ * through the gap between the two elements.
+ *
+ * The rounded-full pill shape is invariant — the corner-style axis governs cards and
+ * controls, not this structural motif.
+ *
+ * Mobile (< lg): glass sticky bar, logo left, hamburger right — identical to top-bar.
  */
 export default async function SplitHeader() {
   const domain   = await getRequestDomain()
@@ -84,12 +90,6 @@ export default async function SplitHeader() {
       }))
     : FALLBACK_NAV
 
-  // Fewer items left (away from CTA), more right (toward CTA).
-  // With 1 item: 0 left, 1 right — degrades gracefully to an asymmetric layout.
-  const leftCount    = Math.floor(navItems.length / 2)
-  const leftNavItems = navItems.slice(0, leftCount)
-  const rightNavItems = navItems.slice(leftCount)
-
   const logoEl = logoSrc ? (
     <Image src={logoSrc} alt={logoAlt} width={444} height={90} className={logoImgClass} priority />
   ) : (
@@ -98,49 +98,63 @@ export default async function SplitHeader() {
 
   return (
     <>
-      {/* Skip to main content — must be first focusable element */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-sm focus:left-sm focus:z-[9999]
+        className="sr-only focus:not-sr-only focus:fixed focus:top-sm focus:left-sm focus:z-300
                    focus:px-md focus:py-sm focus:bg-brand focus:text-fg-on-brand
                    focus:text-sm focus:font-semibold"
       >
         {t(locale, 'nav.skipToMain')}
       </a>
 
-      <header className="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-fg/5">
+      {/* ── Desktop: transparent header — logo bare left, pill right ─────────── */}
+      <header className="sticky top-0 z-50 lg:bg-transparent lg:border-none bg-canvas/80 backdrop-blur-md border-b border-fg/5 lg:backdrop-filter-none">
 
-        {/* ── Desktop: three-column grid — left-nav | logo | right-nav+CTA ──── */}
-        <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center px-lg py-md gap-xl">
+        <div className="hidden lg:flex items-center justify-between px-lg py-sm">
 
-          {/* Left nav — right-aligned so items sit close to the centered logo */}
-          <div className="flex justify-end">
-            <DesktopNav navItems={leftNavItems} />
-          </div>
-
-          {/* Center: logo with a persistent brand-bloom halo */}
+          {/* Logo — no container, brand bloom filter for contrast on any background */}
           <a
             href={localizedHref('/', locale)}
             aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="flex items-center justify-center h-12 shrink-0"
-            style={{ filter: 'drop-shadow(0 0 14px var(--ot-bloom-brand-faint))' }}
+            className="flex items-center h-12 shrink-0"
+            style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
           >
             {logoEl}
           </a>
 
-          {/* Right nav + utilities — left-aligned so items sit close to the logo */}
-          <div className="flex items-center gap-lg">
-            <DesktopNav navItems={rightNavItems} />
-            <div className="flex items-center gap-sm ml-auto">
+          {/* Floating pill — nav links + utilities + CTA in one surface capsule */}
+          <div
+            className="flex items-center rounded-full border border-fg/8"
+            style={{
+              background:           'color-mix(in oklch, var(--ot-surface) 90%, transparent)',
+              backdropFilter:       'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+            }}
+          >
+            {/* Nav links */}
+            <div className="px-md">
+              <DesktopNav navItems={navItems} />
+            </div>
+
+            {/* Separator */}
+            <div aria-hidden="true" className="w-px self-stretch bg-fg/10 my-sm" />
+
+            {/* Icon utilities */}
+            <div className="flex items-center gap-xs px-sm py-sm">
               <SearchTrigger />
               <LocaleSelector enabledLocales={enabledLocales} />
               <ThemeToggle />
+            </div>
+
+            {/* CTA — inset from the pill edge so it reads as the primary action */}
+            <div className="pr-sm pl-xs py-sm">
               <Button href={ctaHref} size="sm">{ctaLabel}</Button>
             </div>
           </div>
+
         </div>
 
-        {/* ── Mobile: logo left + hamburger (identical to top-bar mobile) ─── */}
+        {/* ── Mobile: glass bar — identical to top-bar mobile ──────────────── */}
         <div className="lg:hidden flex items-center justify-between px-md py-md">
           <a
             href={localizedHref('/', locale)}
