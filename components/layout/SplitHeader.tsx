@@ -7,6 +7,7 @@ import { BrandMark } from '@/components/layout/BrandMark'
 import { LocaleSelector } from '@/components/layout/LocaleSelector'
 import SearchTrigger from '@/components/search/SearchTrigger'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
+import { SplitLogoWrap } from '@/components/layout/SplitLogoWrap'
 import { getEnabledLanguages } from '@/lib/i18n/getEnabledLanguages'
 import { t } from '@/lib/i18n/t'
 import { localizedHref, stripLocalePrefix } from '@/lib/i18n/config'
@@ -112,15 +113,17 @@ export default async function SplitHeader() {
 
         <div className="hidden lg:flex items-center justify-between px-lg py-sm">
 
-          {/* Logo — no container, brand bloom filter for contrast on any background */}
-          <a
-            href={localizedHref('/', locale)}
-            aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="flex items-center h-12 shrink-0"
-            style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
-          >
-            {logoEl}
-          </a>
+          {/* Logo — floats bare on hero, gains glass pill after scrolling */}
+          <SplitLogoWrap>
+            <a
+              href={localizedHref('/', locale)}
+              aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
+              className="flex items-center h-12 shrink-0"
+              style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
+            >
+              {logoEl}
+            </a>
+          </SplitLogoWrap>
 
           {/* Floating pill — nav links + utilities + CTA in one surface capsule */}
           <div
