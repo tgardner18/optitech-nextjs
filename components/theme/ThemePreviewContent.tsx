@@ -94,7 +94,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                   <span key={n.label} className="text-sm font-normal text-fg-muted">{n.label}</span>
                 ))}
               </div>
-              <span className="bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
+              <span className="rounded-ot-control bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
                 {ctaLabel}
               </span>
             </div>
@@ -123,7 +123,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
               {(['full', 'icon', 'compact'] as const).map(fit => (
-                <div key={fit} className="bg-surface border border-fg/10 p-md">
+                <div key={fit} className="rounded-ot-surface bg-surface border border-fg/10 p-md">
                   <p className="text-label tracking-label uppercase font-semibold text-brand mb-md">
                     {fit}{fit === logoFit ? ' · active' : ''}
                   </p>
@@ -208,13 +208,13 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
         <SectionHead label="03 · Theme" title="CTA Button" />
         <div className="flex flex-wrap items-center gap-lg">
           <div className="flex flex-col gap-sm items-start">
-            <span className="bg-brand hover:bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
+            <span className="rounded-ot-control bg-brand hover:bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
               {ctaLabel}
             </span>
             <p className="text-label text-fg-muted">Primary · Canvas surface</p>
           </div>
           <div className="bg-brand p-lg flex flex-col gap-sm items-start">
-            <span className="bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
+            <span className="rounded-ot-control bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
               {ctaLabel}
             </span>
             <p className="text-label text-fg-on-brand/60">Primary · Brand surface</p>
@@ -230,7 +230,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
           {/* ── Card ────────────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-sm">
             <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold">Card</p>
-            <div className="bg-surface border border-fg/10 flex flex-col flex-1">
+            <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10 flex flex-col flex-1">
               <div className="aspect-video relative overflow-hidden">
                 <Image
                   src={CARD_IMAGES[0].src}
@@ -248,7 +248,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                 <p className="text-sm text-fg-muted leading-body">
                   Our platform adapts to your traffic patterns in real time, delivering personalized experiences without engineering overhead.
                 </p>
-                <span className="mt-sm self-start bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
+                <span className="mt-sm self-start rounded-ot-control bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
                   {ctaLabel}
                 </span>
               </div>
@@ -261,7 +261,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
               color; [&>section]:flex-1 lets it fill the column height to match the card. */}
           <div className="flex flex-col gap-sm">
             <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold">Banner · Brand</p>
-            <div className="border border-fg/10 overflow-hidden flex-1 flex [&>section]:flex-1">
+            <div className="rounded-ot-surface border border-fg/10 overflow-hidden flex-1 flex [&>section]:flex-1">
               <BannerBlock
                 eyebrow="Now Available"
                 heading="Optimize Every Visitor Experience"

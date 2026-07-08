@@ -129,14 +129,15 @@ export const OT_ThemeManager = contentType({
       type: 'string',
       format: 'selectOne',
       displayName: 'Primary Font — the whole type hierarchy (display, headline, body, labels)',
-      description: 'Sets the primary typeface for the entire site — display headers down to body and labels. All four ship the same 300–800 weight range and hold up under the display, gradient-fill, and bloom treatments. Syne stays reserved for select accent areas.',
+      description: 'Sets the primary typeface for the entire site — display headers down to body and labels. All options ship the same 300–800 weight range and hold up under the display, gradient-fill, and bloom treatments. Syne stays reserved for select accent areas.',
       group: 'OT_Theme',
       sortOrder: 185,
       enum: [
         { value: 'poppins',       displayName: 'Poppins — geometric, friendly (default)' },
-        { value: 'sourceSerif', displayName: 'Source Serif — editorial, trustworthy (serif)' },
+        { value: 'sourceSerif',   displayName: 'Source Serif — editorial, trustworthy (serif)' },
         { value: 'sora',          displayName: 'Sora — squared, technical' },
-        { value: 'bricolage',     displayName: 'Bricolage Grotesque — expressive, characterful' },
+        { value: 'plusJakarta',   displayName: 'Plus Jakarta Sans — warm, modern' },
+        { value: 'manrope',       displayName: 'Manrope — clean, minimal' },
       ],
     },
     motionIntensity: {

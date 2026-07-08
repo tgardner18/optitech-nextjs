@@ -62,7 +62,7 @@ const MONTH_LABEL = 'font-semibold uppercase tracking-[0.12em] text-[0.6875rem] 
 // supplied by the caller (absolute overlay in cards, inline in list rows).
 function TypeBadge({ type, className = '' }: { type: string; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-tl-ot-surface bg-brand text-fg-on-brand px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}>
+    <span className={`inline-flex items-center rounded-ot-control bg-brand text-fg-on-brand px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}>
       {eventTypeLabel(type)}
     </span>
   )
@@ -141,7 +141,7 @@ function EventCard({ event, color }: { event: EventCardData; color: Color }) {
           </div>
         )}
         {/* Type badge — overlays the top-left of the media / placeholder area */}
-        {event.eventType && <TypeBadge type={event.eventType} className="absolute top-0 left-0" />}
+        {event.eventType && <TypeBadge type={event.eventType} className="absolute top-3 left-3" />}
       </div>
 
       {/* Body */}

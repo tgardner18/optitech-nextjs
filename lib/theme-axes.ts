@@ -35,7 +35,8 @@ export const PRIMARY_FONTS = {
   poppins:        { var: 'var(--font-poppins)',   label: 'Poppins (default)' },
   sourceSerif:    { var: 'var(--font-primary-a)', label: 'Source Serif'      },
   sora:           { var: 'var(--font-primary-b)', label: 'Sora'              },
-  bricolage:      { var: 'var(--font-primary-c)', label: 'Plus Jakarta Sans'   },
+  plusJakarta:    { var: 'var(--font-primary-c)', label: 'Plus Jakarta Sans' },
+  manrope:        { var: 'var(--font-primary-d)', label: 'Manrope'           },
 } as const
 
 export type PrimaryFontKey = keyof typeof PRIMARY_FONTS
