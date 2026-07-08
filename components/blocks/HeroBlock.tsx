@@ -101,7 +101,7 @@ const bodyCva = cva("text-body leading-body max-w-(--ot-measure-tight)", {
 });
 
 const primaryCtaCva = cva(
-  "inline-block hover:-translate-y-0.5 hover:shadow-hover-lift text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
+  "inline-block rounded-ot-control hover:-translate-y-0.5 hover:shadow-hover-lift text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
   {
     variants: {
       color: {
@@ -120,7 +120,7 @@ const primaryCtaCva = cva(
 );
 
 const secondaryCtaCva = cva(
-  "inline-block border text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
+  "inline-block rounded-ot-control border text-label font-semibold tracking-label uppercase px-12 py-4 transition duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-[3px]",
   {
     variants: {
       color: {
@@ -137,7 +137,7 @@ const secondaryCtaCva = cva(
 );
 
 const visualPanelCva = cva(
-  "relative overflow-hidden aspect-video lg:aspect-auto lg:flex-1",
+  "relative overflow-hidden rounded-ot-surface aspect-video lg:aspect-auto lg:flex-1",
   {
     variants: {
       color: {
@@ -391,7 +391,7 @@ function SpotlightHero({
           <div className={`relative ${imageLeft ? "lg:order-1" : ""}`} {...pa("visual")}>
             <div className="hero-bloom-halo" aria-hidden />
             {/* Wide, height-capped plate keeps the hero compact regardless of viewport. */}
-            <div className="hero-bloom-plate relative aspect-[3/2] max-h-[24rem] overflow-hidden">
+            <div className="hero-bloom-plate relative aspect-[3/2] max-h-[24rem] overflow-hidden rounded-ot-surface">
               <HeroMedia visual={visual} visualSrc={visualSrc} visualAlt={visualAlt} sizes="(min-width: 1024px) 45vw, 100vw" />
             </div>
           </div>
@@ -420,7 +420,7 @@ function OverlapHero({
 
   const plate = (
     <div
-      className={`hero-overlap-plate relative z-10 ${groundCva({ color })} p-lg lg:col-span-7 lg:row-start-1 lg:self-center lg:p-xl ${
+      className={`hero-overlap-plate rounded-ot-surface relative z-10 ${groundCva({ color })} p-lg lg:col-span-7 lg:row-start-1 lg:self-center lg:p-xl ${
         hasVisual ? `-mt-10 mx-md lg:mx-0 lg:mt-0 ${imageLeft ? "lg:col-start-6" : "lg:col-start-1"}` : "lg:col-span-12"
       } ${anim}`}
       data-theme={color === "brand" ? "dark" : undefined}
@@ -441,7 +441,7 @@ function OverlapHero({
         <div className="grid items-center gap-0 lg:grid-cols-12">
           {hasVisual && (
             <div
-              className={`relative aspect-[3/2] max-h-[28rem] w-full overflow-hidden lg:row-start-1 lg:aspect-auto lg:h-112 lg:max-h-none ${
+              className={`relative rounded-ot-surface aspect-3/2 max-h-112 w-full overflow-hidden lg:row-start-1 lg:aspect-auto lg:h-112 lg:max-h-none ${
                 imageLeft ? "lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"
               }`}
               {...pa("visual")}
@@ -485,7 +485,7 @@ function DiagonalHero({
               around its own centre — the focal point shows, instead of the photo being
               stretched full-bleed across the section with its middle hidden. */}
           <div
-            className={`hero-diagonal__media relative h-60 w-full overflow-hidden lg:absolute lg:inset-y-0 lg:h-full lg:w-[46%] ${
+            className={`hero-diagonal__media rounded-ot-surface relative h-60 w-full overflow-hidden lg:absolute lg:inset-y-0 lg:h-full lg:w-[46%] ${
               side === "left" ? "lg:left-0" : "lg:right-0"
             }`}
             {...pa("visual")}

@@ -124,11 +124,12 @@ export default async function SplitHeader() {
 
           {/* Floating pill — nav links + utilities + CTA in one surface capsule */}
           <div
-            className="flex items-center rounded-full border border-fg/8"
+            className="flex items-center rounded-full border border-fg/15"
             style={{
-              background:           'color-mix(in oklch, var(--ot-surface) 90%, transparent)',
+              background:           'color-mix(in oklch, var(--ot-surface) 92%, transparent)',
               backdropFilter:       'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
+              boxShadow:            '0 2px 20px var(--ot-bloom-brand-faint), 0 1px 4px oklch(0 0 0 / 0.08)',
             }}
           >
             {/* Nav links */}
@@ -146,8 +147,8 @@ export default async function SplitHeader() {
               <ThemeToggle />
             </div>
 
-            {/* CTA — inset from the pill edge so it reads as the primary action */}
-            <div className="pr-sm pl-xs py-sm">
+            {/* CTA — inset from pill edge with generous vertical breathing room */}
+            <div className="pr-1.5 pl-xs py-1.5">
               <Button href={ctaHref} size="sm">{ctaLabel}</Button>
             </div>
           </div>

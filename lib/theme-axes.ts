@@ -16,9 +16,9 @@
 // reaching the SaaS-pill anti-pattern. `surface` drives cards/panels/glass;
 // `control` drives buttons (kept a touch tighter than surface at Rounded).
 export const CORNER_STYLES = {
-  sharp:   { surface: '0px',  control: '0px' },
-  soft:    { surface: '4px',  control: '4px' },
-  rounded: { surface: '10px', control: '8px' },
+  sharp:   { surface: '0px',  control: '0px'  },
+  soft:    { surface: '8px',  control: '6px'  },
+  rounded: { surface: '20px', control: '14px' },
 } as const
 
 export type CornerStyleKey = keyof typeof CORNER_STYLES

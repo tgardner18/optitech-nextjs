@@ -245,7 +245,7 @@ export default function TabsBlockClient({
         {/* ── Panel area ─────────────────────────────────────────────────── */}
         <div
           className={cn(
-            'flex-1 min-w-0 tab-panel-surface',
+            'flex-1 min-w-0 tab-panel-surface rounded-ot-surface',
             color === 'canvas'  && 'bg-surface border border-fg/10 p-lg',
             color === 'surface' && 'bg-canvas  border border-fg/10 p-lg',
             color === 'brand'   && 'bg-white/10 border border-white/15 p-lg',

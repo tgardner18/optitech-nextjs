@@ -1470,6 +1470,7 @@ body {
 /* Blockquote — full border + background tint; no side stripe */
 [data-rich-text] blockquote {
   border: 1px solid oklch(from var(--ot-brand) l c h / 0.35);
+  border-radius: var(--ot-radius-surface);
   background: oklch(from var(--ot-brand) l c h / 0.07);
   padding: var(--ot-space-lg);
   margin: var(--ot-space-lg) 0;

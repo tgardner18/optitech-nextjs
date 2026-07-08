@@ -304,7 +304,7 @@ function placeMultiDay(week: (DayInfo | null)[], events: EventCardData[]): { spa
 function CalendarPill({ event }: { event: EventCardData }) {
   const time = formatEventTime(event.startDate)
   return (
-    <span className="block overflow-hidden bg-brand/10 border border-brand/25 px-1.5 py-1 leading-tight">
+    <span className="block overflow-hidden rounded-ot-control bg-brand/10 border border-brand/25 px-1.5 py-1 leading-tight">
       {time && <span className="block font-mono text-[10px] text-fg-muted leading-none">{time}</span>}
       {event.eventType && (
         <span className="inline-block bg-accent text-fg-on-accent text-[8px] font-bold uppercase tracking-wider px-1 leading-[1.4] mt-0.5">
@@ -392,7 +392,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     setSelected(null)
   }, [events, cursor])
 
-  const navBtn = 'inline-flex items-center justify-center w-11 h-11 border border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const navBtn = 'inline-flex items-center justify-center w-11 h-11 rounded-ot-control border border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
 
   return (
     <div>
@@ -405,7 +405,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
           </button>
           <button
             type="button"
-            className="px-sm h-9 border border-fg/15 text-label uppercase tracking-label font-semibold text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="px-sm h-9 rounded-ot-control border border-fg/15 text-label uppercase tracking-label font-semibold text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             onClick={() => { setCursor(new Date(now.getFullYear(), now.getMonth(), 1)); setSelected(null) }}
           >
             Today
@@ -513,7 +513,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
 
         {/* Selected-day agenda */}
         {selectedDate && agendaEvents.length > 0 && (
-          <div className={`mt-md border border-fg/10 ${cardSurface(color)} p-md`}>
+          <div className={`mt-md rounded-ot-surface border border-fg/10 ${cardSurface(color)} p-md`}>
             <p className="text-label uppercase tracking-label font-semibold text-fg-muted/70 mb-sm">
               {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(selectedDate)}
             </p>
@@ -550,7 +550,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
 function EmptyShell({ icon, title, children }: { icon: React.ReactNode; title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-2xl gap-sm text-fg-muted">
-      <div className="w-12 h-12 border-2 border-fg/12 flex items-center justify-center text-fg-muted/60">{icon}</div>
+      <div className="w-12 h-12 rounded-ot-surface border-2 border-fg/12 flex items-center justify-center text-fg-muted/60">{icon}</div>
       <p className="text-title font-semibold text-fg">{title}</p>
       {children}
     </div>
@@ -559,7 +559,7 @@ function EmptyShell({ icon, title, children }: { icon: React.ReactNode; title: s
 
 function CalendarEmpty({ monthLabel, onJump, hasAny }: { monthLabel: string; onJump: () => void; hasAny: boolean }) {
   return (
-    <div className="border border-fg/10 border-dashed">
+    <div className="rounded-ot-surface border border-fg/10 border-dashed">
       <EmptyShell icon={<CalendarX2 size={20} strokeWidth={1.5} />} title={`No events in ${monthLabel}`}>
         {hasAny && (
           <button
@@ -584,7 +584,7 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
     { v: 'calendar', label: 'Calendar', Icon: CalendarIcon },
   ]
   return (
-    <div className="inline-flex border border-fg/15" role="group" aria-label="View mode">
+    <div className="inline-flex rounded-ot-control overflow-hidden border border-fg/15" role="group" aria-label="View mode">
       {items.map(({ v, label, Icon }, i) => {
         const active = view === v
         return (
@@ -614,7 +614,7 @@ function TypeChip({ label, active, onClick }: { label: string; active: boolean; 
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`text-label uppercase tracking-label font-semibold px-sm py-[5px] border transition-colors duration-150 ease-quick cursor-pointer
+      className={`rounded-ot-control text-label uppercase tracking-label font-semibold px-sm py-1.25 border transition-colors duration-150 ease-quick cursor-pointer
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
         ${active
           ? 'bg-brand border-transparent text-fg-on-brand'

@@ -181,7 +181,7 @@ export default function VideoBlock({
 
         {/* Aspect-ratio container */}
         <div
-          className={`relative overflow-hidden ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
+          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
           style={glowStyle}
         >
           {playing ? (
