@@ -283,7 +283,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-4/3 max-h-[320px]")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-4/3 max-h-100")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -296,7 +296,7 @@ export default function CardBlock({
 
       {/* ── Float image ───────────────────────────────────────────────────────── */}
       {isFloat && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-3/2 max-h-[300px]")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-3/2 max-h-90")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
