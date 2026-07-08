@@ -626,7 +626,7 @@ body {
   background: var(--ot-canvas);
   color: var(--ot-fg);
   font-family: var(--ot-font-sans);
-  /* Let optical faces (e.g. Bricolage Grotesque, selected as the Primary Font via
+  /* Let optical faces (e.g. Plus Jakarta Sans, selected as the Primary Font via
    * ThemeManager) adapt their optical size to the rendered size, and keep kerning
    * on so display pairs sit correctly. Cheap, global, no visual change to Poppins. */
   font-optical-sizing: auto;
