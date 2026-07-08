@@ -38,6 +38,21 @@ import type { BlogFeedPost }         from '@/lib/blogFeed'
 import type { EventCardData }        from '@/lib/events'
 import type { PractitionerCardData } from '@/lib/practitioners'
 import type { LocationData }          from '@/lib/locations'
+import HeroPlayground        from '../hero-playground'
+import DividerPlayground     from '../divider-playground'
+import CardPlayground        from '../card-playground'
+import PrimaryTextPlayground from '../primary-text-playground'
+import QuotePlayground       from '../quote-playground'
+import ImagePlayground       from '../image-playground'
+import VideoPlayground       from '../video-playground'
+import StatPlayground        from '../stat-playground'
+import FeatureGridPlayground from '../feature-grid-playground'
+import AccordionPlayground   from '../accordion-playground'
+import TabsPlayground        from '../tabs-playground'
+import BannerPlayground      from '../banner-playground'
+import CalloutPlayground     from '../callout-playground'
+import ButtonPlayground      from '../button-playground'
+import TrustRailPlayground   from '../trust-rail-playground'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -2698,25 +2713,25 @@ export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
   switch (block as BlockSlug) {
-    case 'hero':         return <HeroShowcase />
-    case 'card':         return <CardShowcase />
-    case 'primary-text': return <PrimaryTextShowcase />
-    case 'quote':        return <QuoteShowcase />
+    case 'hero':         return <><BlockHeader slug="hero" /><HeroPlayground /></>
+    case 'card':         return <><BlockHeader slug="card" /><CardPlayground /></>
+    case 'primary-text': return <><BlockHeader slug="primary-text" /><PrimaryTextPlayground /></>
+    case 'quote':        return <><BlockHeader slug="quote" /><QuotePlayground /></>
     case 'rich-text':    return <RichTextShowcase />
-    case 'image':        return <ImageShowcase />
-    case 'video':        return <VideoShowcase />
-    case 'stat':         return <StatShowcase />
-    case 'feature-grid': return <FeatureGridShowcase />
-    case 'trust-rail':   return <TrustRailShowcase />
-    case 'accordion':    return <AccordionShowcase />
-    case 'tabs':         return <TabsShowcase />
+    case 'image':        return <><BlockHeader slug="image" /><ImagePlayground /></>
+    case 'video':        return <><BlockHeader slug="video" /><VideoPlayground /></>
+    case 'stat':         return <><BlockHeader slug="stat" /><StatPlayground /></>
+    case 'feature-grid': return <><BlockHeader slug="feature-grid" /><FeatureGridPlayground /></>
+    case 'trust-rail':   return <><BlockHeader slug="trust-rail" /><TrustRailPlayground /></>
+    case 'accordion':    return <><BlockHeader slug="accordion" /><AccordionPlayground /></>
+    case 'tabs':         return <><BlockHeader slug="tabs" /><TabsPlayground /></>
     case 'blog-feed':    return <BlogFeedShowcase />
-    case 'button':       return <ButtonShowcase />
+    case 'button':       return <><BlockHeader slug="button" /><ButtonPlayground /></>
     case 'chart':        return <ChartShowcase />
-    case 'banner':            return <BannerShowcase />
+    case 'banner':            return <><BlockHeader slug="banner" /><BannerPlayground /></>
     case 'resource-library': return <ResourceLibraryShowcase />
-    case 'callout':          return <CalloutShowcase />
-    case 'divider':          return <DividerShowcase />
+    case 'callout':          return <><BlockHeader slug="callout" /><CalloutPlayground /></>
+    case 'divider':          return <><BlockHeader slug="divider" /><DividerPlayground /></>
     case 'event-listing':    return <EventListingShowcase />
     case 'practitioner-listing': return <PractitionerListingShowcase />
     case 'location-listing':     return <LocationListingShowcase />

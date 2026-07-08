@@ -283,7 +283,7 @@ export default function CardBlock({
 
       {/* ── Top image ─────────────────────────────────────────────────────────── */}
       {imageStyle === "top" && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-[4/3] max-h-120")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-4/3 max-h-100")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -295,10 +295,8 @@ export default function CardBlock({
       )}
 
       {/* ── Float image ───────────────────────────────────────────────────────── */}
-      {/* Content slides up 2rem with the card's fill background, overlapping    */}
-      {/* the image bottom. Creates editorial depth without static shadows.       */}
       {isFloat && image && (
-        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-video")} {...pa('image')}>
+        <div className={cn("relative w-full shrink-0 overflow-hidden", imageAspectRatio !== "auto" ? IMG_ASPECT_CLASS[imageAspectRatio] : "aspect-3/2 max-h-90")} {...pa('image')}>
           <Image
             src={image.src}
             alt={image.alt}
@@ -344,8 +342,17 @@ export default function CardBlock({
           </div>
         </div>
       ) : isFloat ? (
-        // Float: content box slides up over the image bottom with an explicit background
-        <div className={cn("relative z-10 flex flex-col flex-1 -mt-8", floatContentBg, padding)}>
+        // Float: content panel is horizontally inset (mx-md) so card fill is visible on
+        // the sides and bottom, making the panel read as a distinct elevated surface.
+        // Border + shadow are fully bloom-token derived so they follow CMS theme overrides.
+        // The inset top-edge shimmer (same pattern as bg-glass) reads as a raised surface.
+        <div
+          className={cn("relative z-10 flex flex-col flex-1 -mt-16 mx-md mb-md rounded-ot-surface", floatContentBg, padding)}
+          style={{
+            border: `1px solid ${s === 'brand' ? 'oklch(from var(--ot-fg-on-brand) l c h / 0.18)' : 'var(--ot-bloom-brand-border)'}`,
+            boxShadow: '0 -12px 36px var(--ot-bloom-brand-faint), 0 -2px 6px var(--ot-bloom-brand-border), 0 8px 24px var(--ot-bloom-brand-faint), 0 2px 6px var(--ot-bloom-brand-border), inset 0 1px 0 oklch(from var(--ot-fg) l c h / 0.10)',
+          }}
+        >
           <div className="flex flex-col gap-sm flex-1">
             {eyebrow && <p className={T.eyebrow[s]} {...pa('Eyebrow')}>{eyebrow}</p>}
             <Tag className={T.heading[s]} {...pa('Heading')}>{heading}</Tag>

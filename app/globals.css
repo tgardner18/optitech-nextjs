@@ -2058,6 +2058,29 @@ body {
     0 16px 52px oklch(from var(--ot-accent) l c h / 0.13);
 }
 
+/* ── Feature grid card lift ───────────────────────────────────────────────────
+ * Resting chromatic elevation + lift-and-intensify on hover. Separated from
+ * card-hover-lift because this variant also transitions border-color (the border
+ * ring brightens on hover, matching the user's design intent). All three
+ * properties share one transition so they move in choreographed lockstep.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.feature-card-lift {
+  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+  transition:
+    transform var(--ot-dur-quick) var(--ot-ease-quick),
+    box-shadow var(--ot-dur-quick) var(--ot-ease-quick),
+    border-color var(--ot-dur-quick) var(--ot-ease-quick);
+}
+.feature-card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 32px var(--ot-bloom-brand-faint),
+    0 16px 48px oklch(from var(--ot-accent) l c h / 0.10);
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-card-lift:hover { transform: none; }
+}
+
 /* ── Practitioner portrait card ───────────────────────────────────────────────
  * The portrait-first directory card. A resting chromatic elevation (brand-hued,
  * never grey) deepens and lifts on hover. The glass footer's reveal slide and
