@@ -81,14 +81,16 @@ export type Axes = {
   cornerStyle: string
   primaryFont: string
   motionIntensity: string
+  navbarStyle: string
 }
 
 export function buildInitialAxes(settings: Record<string, unknown> | null | undefined): Axes {
   const s = settings ?? {}
   const str = (k: string, f: string) => (typeof s[k] === 'string' && s[k] ? (s[k] as string) : f)
   return {
-    cornerStyle: str('cornerStyle', 'sharp'),
-    primaryFont: str('primaryFont', 'poppins'),
+    cornerStyle:     str('cornerStyle',     'sharp'),
+    primaryFont:     str('primaryFont',     'poppins'),
     motionIntensity: str('motionIntensity', 'default'),
+    navbarStyle:     str('navbarStyle',     'top-bar'),
   }
 }

@@ -59,6 +59,29 @@ export const MOTION_INTENSITIES = {
 export type MotionIntensityKey = keyof typeof MOTION_INTENSITIES
 export const DEFAULT_MOTION_INTENSITY: MotionIntensityKey = 'default'
 
+// ── Navbar Style ────────────────────────────────────────────────────────────
+// Structural layout of the primary navigation. Changes the spatial grammar of
+// the entire page — not just header styling. Three options:
+//   top-bar   — existing sticky glass header (default, zero visual change)
+//   split-bar — logo centered, nav split left/right; heritage/editorial register
+//   sidebar   — fixed left rail, content shifts right; product/portal register
+// The sidebar variant emits --ot-sidebar-width via buildThemeCSS so full-bleed
+// sections and the content wrapper can consume it without knowing the active style.
+export const NAVBAR_STYLES = {
+  'top-bar':   { sidebarWidth: null       },
+  'split-bar': { sidebarWidth: null       },
+  'sidebar':   { sidebarWidth: '240px'    },
+} as const
+
+export type NavbarStyleKey = keyof typeof NAVBAR_STYLES
+export const DEFAULT_NAVBAR_STYLE: NavbarStyleKey = 'top-bar'
+
+// Always returns a valid key — used by layout to decide which header shell to render.
+export function resolveNavbarStyle(key: string | null | undefined): NavbarStyleKey {
+  if (!key || !(key in NAVBAR_STYLES)) return DEFAULT_NAVBAR_STYLE
+  return key as NavbarStyleKey
+}
+
 // ── Resolvers — return the override value only when set and ≠ default ────────
 // (null = "leave the token at its default", so buildThemeCSS emits nothing.)
 
