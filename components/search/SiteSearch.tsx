@@ -820,7 +820,7 @@ export default function SiteSearch() {
         {/* Input area — visually boxed so it reads as a text field, not a label row */}
         <div className="px-md pt-[8px] pb-[10px] border-b border-fg/8 shrink-0">
           <label htmlFor="search-input-compact" className="sr-only">{t('search.inputLabel')}</label>
-          <div className="flex items-center gap-[8px] rounded-[4px] border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-[10px] py-[9px] transition-colors duration-150">
+          <div className="flex items-center gap-[8px] rounded-ot-control border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-2.5 py-2.25 transition-colors duration-150">
             <Search size={14} className="shrink-0 text-fg-muted/45" aria-hidden />
             <input
               ref={inputRef}

@@ -43,7 +43,7 @@ function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
   return (
     <a
       href={postUrl}
-      className={`group block card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      className={`group block rounded-ot-surface overflow-hidden card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
         onBrand ? 'bg-fg/8 border border-fg-on-brand/15' : 'bg-canvas border border-fg/8'
       }`}
     >

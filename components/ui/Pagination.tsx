@@ -26,7 +26,7 @@ export default function Pagination({
   const from = (page - 1) * pageSize + 1
   const to   = Math.min(page * pageSize, total)
 
-  const btnBase = 'inline-flex items-center justify-center w-11 h-11 border text-label font-semibold transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const btnBase = 'inline-flex items-center justify-center w-11 h-11 rounded-ot-control border text-label font-semibold transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
 
   const btnInactive = onBrand
     ? 'border-fg-on-brand/20 text-fg-on-brand/70 hover:bg-fg/15 hover:text-fg-on-brand'

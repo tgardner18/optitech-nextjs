@@ -102,8 +102,8 @@ function ArticleToc({ headings }: { headings: HeadingEntry[] }) {
   if (headings.length === 0) return null;
   return (
     <nav id="article-toc" aria-label="Article contents" className="my-lg">
-      <div className="border border-[var(--ot-bloom-brand-border)] bg-surface">
-        <div className="px-md pt-md pb-sm border-b border-[var(--ot-bloom-brand-border)]">
+      <div className="rounded-ot-surface overflow-hidden border border-(--ot-bloom-brand-border) bg-surface">
+        <div className="px-md pt-md pb-sm border-b border-(--ot-bloom-brand-border)">
           <span className="text-label tracking-label uppercase text-fg-muted font-semibold">
             Contents
           </span>
