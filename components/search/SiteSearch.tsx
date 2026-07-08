@@ -374,7 +374,7 @@ export default function SiteSearch() {
           type="button"
           onClick={() => handleResultClick(result)}
           className={[
-            'group w-full text-left flex items-start gap-md',
+            'group w-full text-left flex items-start gap-md rounded-ot-surface',
             isCompact ? 'px-md py-[12px]' : 'py-[18px]',
             'border-b border-fg/8 last:border-0',
             'hover:bg-brand/5 focus-visible:outline-none focus-visible:bg-brand/5',
@@ -937,7 +937,7 @@ export default function SiteSearch() {
             className={
               mode === 'immersive'
                 ? 'fixed inset-0 z-[60] bg-canvas flex flex-col'
-                : 'fixed left-0 right-0 top-20 z-[49] flex flex-col'
+                : 'search-compact-panel fixed left-0 right-0 top-20 z-[49] flex flex-col'
             }
           >
             {mode === 'immersive' ? ImmersivePanel() : CompactPanel()}

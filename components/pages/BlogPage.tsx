@@ -85,7 +85,7 @@ function BlogCard({ post }: { post: BlogPostSummary }) {
   const authorName = post.authorRef?.name
 
   return (
-    <a href={postUrl} className="group block card-hover-lift bg-canvas border border-fg/8">
+    <a href={postUrl} className="group block rounded-ot-surface overflow-hidden card-hover-lift bg-canvas border border-fg/8">
       <div className="aspect-video overflow-hidden bg-surface">
         {imageUrl ? (
           <img

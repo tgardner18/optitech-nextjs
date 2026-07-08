@@ -175,7 +175,7 @@ export default function VideoBlock({
         {frame === "offset" && (
           <div
             aria-hidden="true"
-            className="absolute top-3 left-3 right-0 bottom-0 bg-brand"
+            className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface"
           />
         )}
 

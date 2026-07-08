@@ -5,6 +5,7 @@ import MobileMenu from '@/components/layout/MobileMenu'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { LocaleSelector } from '@/components/layout/LocaleSelector'
 import { SidebarNavItem } from '@/components/layout/SidebarNavItem'
+import { SidebarNavShell } from '@/components/layout/SidebarNavClient'
 import SearchTrigger from '@/components/search/SearchTrigger'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 import { getEnabledLanguages } from '@/lib/i18n/getEnabledLanguages'
@@ -108,16 +109,8 @@ export default async function SidebarNav() {
         {t(locale, 'nav.skipToMain')}
       </a>
 
-      {/* ── Desktop sidebar rail ──────────────────────────────────────────────── */}
-      <aside
-        className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-50 border-r border-fg/8"
-        style={{
-          width:     'var(--ot-sidebar-width, 240px)',
-          background: 'var(--ot-surface)',
-          boxShadow: '4px 0 32px var(--ot-bloom-brand-faint)',
-        }}
-        aria-label="Site navigation"
-      >
+      {/* ── Desktop sidebar rail — client shell handles animation + toggle ─────── */}
+      <SidebarNavShell>
         {/* Logo */}
         <div className="px-lg py-md shrink-0 border-b border-fg/8">
           <a
@@ -155,7 +148,7 @@ export default async function SidebarNav() {
             <ThemeToggle />
           </div>
         </div>
-      </aside>
+      </SidebarNavShell>
 
       {/* ── Mobile top bar — rail is hidden; hamburger takes over ───────────── */}
       <header className="lg:hidden sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-fg/5">

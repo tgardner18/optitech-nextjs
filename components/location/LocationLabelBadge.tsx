@@ -11,7 +11,7 @@ type Props = {
 
 export default function LocationLabelBadge({ label, tone = 'accent', className = '' }: Props) {
   const base =
-    'inline-flex items-center whitespace-nowrap px-2 py-0.5 text-[0.625rem] font-bold uppercase leading-none tracking-[0.08em]'
+    'inline-flex items-center whitespace-nowrap rounded-ot-control px-2 py-0.5 text-[0.625rem] font-bold uppercase leading-none tracking-[0.08em]'
 
   if (tone === 'soft') {
     return (

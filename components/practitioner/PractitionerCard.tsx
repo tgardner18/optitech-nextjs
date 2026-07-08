@@ -114,7 +114,7 @@ export default function PractitionerCard({ practitioner, density = 'comfortable'
   )
 
   const className =
-    'practitioner-card group relative block aspect-3/4 w-full overflow-hidden bg-surface ' +
+    'practitioner-card group relative block aspect-3/4 w-full overflow-hidden rounded-ot-surface bg-surface ' +
     'focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand'
 
   return p.url ? (
