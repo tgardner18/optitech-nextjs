@@ -3350,6 +3350,22 @@ body {
   [data-col-bleed="left"]  { position: relative; z-index: 1; margin-left:  calc(-1 * var(--ot-space-lg)); }
 }
 
+/* ── Column vertical alignment ───────────────────────────────────────────────
+ * BlockWrapper (Section.tsx) uses `style="flex:1"` so full-height blocks work
+ * when a column has a single block that should fill the row height. But that
+ * inline flex:1 consumes all free space, making justify-center/end on the
+ * column have no effect.
+ *
+ * When vertical alignment is set to anything other than the default (start),
+ * the column gets data-col-valign and this rule overrides the inline flex:1
+ * on every direct-child BlockWrapper with !important — giving justify-center
+ * the free space it needs. Mutually exclusive by design: a block that should
+ * fill the column height should not also be vertically centred.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-col-valign] > div {
+  flex: 0 0 auto !important;
+}
+
 /* ── OptiAdmin day-panel slide-in ────────────────────────────────────────────
  * Fixed overlay panel used by the calendar day flyout.
  * prefers-reduced-motion: panel appears instantly without translation.
