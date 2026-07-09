@@ -2714,10 +2714,10 @@ function ProductRecommendationsShowcase() {
 
 // ─── Comparison Table ─────────────────────────────────────────────────────────
 
-const BANKING_CONTENT = {
+const ACCOUNTS_CONTENT = {
   eyebrow:     'Checking Accounts',
   headline:    'Find the account that fits your life.',
-  subHeadline: 'All accounts include a Summit Bank debit card, mobile deposit, and 24/7 account access.',
+  subHeadline: 'All accounts include a debit card, mobile deposit, and 24/7 account access.',
   columns: [
     {
       label:    'Essential',
@@ -2802,19 +2802,19 @@ function ComparisonTableShowcase() {
     <>
       <BlockHeader slug="comparison-table" />
 
-      <VariantGroup label="Style: Clean · Canvas · Banking" note="Subtle brand tinting on the featured column. Group headers use a light brand wash. Cells are centered; row labels are semibold." />
+      <VariantGroup label="Style: Clean · Canvas" note="Subtle brand tinting on the featured column. Group headers use a light brand wash. Cells are centered; row labels are semibold." />
       <div className="border-t border-fg/5">
-        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'clean' } as any} displaySettings={{ color: 'canvas' }} />
+        <OT_ComparisonTableBlock content={{ ...ACCOUNTS_CONTENT, tableStyle: 'clean' } as any} displaySettings={{ color: 'canvas' }} />
       </div>
 
-      <VariantGroup label="Style: Elevated · Surface · Banking" note="Deeper gradient and stronger bloom shadow on the featured column header. Body tint is more pronounced at 18% opacity." />
+      <VariantGroup label="Style: Elevated · Surface" note="Featured column renders as a continuous brand-fill card with chromatic bloom shadow on sides and bottom — same color in light and dark mode." />
       <div className="border-t border-fg/5">
-        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'elevated' } as any} displaySettings={{ color: 'surface' }} />
+        <OT_ComparisonTableBlock content={{ ...ACCOUNTS_CONTENT, tableStyle: 'elevated' } as any} displaySettings={{ color: 'surface' }} />
       </div>
 
-      <VariantGroup label="Style: Bold · Canvas · Banking" note="Full brand fill across the featured column — diagonal gradient header, solid brand body cells, and inverted (fg-on-brand) icons and text." />
+      <VariantGroup label="Style: Bold · Canvas" note="Full brand fill across the featured column — diagonal gradient header, solid brand body cells, and inverted (fg-on-brand) icons and text." />
       <div className="border-t border-fg/5">
-        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'bold' } as any} displaySettings={{ color: 'canvas' }} />
+        <OT_ComparisonTableBlock content={{ ...ACCOUNTS_CONTENT, tableStyle: 'bold' } as any} displaySettings={{ color: 'canvas' }} />
       </div>
 
       <VariantGroup label="Style: Elevated · Surface · Tech support tiers" note="Three support plans demonstrating icon + text cells (24/7 clock), icon-only checks and dashes, and the Elevated style on a surface background." />
