@@ -110,7 +110,7 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     // Gradient lightens slightly at top, lands on full brand at bottom to meet the card overlay
     featuredGradient:    'linear-gradient(to bottom, oklch(from var(--ot-brand) calc(l * 1.06) c h) 0%, var(--ot-brand) 100%)',
     // Header: side bloom + top lift + ring — bottom handled by body overlay
-    featuredShadow:      'shadow-[6px_0_40px_var(--ot-bloom-brand-faint),-6px_0_40px_var(--ot-bloom-brand-faint),0_-6px_24px_var(--ot-bloom-brand-faint),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.45)]',
+    featuredShadow:      'shadow-[4px_0_20px_var(--ot-bloom-brand-faint),-4px_0_20px_var(--ot-bloom-brand-faint),0_-4px_14px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.3)]',
     // No top border — the header card connects directly to the body overlay
     tableBorder:         'border-x border-b border-fg/10 relative',
   },
@@ -463,15 +463,19 @@ export default function ComparisonTableBlock({
                 left:  overlayLeft,
                 width: overlayWidth ?? 0,
                 boxShadow: [
-                  // Chromatic bloom — sides and bottom
-                  '10px 0 60px var(--ot-bloom-brand)',
-                  '-10px 0 60px var(--ot-bloom-brand)',
-                  '0 16px 60px var(--ot-bloom-brand)',
-                  // Diffuse outer glow
-                  '16px 0 80px var(--ot-bloom-brand-faint)',
-                  '-16px 0 80px var(--ot-bloom-brand-faint)',
-                  // Hard card border ring on sides + bottom
-                  '0 0 0 1.5px oklch(from var(--ot-brand) l c h / 0.45)',
+                  // Chromatic brand glow — sides and bottom (reduced)
+                  '5px 0 24px var(--ot-bloom-brand)',
+                  '-5px 0 24px var(--ot-bloom-brand)',
+                  '0 10px 24px var(--ot-bloom-brand)',
+                  // Outer diffuse chromatic halo
+                  '10px 0 40px var(--ot-bloom-brand-faint)',
+                  '-10px 0 40px var(--ot-bloom-brand-faint)',
+                  // Neutral dark grounding shadow (mixed in — same technique as image block)
+                  '4px 0 12px oklch(0 0 0 / 0.18)',
+                  '-4px 0 12px oklch(0 0 0 / 0.18)',
+                  '0 8px 18px oklch(0 0 0 / 0.22)',
+                  // Card border ring
+                  '0 0 0 1px oklch(from var(--ot-brand) l c h / 0.3)',
                 ].join(', '),
               }}
             />
@@ -570,6 +574,10 @@ export default function ComparisonTableBlock({
                         'px-md py-md flex items-center justify-center',
                         colIdx > 0 && !featured && 'border-l border-fg/8',
                         featured && style.featuredBodyCell,
+                        // Cell-level divider for featured column in elevated + bold:
+                        // the row's border-t sits behind the overlay (z-0 paints after normal flow),
+                        // so we apply it on the cell itself (z-10) with an on-brand color.
+                        featured && (tableStyle === 'elevated' || tableStyle === 'bold') && rowIdx > 0 && 'border-t border-fg-on-brand/10',
                         roundedBottom && 'rounded-b-ot-surface',
                       )}
                     >
