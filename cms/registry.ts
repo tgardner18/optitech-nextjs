@@ -33,6 +33,7 @@ import { OT_PractitionerListingDefault } from '@/cms/display-templates/OT_Practi
 import { OT_LocationListingDefault } from '@/cms/display-templates/OT_LocationListingDefault'
 import { OT_ContentRecommendationsDefault } from '@/cms/display-templates/OT_ContentRecommendationsDefault'
 import { OT_ProductRecommendationsDefault } from '@/cms/display-templates/OT_ProductRecommendationsDefault'
+import { OT_ComparisonTableDefault }        from '@/cms/display-templates/OT_ComparisonTableDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -84,6 +85,10 @@ import { OT_LocationProfile }            from '@/cms/content-types/OT_LocationPr
 import { OT_LocationListingBlock }       from '@/cms/content-types/OT_LocationListingBlock'
 import { OT_ContentRecommendationsBlock } from '@/cms/content-types/OT_ContentRecommendationsBlock'
 import { OT_ProductRecommendationsBlock } from '@/cms/content-types/OT_ProductRecommendationsBlock'
+import { OT_ComparisonCell }        from '@/cms/content-types/OT_ComparisonCell'
+import { OT_ComparisonRow }         from '@/cms/content-types/OT_ComparisonRow'
+import { OT_ComparisonColumn }      from '@/cms/content-types/OT_ComparisonColumn'
+import { OT_ComparisonTableBlock }  from '@/cms/content-types/OT_ComparisonTableBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -133,6 +138,7 @@ import OT_LocationListingBlockAdapter        from '@/cms/components/OT_LocationL
 import OT_LocationProfileAdapter             from '@/cms/components/OT_LocationProfile'
 import OT_ContentRecommendationsBlockAdapter from '@/cms/components/OT_ContentRecommendationsBlock'
 import OT_ProductRecommendationsBlockAdapter from '@/cms/components/OT_ProductRecommendationsBlock'
+import OT_ComparisonTableBlockAdapter        from '@/cms/components/OT_ComparisonTableBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -183,6 +189,7 @@ initDisplayTemplateRegistry([
   OT_LocationListingDefault,
   OT_ContentRecommendationsDefault,
   OT_ProductRecommendationsDefault,
+  OT_ComparisonTableDefault,
 ])
 
 initContentTypeRegistry([
@@ -234,6 +241,10 @@ initContentTypeRegistry([
   OT_LocationListingBlock,
   OT_ContentRecommendationsBlock,
   OT_ProductRecommendationsBlock,
+  OT_ComparisonCell,
+  OT_ComparisonRow,
+  OT_ComparisonColumn,
+  OT_ComparisonTableBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -283,6 +294,7 @@ initReactComponentRegistry({
     OT_LocationListingBlock:     OT_LocationListingBlockAdapter,
     OT_ContentRecommendationsBlock: OT_ContentRecommendationsBlockAdapter,
     OT_ProductRecommendationsBlock: OT_ProductRecommendationsBlockAdapter,
+    OT_ComparisonTableBlock:        OT_ComparisonTableBlockAdapter,
     // Preview-only: lets /preview render the shared profile record (not used in compositions)
     OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     OT_LocationProfile:          OT_LocationProfileAdapter,

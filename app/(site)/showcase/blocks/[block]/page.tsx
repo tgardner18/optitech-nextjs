@@ -30,6 +30,7 @@ import ContentRecommendationsBlock    from '@/components/blocks/ContentRecommend
 import type { ContentRecItem }         from '@/components/blocks/ContentRecommendationsBlock'
 import ProductRecommendationsBlock     from '@/components/blocks/ProductRecommendationsBlock'
 import type { ProductRec }             from '@/components/blocks/ProductRecommendationsBlock'
+import OT_ComparisonTableBlock         from '@/cms/components/OT_ComparisonTableBlock'
 import {
   ArrowRight, Zap, ChevronRight, Play, Download,
   Sparkles, Send, Rocket, Star, Plus,
@@ -62,6 +63,7 @@ const BLOCK_SLUGS = [
   'accordion', 'tabs', 'blog-feed', 'button', 'chart', 'banner', 'resource-library',
   'callout', 'divider', 'event-listing', 'practitioner-listing', 'location-listing',
   'content-recommendations', 'product-recommendations',
+  'comparison-table',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -91,6 +93,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'location-listing': { label: 'LocationListingBlock', cmsKey: 'OT_LocationListingBlock', description: 'CMS-driven, vertical-agnostic location directory pulled from Location Profiles. Three toggleable views: a Mapbox dark map paired with a synchronized scrollable location rail (click a marker or rail card to fly + open its popup), an image-plate card grid, and a compact list. Client-side search across name / label / address, and a single-select label filter derived dynamically from the loaded set — never a fixed list, "All" always first. Scope it to one vertical with the Group Tag Filter (e.g. "optimedical"). Custom brand-beacon markers and fully-restyled dark-glass popups. In production, addresses are geocoded via the Mapbox API at render time (24h ISR cache); the showcase uses static fixtures with pre-resolved coordinates, so it makes no API calls.' },
   'content-recommendations': { label: 'ContentRecommendationsBlock', cmsKey: 'OT_ContentRecommendationsBlock', description: 'Personalized content grid from Optimizely Content Recommendations (Idio). The ia.js tracker builds a per-visitor profile and the block fetches recommendations server-side at render time using the delivery key configured on the ThemeManager. Three color schemes. In production, items are personalized per visitor; the showcase uses static sample articles to demonstrate the layout.' },
   'product-recommendations': { label: 'ProductRecommendationsBlock', cmsKey: 'OT_ProductRecommendationsBlock', description: 'Live product recommendations from Optimizely Product Recommendations (Peerius). The engine returns recommendations client-side (via the peerius:recs event) for the configured widget position; the widget renders a card grid with a "Show all" expand. When the engine returns nothing it shows an empty state. In production, recs are live and personalized; the showcase uses static sample products.' },
+  'comparison-table': { label: 'ComparisonTableBlock', cmsKey: 'OT_ComparisonTableBlock', description: 'Side-by-side comparison of plans, tiers, or account types. Grouped rows divide the table into named sections. Cells support a Lucide icon, short text, or both — an empty cell renders a dash. One column can be marked as featured to receive the brand-color treatment and a badge. On mobile a column-selector tab bar replaces the full grid, with swipe gesture support.' },
 }
 
 export function generateStaticParams() {
@@ -2709,6 +2712,111 @@ function ProductRecommendationsShowcase() {
   )
 }
 
+// ─── Comparison Table ─────────────────────────────────────────────────────────
+
+const BANKING_CONTENT = {
+  eyebrow:     'Checking Accounts',
+  headline:    'Find the account that fits your life.',
+  subHeadline: 'All accounts include a Summit Bank debit card, mobile deposit, and 24/7 account access.',
+  columns: [
+    {
+      label:    'Essential',
+      subLabel: '$0 / month',
+      ctaLabel: 'Open Account',
+      ctaUrl:   { default: '#' },
+    },
+    {
+      label:     'Select',
+      subLabel:  '$9 / month',
+      badgeText: 'Most Popular',
+      ctaLabel:  'Open Account',
+      ctaUrl:    { default: '#' },
+    },
+    {
+      label:    'Premium',
+      subLabel: '$25 / month',
+      ctaLabel: 'Open Account',
+      ctaUrl:   { default: '#' },
+    },
+  ],
+  rows: [
+    { rowType: 'group', label: 'Core',         cells: [] },
+    { rowType: 'row', label: 'Monthly fee',          tooltip: 'Monthly service fee. May be waived with qualifying activity.', cells: [{ text: 'Free' }, { text: '$9' }, { text: '$25' }] },
+    { rowType: 'row', label: 'Minimum opening deposit', cells: [{ text: '$25' }, { text: '$100' }, { text: '$250' }] },
+    { rowType: 'row', label: 'Overdraft protection',    cells: [{ icon: 'minus' }, { icon: 'check' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Free wire transfers',     cells: [{ icon: 'minus' }, { text: '2 / month' }, { icon: 'infinity' }] },
+    { rowType: 'group', label: 'Interest & Rewards',   cells: [] },
+    { rowType: 'row', label: 'Interest-bearing',        cells: [{ icon: 'minus' }, { icon: 'check' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'APY',                     cells: [{ icon: 'minus' }, { text: '0.15%' }, { text: '0.40%' }] },
+    { rowType: 'row', label: 'Cash-back debit rewards', cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'check' }] },
+    { rowType: 'group', label: 'Support & Access',     cells: [] },
+    { rowType: 'row', label: 'ATM fee refunds',         tooltip: 'Domestic ATM surcharge refunds per statement cycle.', cells: [{ icon: 'minus' }, { text: 'Up to $10' }, { text: 'Unlimited' }] },
+    { rowType: 'row', label: 'Priority phone support',  cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Dedicated relationship manager', cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'check' }] },
+  ],
+}
+
+const SUPPORT_CONTENT = {
+  eyebrow:  'Support Plans',
+  headline: 'Enterprise-grade support, calibrated to your team.',
+  columns: [
+    {
+      label:    'Standard',
+      subLabel: 'Included',
+      ctaLabel: 'Get Started',
+      ctaUrl:   { default: '#' },
+    },
+    {
+      label:     'Professional',
+      subLabel:  '$499 / month',
+      badgeText: 'Most Chosen',
+      ctaLabel:  'Get Started',
+      ctaUrl:    { default: '#' },
+    },
+    {
+      label:    'Enterprise',
+      subLabel: 'Custom pricing',
+      ctaLabel: 'Contact Sales',
+      ctaUrl:   { default: '#' },
+    },
+  ],
+  rows: [
+    { rowType: 'group', label: 'Response Times',         cells: [] },
+    { rowType: 'row', label: 'Critical incidents',        cells: [{ text: '8 hours' }, { text: '2 hours' }, { text: '30 minutes' }] },
+    { rowType: 'row', label: 'High-severity issues',      cells: [{ text: 'Next day' }, { text: '4 hours' }, { text: '2 hours' }] },
+    { rowType: 'row', label: 'General questions',         cells: [{ text: '3 business days' }, { text: '1 business day' }, { text: '4 hours' }] },
+    { rowType: 'group', label: 'Access & Coverage',      cells: [] },
+    { rowType: 'row', label: 'Support hours',             cells: [{ text: '9am – 5pm ET' }, { text: '7am – 9pm ET' }, { icon: 'clock', text: '24 / 7' }] },
+    { rowType: 'row', label: 'Phone support',             cells: [{ icon: 'minus' }, { icon: 'check' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Dedicated Slack channel',   cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Named support engineer',    cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'users' }] },
+    { rowType: 'group', label: 'Guidance',               cells: [] },
+    { rowType: 'row', label: 'Quarterly business review', cells: [{ icon: 'minus' }, { icon: 'check' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Architecture guidance',     cells: [{ icon: 'minus' }, { icon: 'minus' }, { icon: 'check' }] },
+    { rowType: 'row', label: 'Onboarding workshop',       cells: [{ icon: 'minus' }, { icon: 'check' }, { icon: 'check' }] },
+  ],
+}
+
+function ComparisonTableShowcase() {
+  return (
+    <>
+      <BlockHeader slug="comparison-table" />
+
+      <VariantGroup label="Canvas · Featured column · Banking" note="Three checking account tiers with the featured column highlighted in brand color. Grouped rows divide core, interest, and support features." />
+      <div className="border-t border-fg/5">
+        <OT_ComparisonTableBlock content={BANKING_CONTENT as any} displaySettings={{ color: 'canvas' }} />
+      </div>
+
+      <VariantGroup label="Surface · Featured column · Tech support tiers" note="Three support plans on a surface background. Demonstrates icon + text cells (24/7 clock), icon-only checks and dashes, and a custom badge." />
+      <div className="border-t border-fg/5">
+        <OT_ComparisonTableBlock content={SUPPORT_CONTENT as any} displaySettings={{ color: 'surface' }} />
+      </div>
+
+      <div className="pb-xl" />
+    </>
+  )
+}
+
 export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
 
@@ -2737,6 +2845,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'location-listing':     return <LocationListingShowcase />
     case 'content-recommendations': return <ContentRecommendationsShowcase />
     case 'product-recommendations': return <ProductRecommendationsShowcase />
+    case 'comparison-table':        return <ComparisonTableShowcase />
     default:                 return notFound()
   }
 }

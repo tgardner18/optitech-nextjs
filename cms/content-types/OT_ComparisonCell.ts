@@ -1,0 +1,45 @@
+import { contentType } from '@optimizely/cms-sdk'
+
+export const OT_ComparisonCell = contentType({
+  key:         'OT_ComparisonCell',
+  displayName: 'Comparison Cell',
+  description: 'A single cell value within a Comparison Row. Set an icon, text, or both. Leave both empty to render a dash.',
+  baseType:    '_component',
+  properties: {
+    icon: {
+      type:        'string',
+      format:      'selectOne',
+      displayName: 'Icon',
+      description: 'Optional Lucide icon. "Check" = included (brand color). "Minus" / "X" = not included (muted). Others are neutral indicators.',
+      group:       'OT_Content',
+      sortOrder:   10,
+      enum: [
+        { value: 'none',           displayName: 'None — no icon'                        },
+        { value: 'check',          displayName: 'Check — included (brand color)'         },
+        { value: 'minus',          displayName: 'Minus — not included (muted)'           },
+        { value: 'xmark',          displayName: 'X — excluded (muted)'                  },
+        { value: 'circle-check',   displayName: 'Circle Check — included (brand color)' },
+        { value: 'circle-minus',   displayName: 'Circle Minus — not included (muted)'   },
+        { value: 'star',           displayName: 'Star'                                   },
+        { value: 'zap',            displayName: 'Zap — fast / powerful'                 },
+        { value: 'shield',         displayName: 'Shield — security / protection'        },
+        { value: 'lock',           displayName: 'Lock — secure / protected'             },
+        { value: 'unlock',         displayName: 'Unlock — accessible / open'            },
+        { value: 'clock',          displayName: 'Clock — time-based / limit'            },
+        { value: 'infinity',       displayName: 'Infinity — unlimited'                  },
+        { value: 'message-circle', displayName: 'Message — support / chat'             },
+        { value: 'users',          displayName: 'Users — team / members'               },
+        { value: 'globe',          displayName: 'Globe — global / worldwide'            },
+        { value: 'database',       displayName: 'Database — storage / data'            },
+      ],
+    },
+    text: {
+      type:        'string',
+      maxLength:   60,
+      displayName: 'Text',
+      description: 'Short cell value (e.g. "Unlimited", "$5/mo", "Up to 10 users"). Can coexist with an icon. Leave both empty to render a dash.',
+      group:       'OT_Content',
+      sortOrder:   20,
+    },
+  },
+})
