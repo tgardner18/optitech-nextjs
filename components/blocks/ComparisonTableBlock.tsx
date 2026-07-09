@@ -86,8 +86,8 @@ interface StyleConfig {
 
 const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
   clean: {
-    groupBg:             'bg-brand/8',
-    groupText:           'text-brand font-semibold tracking-label uppercase text-label',
+    groupBg:             'bg-brand',
+    groupText:           'text-fg-on-brand font-semibold tracking-label uppercase text-label',
     rowLabelClass:       'text-sm font-semibold text-fg',
     rowDivider:          'border-t border-fg/6',
     rowHover:            'hover:bg-fg/2',
@@ -98,20 +98,20 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     tableBorder:         'border border-fg/10',
   },
   elevated: {
-    groupBg:             'bg-brand/12',
-    groupText:           'text-brand font-bold tracking-label uppercase text-label',
+    groupBg:             'bg-accent',
+    groupText:           'text-fg-on-accent font-bold tracking-label uppercase text-label',
     rowLabelClass:       'text-sm font-semibold text-fg',
     rowDivider:          'border-t border-fg/6',
     rowHover:            'hover:bg-fg/2',
     featuredBodyCell:    'bg-brand/18',
     featuredCellVariant: 'default',
     featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.78) c h) 100%)',
-    featuredShadow:      'shadow-[0_8px_48px_var(--ot-bloom-brand),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.4)]',
+    featuredShadow:      'shadow-[0_20px_80px_var(--ot-bloom-brand),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.5)]',
     tableBorder:         'border border-fg/10',
   },
   bold: {
-    groupBg:             'bg-fg/5',
-    groupText:           'text-fg-muted font-bold tracking-label uppercase text-label',
+    groupBg:             'bg-accent',
+    groupText:           'text-fg-on-accent font-bold tracking-label uppercase text-label',
     rowLabelClass:       'text-sm font-bold text-fg',
     rowDivider:          'border-t border-fg/8',
     rowHover:            'hover:bg-fg/3',
@@ -343,9 +343,12 @@ export default function ComparisonTableBlock({
                 <div
                   key={i}
                   role="columnheader"
-                  style={featured ? { background: style.featuredGradient } : undefined}
+                  style={featured ? {
+                    background: style.featuredGradient,
+                    ...(tableStyle === 'elevated' ? { transform: 'scale(1.01) translateY(-2px)', position: 'relative', zIndex: 10 } : {}),
+                  } : undefined}
                   className={cn(
-                    'flex flex-col gap-sm px-md pt-md pb-lg',
+                    'flex flex-col gap-sm px-md pt-md pb-lg items-center text-center',
                     featured && [
                       '-mt-sm rounded-t-ot-surface',
                       'text-fg-on-brand',
@@ -357,10 +360,10 @@ export default function ComparisonTableBlock({
                   {/* Badge — or fixed spacer so all column names align horizontally */}
                   {col.badgeText ? (
                     <span className={cn(
-                      'self-start text-[10px] tracking-widest uppercase font-bold px-sm py-0.5 rounded-full',
+                      'text-[10px] tracking-widest uppercase font-bold px-sm py-0.5 rounded-full',
                       featured
                         ? 'bg-fg-on-brand/15 text-fg-on-brand'
-                        : 'bg-brand/15 text-brand'
+                        : 'bg-accent/20 text-fg-on-accent'
                     )}>
                       {col.badgeText}
                     </span>
@@ -370,7 +373,7 @@ export default function ComparisonTableBlock({
 
                   {/* Column name */}
                   <p className={cn(
-                    'text-title font-bold leading-tight',
+                    'text-title font-black leading-tight',
                     featured ? 'text-fg-on-brand' : 'text-fg'
                   )}>
                     {col.label}
@@ -393,7 +396,7 @@ export default function ComparisonTableBlock({
                         <a
                           href={col.ctaHref ?? '#'}
                           className={cn(
-                            'flex items-center justify-center w-full',
+                            'flex items-center',
                             'rounded-ot-control border border-fg-on-brand/30 text-fg-on-brand',
                             'text-label font-semibold tracking-label uppercase px-md py-sm',
                             'hover:bg-fg-on-brand/10 transition-colors duration-150 ease-out',
@@ -403,7 +406,7 @@ export default function ComparisonTableBlock({
                           {col.ctaLabel}
                         </a>
                       ) : (
-                        <Button href={col.ctaHref ?? '#'} size="sm" variant="brand" className="w-full justify-center">
+                        <Button href={col.ctaHref ?? '#'} size="sm" variant="brand">
                           {col.ctaLabel}
                         </Button>
                       )}
@@ -468,17 +471,25 @@ export default function ComparisonTableBlock({
 
                 {/* Cells */}
                 {columns.map((col, colIdx) => {
-                  const featured        = colIdx === featuredIdx
-                  const cellVariant     = featured ? style.featuredCellVariant : 'default'
-                  const roundedBottom   = featured && isLastData && tableStyle === 'bold'
+                  const featured      = colIdx === featuredIdx
+                  const cellVariant   = featured ? style.featuredCellVariant : 'default'
+                  const roundedBottom = featured && isLastData && (tableStyle === 'bold' || tableStyle === 'elevated')
+
+                  // Elevated style: continuous card border on sides of featured column
+                  const elevatedCardStyle = featured && tableStyle === 'elevated' ? {
+                    boxShadow: isLastData
+                      ? '1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), 0 2px 0 oklch(from var(--ot-brand) l c h / 0.25)'
+                      : '1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.25)',
+                  } : undefined
 
                   return (
                     <div
                       key={colIdx}
                       role="cell"
+                      style={elevatedCardStyle}
                       className={cn(
                         'px-md py-md flex items-center justify-center',
-                        colIdx > 0 && 'border-l border-fg/8',
+                        colIdx > 0 && !featured && 'border-l border-fg/8',
                         featured && style.featuredBodyCell,
                         roundedBottom && 'rounded-b-ot-surface',
                       )}
