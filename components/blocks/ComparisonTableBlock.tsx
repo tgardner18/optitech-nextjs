@@ -264,7 +264,7 @@ export default function ComparisonTableBlock({
       {(eyebrow || headline || subHeadline) && (
         <div className="mb-2xl">
           {eyebrow && (
-            <p className="text-label tracking-label uppercase font-semibold text-brand mb-sm">
+            <p className="text-label tracking-label uppercase font-semibold mb-sm accent-ink">
               {eyebrow}
             </p>
           )}
@@ -424,6 +424,44 @@ export default function ComparisonTableBlock({
 
             // ── Group header row ──────────────────────────────────────────
             if (row.rowType === 'group') {
+              // Elevated: render individual cells so the featured card continues unbroken
+              if (tableStyle === 'elevated' && featuredIdx >= 0) {
+                return (
+                  <div
+                    key={rowIdx}
+                    role="row"
+                    className={cn(
+                      'grid border-t border-fg/10',
+                      rowIdx === 0 && 'border-t-0',
+                    )}
+                    style={gridStyle}
+                  >
+                    {/* Label cell: accent fill with section label */}
+                    <div role="rowheader" className="px-md py-sm bg-accent">
+                      <span className={style.groupText}>{row.label}</span>
+                    </div>
+                    {/* Per-column cells so featured column fills continue through */}
+                    {columns.map((col, ci) => {
+                      const isFeat = ci === featuredIdx
+                      return (
+                        <div
+                          key={ci}
+                          aria-hidden="true"
+                          className={cn(
+                            'py-sm',
+                            isFeat ? 'bg-brand/20 backdrop-blur-sm' : 'bg-accent',
+                          )}
+                          style={isFeat ? {
+                            boxShadow: '1px 0 0 oklch(from var(--ot-brand) l c h / 0.3), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.3)',
+                          } : undefined}
+                        />
+                      )
+                    })}
+                  </div>
+                )
+              }
+
+              // Clean / bold: full-width spanning cell
               return (
                 <div
                   key={rowIdx}
