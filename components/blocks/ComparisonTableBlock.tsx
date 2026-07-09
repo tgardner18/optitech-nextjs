@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Check, Minus, X, CircleCheck, CircleMinus,
   Star, Zap, Shield, Lock, Unlock, Clock,
@@ -77,6 +77,7 @@ interface StyleConfig {
   rowLabelClass:       string
   rowDivider:          string
   rowHover:            string
+  // Featured body cells in elevated are transparent — the overlay provides color
   featuredBodyCell:    string
   featuredCellVariant: CellVariant
   featuredGradient:    string
@@ -102,12 +103,16 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     groupText:           'text-fg-on-accent font-bold tracking-label uppercase text-label',
     rowLabelClass:       'text-sm font-semibold text-fg',
     rowDivider:          'border-t border-fg/6',
-    rowHover:            'hover:bg-fg/2',
-    featuredBodyCell:    'bg-brand/18',
-    featuredCellVariant: 'default',
-    featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.78) c h) 100%)',
-    featuredShadow:      'shadow-[0_20px_80px_var(--ot-bloom-brand),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.5)]',
-    tableBorder:         'border border-fg/10',
+    rowHover:            'hover:bg-fg/[0.03]',
+    // Transparent — the card overlay provides the brand fill
+    featuredBodyCell:    'relative z-10 bg-transparent',
+    featuredCellVariant: 'inverted',
+    // Gradient lightens slightly at top, lands on full brand at bottom to meet the card overlay
+    featuredGradient:    'linear-gradient(to bottom, oklch(from var(--ot-brand) calc(l * 1.06) c h) 0%, var(--ot-brand) 100%)',
+    // Header: side bloom + top lift + ring — bottom handled by body overlay
+    featuredShadow:      'shadow-[6px_0_40px_var(--ot-bloom-brand-faint),-6px_0_40px_var(--ot-bloom-brand-faint),0_-6px_24px_var(--ot-bloom-brand-faint),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.45)]',
+    // No top border — the header card connects directly to the body overlay
+    tableBorder:         'border-x border-b border-fg/10 relative',
   },
   bold: {
     groupBg:             'bg-accent',
@@ -227,13 +232,36 @@ export default function ComparisonTableBlock({
   const [activeCol, setActiveCol] = useState(() => featuredIdx >= 0 ? featuredIdx : 0)
   const touchStartX = useRef(0)
 
+  // Elevated card overlay: measured from the featured column header
+  const featuredHeaderRef = useRef<HTMLDivElement>(null)
+  const tableBodyRef      = useRef<HTMLDivElement>(null)
+  const [overlayLeft, setOverlayLeft] = useState<number | null>(null)
+  const [overlayWidth, setOverlayWidth] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (tableStyle !== 'elevated' || featuredIdx < 0) return
+
+    function measure() {
+      if (!featuredHeaderRef.current || !tableBodyRef.current) return
+      const hRect = featuredHeaderRef.current.getBoundingClientRect()
+      const bRect = tableBodyRef.current.getBoundingClientRect()
+      setOverlayLeft(hRect.left - bRect.left)
+      setOverlayWidth(hRect.width)
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    if (featuredHeaderRef.current) ro.observe(featuredHeaderRef.current)
+    if (tableBodyRef.current)      ro.observe(tableBodyRef.current)
+    return () => ro.disconnect()
+  }, [tableStyle, featuredIdx, columns.length])
+
   const colCount  = columns.length
   const gridStyle = {
     gridTemplateColumns: `minmax(140px, 210px) repeat(${colCount}, minmax(120px, 1fr))`,
   }
   const bgClass = color === 'surface' ? 'bg-surface' : 'bg-canvas'
 
-  // For bold style: track the last data row to apply rounded-b on the featured column
   const lastDataRowIdx = rows.reduceRight(
     (acc, row, i) => acc === -1 && row.rowType === 'row' ? i : acc,
     -1,
@@ -254,8 +282,9 @@ export default function ComparisonTableBlock({
     }
   }
 
-  const mobileIsFeatured  = activeCol === featuredIdx
-  const mobileBoldInverted = tableStyle === 'bold' && mobileIsFeatured
+  const mobileIsFeatured = activeCol === featuredIdx
+  // Elevated and bold both show solid brand + inverted text in mobile featured view
+  const mobileInverted   = (tableStyle === 'elevated' || tableStyle === 'bold') && mobileIsFeatured
 
   return (
     <section className={cn('py-xl px-md lg:px-lg', bgClass)}>
@@ -343,10 +372,8 @@ export default function ComparisonTableBlock({
                 <div
                   key={i}
                   role="columnheader"
-                  style={featured ? {
-                    background: style.featuredGradient,
-                    ...(tableStyle === 'elevated' ? { transform: 'scale(1.01) translateY(-2px)', position: 'relative', zIndex: 10 } : {}),
-                  } : undefined}
+                  ref={featured && tableStyle === 'elevated' ? featuredHeaderRef : undefined}
+                  style={featured ? { background: style.featuredGradient } : undefined}
                   className={cn(
                     'flex flex-col gap-sm px-md pt-md pb-lg items-center text-center',
                     featured && [
@@ -419,28 +446,55 @@ export default function ComparisonTableBlock({
         </div>
 
         {/* Table body rows */}
-        <div role="rowgroup" className={style.tableBorder}>
+        <div
+          ref={tableBodyRef}
+          role="rowgroup"
+          className={style.tableBorder}
+        >
+          {/* ── Elevated card overlay ─────────────────────────────────────────
+              Absolutely positioned brand-fill panel spanning the full featured
+              column height. Cells above it (z-10) are transparent so this
+              provides the consistent brand bg. Bloom + ring give the 3D lift.  */}
+          {tableStyle === 'elevated' && featuredIdx >= 0 && overlayLeft !== null && (
+            <div
+              aria-hidden="true"
+              className="absolute top-0 bottom-0 bg-brand rounded-b-ot-surface pointer-events-none z-0"
+              style={{
+                left:  overlayLeft,
+                width: overlayWidth ?? 0,
+                boxShadow: [
+                  // Chromatic bloom — sides and bottom
+                  '10px 0 60px var(--ot-bloom-brand)',
+                  '-10px 0 60px var(--ot-bloom-brand)',
+                  '0 16px 60px var(--ot-bloom-brand)',
+                  // Diffuse outer glow
+                  '16px 0 80px var(--ot-bloom-brand-faint)',
+                  '-16px 0 80px var(--ot-bloom-brand-faint)',
+                  // Hard card border ring on sides + bottom
+                  '0 0 0 1.5px oklch(from var(--ot-brand) l c h / 0.45)',
+                ].join(', '),
+              }}
+            />
+          )}
+
           {rows.map((row, rowIdx) => {
 
             // ── Group header row ──────────────────────────────────────────
             if (row.rowType === 'group') {
-              // Elevated: render individual cells so the featured card continues unbroken
+              // Elevated: individual cells so the featured card runs through unbroken
               if (tableStyle === 'elevated' && featuredIdx >= 0) {
                 return (
                   <div
                     key={rowIdx}
                     role="row"
-                    className={cn(
-                      'grid border-t border-fg/10',
-                      rowIdx === 0 && 'border-t-0',
-                    )}
+                    className={cn('grid border-t border-fg/10', rowIdx === 0 && 'border-t-0')}
                     style={gridStyle}
                   >
-                    {/* Label cell: accent fill with section label */}
+                    {/* Label cell: accent fill */}
                     <div role="rowheader" className="px-md py-sm bg-accent">
                       <span className={style.groupText}>{row.label}</span>
                     </div>
-                    {/* Per-column cells so featured column fills continue through */}
+                    {/* Per-column: featured cell is transparent (overlay shows through), others accent */}
                     {columns.map((col, ci) => {
                       const isFeat = ci === featuredIdx
                       return (
@@ -449,11 +503,8 @@ export default function ComparisonTableBlock({
                           aria-hidden="true"
                           className={cn(
                             'py-sm',
-                            isFeat ? 'bg-brand/20 backdrop-blur-sm' : 'bg-accent',
+                            isFeat ? 'relative z-10 bg-transparent' : 'bg-accent',
                           )}
-                          style={isFeat ? {
-                            boxShadow: '1px 0 0 oklch(from var(--ot-brand) l c h / 0.3), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.3)',
-                          } : undefined}
                         />
                       )
                     })}
@@ -466,10 +517,7 @@ export default function ComparisonTableBlock({
                 <div
                   key={rowIdx}
                   role="row"
-                  className={cn(
-                    'grid border-t border-fg/10',
-                    rowIdx === 0 && 'border-t-0',
-                  )}
+                  className={cn('grid border-t border-fg/10', rowIdx === 0 && 'border-t-0')}
                   style={gridStyle}
                 >
                   <div
@@ -511,20 +559,13 @@ export default function ComparisonTableBlock({
                 {columns.map((col, colIdx) => {
                   const featured      = colIdx === featuredIdx
                   const cellVariant   = featured ? style.featuredCellVariant : 'default'
-                  const roundedBottom = featured && isLastData && (tableStyle === 'bold' || tableStyle === 'elevated')
-
-                  // Elevated style: continuous card border on sides of featured column
-                  const elevatedCardStyle = featured && tableStyle === 'elevated' ? {
-                    boxShadow: isLastData
-                      ? '1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), 0 2px 0 oklch(from var(--ot-brand) l c h / 0.25)'
-                      : '1px 0 0 oklch(from var(--ot-brand) l c h / 0.25), -1px 0 0 oklch(from var(--ot-brand) l c h / 0.25)',
-                  } : undefined
+                  // Bold gets rounded bottom; elevated rounding comes from the overlay
+                  const roundedBottom = featured && isLastData && tableStyle === 'bold'
 
                   return (
                     <div
                       key={colIdx}
                       role="cell"
-                      style={elevatedCardStyle}
                       className={cn(
                         'px-md py-md flex items-center justify-center',
                         colIdx > 0 && !featured && 'border-l border-fg/8',
@@ -572,7 +613,7 @@ export default function ComparisonTableBlock({
             }
 
             const cell        = row.cells[activeCol]
-            const cellVariant = mobileBoldInverted ? 'inverted' : 'default'
+            const cellVariant = mobileInverted ? 'inverted' : 'default'
 
             return (
               <div
@@ -582,15 +623,15 @@ export default function ComparisonTableBlock({
                   'flex items-center justify-between px-md py-md gap-md',
                   'border-t border-fg/6',
                   rowIdx === 0 && 'border-t-0',
-                  mobileBoldInverted ? 'bg-brand' :
-                  mobileIsFeatured   ? 'bg-brand/5' : '',
+                  mobileInverted    ? 'bg-brand' :
+                  mobileIsFeatured  ? 'bg-brand/5' : '',
                 )}
               >
                 <div role="rowheader" className="min-w-0 flex-1">
                   <TooltipLabel
                     label={row.label}
                     tooltip={row.tooltip}
-                    labelClass={mobileBoldInverted
+                    labelClass={mobileInverted
                       ? 'text-sm font-semibold text-fg-on-brand'
                       : style.rowLabelClass
                     }
