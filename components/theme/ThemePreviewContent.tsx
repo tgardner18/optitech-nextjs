@@ -85,8 +85,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                   alt={logoAlt}
                   width={200}
                   height={40}
-                  className={LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full}
-                  style={invertDark ? { filter: 'brightness(0) invert(1)' } : undefined}
+                  className={`${LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full}${invertDark ? ' logo-invert-dark' : ''}`}
                 />
               </div>
               <div className="hidden sm:flex items-center gap-lg">
@@ -109,8 +108,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                   alt={logoAlt}
                   width={200}
                   height={40}
-                  className={LOGO_IMG_CLASS_SM[logoFit] ?? LOGO_IMG_CLASS_SM.full}
-                  style={invertDark ? { filter: 'brightness(0) invert(1)' } : undefined}
+                  className={`${LOGO_IMG_CLASS_SM[logoFit] ?? LOGO_IMG_CLASS_SM.full}${invertDark ? ' logo-invert-dark' : ''}`}
                 />
               </div>
               <p className="text-label tracking-label uppercase text-fg-muted self-end">{copyright}</p>
@@ -133,8 +131,7 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                       alt={logoAlt}
                       width={200}
                       height={40}
-                      className={LOGO_IMG_CLASS[fit]}
-                      style={invertDark ? { filter: 'brightness(0) invert(1)' } : undefined}
+                      className={`${LOGO_IMG_CLASS[fit]}${invertDark ? ' logo-invert-dark' : ''}`}
                     />
                   </div>
                   <p className="font-mono text-label text-fg-muted/60">{LOGO_IMG_CLASS[fit]}</p>
