@@ -151,7 +151,7 @@ export default async function SplitHeader() {
             </div>
 
             {/* CTA — inset from pill edge with generous vertical breathing room */}
-            <div className="pr-1.5 pl-xs py-1.5">
+            <div className="pr-2.5 pl-xs py-1.5">
               <Button href={ctaHref} size="sm">{ctaLabel}</Button>
             </div>
           </div>
