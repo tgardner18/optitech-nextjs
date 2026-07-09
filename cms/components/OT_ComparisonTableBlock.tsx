@@ -2,7 +2,7 @@ import { ContentProps }       from '@optimizely/cms-sdk'
 import { getPreviewUtils }   from '@optimizely/cms-sdk/react/server'
 import { OT_ComparisonTableBlock as OT_ComparisonTableBlockContentType } from '@/cms/content-types/OT_ComparisonTableBlock'
 import ComparisonTableBlock  from '@/components/blocks/ComparisonTableBlock'
-import type { ComparisonColumn, ComparisonRow, ComparisonCell } from '@/components/blocks/ComparisonTableBlock'
+import type { ComparisonColumn, ComparisonRow, ComparisonCell, TableStyle } from '@/components/blocks/ComparisonTableBlock'
 
 type Props = {
   content:          ContentProps<typeof OT_ComparisonTableBlockContentType>
@@ -40,10 +40,11 @@ function buildRows(content: any): ComparisonRow[] {
 }
 
 export default function OT_ComparisonTableBlockAdapter({ content, displaySettings = {} }: Props) {
-  const { pa }  = getPreviewUtils(content)
-  const columns = buildColumns(content)
-  const rows    = buildRows(content)
-  const color   = String(displaySettings.color ?? 'canvas') as 'canvas' | 'surface'
+  const { pa }       = getPreviewUtils(content)
+  const columns      = buildColumns(content)
+  const rows         = buildRows(content)
+  const color        = String(displaySettings.color ?? 'canvas') as 'canvas' | 'surface'
+  const tableStyle   = String(content.tableStyle ?? 'clean') as TableStyle
 
   return (
     <div {...pa(content.__composition)} className="w-full">
@@ -54,6 +55,7 @@ export default function OT_ComparisonTableBlockAdapter({ content, displaySetting
         columns={columns}
         rows={rows}
         color={color}
+        tableStyle={tableStyle}
       />
     </div>
   )

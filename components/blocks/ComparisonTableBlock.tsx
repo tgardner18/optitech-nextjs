@@ -13,6 +13,8 @@ import { cn }               from '@/lib/utils'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+export type TableStyle = 'clean' | 'elevated' | 'bold'
+
 export interface ComparisonCell {
   icon?:    string
   text?:    string
@@ -41,6 +43,7 @@ interface Props {
   columns:     ComparisonColumn[]
   rows:        ComparisonRow[]
   color?:      'canvas' | 'surface'
+  tableStyle?: TableStyle
 }
 
 // ── Icon registry ─────────────────────────────────────────────────────────────
@@ -64,17 +67,87 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'database':       Database,
 }
 
-function iconColorClass(key: string): string {
+// ── Style system ──────────────────────────────────────────────────────────────
+
+type CellVariant = 'default' | 'inverted'
+
+interface StyleConfig {
+  groupBg:             string
+  groupText:           string
+  rowLabelClass:       string
+  rowDivider:          string
+  rowHover:            string
+  featuredBodyCell:    string
+  featuredCellVariant: CellVariant
+  featuredGradient:    string
+  featuredShadow:      string
+  tableBorder:         string
+}
+
+const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
+  clean: {
+    groupBg:             'bg-brand/8',
+    groupText:           'text-brand font-semibold tracking-label uppercase text-label',
+    rowLabelClass:       'text-sm font-semibold text-fg',
+    rowDivider:          'border-t border-fg/6',
+    rowHover:            'hover:bg-fg/2',
+    featuredBodyCell:    'bg-brand/10',
+    featuredCellVariant: 'default',
+    featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.85) c h) 100%)',
+    featuredShadow:      'shadow-[0_4px_32px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.25)]',
+    tableBorder:         'border border-fg/10',
+  },
+  elevated: {
+    groupBg:             'bg-brand/12',
+    groupText:           'text-brand font-bold tracking-label uppercase text-label',
+    rowLabelClass:       'text-sm font-semibold text-fg',
+    rowDivider:          'border-t border-fg/6',
+    rowHover:            'hover:bg-fg/2',
+    featuredBodyCell:    'bg-brand/18',
+    featuredCellVariant: 'default',
+    featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.78) c h) 100%)',
+    featuredShadow:      'shadow-[0_8px_48px_var(--ot-bloom-brand),0_0_0_1.5px_oklch(from_var(--ot-brand)_l_c_h/0.4)]',
+    tableBorder:         'border border-fg/10',
+  },
+  bold: {
+    groupBg:             'bg-fg/5',
+    groupText:           'text-fg-muted font-bold tracking-label uppercase text-label',
+    rowLabelClass:       'text-sm font-bold text-fg',
+    rowDivider:          'border-t border-fg/8',
+    rowHover:            'hover:bg-fg/3',
+    featuredBodyCell:    'bg-brand',
+    featuredCellVariant: 'inverted',
+    featuredGradient:    'linear-gradient(150deg, oklch(from var(--ot-brand) calc(l * 1.06) c h) 0%, oklch(from var(--ot-brand) calc(l * 0.70) c h) 100%)',
+    featuredShadow:      'shadow-[0_16px_64px_var(--ot-bloom-brand),0_0_0_2px_oklch(from_var(--ot-brand)_l_c_h/0.5)]',
+    tableBorder:         'border border-fg/12',
+  },
+}
+
+// ── Icon color helper ─────────────────────────────────────────────────────────
+
+function iconColor(key: string, variant: CellVariant): string {
+  if (variant === 'inverted') {
+    if (key === 'check' || key === 'circle-check') return 'text-fg-on-brand'
+    if (key === 'minus' || key === 'circle-minus' || key === 'xmark') return 'text-fg-on-brand/40'
+    return 'text-fg-on-brand/80'
+  }
   if (key === 'check' || key === 'circle-check') return 'text-brand'
-  if (key === 'minus' || key === 'circle-minus' || key === 'xmark') return 'text-fg-muted/40'
+  if (key === 'minus' || key === 'circle-minus' || key === 'xmark') return 'text-fg-muted/50'
   return 'text-fg-muted'
 }
 
 // ── Cell content renderer ─────────────────────────────────────────────────────
 
-function CellContent({ cell }: { cell: ComparisonCell | undefined }) {
+function CellContent({ cell, variant = 'default' }: { cell: ComparisonCell | undefined; variant?: CellVariant }) {
   if (!cell || cell.isEmpty || (!cell.icon && !cell.text)) {
-    return <span className="text-fg-muted/35 text-body font-mono select-none">—</span>
+    return (
+      <span className={cn(
+        'text-body font-mono select-none',
+        variant === 'inverted' ? 'text-fg-on-brand/30' : 'text-fg-muted/50',
+      )}>
+        —
+      </span>
+    )
   }
 
   const Icon = cell.icon ? ICON_MAP[cell.icon] : undefined
@@ -84,12 +157,17 @@ function CellContent({ cell }: { cell: ComparisonCell | undefined }) {
       {Icon && (
         <Icon
           size={16}
-          className={cn('shrink-0', cell.icon ? iconColorClass(cell.icon) : '')}
+          className={cn('shrink-0', cell.icon ? iconColor(cell.icon, variant) : '')}
           aria-hidden="true"
         />
       )}
       {cell.text && (
-        <span className="text-sm font-medium text-fg">{cell.text}</span>
+        <span className={cn(
+          'text-sm font-medium',
+          variant === 'inverted' ? 'text-fg-on-brand' : 'text-fg',
+        )}>
+          {cell.text}
+        </span>
       )}
     </span>
   )
@@ -97,10 +175,14 @@ function CellContent({ cell }: { cell: ComparisonCell | undefined }) {
 
 // ── Tooltip wrapper ───────────────────────────────────────────────────────────
 
-function TooltipLabel({ label, tooltip }: { label: string; tooltip?: string }) {
+function TooltipLabel({ label, tooltip, labelClass }: {
+  label:       string
+  tooltip?:    string
+  labelClass?: string
+}) {
   return (
     <span className="flex items-center gap-xs min-w-0">
-      <span className="text-sm text-fg truncate">{label}</span>
+      <span className={cn(labelClass ?? 'text-sm font-semibold text-fg', 'truncate')}>{label}</span>
       {tooltip && (
         <span className="relative group/tip shrink-0">
           <button
@@ -138,7 +220,9 @@ export default function ComparisonTableBlock({
   columns,
   rows,
   color = 'canvas',
+  tableStyle = 'clean',
 }: Props) {
+  const style       = STYLE_CONFIG[tableStyle]
   const featuredIdx = columns.findIndex(c => !!c.badgeText)
   const [activeCol, setActiveCol] = useState(() => featuredIdx >= 0 ? featuredIdx : 0)
   const touchStartX = useRef(0)
@@ -148,6 +232,12 @@ export default function ComparisonTableBlock({
     gridTemplateColumns: `minmax(140px, 210px) repeat(${colCount}, minmax(120px, 1fr))`,
   }
   const bgClass = color === 'surface' ? 'bg-surface' : 'bg-canvas'
+
+  // For bold style: track the last data row to apply rounded-b on the featured column
+  const lastDataRowIdx = rows.reduceRight(
+    (acc, row, i) => acc === -1 && row.rowType === 'row' ? i : acc,
+    -1,
+  )
 
   // ── Mobile swipe ──────────────────────────────────────────────────────────
   function handleTouchStart(e: React.TouchEvent) {
@@ -163,6 +253,9 @@ export default function ComparisonTableBlock({
       )
     }
   }
+
+  const mobileIsFeatured  = activeCol === featuredIdx
+  const mobileBoldInverted = tableStyle === 'bold' && mobileIsFeatured
 
   return (
     <section className={cn('py-xl px-md lg:px-lg', bgClass)}>
@@ -192,7 +285,11 @@ export default function ComparisonTableBlock({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="flex rounded-ot-control border border-fg/10 overflow-hidden" role="tablist" aria-label="Select column">
+        <div
+          className="flex rounded-ot-control border border-fg/10 overflow-hidden"
+          role="tablist"
+          aria-label="Select column"
+        >
           {columns.map((col, i) => {
             const isFeat   = i === featuredIdx
             const isActive = i === activeCol
@@ -203,7 +300,8 @@ export default function ComparisonTableBlock({
                 aria-selected={isActive}
                 onClick={() => setActiveCol(i)}
                 className={cn(
-                  'flex-1 px-sm py-sm text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand',
+                  'flex-1 px-sm py-sm text-center transition-colors duration-150',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand',
                   isActive && isFeat  && 'bg-brand text-fg-on-brand',
                   isActive && !isFeat && 'bg-surface text-fg',
                   !isActive           && 'text-fg-muted hover:text-fg hover:bg-fg/4',
@@ -231,7 +329,7 @@ export default function ComparisonTableBlock({
         role="table"
         aria-label={headline}
       >
-        {/* Column headers — pt-sm reserves visual headroom for featured column top accent */}
+        {/* Column headers — pt-sm reserves headroom for the featured column's -mt-sm lift */}
         <div role="rowgroup" className="pt-sm">
           <div role="row" className="grid" style={gridStyle}>
 
@@ -245,16 +343,18 @@ export default function ComparisonTableBlock({
                 <div
                   key={i}
                   role="columnheader"
+                  style={featured ? { background: style.featuredGradient } : undefined}
                   className={cn(
                     'flex flex-col gap-sm px-md pt-md pb-lg',
                     featured && [
                       '-mt-sm rounded-t-ot-surface',
-                      'bg-brand text-fg-on-brand',
-                      'shadow-[0_2px_24px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.3)]',
-                    ]
+                      'text-fg-on-brand',
+                      style.featuredShadow,
+                    ],
+                    !featured && i > 0 && 'border-l border-fg/8',
                   )}
                 >
-                  {/* Badge — or fixed spacer so all column names share the same baseline */}
+                  {/* Badge — or fixed spacer so all column names align horizontally */}
                   {col.badgeText ? (
                     <span className={cn(
                       'self-start text-[10px] tracking-widest uppercase font-bold px-sm py-0.5 rounded-full',
@@ -316,7 +416,7 @@ export default function ComparisonTableBlock({
         </div>
 
         {/* Table body rows */}
-        <div role="rowgroup" className="border border-fg/10">
+        <div role="rowgroup" className={style.tableBorder}>
           {rows.map((row, rowIdx) => {
 
             // ── Group header row ──────────────────────────────────────────
@@ -333,47 +433,57 @@ export default function ComparisonTableBlock({
                 >
                   <div
                     role="rowheader"
-                    className="col-span-full px-md py-sm bg-brand/6"
+                    className={cn('col-span-full px-md py-sm', style.groupBg)}
                     style={{ gridColumn: `1 / ${colCount + 2}` }}
                   >
-                    <span className="text-label tracking-label uppercase font-semibold text-brand">
-                      {row.label}
-                    </span>
+                    <span className={style.groupText}>{row.label}</span>
                   </div>
                 </div>
               )
             }
 
             // ── Data row ──────────────────────────────────────────────────
+            const isLastData = rowIdx === lastDataRowIdx
+
             return (
               <div
                 key={rowIdx}
                 role="row"
                 className={cn(
-                  'grid border-t border-fg/6 transition-colors duration-100',
-                  'hover:bg-fg/1.5',
+                  'grid transition-colors duration-100',
+                  style.rowDivider,
+                  style.rowHover,
                   rowIdx === 0 && 'border-t-0',
                 )}
                 style={gridStyle}
               >
                 {/* Row label */}
                 <div role="rowheader" className="px-md py-md flex items-center">
-                  <TooltipLabel label={row.label} tooltip={row.tooltip} />
+                  <TooltipLabel
+                    label={row.label}
+                    tooltip={row.tooltip}
+                    labelClass={style.rowLabelClass}
+                  />
                 </div>
 
                 {/* Cells */}
                 {columns.map((col, colIdx) => {
-                  const featured = colIdx === featuredIdx
+                  const featured        = colIdx === featuredIdx
+                  const cellVariant     = featured ? style.featuredCellVariant : 'default'
+                  const roundedBottom   = featured && isLastData && tableStyle === 'bold'
+
                   return (
                     <div
                       key={colIdx}
                       role="cell"
                       className={cn(
-                        'px-md py-md flex items-center',
-                        featured && 'bg-brand/8',
+                        'px-md py-md flex items-center justify-center',
+                        colIdx > 0 && 'border-l border-fg/8',
+                        featured && style.featuredBodyCell,
+                        roundedBottom && 'rounded-b-ot-surface',
                       )}
                     >
-                      <CellContent cell={row.cells[colIdx]} />
+                      <CellContent cell={row.cells[colIdx]} variant={cellVariant} />
                     </div>
                   )
                 })}
@@ -400,37 +510,45 @@ export default function ComparisonTableBlock({
                   <div
                     role="cell"
                     className={cn(
-                      'px-md py-sm bg-brand/6',
+                      'px-md py-sm',
+                      style.groupBg,
                       'border-t border-fg/10',
                       rowIdx === 0 && 'border-t-0',
                     )}
                   >
-                    <span className="text-label tracking-label uppercase font-semibold text-brand">
-                      {row.label}
-                    </span>
+                    <span className={style.groupText}>{row.label}</span>
                   </div>
                 </div>
               )
             }
 
-            const cell     = row.cells[activeCol]
-            const featured = activeCol === featuredIdx
+            const cell        = row.cells[activeCol]
+            const cellVariant = mobileBoldInverted ? 'inverted' : 'default'
 
             return (
               <div
                 key={rowIdx}
                 role="row"
                 className={cn(
-                  'flex items-center justify-between border-t border-fg/6 px-md py-md gap-md',
+                  'flex items-center justify-between px-md py-md gap-md',
+                  'border-t border-fg/6',
                   rowIdx === 0 && 'border-t-0',
-                  featured && 'bg-brand/5',
+                  mobileBoldInverted ? 'bg-brand' :
+                  mobileIsFeatured   ? 'bg-brand/5' : '',
                 )}
               >
                 <div role="rowheader" className="min-w-0 flex-1">
-                  <TooltipLabel label={row.label} tooltip={row.tooltip} />
+                  <TooltipLabel
+                    label={row.label}
+                    tooltip={row.tooltip}
+                    labelClass={mobileBoldInverted
+                      ? 'text-sm font-semibold text-fg-on-brand'
+                      : style.rowLabelClass
+                    }
+                  />
                 </div>
                 <div role="cell" className="shrink-0">
-                  <CellContent cell={cell} />
+                  <CellContent cell={cell} variant={cellVariant} />
                 </div>
               </div>
             )

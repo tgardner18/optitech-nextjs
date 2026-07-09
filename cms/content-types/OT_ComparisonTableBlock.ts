@@ -53,5 +53,18 @@ export const OT_ComparisonTableBlock = contentType({
       sortOrder:   50,
       items:       { type: 'component', contentType: OT_ComparisonRow },
     },
+    tableStyle: {
+      type:        'string',
+      format:      'selectOne',
+      displayName: 'Table Style',
+      description: 'Visual treatment for the comparison table. Clean: subtle brand tinting. Elevated: deeper gradient and stronger shadow. Bold: solid brand fill across the full featured column.',
+      enum: [
+        { value: 'clean',    displayName: 'Clean — subtle brand tinting'              },
+        { value: 'elevated', displayName: 'Elevated — deeper gradient, stronger shadow' },
+        { value: 'bold',     displayName: 'Bold — solid brand fill on featured column'  },
+      ],
+      group:     'OT_Content',
+      sortOrder: 60,
+    },
   },
 })

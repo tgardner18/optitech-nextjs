@@ -2802,14 +2802,24 @@ function ComparisonTableShowcase() {
     <>
       <BlockHeader slug="comparison-table" />
 
-      <VariantGroup label="Canvas · Featured column · Banking" note="Three checking account tiers with the featured column highlighted in brand color. Grouped rows divide core, interest, and support features." />
+      <VariantGroup label="Style: Clean · Canvas · Banking" note="Subtle brand tinting on the featured column. Group headers use a light brand wash. Cells are centered; row labels are semibold." />
       <div className="border-t border-fg/5">
-        <OT_ComparisonTableBlock content={BANKING_CONTENT as any} displaySettings={{ color: 'canvas' }} />
+        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'clean' } as any} displaySettings={{ color: 'canvas' }} />
       </div>
 
-      <VariantGroup label="Surface · Featured column · Tech support tiers" note="Three support plans on a surface background. Demonstrates icon + text cells (24/7 clock), icon-only checks and dashes, and a custom badge." />
+      <VariantGroup label="Style: Elevated · Surface · Banking" note="Deeper gradient and stronger bloom shadow on the featured column header. Body tint is more pronounced at 18% opacity." />
       <div className="border-t border-fg/5">
-        <OT_ComparisonTableBlock content={SUPPORT_CONTENT as any} displaySettings={{ color: 'surface' }} />
+        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'elevated' } as any} displaySettings={{ color: 'surface' }} />
+      </div>
+
+      <VariantGroup label="Style: Bold · Canvas · Banking" note="Full brand fill across the featured column — diagonal gradient header, solid brand body cells, and inverted (fg-on-brand) icons and text." />
+      <div className="border-t border-fg/5">
+        <OT_ComparisonTableBlock content={{ ...BANKING_CONTENT, tableStyle: 'bold' } as any} displaySettings={{ color: 'canvas' }} />
+      </div>
+
+      <VariantGroup label="Style: Elevated · Surface · Tech support tiers" note="Three support plans demonstrating icon + text cells (24/7 clock), icon-only checks and dashes, and the Elevated style on a surface background." />
+      <div className="border-t border-fg/5">
+        <OT_ComparisonTableBlock content={{ ...SUPPORT_CONTENT, tableStyle: 'elevated' } as any} displaySettings={{ color: 'surface' }} />
       </div>
 
       <div className="pb-xl" />
