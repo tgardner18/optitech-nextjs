@@ -96,7 +96,7 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     featuredCellVariant: 'default',
     featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.85) c h) 100%)',
     featuredShadow:      'shadow-[0_4px_32px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.25)]',
-    tableBorder:         'border border-fg/10',
+    tableBorder:         'border border-fg/10 rounded-b-ot-surface overflow-hidden',
   },
   elevated: {
     groupBg:             'bg-accent',
@@ -109,10 +109,10 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     featuredCellVariant: 'inverted',
     // Gradient lightens slightly at top, lands on full brand at bottom to meet the card overlay
     featuredGradient:    'linear-gradient(to bottom, oklch(from var(--ot-brand) calc(l * 1.06) c h) 0%, var(--ot-brand) 100%)',
-    // Header: side bloom + top lift + ring — bottom handled by body overlay
-    featuredShadow:      'shadow-[4px_0_20px_var(--ot-bloom-brand-faint),-4px_0_20px_var(--ot-bloom-brand-faint),0_-4px_14px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.3)]',
-    // No top border — the header card connects directly to the body overlay
-    tableBorder:         'border-x border-b border-fg/10 relative',
+    // Header: ring matches the body overlay ring, faint top bloom for lift
+    featuredShadow:      'shadow-[0_0_0_1.5px_oklch(from_var(--ot-brand)_calc(l*0.85)_c_h/0.5),0_-4px_14px_var(--ot-bloom-brand-faint)]',
+    // No top border — header card connects directly to the body overlay; rounded-b for border radius
+    tableBorder:         'border-x border-b border-fg/10 relative rounded-b-ot-surface',
   },
   bold: {
     groupBg:             'bg-accent',
@@ -124,7 +124,7 @@ const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
     featuredCellVariant: 'inverted',
     featuredGradient:    'linear-gradient(150deg, oklch(from var(--ot-brand) calc(l * 1.06) c h) 0%, oklch(from var(--ot-brand) calc(l * 0.70) c h) 100%)',
     featuredShadow:      'shadow-[0_16px_64px_var(--ot-bloom-brand),0_0_0_2px_oklch(from_var(--ot-brand)_l_c_h/0.5)]',
-    tableBorder:         'border border-fg/12',
+    tableBorder:         'border border-fg/12 rounded-b-ot-surface overflow-hidden',
   },
 }
 
@@ -423,11 +423,11 @@ export default function ComparisonTableBlock({
                         <a
                           href={col.ctaHref ?? '#'}
                           className={cn(
-                            'flex items-center',
-                            'rounded-ot-control border border-fg-on-brand/30 text-fg-on-brand',
+                            'flex items-center justify-center',
+                            'rounded-ot-control bg-fg-on-brand text-brand',
                             'text-label font-semibold tracking-label uppercase px-md py-sm',
-                            'hover:bg-fg-on-brand/10 transition-colors duration-150 ease-out',
-                            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg-on-brand',
+                            'hover:bg-fg-on-brand/90 transition-colors duration-150 ease-out',
+                            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
                           )}
                         >
                           {col.ctaLabel}
@@ -463,19 +463,11 @@ export default function ComparisonTableBlock({
                 left:  overlayLeft,
                 width: overlayWidth ?? 0,
                 boxShadow: [
-                  // Chromatic brand glow — sides and bottom (reduced)
-                  '5px 0 24px var(--ot-bloom-brand)',
-                  '-5px 0 24px var(--ot-bloom-brand)',
-                  '0 10px 24px var(--ot-bloom-brand)',
-                  // Outer diffuse chromatic halo
-                  '10px 0 40px var(--ot-bloom-brand-faint)',
-                  '-10px 0 40px var(--ot-bloom-brand-faint)',
-                  // Neutral dark grounding shadow (mixed in — same technique as image block)
-                  '4px 0 12px oklch(0 0 0 / 0.18)',
-                  '-4px 0 12px oklch(0 0 0 / 0.18)',
-                  '0 8px 18px oklch(0 0 0 / 0.22)',
-                  // Card border ring
-                  '0 0 0 1px oklch(from var(--ot-brand) l c h / 0.3)',
+                  // Clean card border ring — matches header ring
+                  '0 0 0 1.5px oklch(from var(--ot-brand) calc(l * 0.85) c h / 0.5)',
+                  // Subtle bottom-only lift shadow
+                  '0 8px 28px oklch(from var(--ot-brand) l c h / 0.18)',
+                  '0 2px 6px oklch(from var(--ot-brand) l c h / 0.12)',
                 ].join(', '),
               }}
             />
