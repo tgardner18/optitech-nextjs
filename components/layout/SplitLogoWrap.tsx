@@ -23,7 +23,7 @@ export function SplitLogoWrap({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="flex items-center rounded-full border transition-[background,border-color,box-shadow,padding] duration-300 ease-out"
+      className="flex items-center rounded-ot-surface border transition-[background,border-color,box-shadow,padding] duration-300 ease-out"
       style={scrolled ? {
         borderColor:          'oklch(from var(--ot-fg) l c h / 0.15)',
         background:           'color-mix(in oklch, var(--ot-surface) 92%, transparent)',

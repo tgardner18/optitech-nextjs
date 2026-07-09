@@ -46,8 +46,8 @@ function normalizeNavHref(rawUrl: string | null | undefined, locale: Locale, dom
  * utilities, and the CTA. No full-width background band on desktop; content reads
  * through the gap between the two elements.
  *
- * The rounded-full pill shape is invariant — the corner-style axis governs cards and
- * controls, not this structural motif.
+ * The pill's border-radius tracks the Corner Style axis via `rounded-ot-surface`
+ * (`--ot-radius-surface`): sharp → 0px, soft → 8px, rounded → 20px.
  *
  * Mobile (< lg): glass sticky bar, logo left, hamburger right — identical to top-bar.
  */
@@ -127,7 +127,7 @@ export default async function SplitHeader() {
 
           {/* Floating pill — nav links + utilities + CTA in one surface capsule */}
           <div
-            className="flex items-center rounded-full border border-fg/15"
+            className="flex items-center rounded-ot-surface border border-fg/15"
             style={{
               background:           'color-mix(in oklch, var(--ot-surface) 92%, transparent)',
               backdropFilter:       'blur(14px)',
