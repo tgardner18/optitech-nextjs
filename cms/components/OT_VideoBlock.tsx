@@ -84,9 +84,13 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
         {content.body && (
           <div
             {...pa('body')}
+            data-rich-text=""
             className="text-body text-fg-muted leading-relaxed max-w-[60ch]"
           >
-            <RichText content={content.body.json ?? undefined} />
+            {content.body.json
+              ? <RichText content={content.body.json} />
+              : <div dangerouslySetInnerHTML={{ __html: content.body.html ?? '' }} />
+            }
           </div>
         )}
 
