@@ -220,11 +220,11 @@ export default function RichTextBlock({
   if (treatment === 'offset_panel') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} relative py-8`}>
-          {/* Decorative parallelogram — hidden on mobile, appears md+ */}
+        <div className={`${innerCva({ alignment, size })} relative pb-8`}>
+          {/* Brand slab — lower-left, peeks below and left of the content card */}
           <div
             aria-hidden
-            className="absolute inset-y-0 left-0 w-[38%] rte-offset-accent hidden md:block"
+            className="absolute top-10 left-0 bottom-0 right-[15%] rte-offset-accent hidden md:block"
           />
           <div
             data-rich-text=""

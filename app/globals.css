@@ -2151,13 +2151,8 @@ body {
 
 .rte-offset-accent {
   background: var(--ot-brand);
-  clip-path: polygon(12% 0%, 100% 0%, 88% 100%, 0% 100%);
   box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
-  /* Round only the two natural bounding-box corners; the diagonal cut points
-     (12% 0% and 88% 100%) are interior to the bounding box and unaffected.
-     Zero in the default sharp theme; follows ThemeManager in rounded verticals. */
-  border-top-right-radius: var(--ot-rounded-surface);
-  border-bottom-left-radius: var(--ot-rounded-surface);
+  border-radius: var(--ot-rounded-surface);
 }
 
 .rte-offset-content {
