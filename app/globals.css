@@ -2128,6 +2128,37 @@ body {
   .feature-card-lift:hover { transform: none; }
 }
 
+/* ── Rich Text Block — treatment containers ────────────────────────────────────
+ * These classes reference bloom tokens so they follow CMS theme overrides
+ * automatically. All shadow/border/background values are token-derived.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.rte-accent-callout {
+  border: 1px solid var(--ot-bloom-accent-border);
+  border-top: 4px solid var(--ot-accent);
+  background: var(--ot-bloom-accent-faint);
+  box-shadow:
+    0 0 0 4px var(--ot-bloom-accent-faint),
+    0 8px 24px var(--ot-bloom-accent-faint);
+}
+
+.rte-glow-frame {
+  background: linear-gradient(135deg, var(--ot-brand), var(--ot-accent));
+  box-shadow:
+    0 0 0 1px var(--ot-bloom-brand-ring),
+    0 0 24px var(--ot-bloom-brand-faint),
+    0 0 48px var(--ot-bloom-accent-faint);
+}
+
+.rte-offset-accent {
+  background: var(--ot-brand);
+  clip-path: polygon(12% 0%, 100% 0%, 88% 100%, 0% 100%);
+  box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
+}
+
+.rte-offset-content {
+  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+}
+
 /* ── Practitioner portrait card ───────────────────────────────────────────────
  * The portrait-first directory card. A resting chromatic elevation (brand-hued,
  * never grey) deepens and lifts on hover. The glass footer's reveal slide and
