@@ -26,11 +26,11 @@ export type RichTextStyleOptions = {
    * - standard: faithful prose rendering
    * - lead: first paragraph promoted to deck size
    * - toc: auto-generated section navigator from h2 headings
-   * - accent-callout: accent-bordered panel with signal styling
-   * - glow-frame: gradient-bordered premium frame with ambient glow
-   * - offset-panel: asymmetric offset with brand accent parallelogram
+   * - accent_callout: accent-bordered panel with signal styling
+   * - glow_frame: gradient-bordered premium frame with ambient glow
+   * - offset_panel: asymmetric offset with brand accent parallelogram
    */
-  treatment?: "standard" | "lead" | "toc" | "accent-callout" | "glow-frame" | "offset-panel";
+  treatment?: "standard" | "lead" | "toc" | "accent_callout" | "glow_frame" | "offset_panel";
 };
 
 // ─── TOC utilities ────────────────────────────────────────────────────────────
@@ -179,15 +179,15 @@ export default function RichTextBlock({
   } : baseElements;
 
   // ── Accent Bar Callout ──────────────────────────────────────────────────────
-  if (treatment === 'accent-callout') {
+  if (treatment === 'accent_callout') {
     return (
       <section className={sectionCva({ color, size })}>
         <div
           data-rich-text=""
           data-color={color}
           data-size={size}
-          data-treatment="accent-callout"
-          className={`${innerCva({ alignment, size })} rte-accent-callout rounded-ot-surface px-8 py-6`}
+          data-treatment="accent_callout"
+          className={`${innerCva({ alignment, size })} rte-accent_callout rounded-ot-surface px-8 py-6`}
           {...pa('content')}
         >
           <RichText content={content ?? undefined} elements={elements} />
@@ -197,15 +197,15 @@ export default function RichTextBlock({
   }
 
   // ── Gradient Border Glow Frame ──────────────────────────────────────────────
-  if (treatment === 'glow-frame') {
+  if (treatment === 'glow_frame') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} rte-glow-frame rounded-ot-surface p-[4px]`}>
+        <div className={`${innerCva({ alignment, size })} rte-glow_frame rounded-ot-surface p-[4px]`}>
           <div
             data-rich-text=""
             data-color={color}
             data-size={size}
-            data-treatment="glow-frame"
+            data-treatment="glow_frame"
             className="bg-canvas rounded-[inherit] px-8 py-7"
             {...pa('content')}
           >
@@ -217,7 +217,7 @@ export default function RichTextBlock({
   }
 
   // ── Asymmetric Offset Panel ─────────────────────────────────────────────────
-  if (treatment === 'offset-panel') {
+  if (treatment === 'offset_panel') {
     return (
       <section className={sectionCva({ color, size })}>
         <div className={`${innerCva({ alignment, size })} relative py-8`}>
@@ -230,7 +230,7 @@ export default function RichTextBlock({
             data-rich-text=""
             data-color={color}
             data-size={size}
-            data-treatment="offset-panel"
+            data-treatment="offset_panel"
             className="relative md:ml-8 bg-surface rounded-ot-surface px-8 py-8 rte-offset-content"
             {...pa('content')}
           >

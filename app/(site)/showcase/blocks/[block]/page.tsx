@@ -701,17 +701,17 @@ function RichTextShowcase() {
         note="treatment: &ldquo;accent-callout&rdquo; — accent top-edge signal + ambient glow. For tips, key findings, stats, and important notes inside longer articles."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "accent-callout" · canvas' />
+        <VariantLabel label='treatment: "accent_callout" · canvas' />
         <OT_RichTextBlock
           content={{ content: { json: RT_CALLOUT } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'accent-callout' }}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'accent_callout' }}
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "accent-callout" · surface' />
+        <VariantLabel label='treatment: "accent_callout" · surface' />
         <OT_RichTextBlock
           content={{ content: { json: RT_CALLOUT } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'accent-callout' }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'accent_callout' }}
         />
       </div>
 
@@ -720,17 +720,17 @@ function RichTextShowcase() {
         note="treatment: &ldquo;glow-frame&rdquo; — brand → accent gradient border with layered chromatic glow. For vision statements, strategic highlights, and premium featured content."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "glow-frame" · canvas' />
+        <VariantLabel label='treatment: "glow_frame" · canvas' />
         <OT_RichTextBlock
           content={{ content: { json: RT_GLOW_FRAME_CONTENT } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'glow-frame' }}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'glow_frame' }}
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "glow-frame" · surface' note="Inner panel always bg-canvas regardless of section ground" />
+        <VariantLabel label='treatment: "glow_frame" · surface' note="Inner panel always bg-canvas regardless of section ground" />
         <OT_RichTextBlock
           content={{ content: { json: RT_GLOW_FRAME_CONTENT } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'glow-frame' }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'glow_frame' }}
         />
       </div>
 
@@ -739,17 +739,17 @@ function RichTextShowcase() {
         note="treatment: &ldquo;offset-panel&rdquo; — content panel offset right with a brand parallelogram behind-left. Desktop only; collapses to full-width on mobile. For narrative and storytelling moments."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "offset-panel" · canvas' />
+        <VariantLabel label='treatment: "offset_panel" · canvas' />
         <OT_RichTextBlock
           content={{ content: { json: RT_OFFSET_STORY } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'offset-panel' }}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'offset_panel' }}
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "offset-panel" · surface' />
+        <VariantLabel label='treatment: "offset_panel" · surface' />
         <OT_RichTextBlock
           content={{ content: { json: RT_OFFSET_STORY } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'offset-panel' }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'offset_panel' }}
         />
       </div>
 
