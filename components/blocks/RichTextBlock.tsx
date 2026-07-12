@@ -221,8 +221,8 @@ export default function RichTextBlock({
     return (
       <section className={sectionCva({ color, size })}>
         <div className={`${innerCva({ alignment, size })} relative pb-10`}>
-          {/* Skewed brand slab — starts below card top, extends below card bottom,
-              full width so it peeks on both sides of the inset content card */}
+          {/* Skewed brand panel — a CSS transform:skewX rectangle that sits behind
+              the content card, peeking on both sides and below */}
           <div
             aria-hidden
             className="absolute top-8 left-0 right-0 bottom-0 rte-offset-accent hidden md:block"

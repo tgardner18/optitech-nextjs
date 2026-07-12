@@ -45,7 +45,7 @@ export const OT_RichTextDefault = displayTemplate({
         toc:              { displayName: 'Contents — section navigator', sortOrder: 30 },
         accent_callout: { displayName: 'Accent Bar Callout',           sortOrder: 40 },
         glow_frame:     { displayName: 'Gradient Border Glow Frame',   sortOrder: 50 },
-        offset_panel:   { displayName: 'Asymmetric Offset Panel',      sortOrder: 60 },
+        offset_panel:   { displayName: 'Offset Panel — skewed backdrop',  sortOrder: 60 },
       },
     },
   },

@@ -736,7 +736,7 @@ function RichTextShowcase() {
 
       <VariantGroup
         label="Asymmetric Offset Panel"
-        note="treatment: &ldquo;offset_panel&rdquo; — content card inset over a skewed brand slab that peeks on both sides and below. Desktop only; collapses to full-width on mobile. For narrative and storytelling moments."
+        note="treatment: &ldquo;offset_panel&rdquo; — content card inset over a skewed brand panel (CSS transform) that peeks on both sides and below. Desktop only; collapses to full-width on mobile. For narrative and storytelling moments."
       />
       <div className="border-t border-fg/5">
         <VariantLabel label='treatment: "offset_panel" · canvas' />

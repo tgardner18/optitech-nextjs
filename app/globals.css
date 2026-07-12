@@ -2153,7 +2153,7 @@ body {
   background: var(--ot-brand);
   box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
   border-radius: var(--ot-rounded-surface);
-  transform: skewX(-5deg);
+  transform: skewX(-8deg);
 }
 
 .rte-offset-content {
