@@ -230,7 +230,10 @@ export default function ComparisonTableBlock({
   const style       = STYLE_CONFIG[tableStyle]
   const featuredIdx = columns.findIndex(c => !!c.badgeText)
   const [activeCol, setActiveCol] = useState(() => featuredIdx >= 0 ? featuredIdx : 0)
-  const touchStartX = useRef(0)
+  const [animDir, setAnimDir]     = useState<'left' | 'right' | null>(null)
+  const [animKey, setAnimKey]     = useState(0)
+  const touchStartX               = useRef(0)
+  const touchStartTime            = useRef(0)
 
   // Elevated card overlay: measured from the featured column header
   const featuredHeaderRef = useRef<HTMLDivElement>(null)
@@ -269,11 +272,17 @@ export default function ComparisonTableBlock({
 
   // ── Mobile swipe ──────────────────────────────────────────────────────────
   function handleTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX
+    touchStartX.current    = e.touches[0].clientX
+    touchStartTime.current = Date.now()
   }
   function handleTouchEnd(e: React.TouchEvent) {
-    const dx = e.changedTouches[0].clientX - touchStartX.current
-    if (Math.abs(dx) > 40) {
+    const dx       = e.changedTouches[0].clientX - touchStartX.current
+    const absDx    = Math.abs(dx)
+    const velocity = absDx / Math.max(Date.now() - touchStartTime.current, 1)
+    if (absDx > 64 || (absDx > 40 && velocity > 0.35)) {
+      const dir = dx < 0 ? 'left' : 'right'
+      setAnimDir(dir)
+      setAnimKey(k => k + 1)
       setActiveCol(prev =>
         dx < 0
           ? Math.min(prev + 1, colCount - 1)
@@ -315,10 +324,16 @@ export default function ComparisonTableBlock({
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="flex rounded-ot-control border border-fg/10 overflow-hidden"
+          className="relative flex rounded-ot-control border border-fg/10 overflow-hidden"
           role="tablist"
           aria-label="Select column"
         >
+          {/* Sliding underline — glides between tabs to confirm which column is active */}
+          <div
+            aria-hidden="true"
+            className="absolute bottom-0 h-[2px] bg-brand pointer-events-none transition-[left] duration-200 ease-out"
+            style={{ left: `${(activeCol / colCount) * 100}%`, width: `${100 / colCount}%` }}
+          />
           {columns.map((col, i) => {
             const isFeat   = i === featuredIdx
             const isActive = i === activeCol
@@ -584,14 +599,22 @@ export default function ComparisonTableBlock({
       </div>
 
       {/* ── Mobile: single-column view ────────────────────────────────────── */}
+      {/* Outer div holds touch handlers stably; inner keyed div replays the
+          slide-in animation on each column switch without losing touch state. */}
       <div
         className="sm:hidden"
-        role="table"
-        aria-label={headline}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div role="rowgroup">
+        <div
+          key={animKey}
+          role="table"
+          aria-label={headline}
+          style={animDir ? {
+            animation: `${animDir === 'left' ? 'swipe-col-from-right' : 'swipe-col-from-left'} var(--ot-dur-quick) var(--ot-ease-kinetic) both`,
+          } : undefined}
+        >
+          <div role="rowgroup">
           {rows.map((row, rowIdx) => {
 
             if (row.rowType === 'group') {
@@ -643,6 +666,7 @@ export default function ComparisonTableBlock({
               </div>
             )
           })}
+          </div>
         </div>
       </div>
 

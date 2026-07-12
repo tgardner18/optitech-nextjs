@@ -379,6 +379,21 @@ html {
   to   { height: 0; }
 }
 
+/* ── Comparison table: mobile column swipe-in ────────────────────────────────
+ * Directional content slide when activeCol changes on mobile via swipe.
+ * Nested inside no-preference so reduced-motion users get instant switch.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes swipe-col-from-right {
+    from { transform: translateX(8%);  opacity: 0.5; }
+    to   { transform: translateX(0);   opacity: 1;   }
+  }
+  @keyframes swipe-col-from-left {
+    from { transform: translateX(-8%); opacity: 0.5; }
+    to   { transform: translateX(0);   opacity: 1;   }
+  }
+}
+
 /* ── Grid column spans ───────────────────────────────────────────────────────
  * Row outputs data-bp="sm|md|lg|xl" on its div.
  * Column outputs data-col-span="col1…col12" on its div.
