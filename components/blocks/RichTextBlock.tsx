@@ -220,18 +220,19 @@ export default function RichTextBlock({
   if (treatment === 'offset_panel') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} relative pb-8`}>
-          {/* Brand slab — lower-left, peeks below and left of the content card */}
+        <div className={`${innerCva({ alignment, size })} relative pb-10`}>
+          {/* Skewed brand slab — starts below card top, extends below card bottom,
+              full width so it peeks on both sides of the inset content card */}
           <div
             aria-hidden
-            className="absolute top-10 left-0 bottom-0 right-[15%] rte-offset-accent hidden md:block"
+            className="absolute top-8 left-0 right-0 bottom-0 rte-offset-accent hidden md:block"
           />
           <div
             data-rich-text=""
             data-color={color}
             data-size={size}
             data-treatment="offset_panel"
-            className="relative md:ml-8 bg-surface rounded-ot-surface px-8 py-8 rte-offset-content"
+            className="relative mx-6 md:mx-10 bg-surface rounded-ot-surface px-8 py-8 rte-offset-content"
             {...pa('content')}
           >
             <RichText content={content ?? undefined} elements={elements} />
