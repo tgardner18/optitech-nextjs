@@ -28,9 +28,11 @@ export type RichTextStyleOptions = {
    * - toc: auto-generated section navigator from h2 headings
    * - accent_callout: accent-bordered panel with signal styling
    * - glow_frame: gradient-bordered premium frame with ambient glow
-   * - offset_panel: asymmetric offset with brand accent parallelogram
+   * - layered_depth: brand depth panel offset lower-right behind the content card
+   * - float_elevation: compound multi-layer chromatic elevation shadow
+   * - sidebar_accent: brand rail anchored left, extending above and below the card
    */
-  treatment?: "standard" | "lead" | "toc" | "accent_callout" | "glow_frame" | "offset_panel";
+  treatment?: "standard" | "lead" | "toc" | "accent_callout" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent";
 };
 
 // ─── TOC utilities ────────────────────────────────────────────────────────────
@@ -216,23 +218,69 @@ export default function RichTextBlock({
     );
   }
 
-  // ── Asymmetric Offset Panel ─────────────────────────────────────────────────
-  if (treatment === 'offset_panel') {
+  // ── Layered Depth Offset ────────────────────────────────────────────────────
+  if (treatment === 'layered_depth') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} relative pb-10`}>
-          {/* Skewed brand panel — a CSS transform:skewX rectangle that sits behind
-              the content card, peeking on both sides and below */}
+        <div className={`${innerCva({ alignment, size })} relative pb-3`}>
+          {/* Brand depth panel — same size as the container, offset lower-right so
+              it peeks out from behind the content card on the right and bottom */}
           <div
             aria-hidden
-            className="absolute top-8 left-0 right-0 bottom-0 rte-offset-accent hidden md:block"
+            className="absolute top-3 left-3 right-0 bottom-0 rte-depth-bg hidden md:block"
           />
           <div
             data-rich-text=""
             data-color={color}
             data-size={size}
-            data-treatment="offset_panel"
-            className="relative mx-6 md:mx-10 bg-surface rounded-ot-surface px-8 py-8 rte-offset-content"
+            data-treatment="layered_depth"
+            className="relative mr-3 bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Premium Float Elevation ─────────────────────────────────────────────────
+  if (treatment === 'float_elevation') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={innerCva({ alignment, size })}>
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="float_elevation"
+            className="bg-surface rounded-ot-surface px-8 py-8 rte-float-elevation"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Sidebar Accent Rail ─────────────────────────────────────────────────────
+  if (treatment === 'sidebar_accent') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={`${innerCva({ alignment, size })} relative py-3 pl-6`}>
+          {/* Brand rail — structural element positioned left of the card, extending
+              slightly above and below. Uses a div (not border-left) per design rules. */}
+          <div
+            aria-hidden
+            className="absolute top-0 left-0 bottom-0 w-[10px] rte-sidebar-rail hidden md:block"
+          />
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="sidebar_accent"
+            className="bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
             {...pa('content')}
           >
             <RichText content={content ?? undefined} elements={elements} />

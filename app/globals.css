@@ -2149,15 +2149,30 @@ body {
     0 0 48px var(--ot-bloom-accent-faint);
 }
 
-.rte-offset-accent {
+.rte-depth-bg {
   background: var(--ot-brand);
-  box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
   border-radius: var(--ot-rounded-surface);
-  transform: skewX(-8deg);
+  box-shadow: 0 4px 20px var(--ot-bloom-brand-faint);
 }
 
-.rte-offset-content {
-  box-shadow: 0 4px 24px var(--ot-bloom-brand-faint);
+.rte-depth-card {
+  box-shadow:
+    0 1px 3px oklch(from var(--ot-brand) l c h / 0.10),
+    0 4px 12px oklch(from var(--ot-brand) l c h / 0.07);
+}
+
+.rte-float-elevation {
+  box-shadow:
+    0 0 0 1px var(--ot-bloom-brand-border),
+    0 2px 4px var(--ot-bloom-brand-faint),
+    0 8px 16px var(--ot-bloom-brand-faint),
+    0 24px 48px oklch(from var(--ot-brand) l c h / 0.07),
+    0 48px 96px oklch(from var(--ot-brand) l c h / 0.04);
+}
+
+.rte-sidebar-rail {
+  background: var(--ot-brand);
+  border-radius: var(--ot-rounded-surface);
 }
 
 /* ── Practitioner portrait card ───────────────────────────────────────────────

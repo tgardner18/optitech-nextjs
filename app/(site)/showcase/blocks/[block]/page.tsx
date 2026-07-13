@@ -735,21 +735,59 @@ function RichTextShowcase() {
       </div>
 
       <VariantGroup
-        label="Asymmetric Offset Panel"
-        note="treatment: &ldquo;offset_panel&rdquo; — content card inset over a skewed brand panel (CSS transform) that peeks on both sides and below. Desktop only; collapses to full-width on mobile. For narrative and storytelling moments."
+        label="Layered Depth Offset"
+        note="treatment: &ldquo;layered_depth&rdquo; — brand depth panel offset lower-right behind the content card. Depth through layering without complexity. Desktop only; collapses gracefully on mobile."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "offset_panel" · canvas' />
+        <VariantLabel label='treatment: "layered_depth" · canvas' />
         <OT_RichTextBlock
           content={{ content: { json: RT_OFFSET_STORY } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'offset_panel' }}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'layered_depth' }}
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "offset_panel" · surface' />
+        <VariantLabel label='treatment: "layered_depth" · surface' />
         <OT_RichTextBlock
           content={{ content: { json: RT_OFFSET_STORY } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'offset_panel' }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'layered_depth' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Premium Float Elevation"
+        note="treatment: &ldquo;float_elevation&rdquo; — compound multi-layer chromatic elevation shadow. No background panel; depth is expressed purely through shadow, rendering the card as a hovering object above the surface."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "float_elevation" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'float_elevation' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "float_elevation" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'float_elevation' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Sidebar Accent Rail"
+        note="treatment: &ldquo;sidebar_accent&rdquo; — brand-colored structural rail anchored to the left of the content card, extending slightly above and below. Implemented as a positioned element, not a border. Desktop only."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "sidebar_accent" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'sidebar_accent' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "sidebar_accent" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'sidebar_accent' }}
         />
       </div>
 
