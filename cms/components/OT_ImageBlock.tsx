@@ -17,8 +17,13 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
   const staggerAttr       = entranceAnimation !== 'none' ? entranceAnimation : undefined
 
-  const mediaSide = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
-  const hasEditorial = Boolean(
+  const mediaSide      = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
+  const heightBehavior = String(displaySettings?.heightBehavior ?? 'auto')
+  const fillColumn     = heightBehavior === 'fillColumn'
+  const displayMode    = String(displaySettings?.displayMode ?? 'auto')
+  // 'standalone' forces image-only rendering regardless of editorial field content,
+  // letting the same content item be placed in a VB column as a full-width image.
+  const hasEditorial   = displayMode !== 'standalone' && Boolean(
     content.eyebrow || content.heading || content.body || content.ctaUrl?.default
   )
 
@@ -38,13 +43,20 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-      fillHeight={hasEditorial}
+      fillHeight={fillColumn}
     />
   )
 
   if (!hasEditorial) {
+    // fillColumn: flex-1 + min-h-0 so the wrapper grows to fill its VB column
+    // (which is stretched by align-self:stretch to the row height), letting the
+    // image match the height of whatever sits in the adjacent column.
     return (
-      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+      <div
+        {...pa(content.__composition)}
+        className={fillColumn ? 'w-full flex-1 min-h-0 flex flex-col' : 'w-full'}
+        data-stagger={staggerAttr}
+      >
         {mediaEl}
       </div>
     )
@@ -70,10 +82,10 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
+      <div className={`min-w-0 ${mediaOrder}`}>
         {mediaEl}
       </div>
 

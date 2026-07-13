@@ -62,6 +62,7 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
   "1:1":  "aspect-square",
 };
 
+
 const MAX_H_CLASS: Record<NonNullable<ImageStyleOptions["maxHeight"]>, string> = {
   none: "",
   xs:   "max-h-[200px]",
@@ -131,11 +132,8 @@ export default function ImageBlock({
     };
   }, [lightboxOpen]);
 
-  const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
+  const aspectClass = ratio ? RATIO_CLASS[ratio] : "";
   const maxHClass   = MAX_H_CLASS[maxHeight];
-  // In narrow columns aspect-video alone renders ~270–340px tall. A minimum height
-  // floor ensures the image has a comfortable visual presence regardless of column width.
-  const minHClass = !ratio ? "min-h-[320px]" : "";
 
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
@@ -200,10 +198,17 @@ export default function ImageBlock({
     <div
       ref={containerRef}
       className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-[320px]${frame === "offset" ? " z-10" : ""}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${minHClass ? ` ${minHClass}` : ""}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`
+        ? `relative overflow-hidden rounded-ot-surface flex-1${frame === "offset" ? " z-10" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`
       }
-      style={glowStyle}
+      style={{
+        ...glowStyle,
+        // 320px inline floor so fill images always have a visible minimum height.
+        // Only applied when no aspect ratio is set (ratio already defines the height)
+        // to prevent the aspect-ratio + min-height CSS interaction from expanding the
+        // container width beyond its column and overlapping adjacent content.
+        minHeight: fillHeight ? 320 : (!ratio ? 320 : undefined),
+      }}
       {...(previewAttrs?.image ?? {})}
     >
       {animate && (
@@ -249,14 +254,14 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative w-full${fillHeight ? " flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
         <div className={
           frame === "offset"
-            ? `relative pr-3 pb-3${fillHeight ? " flex-1 flex flex-col" : ""}`
-            : fillHeight ? "flex-1 flex flex-col" : ""
+            ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+            : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
         }>
           {frame === "offset" && (
             <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
@@ -295,7 +300,7 @@ export default function ImageBlock({
           role="dialog"
           aria-modal="true"
           aria-label={alt || 'Full size image'}
-          className="fixed inset-0 z-[9999] bg-canvas/95 backdrop-blur-md"
+          className="fixed inset-0 z-9999 bg-canvas/95 backdrop-blur-md"
           style={{ animation: 'fadeIn 0.15s cubic-bezier(0.16,1,0.3,1) both' }}
           onClick={() => setLightboxOpen(false)}
         >
