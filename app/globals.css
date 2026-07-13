@@ -2192,6 +2192,15 @@ body {
 .rte-3d-l3 { background: oklch(from var(--ot-brand) calc(l * 0.45) c h); }
 .rte-3d-l4 { background: oklch(from var(--ot-brand) calc(l * 0.20) calc(c * 0.55) h); }
 
+/* Light mode: layers are all within a narrow dark range so a faint light outline
+ * on each slab edge gives the eye a visible seam between them.                 */
+[data-theme="light"] .rte-3d-l1,
+[data-theme="light"] .rte-3d-l2,
+[data-theme="light"] .rte-3d-l3,
+[data-theme="light"] .rte-3d-l4 {
+  outline: 1px solid oklch(from var(--ot-brand) 0.86 0.012 h);
+}
+
 /* ── Practitioner portrait card ───────────────────────────────────────────────
  * The portrait-first directory card. A resting chromatic elevation (brand-hued,
  * never grey) deepens and lifts on hover. The glass footer's reveal slide and
