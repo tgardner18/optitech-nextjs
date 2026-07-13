@@ -697,27 +697,27 @@ function RichTextShowcase() {
       </div>
 
       <VariantGroup
-        label="Accent Bar Callout"
-        note="treatment: &ldquo;accent-callout&rdquo; — accent top-edge signal + ambient glow. For tips, key findings, stats, and important notes inside longer articles."
+        label="3D Layers Extrude"
+        note="treatment: &ldquo;layers_3d&rdquo; — hard multi-layer 45° box-shadow extrude. Mirrors the ot-depth-extrude text effect as a container. Dark mode: brand shadows darken to near-black. Light mode: shadows lift to lighter brand tones."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "accent_callout" · canvas' />
+        <VariantLabel label='treatment: "layers_3d" · canvas' />
         <OT_RichTextBlock
           content={{ content: { json: RT_CALLOUT } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'accent_callout' }}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'layers_3d' }}
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "accent_callout" · surface' />
+        <VariantLabel label='treatment: "layers_3d" · surface' />
         <OT_RichTextBlock
           content={{ content: { json: RT_CALLOUT } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'accent_callout' }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'layers_3d' }}
         />
       </div>
 
       <VariantGroup
         label="Gradient Border Glow Frame"
-        note="treatment: &ldquo;glow-frame&rdquo; — brand → accent gradient border with layered chromatic glow. For vision statements, strategic highlights, and premium featured content."
+        note="treatment: &ldquo;glow_frame&rdquo; — brand → accent gradient border + blurred chromatic halo glow behind the card via ::before. For vision statements, strategic highlights, and premium featured content."
       />
       <div className="border-t border-fg/5">
         <VariantLabel label='treatment: "glow_frame" · canvas' />

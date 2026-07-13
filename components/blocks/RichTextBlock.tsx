@@ -26,13 +26,13 @@ export type RichTextStyleOptions = {
    * - standard: faithful prose rendering
    * - lead: first paragraph promoted to deck size
    * - toc: auto-generated section navigator from h2 headings
-   * - accent_callout: accent-bordered panel with signal styling
    * - glow_frame: gradient-bordered premium frame with ambient glow
    * - layered_depth: brand depth panel offset lower-right behind the content card
    * - float_elevation: compound multi-layer chromatic elevation shadow
    * - sidebar_accent: brand rail anchored left, extending above and below the card
+   * - layers_3d: hard multi-layer 45° box-shadow extrude — same depth as the text effect
    */
-  treatment?: "standard" | "lead" | "toc" | "accent_callout" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent";
+  treatment?: "standard" | "lead" | "toc" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent" | "layers_3d";
 };
 
 // ─── TOC utilities ────────────────────────────────────────────────────────────
@@ -180,29 +180,11 @@ export default function RichTextBlock({
     },
   } : baseElements;
 
-  // ── Accent Bar Callout ──────────────────────────────────────────────────────
-  if (treatment === 'accent_callout') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        <div
-          data-rich-text=""
-          data-color={color}
-          data-size={size}
-          data-treatment="accent_callout"
-          className={`${innerCva({ alignment, size })} rte-accent_callout rounded-ot-surface px-8 py-6`}
-          {...pa('content')}
-        >
-          <RichText content={content ?? undefined} elements={elements} />
-        </div>
-      </section>
-    );
-  }
-
   // ── Gradient Border Glow Frame ──────────────────────────────────────────────
   if (treatment === 'glow_frame') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} rte-glow_frame rounded-ot-surface p-[4px]`}>
+        <div className={`${innerCva({ alignment, size })} rte-glow-frame rounded-ot-surface p-1`}>
           <div
             data-rich-text=""
             data-color={color}
@@ -281,6 +263,26 @@ export default function RichTextBlock({
             data-size={size}
             data-treatment="sidebar_accent"
             className="bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── 3D Layers Extrude ───────────────────────────────────────────────────────
+  if (treatment === 'layers_3d') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={`${innerCva({ alignment, size })} pb-6 pr-6`}>
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="layers_3d"
+            className="bg-surface rounded-ot-surface px-8 py-8 rte-layers-3d"
             {...pa('content')}
           >
             <RichText content={content ?? undefined} elements={elements} />

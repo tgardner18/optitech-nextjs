@@ -2132,27 +2132,30 @@ body {
  * These classes reference bloom tokens so they follow CMS theme overrides
  * automatically. All shadow/border/background values are token-derived.
  * ─────────────────────────────────────────────────────────────────────────── */
-.rte-accent-callout {
-  border: 1px solid var(--ot-bloom-accent-border);
-  border-top: 4px solid var(--ot-accent);
-  background: var(--ot-bloom-accent-faint);
-  box-shadow:
-    0 0 0 4px var(--ot-bloom-accent-faint),
-    0 8px 24px var(--ot-bloom-accent-faint);
-}
-
 .rte-glow-frame {
   background: linear-gradient(135deg, var(--ot-brand), var(--ot-accent));
-  box-shadow:
-    0 0 0 1px var(--ot-bloom-brand-ring),
-    0 0 24px var(--ot-bloom-brand-faint),
-    0 0 48px var(--ot-bloom-accent-faint);
+  border-radius: var(--ot-radius-surface);
+  position: relative;
+  isolation: isolate;
+}
+
+.rte-glow-frame::before {
+  content: '';
+  position: absolute;
+  inset: -16px;
+  background: linear-gradient(135deg, var(--ot-brand), var(--ot-accent));
+  border-radius: calc(var(--ot-radius-surface) + 16px);
+  filter: blur(22px);
+  opacity: 0.45;
+  z-index: -1;
 }
 
 .rte-depth-bg {
   background: var(--ot-brand);
-  border-radius: var(--ot-rounded-surface);
-  box-shadow: 0 4px 20px var(--ot-bloom-brand-faint);
+  border-radius: var(--ot-radius-surface);
+  box-shadow:
+    0 4px 20px var(--ot-bloom-brand-faint),
+    0 12px 40px oklch(from var(--ot-brand) l c h / 0.18);
 }
 
 .rte-depth-card {
@@ -2172,7 +2175,30 @@ body {
 
 .rte-sidebar-rail {
   background: var(--ot-brand);
-  border-radius: var(--ot-rounded-surface);
+  border-radius: var(--ot-radius-surface);
+}
+
+/* Hard 45° multi-layer extrude — mirrors the ot-depth-extrude text treatment.
+ * Dark: shadows darken toward near-black. Light: shadows lift toward lighter
+ * brand tones (clamp keeps them in the visible mid-range).                    */
+.rte-layers-3d {
+  outline: 2px solid var(--ot-brand);
+  outline-offset: 0;
+  box-shadow:
+    3px  3px  0 oklch(from var(--ot-brand) l c h),
+    6px  6px  0 oklch(from var(--ot-brand) calc(l * 0.82) c h),
+    10px 10px 0 oklch(from var(--ot-brand) calc(l * 0.62) c h),
+    16px 16px 0 oklch(from var(--ot-brand) calc(l * 0.42) c h),
+    20px 20px 0 oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h / 0.85);
+}
+
+[data-theme="light"] .rte-layers-3d {
+  box-shadow:
+    3px  3px  0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.32), 0.76) c h),
+    6px  6px  0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.76) c h),
+    10px 10px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.20), 0.76) c h),
+    16px 16px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.14), 0.76) c h),
+    20px 20px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.08), 0.76) c h);
 }
 
 /* ── Practitioner portrait card ───────────────────────────────────────────────
