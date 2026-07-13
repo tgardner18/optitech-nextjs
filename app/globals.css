@@ -2179,26 +2179,18 @@ body {
 }
 
 /* Hard 45° multi-layer extrude — mirrors the ot-depth-extrude text treatment.
- * Dark: shadows darken toward near-black. Light: shadows lift toward lighter
- * brand tones (clamp keeps them in the visible mid-range).                    */
+ * Four even 6px strips at 6/12/18/24px give the eye clear distinct layers.
+ * Colors step brand → mid → dark → near-black so each strip reads individually.
+ * One formula works in both modes: dark mode fades to black; light mode stamps
+ * dark teal layers against white — both read as 3D depth.                     */
 .rte-layers-3d {
-  outline: 2px solid var(--ot-brand);
+  outline: 2px solid oklch(from var(--ot-brand) calc(l * 0.60) c h);
   outline-offset: 0;
   box-shadow:
-    3px  3px  0 oklch(from var(--ot-brand) l c h),
-    6px  6px  0 oklch(from var(--ot-brand) calc(l * 0.82) c h),
-    10px 10px 0 oklch(from var(--ot-brand) calc(l * 0.62) c h),
-    16px 16px 0 oklch(from var(--ot-brand) calc(l * 0.42) c h),
-    20px 20px 0 oklch(from var(--ot-brand) calc(l * 0.22) calc(c * 0.80) h / 0.85);
-}
-
-[data-theme="light"] .rte-layers-3d {
-  box-shadow:
-    3px  3px  0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.32), 0.76) c h),
-    6px  6px  0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.26), 0.76) c h),
-    10px 10px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.20), 0.76) c h),
-    16px 16px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.14), 0.76) c h),
-    20px 20px 0 oklch(from var(--ot-brand) clamp(0.46, calc(l + 0.08), 0.76) c h);
+    6px  6px  0 var(--ot-brand),
+    12px 12px 0 oklch(from var(--ot-brand) calc(l * 0.68) c h),
+    18px 18px 0 oklch(from var(--ot-brand) calc(l * 0.38) c h),
+    24px 24px 0 oklch(from var(--ot-brand) calc(l * 0.16) calc(c * 0.60) h);
 }
 
 /* ── Practitioner portrait card ───────────────────────────────────────────────
