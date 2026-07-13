@@ -11,6 +11,9 @@ import { Maximize2, X } from "lucide-react";
 export type ImageStyleOptions = {
   /** Lock to a specific aspect ratio — no value renders at the natural image proportion */
   ratio?: "16:9" | "4:3" | "3:2" | "1:1";
+  /** Floor the rendered height. Ignored when an aspect ratio is also set (prevents
+   *  the CSS aspect-ratio + min-height width-expansion overflow). */
+  minHeight?: "none" | "sm" | "md" | "lg" | "xl";
   /** Cap the rendered height so tall images don't dominate narrow columns */
   maxHeight?: "none" | "xs" | "sm" | "md" | "lg";
   /** Teal brand wash via mix-blend-mode: multiply — works best on light-toned imagery */
@@ -63,6 +66,14 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
 };
 
 
+const MIN_H_PX: Record<NonNullable<ImageStyleOptions["minHeight"]>, number> = {
+  none: 0,
+  sm:   320,
+  md:   480,
+  lg:   640,
+  xl:   800,
+};
+
 const MAX_H_CLASS: Record<NonNullable<ImageStyleOptions["maxHeight"]>, string> = {
   none: "",
   xs:   "max-h-[200px]",
@@ -83,6 +94,7 @@ export default function ImageBlock({
 }: ImageBlockProps) {
   const {
     ratio,
+    minHeight       = "none",
     maxHeight       = "none",
     overlay         = false,
     frame,
@@ -203,11 +215,14 @@ export default function ImageBlock({
       }
       style={{
         ...glowStyle,
-        // 320px inline floor so fill images always have a visible minimum height.
-        // Only applied when no aspect ratio is set (ratio already defines the height)
-        // to prevent the aspect-ratio + min-height CSS interaction from expanding the
-        // container width beyond its column and overlapping adjacent content.
-        minHeight: fillHeight ? 320 : (!ratio ? 320 : undefined),
+        // minHeight is suppressed when an aspect ratio is set: combining both causes
+        // CSS to expand the container WIDTH to maintain the ratio at the forced height,
+        // overflowing into adjacent columns. The frame wrapper's overflow-hidden clips
+        // this, but clipping looks wrong. Fill mode always gets the floor (no ratio class
+        // is applied there, so no conflict).
+        minHeight: fillHeight
+          ? (MIN_H_PX[minHeight] || 320)
+          : (!ratio ? (MIN_H_PX[minHeight] || 320) : undefined),
       }}
       {...(previewAttrs?.image ?? {})}
     >

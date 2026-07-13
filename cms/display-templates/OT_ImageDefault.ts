@@ -24,6 +24,17 @@ export const OT_ImageDefault = displayTemplate({
         fillColumn:  { displayName: 'Fill column — stretch to match row height', sortOrder: 20 },
       },
     },
+    minHeight: {
+      displayName: 'Min height',
+      editor: 'select',
+      sortOrder: 3,
+      choices: {
+        none: { displayName: 'Default — 320px floor',  sortOrder: 10 },
+        md:   { displayName: 'Medium — 480px',         sortOrder: 20 },
+        lg:   { displayName: 'Large — 640px',          sortOrder: 30 },
+        xl:   { displayName: 'XL — 800px',             sortOrder: 40 },
+      },
+    },
     maxHeight: {
       displayName: 'Max height',
       editor: 'select',

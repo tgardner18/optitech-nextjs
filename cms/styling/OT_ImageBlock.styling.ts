@@ -10,6 +10,7 @@ const RATIO_MAP: Record<string, ImageStyleOptions['ratio']> = {
 export function getImageStyles(s: Record<string, string | boolean>): ImageStyleOptions {
   return {
     ratio:           RATIO_MAP[s.ratio as string],
+    minHeight:       (s.minHeight ?? 'none') as ImageStyleOptions['minHeight'],
     maxHeight:       (s.maxHeight ?? 'none') as ImageStyleOptions['maxHeight'],
     overlay:         s.overlay === 'true' || s.overlay === true,
     frame:           (s.frame === 'none' || !s.frame) ? undefined : s.frame as ImageStyleOptions['frame'],
