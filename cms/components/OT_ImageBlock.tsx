@@ -21,7 +21,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
   const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
-  const mediaEl = !imageSrc ? (
+  const placeholder = (
     <div
       className="w-full flex items-center justify-center bg-surface border border-fg/10"
       style={{ minHeight: 200 }}
@@ -30,32 +30,45 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         Image not available — publish the asset in CMS to display it
       </p>
     </div>
-  ) : (
-    <ImageBlock
-      src={imageSrc}
-      alt={content.alt ?? ''}
-      caption={content.caption ?? undefined}
-      styleOptions={styleOptions}
-      previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-      fillHeight={true}
-    />
   )
 
   if (!hasEditorial) {
-    // Standalone image in a VB column: flex-1 + min-h-0 lets the wrapper grow to
-    // fill its column (which self-stretches to the row height), so the image matches
-    // the height of whatever sits in the adjacent column. The 400px floor in
-    // ImageBlock ensures single-column sections have a comfortable visual presence.
+    // Standalone in a VB column: fill the column height so the image matches
+    // adjacent content. 400px floor (from ImageBlock min-h-100) for single-column sections.
     return (
       <div
         {...pa(content.__composition)}
         className="w-full flex-1 min-h-0 flex flex-col"
         data-stagger={staggerAttr}
       >
-        {mediaEl}
+        {!imageSrc ? placeholder : (
+          <ImageBlock
+            src={imageSrc}
+            alt={content.alt ?? ''}
+            caption={content.caption ?? undefined}
+            styleOptions={styleOptions}
+            previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+            fillHeight={true}
+          />
+        )}
       </div>
     )
   }
+
+  // Editorial 2-column layout: image uses CSS aspect-ratio (fillHeight=false) so
+  // Visual Builder gets a reliable height without depending on the flex chain.
+  // object-contain ensures detail images (diagrams, screenshots) show in full.
+  const mediaEl = !imageSrc ? placeholder : (
+    <ImageBlock
+      src={imageSrc}
+      alt={content.alt ?? ''}
+      caption={content.caption ?? undefined}
+      styleOptions={styleOptions}
+      previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+      fillHeight={false}
+      objectFit="contain"
+    />
+  )
 
   // 55/45 split: when mediaSide=left the media column is first and wider;
   // when mediaSide=right the text column is first (left) and the wider media column is second.
@@ -77,10 +90,10 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-start`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
+      <div className={`min-w-0 ${mediaOrder}`}>
         {mediaEl}
       </div>
 

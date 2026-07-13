@@ -20,6 +20,22 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
   const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
+  if (!hasEditorial) {
+    return (
+      <div {...pa(content.__composition)} className="w-full flex-1 min-h-0 flex flex-col" data-stagger={staggerAttr}>
+        <VideoBlock
+          src={content.videoUrl ?? ''}
+          title={content.title ?? ''}
+          caption={content.caption ?? undefined}
+          styleOptions={styleOptions}
+          previewAttrs={{ caption: pa('caption') }}
+          fillHeight={true}
+        />
+      </div>
+    )
+  }
+
+  // Editorial: fillHeight=false so CSS aspect-ratio provides height reliably in VB
   const mediaEl = (
     <VideoBlock
       src={content.videoUrl ?? ''}
@@ -27,17 +43,9 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ caption: pa('caption') }}
-      fillHeight={true}
+      fillHeight={false}
     />
   )
-
-  if (!hasEditorial) {
-    return (
-      <div {...pa(content.__composition)} className="w-full flex-1 min-h-0 flex flex-col" data-stagger={staggerAttr}>
-        {mediaEl}
-      </div>
-    )
-  }
 
   const gridCols =
     mediaSide === 'right'
@@ -55,10 +63,10 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-start`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
+      <div className={`min-w-0 ${mediaOrder}`}>
         {mediaEl}
       </div>
 

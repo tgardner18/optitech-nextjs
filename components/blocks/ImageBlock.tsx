@@ -46,9 +46,14 @@ export type ImageBlockProps = {
   styleOptions?: ImageStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
   /** Fill the parent column's height instead of constraining by aspect ratio.
-   *  Used by OT_ImageBlock when editorial text sits alongside the image so the
-   *  image stretches to match the text column rather than stopping at 16:9. */
+   *  true  — standalone in a VB column: stretch to fill the column height.
+   *  false — editorial layout: use CSS aspect-ratio; object-fit is then
+   *          controlled by objectFit prop. */
   fillHeight?: boolean;
+  /** Controls how the image fills its container. Defaults to "cover".
+   *  Use "contain" in editorial layouts so detail images (diagrams,
+   *  screenshots) show in full without cropping. */
+  objectFit?: "cover" | "contain";
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -71,6 +76,7 @@ export default function ImageBlock({
   styleOptions = {},
   previewAttrs,
   fillHeight = false,
+  objectFit = "cover",
 }: ImageBlockProps) {
   const {
     ratio,
@@ -205,7 +211,7 @@ export default function ImageBlock({
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className={objectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
         {overlay && (
