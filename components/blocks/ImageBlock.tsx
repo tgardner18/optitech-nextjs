@@ -162,7 +162,7 @@ export default function ImageBlock({
     position: "absolute",
     left: "6%",
     right: "6%",
-    top: "28%",
+    top: "75%",
     bottom: "-28px",
     background:
       "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
