@@ -47,6 +47,10 @@ export type ImageBlockProps = {
   caption?: string;
   styleOptions?: ImageStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
+  /** Fill the parent column's height instead of constraining by aspect ratio.
+   *  Used by OT_ImageBlock when editorial text sits alongside the image so the
+   *  image stretches to match the text column rather than stopping at 16:9. */
+  fillHeight?: boolean;
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -74,6 +78,7 @@ export default function ImageBlock({
   caption,
   styleOptions = {},
   previewAttrs,
+  fillHeight = false,
 }: ImageBlockProps) {
   const {
     ratio,
@@ -194,7 +199,10 @@ export default function ImageBlock({
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${minHClass ? ` ${minHClass}` : ""}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
+      className={fillHeight
+        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-[320px]${frame === "offset" ? " z-10" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${minHClass ? ` ${minHClass}` : ""}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`
+      }
       style={glowStyle}
       {...(previewAttrs?.image ?? {})}
     >
@@ -241,11 +249,15 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative w-full${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative w-full${fillHeight ? " flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-        <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+        <div className={
+          frame === "offset"
+            ? `relative pr-3 pb-3${fillHeight ? " flex-1 flex flex-col" : ""}`
+            : fillHeight ? "flex-1 flex flex-col" : ""
+        }>
           {frame === "offset" && (
             <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}
@@ -255,7 +267,7 @@ export default function ImageBlock({
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className="block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className={`${fillHeight ? "flex-1 " : ""}block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
             >
               {imageContainerEl}
             </button>

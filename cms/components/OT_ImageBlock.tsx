@@ -38,6 +38,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+      fillHeight={hasEditorial}
     />
   )
 
@@ -69,10 +70,10 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 ${mediaOrder}`}>
+      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
         {mediaEl}
       </div>
 
