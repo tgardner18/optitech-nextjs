@@ -4,6 +4,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_ImageBlock as OT_ImageBlockContentType } from '@/cms/content-types/OT_ImageBlock'
 import { getImageStyles } from '@/cms/styling/OT_ImageBlock.styling'
 import ImageBlock from '@/components/blocks/ImageBlock'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 
 type Props = {
   content: ContentProps<typeof OT_ImageBlockContentType>
@@ -124,7 +125,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
           >
             {content.body.json
               ? <RichText content={content.body.json} />
-              : <div dangerouslySetInnerHTML={{ __html: content.body.html ?? '' }} />
+              : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
             }
           </div>
         )}

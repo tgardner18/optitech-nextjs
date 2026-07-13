@@ -4,6 +4,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_VideoBlock as OT_VideoBlockContentType } from '@/cms/content-types/OT_VideoBlock'
 import { getVideoStyles } from '@/cms/styling/OT_VideoBlock.styling'
 import VideoBlock from '@/components/blocks/VideoBlock'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 
 type Props = {
   content: ContentProps<typeof OT_VideoBlockContentType>
@@ -97,7 +98,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
           >
             {content.body.json
               ? <RichText content={content.body.json} />
-              : <div dangerouslySetInnerHTML={{ __html: content.body.html ?? '' }} />
+              : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
             }
           </div>
         )}
