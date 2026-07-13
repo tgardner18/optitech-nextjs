@@ -128,6 +128,9 @@ export default function ImageBlock({
 
   const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
   const maxHClass   = MAX_H_CLASS[maxHeight];
+  // In narrow columns aspect-video alone renders ~270–340px tall. A minimum height
+  // floor ensures the image has a comfortable visual presence regardless of column width.
+  const minHClass = !ratio ? "min-h-[320px]" : "";
 
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
@@ -191,7 +194,7 @@ export default function ImageBlock({
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
+      className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${minHClass ? ` ${minHClass}` : ""}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
       style={glowStyle}
       {...(previewAttrs?.image ?? {})}
     >
@@ -238,7 +241,7 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative w-full${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
