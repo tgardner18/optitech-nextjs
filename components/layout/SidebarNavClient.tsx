@@ -45,27 +45,28 @@ export function SidebarNavShell({ children }: { children: React.ReactNode }) {
         {children}
       </aside>
 
-      {/* Toggle tab — rides the right edge of the sidebar, always accessible */}
+      {/* Toggle tab — rides the right edge of the sidebar, always accessible.
+          Flat left edge butts against the sidebar; rounded right reads as a
+          pull-tab. Brand fill keeps it visible on any surface or theme color. */}
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
         className={[
-          'fixed top-6 z-[51] hidden lg:inline-flex items-center justify-center',
-          'w-5 h-5 rounded-full',
-          'bg-surface border border-fg/15',
-          'text-fg-muted/60 hover:text-fg hover:border-fg/30',
-          'shadow-[0_1px_4px_oklch(0%_0_0_/_0.12)]',
-          'motion-safe:transition-[left,transform]',
+          'fixed top-14 z-51 hidden lg:flex items-center justify-center',
+          'w-6 h-12 rounded-r-xl',
+          'bg-brand text-fg-on-brand',
+          'shadow-[2px_0_12px_oklch(0%_0_0/0.25)]',
+          'hover:bg-brand-hover',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
         ].join(' ')}
         style={{
-          left:       open ? 'calc(var(--ot-sidebar-width, 240px) - 10px)' : '8px',
+          left:       open ? 'var(--ot-sidebar-width, 240px)' : '0px',
           transition: 'left 300ms cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <ChevronLeft
-          size={11}
+          size={14}
           strokeWidth={2.5}
           style={{
             transform:  open ? 'rotate(0deg)' : 'rotate(180deg)',

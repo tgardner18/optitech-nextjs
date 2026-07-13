@@ -3,11 +3,12 @@ import '@/cms/registry'
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Caveat, Geist_Mono, Manrope, Poppins, Sora, Source_Serif_4, Syne, Tilt_Neon } from "next/font/google";
 import "./globals.css";
-import { draftMode } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
 import { OptimizelyTracking } from "@/components/tracking/OptimizelyTracking";
 import { getSiteSettings, getRequestDomain, buildThemeCSS, getRequestLocale } from '@/lib/optimizely'
+import Script from 'next/script'
 
 // Weights are limited to the set the product UI actually renders:
 // 300 (light — stat values, banner lede), 400 (body), 500 (medium — nav/UI),
@@ -137,6 +138,13 @@ export default async function RootLayout({
   const themeCSS    = buildThemeCSS(settings)
   const defaultMode = (settings?.defaultMode as string | undefined) === 'light' ? 'light' : 'dark'
 
+  // Cookie-based theme: ThemeProvider writes 'site-theme' on every toggle so
+  // the server renders the correct theme without any client-side init script.
+  // Falls back to the CMS default on first visit (no cookie yet).
+  const cookieStore = await cookies()
+  const themeCookie = cookieStore.get('site-theme')?.value
+  const resolvedTheme = (themeCookie === 'light' || themeCookie === 'dark') ? themeCookie : defaultMode
+
   // Optimizely Web Experimentation — only inject when the project ID is a
   // non-empty numeric string. Must run blocking before React hydrates so
   // experiment activation logic fires before first paint (no flicker).
@@ -181,41 +189,15 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      // Consumed by /public/scripts/theme-init.js which runs before React hydration.
-      // The script sets data-theme = localStorage value || this attribute || 'dark'.
-      // data-theme is also declared here so React tracks it as a managed prop — if
-      // Optimizely causes a hydration mismatch (error #418) and React falls back to a
-      // full client re-render, React would otherwise strip data-theme (it only removes
-      // attributes it doesn't know about), leaving the CSS tokens without a theme
-      // anchor and falling back to dark. suppressHydrationWarning silences the
-      // client/server diff when localStorage overrides the CMS default.
-      data-default-theme={defaultMode}
-      data-theme={defaultMode}
+      // Server-resolved from the site-theme cookie (set by ThemeProvider on every
+      // toggle). No client-side init script needed — the correct theme is baked into
+      // the SSR HTML so there is no FOUC even on first paint.
+      data-theme={resolvedTheme}
       className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${sourceSerif.variable} ${sora.variable} ${plusJakarta.variable} ${manrope.variable} ${caveat.variable} ${tiltNeon.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         {themeCSS && <style dangerouslySetInnerHTML={{ __html: themeCSS }} suppressHydrationWarning />}
-        {/*
-          Plain blocking <script src> in <head> — no next/script wrapper.
-          Why not next/script strategy="beforeInteractive"?
-            That component renders an inline (self.__next_s||[]).push(...) tracking script
-            in the <body> position of the React tree, but Next.js physically injects the
-            actual script into <head>. The DOM position mismatch causes React 19's hydration
-            reconciler to hit the "create new element" path for a <script> element, which
-            triggers the "Encountered a script tag" console error.
-          A plain <script src> declared HERE, inside <head>, is SSR'd and hydrated at
-          the exact same DOM position — React's popHydrationState() matches it, the
-          creation path is never taken, and the warning never fires.
-          No async/defer → browser executes it synchronously before painting → FOUC prevented.
-          suppressHydrationWarning → silences any residual server/client attr diff.
-        */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/scripts/theme-init.js" suppressHydrationWarning />
-        {webExpProjectId && (
-          // eslint-disable-next-line @next/next/no-sync-scripts
-          <script src={`https://cdn.optimizely.com/js/${webExpProjectId}.js`} suppressHydrationWarning />
-        )}
         {/* ODP tracker stub — blocking so window.zaius exists before tracking runs. */}
         {odpStub && (
           <script dangerouslySetInnerHTML={{ __html: odpStub }} suppressHydrationWarning />
@@ -227,19 +209,13 @@ export default async function RootLayout({
             suppressHydrationWarning
           />
         )}
-        {/* Content Recommendations (Idio) — profile builder + `iv` cookie. */}
+        {/* Content Recommendations (Idio) — inline config only; async engine loads after hydration below. */}
         {idioConfig && (
-          <>
-            <script dangerouslySetInnerHTML={{ __html: idioConfig }} suppressHydrationWarning />
-            <script async src="//s.usea01.idio.episerver.net/ia.js" suppressHydrationWarning />
-          </>
+          <script dangerouslySetInnerHTML={{ __html: idioConfig }} suppressHydrationWarning />
         )}
-        {/* Product Recommendations (Peerius) — shim set before the async engine script. */}
+        {/* Product Recommendations (Peerius) — shim only; engine loads after hydration below. */}
         {peeriusShim && peeriusScriptUrl && (
-          <>
-            <script dangerouslySetInnerHTML={{ __html: peeriusShim }} suppressHydrationWarning />
-            <script async src={peeriusScriptUrl} suppressHydrationWarning />
-          </>
+          <script dangerouslySetInnerHTML={{ __html: peeriusShim }} suppressHydrationWarning />
         )}
       </head>
       <body className="min-h-full flex flex-col">
@@ -250,6 +226,21 @@ export default async function RootLayout({
         {/* FX boot + ODP pageview tracking (client). Self-guards on window.zaius
             / the SDK key, so rendering it when only one of the two is set is safe. */}
         {(odpPublicKey || fxSdkKey) && <OptimizelyTracking />}
+        {/* External scripts that must not trigger React 19's "Encountered a script tag"
+            warning. next/script afterInteractive injects via useEffect after hydration —
+            React never renders a <script> element during reconciliation, so no warning.
+            Web Exp: loses before-paint blocking (needed for A/B flicker prevention on
+            real sites) but acceptable here — this is a demo framework, not a live
+            experiment host. Idio/Peerius were already async so behaviour is identical. */}
+        {webExpProjectId && (
+          <Script src={`https://cdn.optimizely.com/js/${webExpProjectId}.js`} strategy="afterInteractive" />
+        )}
+        {idioConfig && (
+          <Script src="//s.usea01.idio.episerver.net/ia.js" strategy="afterInteractive" />
+        )}
+        {peeriusShim && peeriusScriptUrl && (
+          <Script src={peeriusScriptUrl} strategy="afterInteractive" />
+        )}
       </body>
     </html>
   );

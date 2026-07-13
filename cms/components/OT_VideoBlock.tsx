@@ -4,6 +4,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_VideoBlock as OT_VideoBlockContentType } from '@/cms/content-types/OT_VideoBlock'
 import { getVideoStyles } from '@/cms/styling/OT_VideoBlock.styling'
 import VideoBlock from '@/components/blocks/VideoBlock'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 
 type Props = {
   content: ContentProps<typeof OT_VideoBlockContentType>
@@ -17,10 +18,25 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   const staggerAttr       = entranceAnimation !== 'none' ? entranceAnimation : undefined
 
   const mediaSide = (content.mediaSide ?? displaySettings?.mediaSide ?? 'left') as 'left' | 'right'
-  const hasEditorial = Boolean(
-    content.eyebrow || content.heading || content.body || content.ctaUrl?.default
-  )
+  const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
+  const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
+  if (!hasEditorial) {
+    return (
+      <div {...pa(content.__composition)} className="w-full flex-1 min-h-0 flex flex-col" data-stagger={staggerAttr}>
+        <VideoBlock
+          src={content.videoUrl ?? ''}
+          title={content.title ?? ''}
+          caption={content.caption ?? undefined}
+          styleOptions={styleOptions}
+          previewAttrs={{ caption: pa('caption') }}
+          fillHeight={true}
+        />
+      </div>
+    )
+  }
+
+  // Editorial: fillHeight=false so CSS aspect-ratio provides height reliably in VB
   const mediaEl = (
     <VideoBlock
       src={content.videoUrl ?? ''}
@@ -28,16 +44,9 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ caption: pa('caption') }}
+      fillHeight={false}
     />
   )
-
-  if (!hasEditorial) {
-    return (
-      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
-        {mediaEl}
-      </div>
-    )
-  }
 
   const gridCols =
     mediaSide === 'right'
@@ -84,9 +93,13 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
         {content.body && (
           <div
             {...pa('body')}
+            data-rich-text=""
             className="text-body text-fg-muted leading-relaxed max-w-[60ch]"
           >
-            <RichText content={content.body.json ?? undefined} />
+            {content.body.json
+              ? <RichText content={content.body.json} />
+              : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
+            }
           </div>
         )}
 

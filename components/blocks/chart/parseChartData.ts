@@ -12,9 +12,13 @@ export type ChartData = {
 export function parseChartData(raw: string | null, chartType: string): ChartData | null {
   if (!raw || raw.trim() === '') return null
 
+  // Strip "RAW:" prefix used when chart data is stored via the composition API
+  // (the CMS deep-parses bare JSON strings, so we prefix to prevent that)
+  const src = raw.startsWith('RAW:') ? raw.slice(4) : raw
+
   let parsed: unknown
   try {
-    parsed = JSON.parse(raw)
+    parsed = JSON.parse(src)
   } catch {
     console.warn('[OT_ChartBlock] chartData is not valid JSON')
     return null

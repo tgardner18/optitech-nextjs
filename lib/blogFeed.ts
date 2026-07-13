@@ -160,14 +160,22 @@ export const getBlogFeedPosts = cache(async function getBlogFeedPosts(
     const resolved: BlogFeedPost[] = posts.map(p => {
       const authorKey  = p.authorRef?.key as string | undefined
       const authorName = authorKey ? authorMap.get(authorKey) : undefined
+      const rawDefault = p._metadata?.url?.default ?? null
+      const urlBase    = p._metadata?.url?.base    ?? null
+      // Content Graph may return a relative path for url.default when the site's
+      // base URL isn't embedded in the path. Prepend url.base so cross-site links
+      // resolve to the correct origin rather than the current site.
+      const absoluteDefault = rawDefault && !rawDefault.startsWith('http') && urlBase
+        ? urlBase.replace(/\/$/, '') + rawDefault
+        : rawDefault
       return {
         _metadata: {
           key:       p._metadata.key,
           published: p._metadata.published,
           url: {
-            default:      p._metadata?.url?.default      ?? null,
+            default:      absoluteDefault,
             hierarchical: p._metadata?.url?.hierarchical ?? null,
-            base:         p._metadata?.url?.base         ?? null,
+            base:         urlBase,
           },
         },
         headline:      p.headline      ?? '',

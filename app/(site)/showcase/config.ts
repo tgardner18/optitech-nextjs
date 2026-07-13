@@ -43,6 +43,7 @@ export const CATEGORIES: ShowcaseCategory[] = [
       { label: 'Location Listing',     slug: 'location-listing'     },
       { label: 'Content Recommendations', slug: 'content-recommendations' },
       { label: 'Product Recommendations', slug: 'product-recommendations' },
+      { label: 'Comparison Table',        slug: 'comparison-table'        },
     ],
   },
   {

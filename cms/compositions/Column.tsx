@@ -71,6 +71,7 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
       data-col-span={span !== 'auto' ? span : undefined}
       data-col-bleed={bleed}
       data-nudge={nudge}
+      data-col-valign={justify !== 'start' ? justify : undefined}
       {...pa(node)}
     >
       {children}

@@ -4,6 +4,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_ImageBlock as OT_ImageBlockContentType } from '@/cms/content-types/OT_ImageBlock'
 import { getImageStyles } from '@/cms/styling/OT_ImageBlock.styling'
 import ImageBlock from '@/components/blocks/ImageBlock'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 
 type Props = {
   content: ContentProps<typeof OT_ImageBlockContentType>
@@ -17,12 +18,11 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
   const staggerAttr       = entranceAnimation !== 'none' ? entranceAnimation : undefined
 
-  const mediaSide = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
-  const hasEditorial = Boolean(
-    content.eyebrow || content.heading || content.body || content.ctaUrl?.default
-  )
+  const mediaSide    = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
+  const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
+  const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
-  const mediaEl = !imageSrc ? (
+  const placeholder = (
     <div
       className="w-full flex items-center justify-center bg-surface border border-fg/10"
       style={{ minHeight: 200 }}
@@ -31,23 +31,45 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         Image not available — publish the asset in CMS to display it
       </p>
     </div>
-  ) : (
+  )
+
+  if (!hasEditorial) {
+    // Standalone in a VB column: fill the column height so the image matches
+    // adjacent content. 400px floor (from ImageBlock min-h-100) for single-column sections.
+    return (
+      <div
+        {...pa(content.__composition)}
+        className="w-full flex-1 min-h-0 flex flex-col"
+        data-stagger={staggerAttr}
+      >
+        {!imageSrc ? placeholder : (
+          <ImageBlock
+            src={imageSrc}
+            alt={content.alt ?? ''}
+            caption={content.caption ?? undefined}
+            styleOptions={styleOptions}
+            previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+            fillHeight={true}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // Editorial 2-column layout: image uses CSS aspect-ratio (fillHeight=false) so
+  // Visual Builder gets a reliable height without depending on the flex chain.
+  // object-contain ensures detail images (diagrams, screenshots) show in full.
+  const mediaEl = !imageSrc ? placeholder : (
     <ImageBlock
       src={imageSrc}
       alt={content.alt ?? ''}
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+      fillHeight={false}
+      objectFit="contain"
     />
   )
-
-  if (!hasEditorial) {
-    return (
-      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
-        {mediaEl}
-      </div>
-    )
-  }
 
   // 55/45 split: when mediaSide=left the media column is first and wider;
   // when mediaSide=right the text column is first (left) and the wider media column is second.
@@ -98,9 +120,13 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         {content.body && (
           <div
             {...pa('body')}
+            data-rich-text=""
             className="text-body text-fg-muted leading-relaxed max-w-[60ch]"
           >
-            <RichText content={content.body.json ?? undefined} />
+            {content.body.json
+              ? <RichText content={content.body.json} />
+              : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
+            }
           </div>
         )}
 

@@ -9,10 +9,8 @@ import { Maximize2, X } from "lucide-react";
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type ImageStyleOptions = {
-  /** Lock to a specific aspect ratio — no value renders at the natural image proportion */
+  /** Lock to a specific aspect ratio — only used for standalone sections where height should be constrained */
   ratio?: "16:9" | "4:3" | "3:2" | "1:1";
-  /** Cap the rendered height so tall images don't dominate narrow columns */
-  maxHeight?: "none" | "xs" | "sm" | "md" | "lg";
   /** Teal brand wash via mix-blend-mode: multiply — works best on light-toned imagery */
   overlay?: boolean;
   /**
@@ -47,6 +45,15 @@ export type ImageBlockProps = {
   caption?: string;
   styleOptions?: ImageStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
+  /** Fill the parent column's height instead of constraining by aspect ratio.
+   *  true  — standalone in a VB column: stretch to fill the column height.
+   *  false — editorial layout: use CSS aspect-ratio; object-fit is then
+   *          controlled by objectFit prop. */
+  fillHeight?: boolean;
+  /** Controls how the image fills its container. Defaults to "cover".
+   *  Use "contain" in editorial layouts so detail images (diagrams,
+   *  screenshots) show in full without cropping. */
+  objectFit?: "cover" | "contain";
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -58,13 +65,7 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
   "1:1":  "aspect-square",
 };
 
-const MAX_H_CLASS: Record<NonNullable<ImageStyleOptions["maxHeight"]>, string> = {
-  none: "",
-  xs:   "max-h-[200px]",
-  sm:   "max-h-[320px]",
-  md:   "max-h-[480px]",
-  lg:   "max-h-[640px]",
-};
+
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -74,10 +75,11 @@ export default function ImageBlock({
   caption,
   styleOptions = {},
   previewAttrs,
+  fillHeight = false,
+  objectFit = "cover",
 }: ImageBlockProps) {
   const {
     ratio,
-    maxHeight       = "none",
     overlay         = false,
     frame,
     animate         = false,
@@ -127,7 +129,6 @@ export default function ImageBlock({
   }, [lightboxOpen]);
 
   const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
-  const maxHClass   = MAX_H_CLASS[maxHeight];
 
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
@@ -191,7 +192,10 @@ export default function ImageBlock({
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`}
+      className={fillHeight
+        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-100${frame === "offset" ? " z-10" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`
+      }
       style={glowStyle}
       {...(previewAttrs?.image ?? {})}
     >
@@ -207,7 +211,7 @@ export default function ImageBlock({
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className={objectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
         {overlay && (
@@ -238,11 +242,15 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-        <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+        <div className={
+          frame === "offset"
+            ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+            : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+        }>
           {frame === "offset" && (
             <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}
@@ -252,7 +260,7 @@ export default function ImageBlock({
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className="block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className={`${fillHeight ? "flex-1 " : ""}block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
             >
               {imageContainerEl}
             </button>
@@ -280,7 +288,7 @@ export default function ImageBlock({
           role="dialog"
           aria-modal="true"
           aria-label={alt || 'Full size image'}
-          className="fixed inset-0 z-[9999] bg-canvas/95 backdrop-blur-md"
+          className="fixed inset-0 z-9999 bg-canvas/95 backdrop-blur-md"
           style={{ animation: 'fadeIn 0.15s cubic-bezier(0.16,1,0.3,1) both' }}
           onClick={() => setLightboxOpen(false)}
         >

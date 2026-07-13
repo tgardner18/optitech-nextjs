@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
   Search, X, Maximize2, Minimize2,
   FileText, Newspaper, LayoutGrid, Sparkles, Hash, List, SlidersHorizontal,
-  CalendarDays, MapPin, Video,
+  CalendarDays, MapPin, Video, ExternalLink,
 } from 'lucide-react'
 import { useSearch } from './SearchProvider'
 import { useTranslation } from '@/lib/i18n/useTranslation'
@@ -26,6 +26,17 @@ const TYPE_FILTERS: { value: TypeFilter; label: string; Icon: typeof LayoutGrid 
   { value: 'Page',  label: 'Page',   Icon: FileText     },
   { value: 'Event', label: 'Events', Icon: CalendarDays },
 ]
+
+function isCrossOriginUrl(url: string): boolean {
+  if (!url.startsWith('http')) return false
+  try { return new URL(url).origin !== window.location.origin }
+  catch { return false }
+}
+
+function getHostLabel(url: string): string | null {
+  try { return new URL(url).hostname }
+  catch { return null }
+}
 
 function formatDate(iso?: string): string | null {
   if (!iso) return null
@@ -155,7 +166,14 @@ export default function SiteSearch() {
       // mode: no-cors because the tracking endpoint is cross-origin and needs no response.
       fetch(result._track, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {})
     }
-    router.push(result.url)
+    // Cross-site results (absolute URLs to a different origin) open in a new tab
+    // so the user stays on the current site. Next.js router.push treats an external
+    // absolute URL as a same-app route, stripping the domain.
+    if (isCrossOriginUrl(result.url)) {
+      window.open(result.url, '_blank', 'noopener,noreferrer')
+    } else {
+      router.push(result.url)
+    }
     closeSearch()
   }, [router, closeSearch])
 
@@ -363,6 +381,8 @@ export default function SiteSearch() {
     const date         = isEvent ? eventDate : formatDate(result.published)
     const isFocused    = focusedIdx === index
     const hasThumbnail = !!result.imageUrl
+    const crossOrigin  = mounted && isCrossOriginUrl(result.url)
+    const hostLabel    = crossOrigin ? getHostLabel(result.url) : null
 
     const thumbSize = isCompact ? 'w-[48px] h-[48px]' : 'w-[68px] h-[68px]'
 
@@ -432,6 +452,15 @@ export default function SiteSearch() {
                   </span>
                 </>
               )}
+              {hostLabel && (
+                <>
+                  <span className="text-fg/15">·</span>
+                  <span className="inline-flex items-center gap-0.75 text-[10px] font-semibold text-fg-muted/50">
+                    <ExternalLink size={9} aria-hidden />
+                    {hostLabel}
+                  </span>
+                </>
+              )}
             </div>
 
             <p className={[
@@ -475,9 +504,11 @@ export default function SiteSearch() {
   // ─── Result card — card grid view (immersive only) ─────────────────────────
 
   function ResultCard({ result, index }: { result: SearchResult; index: number }) {
-    const isEvent   = result.type === 'Event'
-    const date      = isEvent ? formatEventDate(result.startDate, result.endDate) : formatDate(result.published)
-    const isFocused = focusedIdx === index
+    const isEvent    = result.type === 'Event'
+    const date       = isEvent ? formatEventDate(result.startDate, result.endDate) : formatDate(result.published)
+    const isFocused  = focusedIdx === index
+    const crossOrigin = mounted && isCrossOriginUrl(result.url)
+    const hostLabel   = crossOrigin ? getHostLabel(result.url) : null
 
     return (
       <li>
@@ -535,6 +566,15 @@ export default function SiteSearch() {
                   <span className="text-fg/15">·</span>
                   <span className="text-[10px] uppercase tracking-[0.08em] font-semibold text-fg-muted/55">
                     {result.topic}
+                  </span>
+                </>
+              )}
+              {hostLabel && (
+                <>
+                  <span className="text-fg/15">·</span>
+                  <span className="inline-flex items-center gap-0.75 text-[10px] font-semibold text-fg-muted/50">
+                    <ExternalLink size={9} aria-hidden />
+                    {hostLabel}
                   </span>
                 </>
               )}

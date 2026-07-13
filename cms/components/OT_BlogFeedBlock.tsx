@@ -60,7 +60,10 @@ export default async function OT_BlogFeedBlockAdapter({
   // ── Fetch posts ───────────────────────────────────────────────────────────
   // React cache() dedups this call if multiple Blog Feed blocks appear on the
   // same page with the same locale + root + filter combination.
-  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, siteBaseUrl || null, topicFilter)
+  // When an explicit article root path is set, the path filter is the scope —
+  // bypass site-URL scoping so cross-site article folders work correctly.
+  const effectiveSiteBase = articleRootPath ? null : (siteBaseUrl || null)
+  const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, effectiveSiteBase, topicFilter)
 
   // ── Display settings ──────────────────────────────────────────────────────
   const color       = String(displaySettings.color       ?? 'canvas')  as BlogFeedColor

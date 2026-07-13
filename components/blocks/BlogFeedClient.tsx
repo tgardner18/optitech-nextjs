@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
-import { LayoutGrid, List, ChevronRight } from 'lucide-react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { LayoutGrid, List, ChevronRight, ExternalLink } from 'lucide-react'
 import type { BlogFeedPost } from '@/lib/blogFeed'
 import Pagination from '@/components/ui/Pagination'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
@@ -31,18 +31,29 @@ function formatDate(iso: string): string {
   } catch { return '' }
 }
 
+// ─── Cross-domain detection ────────────────────────────────────────────────────
+
+function isExternalUrl(url: string, mounted: boolean): boolean {
+  if (!mounted || !url.startsWith('http')) return false
+  try { return new URL(url).origin !== window.location.origin }
+  catch { return false }
+}
+
 // ─── BlogCard ─────────────────────────────────────────────────────────────────
 
-function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
+function BlogCard({ post, onBrand, mounted }: { post: BlogFeedPost; onBrand: boolean; mounted: boolean }) {
   const imageUrl  = post.featuredImage?.url?.default
   const postUrl   = post._metadata?.url?.default ?? '#'
   const published = post._metadata?.published
   const topic     = post.topic
   const author    = post.authorRef?.name
+  const external  = isExternalUrl(postUrl, mounted)
 
   return (
     <a
       href={postUrl}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       className={`group block rounded-ot-surface overflow-hidden card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
         onBrand ? 'bg-fg/8 border border-fg-on-brand/15' : 'bg-canvas border border-fg/8'
       }`}
@@ -86,6 +97,11 @@ function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
           {author && published && <span aria-hidden>·</span>}
           {published && <time dateTime={published}>{formatDate(published)}</time>}
           {post.readTime && <><span aria-hidden>·</span><span>{post.readTime}</span></>}
+          {external && (
+            <span className="inline-flex items-center gap-0.75 ml-auto" aria-label="Opens in a new tab">
+              <ExternalLink size={11} className={onBrand ? 'text-fg-on-brand/40' : 'text-fg-muted/40'} />
+            </span>
+          )}
         </div>
       </div>
     </a>
@@ -94,12 +110,13 @@ function BlogCard({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
 
 // ─── BlogListRow ──────────────────────────────────────────────────────────────
 
-function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }) {
+function BlogListRow({ post, onBrand, mounted }: { post: BlogFeedPost; onBrand: boolean; mounted: boolean }) {
   const imageUrl  = post.featuredImage?.url?.default
   const postUrl   = post._metadata?.url?.default ?? '#'
   const published = post._metadata?.published
   const topic     = post.topic
   const author    = post.authorRef?.name
+  const external  = isExternalUrl(postUrl, mounted)
 
   const borderClass   = onBrand ? 'border-fg-on-brand/15'  : 'border-fg/8'
   const topicClass    = onBrand ? 'text-fg-on-brand/70'    : 'text-accent'
@@ -110,6 +127,8 @@ function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }
   return (
     <a
       href={postUrl}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       className={`group flex items-center gap-md py-md border-b last:border-b-0 ${borderClass}
         transition-colors duration-150 ease-quick
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
@@ -162,9 +181,13 @@ function BlogListRow({ post, onBrand }: { post: BlogFeedPost; onBrand: boolean }
         </div>
       </div>
 
-      {/* Arrow */}
-      <div className={`hidden sm:flex items-center shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 ${arrowClass}`}>
-        <ChevronRight size={18} strokeWidth={1.75} />
+      {/* Arrow / external indicator */}
+      <div className={`hidden sm:flex items-center shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 ${arrowClass}`}
+           aria-label={external ? 'Opens in a new tab' : undefined}>
+        {external
+          ? <ExternalLink size={16} strokeWidth={1.75} />
+          : <ChevronRight size={18} strokeWidth={1.75} />
+        }
       </div>
     </a>
   )
@@ -259,7 +282,10 @@ export default function BlogFeedClient({
   const [view,        setView]   = useState<View>('grid')
   const [activeTopic, setTopic]  = useState<string | null>(null)
   const [page,        setPage]   = useState(1)
-  const prefersReducedMotion     = usePrefersReducedMotion()
+  const [mounted,     setMounted] = useState(false)
+  const prefersReducedMotion      = usePrefersReducedMotion()
+
+  useEffect(() => { setMounted(true) }, [])
 
   // ── Filtering ──────────────────────────────────────────────────────────────
   const filtered = useMemo(
@@ -357,13 +383,13 @@ export default function BlogFeedClient({
       ) : view === 'grid' ? (
         <div className={gridClass}>
           {pagePosts.map(post => (
-            <BlogCard key={post._metadata.key} post={post} onBrand={onBrand} />
+            <BlogCard key={post._metadata.key} post={post} onBrand={onBrand} mounted={mounted} />
           ))}
         </div>
       ) : (
         <div>
           {pagePosts.map(post => (
-            <BlogListRow key={post._metadata.key} post={post} onBrand={onBrand} />
+            <BlogListRow key={post._metadata.key} post={post} onBrand={onBrand} mounted={mounted} />
           ))}
         </div>
       )}
