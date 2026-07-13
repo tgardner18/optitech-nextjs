@@ -38,7 +38,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-      fillHeight={hasEditorial}
+      fillHeight={true}
     />
   )
 
