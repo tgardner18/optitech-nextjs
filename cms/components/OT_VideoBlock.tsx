@@ -28,12 +28,13 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ caption: pa('caption') }}
+      fillHeight={true}
     />
   )
 
   if (!hasEditorial) {
     return (
-      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+      <div {...pa(content.__composition)} className="w-full flex-1 min-h-0 flex flex-col" data-stagger={staggerAttr}>
         {mediaEl}
       </div>
     )
@@ -55,10 +56,10 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 ${mediaOrder}`}>
+      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
         {mediaEl}
       </div>
 

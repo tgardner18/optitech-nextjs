@@ -17,13 +17,8 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
   const staggerAttr       = entranceAnimation !== 'none' ? entranceAnimation : undefined
 
-  const mediaSide      = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
-  const heightBehavior = String(displaySettings?.heightBehavior ?? 'auto')
-  const fillColumn     = heightBehavior === 'fillColumn'
-  const displayMode    = String(displaySettings?.displayMode ?? 'auto')
-  // 'standalone' forces image-only rendering regardless of editorial field content,
-  // letting the same content item be placed in a VB column as a full-width image.
-  const hasEditorial   = displayMode !== 'standalone' && Boolean(
+  const mediaSide    = (content.mediaSide ?? displaySettings?.mediaSide ?? 'right') as 'left' | 'right'
+  const hasEditorial = Boolean(
     content.eyebrow || content.heading || content.body || content.ctaUrl?.default
   )
 
@@ -43,18 +38,19 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-      fillHeight={fillColumn}
+      fillHeight={hasEditorial}
     />
   )
 
   if (!hasEditorial) {
-    // fillColumn: flex-1 + min-h-0 so the wrapper grows to fill its VB column
-    // (which is stretched by align-self:stretch to the row height), letting the
-    // image match the height of whatever sits in the adjacent column.
+    // Standalone image in a VB column: flex-1 + min-h-0 lets the wrapper grow to
+    // fill its column (which self-stretches to the row height), so the image matches
+    // the height of whatever sits in the adjacent column. The 400px floor in
+    // ImageBlock ensures single-column sections have a comfortable visual presence.
     return (
       <div
         {...pa(content.__composition)}
-        className={fillColumn ? 'w-full flex-1 min-h-0 flex flex-col' : 'w-full'}
+        className="w-full flex-1 min-h-0 flex flex-col"
         data-stagger={staggerAttr}
       >
         {mediaEl}
@@ -82,10 +78,10 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 ${mediaOrder}`}>
+      <div className={`min-w-0 self-stretch flex flex-col ${mediaOrder}`}>
         {mediaEl}
       </div>
 

@@ -30,6 +30,10 @@ export type VideoBlockProps = {
   caption?: string;
   styleOptions?: VideoStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
+  /** Fill the parent column's height instead of constraining by aspect ratio.
+   *  Used by OT_VideoBlock so the video stretches to match an adjacent column
+   *  rather than stopping at its natural 16:9 proportion. */
+  fillHeight?: boolean;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,6 +81,7 @@ export default function VideoBlock({
   caption,
   styleOptions = {},
   previewAttrs,
+  fillHeight = false,
 }: VideoBlockProps) {
   const {
     ratio,
@@ -128,7 +133,11 @@ export default function VideoBlock({
     if (playing) requestAnimationFrame(() => iframeRef.current?.focus());
   }, [playing]);
 
-  const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
+  // Fill mode: drop the aspect-ratio constraint so the container can grow to
+  // match the adjacent column height. The 400px min-h in the container class
+  // provides a floor for single-column sections with no adjacent content to
+  // define the row height.
+  const aspectClass = fillHeight ? "" : (ratio ? RATIO_CLASS[ratio] : "aspect-video");
 
   const glowStyle: React.CSSProperties =
     frame === "glow"
@@ -165,13 +174,17 @@ export default function VideoBlock({
   const hasBelowCaption = caption && captionPosition === "below";
 
   return (
-    <figure className={`relative w-full${shadow ? " isolate pb-7" : ""}`}>
+    <figure className={`relative w-full${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
       {/* Chromatic shadow bloom */}
       {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
       {/* Offset frame outer wrapper */}
-      <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+      <div className={
+        frame === "offset"
+          ? `relative pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+          : fillHeight ? "flex-1 min-h-0 flex flex-col" : ""
+      }>
         {frame === "offset" && (
           <div
             aria-hidden="true"
@@ -179,9 +192,9 @@ export default function VideoBlock({
           />
         )}
 
-        {/* Aspect-ratio container */}
+        {/* Aspect-ratio / fill container */}
         <div
-          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
+          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${fillHeight ? " flex-1 min-h-100" : ""}${frame === "offset" ? " z-10" : ""}`}
           style={glowStyle}
         >
           {playing ? (
