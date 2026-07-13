@@ -236,7 +236,7 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
