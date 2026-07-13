@@ -619,50 +619,46 @@ const RT_TOC_ARTICLE = doc(
   para('Every change is reversible. If something is not landing the way you hoped, switch it off: the change is removed in seconds, with no scramble, no freeze, and no late-night escalation.'),
 )
 
-// Long-form article: multiple chapters, a section break, a list and a quote.
-// Feeds the broadsheet-column, divider, numbered-chapter and scroll-reveal demos.
-const RT_ARTICLE = doc(
-  h2('The case for continuous improvement'),
-  para('The platform was built for teams who move faster than the quarterly plan. We saw a gap between the pace at which modern teams work and the tools available to measure, refine, and respond to it. We closed it, then we kept closing it.'),
-  para('The platform brings together signals from every part of your work: what you launch, how your audience responds, and what changes along the way. It surfaces the patterns that matter before they become problems, and it does so in language every team can read the same way.'),
-  para('Decisions are made where the work happens, not in a meeting three weeks later. The result is a shorter loop between an idea and the evidence that settles it.'),
-  rule(),
-  h2('Confidence, not guesswork'),
-  para('Every change carries a full history. Audiences are chosen in a few clicks, not buried in settings, and the quality checks run continuously rather than at the end of a cycle.'),
+const RT_CALLOUT = doc(
+  h2('Before you call a winner'),
+  para('Calling a test too early is the most common experimentation mistake. A result that looks significant at 200 sessions often disappears by 2,000.'),
   ul(
-    'Reach the right audience in minutes, not weeks.',
-    'Run several tests at once without them interfering.',
-    'Undo any change with a single click.',
+    '95% confidence threshold eliminates most false positives.',
+    'Run tests across at least two full business cycles.',
+    'Aim for 1,000+ sessions per variant before drawing conclusions.',
   ),
-  quote('We moved from reviewing results once a quarter to improving continuously. The platform is what made that possible.'),
-  h2('Where the signal lives'),
-  para('The patterns you need are rarely in the report you built last quarter. They live in the space between what you launch and how people respond, and that is exactly where the platform listens.'),
+)
+
+const RT_GLOW_FRAME_CONTENT = doc(
+  h2('The case for continuous improvement'),
+  para('We believe the next era of digital experience belongs to the teams that can test, learn, and move faster than the competition, without sacrificing the quality their audience expects.'),
+  para('The platform is built around one question: ', bold('how do we help your team act on evidence faster?'), ' Every change has a record, every decision is reversible, and every result builds toward the next experiment.'),
+)
+
+const RT_OFFSET_STORY = doc(
+  h2('Built for teams that move fast'),
+  para('Most tools slow you down at the moment that matters most. You have a signal, you need to act, and the platform you rely on puts three forms and a meeting between you and the change.'),
+  para('We closed that gap. From insight to change in minutes, with a full history of every decision and the ability to reverse any of them in a single click.'),
 )
 
 function RichTextShowcase() {
   const colorSchemes: Array<{ content: any; displaySettings: DS }> = [
-    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'canvas',  size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
-    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'surface', size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
-    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'brand',   size: 'editorial', alignment: 'left', treatment: 'standard', ruledHeadings: false } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'canvas',  size: 'editorial', alignment: 'left', treatment: 'standard' } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'surface', size: 'editorial', alignment: 'left', treatment: 'standard' } },
+    { content: { content: { json: RT_FULL } }, displaySettings: { color: 'brand',   size: 'editorial', alignment: 'left', treatment: 'standard' } },
   ]
 
-  const treatments = [
-    { label: 'Standard',        note: 'Faithful prose rendering (default)',                           content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — p first',  note: 'First paragraph as editorial deck: larger, weight 300, brand', content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-    { label: 'Lead — h2 first', note: 'Same treatment when content starts with a heading',            content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left', ruledHeadings: false } },
-  ]
-
-  const options: Array<{ label: string; note: string; content: any; displaySettings: DS }> = [
-    { label: 'Ruled headings',  note: '1px teal rule above h2 and h3',                            content: { content: { json: RT_STRUCTURED } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
-    { label: 'Compact + ruled', note: 'Tighter scale for shorter sections',                        content: { content: { json: RT_STRUCTURED } }, displaySettings: { color: 'surface', size: 'compact',   ruledHeadings: true,  alignment: 'left',   treatment: 'standard' } },
-    { label: 'Center aligned',  note: 'Column centred within the section, for opening statements', content: { content: { json: RT_PROSE    } }, displaySettings: { color: 'canvas',  size: 'editorial', ruledHeadings: false, alignment: 'center', treatment: 'lead'     } },
+  const leadTreatments = [
+    { label: 'Standard',        note: 'Faithful prose rendering (default)',                     content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'standard', size: 'editorial', alignment: 'left' } },
+    { label: 'Lead — p first',  note: 'First paragraph promoted to deck scale, weight 500',    content: { content: { json: RT_PROSE } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left' } },
+    { label: 'Lead — h2 first', note: 'Same treatment when content starts with a heading',     content: { content: { json: RT_FULL  } }, displaySettings: { color: 'canvas', treatment: 'lead',     size: 'editorial', alignment: 'left' } },
   ]
 
   return (
     <>
       <BlockHeader slug="rich-text" />
 
-      <VariantGroup label="Color schemes · editorial · left · same copy" />
+      <VariantGroup label="Background Color · same copy across three grounds" />
       {colorSchemes.map((item, i) => (
         <div key={i} className="border-t border-fg/5">
           <VariantLabel label={`color: "${item.displaySettings.color}"`} />
@@ -670,8 +666,8 @@ function RichTextShowcase() {
         </div>
       ))}
 
-      <VariantGroup label="Treatments · canvas · editorial · same copy" note="Treatment affects the first paragraph only." />
-      {treatments.map(item => (
+      <VariantGroup label="Lead treatment · first paragraph as editorial deck" note="Promotes the opening paragraph to deck scale before the body begins." />
+      {leadTreatments.map(item => (
         <div key={item.label} className="border-t border-fg/5">
           <div className="px-md pt-sm pb-xs lg:px-lg flex flex-wrap items-baseline gap-x-sm gap-y-xs">
             <span className="font-mono text-label text-fg-muted/50">treatment: &ldquo;{item.displaySettings.treatment}&rdquo;</span>
@@ -681,58 +677,9 @@ function RichTextShowcase() {
         </div>
       ))}
 
-      <VariantGroup label="Options · ruled headings · compact · center aligned" />
-      {options.map(item => (
-        <div key={item.label} className="border-t border-fg/5">
-          <div className="px-md pt-sm pb-xs lg:px-lg flex flex-wrap items-baseline gap-x-sm gap-y-xs">
-            <span className="text-label tracking-label uppercase text-brand font-semibold">{item.label}</span>
-            <span className="text-label text-fg-muted/60">{item.note}</span>
-          </div>
-          <OT_RichTextBlock content={item.content as any} displaySettings={item.displaySettings} />
-        </div>
-      ))}
-
-      <VariantGroup
-        label="Print grounds · background texture"
-        note="A ground sits behind the prose; it is texture, not a fill. Tokenized, so it recalibrates under a CMS theme override and switches to a light tint on brand."
-      />
-      {([
-        { label: 'ground: "ruled"',  note: 'Ledger baseline ruling, locked to the body rhythm', color: 'canvas'  as const, ground: 'ruled'  as const },
-        { label: 'ground: "grain"',  note: 'Halftone dot field — screenprint texture',          color: 'surface' as const, ground: 'grain'  as const },
-        { label: 'ground: "framed"', note: 'Bordered editorial page with a masthead rule',       color: 'canvas'  as const, ground: 'framed' as const },
-        { label: 'ground: "grain" · brand', note: 'On a brand fill the pattern flips to a light tint', color: 'brand' as const, ground: 'grain' as const },
-      ]).map(item => (
-        <div key={item.label} className="border-t border-fg/5">
-          <VariantLabel label={item.label} note={item.note} />
-          <OT_RichTextBlock
-            content={{ content: { json: RT_PROSE } } as any}
-            displaySettings={{ color: item.color, size: 'editorial', alignment: 'left', ground: item.ground }}
-          />
-        </div>
-      ))}
-
-      <VariantGroup
-        label="Editorial section breaks · numbered chapters"
-        note="Retro print register. The <hr> becomes a type ornament; h2s auto-number as chapters."
-      />
-      {([
-        { label: 'dividers: "ornament"',   note: 'Fleuron (❧) replaces the rule between sections',     ds: { dividers: 'ornament' } },
-        { label: 'dividers: "asterism"',   note: 'Asterism (⁂) section break',                        ds: { dividers: 'asterism' } },
-        { label: 'numberedHeadings: true', note: 'CSS-counter chapter numbers in tracked mono accent', ds: { numberedHeadings: true } },
-        { label: 'ornament + numbered',    note: 'Combined — the full magazine register',              ds: { dividers: 'ornament', numberedHeadings: true } },
-      ] as Array<{ label: string; note: string; ds: DS }>).map(item => (
-        <div key={item.label} className="border-t border-fg/5">
-          <VariantLabel label={item.label} note={item.note} />
-          <OT_RichTextBlock
-            content={{ content: { json: RT_ARTICLE } } as any}
-            displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', ...item.ds }}
-          />
-        </div>
-      ))}
-
       <VariantGroup
         label="Contents — section navigator"
-        note="treatment: &ldquo;toc&rdquo; — h2 headings auto-generate a navigable Contents panel, inserted after the first heading (Option B: title lands first). Each h2 in the body gets an anchor id and a back-to-Contents arrow."
+        note="treatment: &ldquo;toc&rdquo; — h2 headings auto-generate a navigable Contents panel. Each h2 in the body gets an anchor id and a back-to-Contents arrow."
       />
       <div className="border-t border-fg/5">
         <VariantLabel label='treatment: "toc" · canvas' note="H1 title → Contents panel → body with 5 anchored H2s" />
@@ -742,22 +689,105 @@ function RichTextShowcase() {
         />
       </div>
       <div className="border-t border-fg/5">
-        <VariantLabel label='treatment: "toc" · surface · ruled headings' note="Surface background with ruled chapter dividers alongside the TOC" />
+        <VariantLabel label='treatment: "toc" · surface' note="Surface ground — same content" />
         <OT_RichTextBlock
           content={{ content: { json: RT_TOC_ARTICLE } } as any}
-          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'toc', ruledHeadings: true }}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'toc' }}
         />
       </div>
 
       <VariantGroup
-        label="Scroll reveal · reading cadence"
-        note="reveal: &ldquo;cascade&rdquo; — each block rises and fades as it enters the viewport. Pure CSS (animation-timeline: view()); the scroll position is the stagger. Scroll the page to see it; reduced-motion and unsupported browsers render it static and fully visible."
+        label="3D Layers Extrude"
+        note="treatment: &ldquo;layers_3d&rdquo; — hard multi-layer 45° box-shadow extrude. Mirrors the ot-depth-extrude text effect as a container. Dark mode: brand shadows darken to near-black. Light mode: shadows lift to lighter brand tones."
       />
       <div className="border-t border-fg/5">
-        <VariantLabel label='reveal: "cascade"' note="Combined here with framed ground and numbered chapters" />
+        <VariantLabel label='treatment: "layers_3d" · canvas' />
         <OT_RichTextBlock
-          content={{ content: { json: RT_ARTICLE } } as any}
-          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', reveal: 'cascade', ground: 'framed', numberedHeadings: true }}
+          content={{ content: { json: RT_CALLOUT } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'layers_3d' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "layers_3d" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_CALLOUT } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'layers_3d' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Gradient Border Glow Frame"
+        note="treatment: &ldquo;glow_frame&rdquo; — brand → accent gradient border + blurred chromatic halo glow behind the card via ::before. For vision statements, strategic highlights, and premium featured content."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "glow_frame" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_GLOW_FRAME_CONTENT } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'glow_frame' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "glow_frame" · surface' note="Inner panel always bg-canvas regardless of section ground" />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_GLOW_FRAME_CONTENT } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'glow_frame' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Layered Depth Offset"
+        note="treatment: &ldquo;layered_depth&rdquo; — brand depth panel offset lower-right behind the content card. Depth through layering without complexity. Desktop only; collapses gracefully on mobile."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "layered_depth" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'layered_depth' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "layered_depth" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'layered_depth' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Premium Float Elevation"
+        note="treatment: &ldquo;float_elevation&rdquo; — compound multi-layer chromatic elevation shadow. No background panel; depth is expressed purely through shadow, rendering the card as a hovering object above the surface."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "float_elevation" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'float_elevation' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "float_elevation" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'float_elevation' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Sidebar Accent Rail"
+        note="treatment: &ldquo;sidebar_accent&rdquo; — brand-colored structural rail anchored to the left of the content card, extending slightly above and below. Implemented as a positioned element, not a border. Desktop only."
+      />
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "sidebar_accent" · canvas' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'canvas', size: 'editorial', alignment: 'left', treatment: 'sidebar_accent' }}
+        />
+      </div>
+      <div className="border-t border-fg/5">
+        <VariantLabel label='treatment: "sidebar_accent" · surface' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_OFFSET_STORY } } as any}
+          displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'sidebar_accent' }}
         />
       </div>
 

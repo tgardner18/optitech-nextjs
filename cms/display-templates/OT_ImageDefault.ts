@@ -6,6 +6,35 @@ export const OT_ImageDefault = displayTemplate({
   contentType: 'OT_ImageBlock',
   isDefault: true,
   settings: {
+    displayMode: {
+      displayName: 'Display mode',
+      editor: 'select',
+      sortOrder: 0,
+      choices: {
+        auto:       { displayName: 'Auto — editorial if text is present (Default)', sortOrder: 10 },
+        standalone: { displayName: 'Standalone — image fills full column width',    sortOrder: 20 },
+      },
+    },
+    heightBehavior: {
+      displayName: 'Height behavior',
+      editor: 'select',
+      sortOrder: 1,
+      choices: {
+        auto:        { displayName: 'Auto — size by aspect ratio (Default)', sortOrder: 10 },
+        fillColumn:  { displayName: 'Fill column — stretch to match row height', sortOrder: 20 },
+      },
+    },
+    minHeight: {
+      displayName: 'Min height',
+      editor: 'select',
+      sortOrder: 3,
+      choices: {
+        none: { displayName: 'Default — 320px floor',  sortOrder: 10 },
+        md:   { displayName: 'Medium — 480px',         sortOrder: 20 },
+        lg:   { displayName: 'Large — 640px',          sortOrder: 30 },
+        xl:   { displayName: 'XL — 800px',             sortOrder: 40 },
+      },
+    },
     maxHeight: {
       displayName: 'Max height',
       editor: 'select',

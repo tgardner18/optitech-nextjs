@@ -48,7 +48,7 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
       ) {
         items {
           _track
-          _metadata { key published url { default } }
+          _metadata { key published url { default base } }
           headline
           subHeadline
           topic
@@ -77,7 +77,7 @@ function buildContentQuery(withDomain: boolean): string {
       ) {
         items {
           _track
-          _metadata { key url { default } types displayName }
+          _metadata { key url { default base } types displayName }
         }
       }
     }
@@ -102,7 +102,7 @@ function buildBlankExperienceQuery(withDomain: boolean): string {
       ) {
         items {
           _track
-          _metadata { key url { default } published displayName }
+          _metadata { key url { default base } published displayName }
           seoDescription
           ogImage { url { default } }
         }
@@ -158,7 +158,7 @@ function buildPractitionerPagesQuery(withDomain: boolean): string {
         where: { ${metaFilter} }
       ) {
         items {
-          _metadata { key url { default } displayName published }
+          _metadata { key url { default base } displayName published }
           practitionerRef { key }
         }
       }
@@ -187,7 +187,7 @@ function buildEventQuery(withDomain: boolean): string {
       ) {
         items {
           _track
-          _metadata { key url { default } }
+          _metadata { key url { default base } }
           title
           eventType
           startDate
@@ -201,6 +201,16 @@ function buildEventQuery(withDomain: boolean): string {
       }
     }
   `
+}
+
+// Content Graph may return a relative path for url.default when the site's
+// base URL is not embedded in the path. Combine with url.base to get an
+// absolute URL so cross-site search results navigate to the correct origin.
+function absoluteUrl(defaultUrl: string | null | undefined, base: string | null | undefined): string | null {
+  if (!defaultUrl) return null
+  if (defaultUrl.startsWith('http')) return defaultUrl
+  if (base) return base.replace(/\/$/, '') + defaultUrl
+  return defaultUrl
 }
 
 function withTrackAuth(url: string | null | undefined): string | null {
@@ -284,7 +294,7 @@ export async function GET(req: NextRequest) {
         results.push({
           id:        item._metadata.key,
           title:     item.headline ?? 'Untitled',
-          url:       item._metadata.url.default,
+          url:       absoluteUrl(item._metadata.url.default, item._metadata.url.base) as string,
           type:      'Blog',
           topic:     item.topic || undefined,
           published: item._metadata.published || undefined,
@@ -317,7 +327,7 @@ export async function GET(req: NextRequest) {
         results.push({
           id:            item._metadata.key,
           title:         item.title ?? 'Untitled',
-          url:           item._metadata.url.default,
+          url:           absoluteUrl(item._metadata.url.default, item._metadata.url.base) as string,
           type:          'Event',
           excerpt:       summaryHtml ? stripHtml(summaryHtml).slice(0, 160) : undefined,
           imageUrl:      item.featuredImage?.url?.default || undefined,
@@ -383,7 +393,7 @@ export async function GET(req: NextRequest) {
           results.push({
             id:        pageKey,
             title,
-            url:       page._metadata.url.default,
+            url:       absoluteUrl(page._metadata.url.default, page._metadata.url.base) as string,
             type:      'Page',
             published: page._metadata.published || undefined,
             excerpt:   bioHtml ? stripHtml(bioHtml) : undefined,
@@ -412,7 +422,7 @@ export async function GET(req: NextRequest) {
         results.push({
           id:        item._metadata.key,
           title:     item._metadata.displayName ?? 'Untitled',
-          url:       item._metadata.url.default,
+          url:       absoluteUrl(item._metadata.url.default, item._metadata.url.base) as string,
           type:      'Page',
           published: item._metadata.published || undefined,
           excerpt:   (item.seoDescription as string | undefined) || undefined,
@@ -442,7 +452,7 @@ export async function GET(req: NextRequest) {
         results.push({
           id:     item._metadata.key,
           title:  item._metadata.displayName ?? 'Untitled',
-          url:    item._metadata.url.default,
+          url:    absoluteUrl(item._metadata.url.default, item._metadata.url.base) as string,
           type:   'Page',
           _track: withTrackAuth(item._track),
         })

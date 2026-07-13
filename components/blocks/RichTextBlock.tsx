@@ -3,9 +3,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { ArrowUp } from 'lucide-react'
 
 // The SDK's default element map has no horizontal-rule entry, so an editor's
-// section break renders as an empty <span>. Register an <hr> renderer (under the
-// type names the editor/Slate may emit) so breaks render — and so the `dividers`
-// treatment below has something to style.
+// section break renders as an empty <span>. Register an <hr> renderer.
 const Hr = () => <hr />;
 const baseElements = {
   hr: Hr,
@@ -14,54 +12,30 @@ const baseElements = {
   divider: Hr,
 };
 
-// ─── Style option types (map 1:1 to CMS display settings) ───────────────────
+// ─── Style option types ───────────────────────────────────────────────────────
 
 export type RichTextStyleOptions = {
-  /** Background color of the block — "none" is transparent, inheriting the row/section background */
+  /** Background color applied to the block container */
   color?: "none" | "brand" | "canvas" | "surface";
   /** Horizontal alignment of the prose column */
   alignment?: "left" | "center";
-  /** Type scale and vertical rhythm: editorial for long-form prose, compact for shorter sections */
+  /** Type scale and vertical rhythm */
   size?: "editorial" | "compact";
   /**
-   * First-paragraph / block-level treatment.
+   * Display treatment.
    * - standard: faithful prose rendering
-   * - lead: first paragraph promoted to deck size in brand color
-   * - toc: auto-generated section navigator from h2 headings, inserted at the top of the block
+   * - lead: first paragraph promoted to deck size
+   * - toc: auto-generated section navigator from h2 headings
+   * - glow_frame: gradient-bordered premium frame with ambient glow
+   * - layered_depth: brand depth panel offset lower-right behind the content card
+   * - float_elevation: compound multi-layer chromatic elevation shadow
+   * - sidebar_accent: brand rail anchored left, extending above and below the card
+   * - layers_3d: hard multi-layer 45° box-shadow extrude — same depth as the text effect
    */
-  treatment?: "standard" | "lead" | "toc";
-  /** Adds a 1px brand rule above h2 and h3 headings — editorial chapter dividers */
-  ruledHeadings?: boolean;
-  /** Prose font size tier: body (default), large, lead, or statement callout */
-  textScale?: "body" | "large" | "lead" | "statement";
-  /** Prose font weight: regular (default), medium, or semibold */
-  textWeight?: "regular" | "medium" | "semibold";
-  /**
-   * Print ground behind the prose.
-   *   flat   — no texture (default)
-   *   ruled  — faint baseline ruling
-   *   grain  — halftone dot field
-   *   framed — bordered editorial "page"
-   */
-  ground?: "flat" | "ruled" | "grain" | "framed";
-  /**
-   * Section break (<hr>) treatment.
-   *   rule     — 1px brand line (default)
-   *   ornament — centered fleuron (❧)
-   *   asterism — centered asterism (⁂)
-   */
-  dividers?: "rule" | "ornament" | "asterism";
-  /** Auto-number h2 chapter headings ("01 /") in tracked mono accent */
-  numberedHeadings?: boolean;
-  /**
-   * Reading-cadence motion: each block rises + fades as it scrolls into view.
-   *   none    — static (default)
-   *   cascade — staggered scroll reveal
-   */
-  reveal?: "none" | "cascade";
+  treatment?: "standard" | "lead" | "toc" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent" | "layers_3d";
 };
 
-// ─── TOC utilities ───────────────────────────────────────────────────────────
+// ─── TOC utilities ────────────────────────────────────────────────────────────
 
 type HeadingEntry = { text: string; id: string };
 
@@ -96,7 +70,7 @@ function extractHeadings(content: any): HeadingEntry[] {
     });
 }
 
-// ─── ArticleToc panel ────────────────────────────────────────────────────────
+// ─── ArticleToc panel ─────────────────────────────────────────────────────────
 
 function ArticleToc({ headings }: { headings: HeadingEntry[] }) {
   if (headings.length === 0) return null;
@@ -127,7 +101,7 @@ function ArticleToc({ headings }: { headings: HeadingEntry[] }) {
   );
 }
 
-// ─── CVA variant configs ─────────────────────────────────────────────────────
+// ─── CVA variant configs ──────────────────────────────────────────────────────
 
 const sectionCva = cva("px-md lg:px-lg", {
   variants: {
@@ -159,7 +133,7 @@ const innerCva = cva("w-full", {
   defaultVariants: { alignment: "left", size: "editorial" },
 });
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export type RichTextBlockProps = {
   content: Parameters<typeof RichText>[0]['content'] | null;
@@ -173,29 +147,21 @@ export default function RichTextBlock({
   pa = () => ({}),
 }: RichTextBlockProps) {
   const {
-    color            = "canvas",
-    alignment        = "left",
-    size             = "editorial",
-    treatment        = "standard",
-    ruledHeadings    = false,
-    textScale        = "body",
-    textWeight       = "regular",
-    ground           = "flat",
-    dividers         = "rule",
-    numberedHeadings = false,
-    reveal           = "none",
+    color     = "canvas",
+    alignment = "left",
+    size      = "editorial",
+    treatment = "standard",
   } = styleOptions;
 
   // Build element map for toc treatment. The nav panel itself is rendered above
-  // the whole RichText (see below) so it sits at the very top of the block,
-  // regardless of whether the first node is a heading or a paragraph. The map
-  // here only adds anchor ids + a back-to-contents arrow to each h2.
+  // the whole RichText so it sits at the very top of the block, regardless of
+  // whether the first node is a heading or a paragraph. The map here only adds
+  // anchor ids + a back-to-contents arrow to each h2.
   const headings = treatment === 'toc' ? extractHeadings(content) : [];
 
-  // Headings render in document order, exactly as extractHeadings collected them,
-  // so walk the same array by index. This guarantees each rendered h2 id matches
-  // its TOC link's href (and inherits the same de-dup), instead of re-slugifying a
-  // possibly-different `text` source per heading.
+  // Headings render in document order, exactly as extractHeadings collected
+  // them, so walk the same array by index. This guarantees each rendered h2 id
+  // matches its TOC link's href (and inherits the same de-dup).
   let headingIndex = 0;
   const elements = treatment === 'toc' ? {
     ...baseElements,
@@ -214,6 +180,128 @@ export default function RichTextBlock({
     },
   } : baseElements;
 
+  // ── Gradient Border Glow Frame ──────────────────────────────────────────────
+  if (treatment === 'glow_frame') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={`${innerCva({ alignment, size })} rte-glow-frame rounded-ot-surface p-1`}>
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="glow_frame"
+            className="bg-canvas rounded-[inherit] px-8 py-7"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Layered Depth Offset ────────────────────────────────────────────────────
+  if (treatment === 'layered_depth') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={`${innerCva({ alignment, size })} relative pb-3`}>
+          {/* Brand depth panel — same size as the container, offset lower-right so
+              it peeks out from behind the content card on the right and bottom */}
+          <div
+            aria-hidden
+            className="absolute top-3 left-3 right-0 bottom-0 rte-depth-bg hidden md:block"
+          />
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="layered_depth"
+            className="relative mr-3 bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Premium Float Elevation ─────────────────────────────────────────────────
+  if (treatment === 'float_elevation') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={innerCva({ alignment, size })}>
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="float_elevation"
+            className="bg-surface rounded-ot-surface px-8 py-8 rte-float-elevation"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Sidebar Accent Rail ─────────────────────────────────────────────────────
+  if (treatment === 'sidebar_accent') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        <div className={`${innerCva({ alignment, size })} relative py-3 pl-6`}>
+          {/* Brand rail — structural element positioned left of the card, extending
+              slightly above and below. Uses a div (not border-left) per design rules. */}
+          <div
+            aria-hidden
+            className="absolute top-0 left-0 bottom-0 w-[10px] rte-sidebar-rail hidden md:block"
+          />
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="sidebar_accent"
+            className="bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── 3D Layers Extrude ───────────────────────────────────────────────────────
+  if (treatment === 'layers_3d') {
+    return (
+      <section className={sectionCva({ color, size })}>
+        {/* pb-10/pr-10 (40px) gives the 4 × 10px depth layers room to show */}
+        <div className={`${innerCva({ alignment, size })} relative pb-10 pr-10`}>
+          {/* Full-size layer rectangles — ordered back-to-front in DOM so each
+              later sibling paints on top. Each is inset 10px from the outer
+              container right/bottom so it matches the card face width/height,
+              then translated to its offset position. */}
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-10 translate-y-10 rounded-ot-surface rte-3d-l4 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-7.5 translate-y-7.5 rounded-ot-surface rte-3d-l3 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-5 translate-y-5 rounded-ot-surface rte-3d-l2 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-2.5 translate-y-2.5 rounded-ot-surface rte-3d-l1 hidden md:block" />
+          <div
+            data-rich-text=""
+            data-color={color}
+            data-size={size}
+            data-treatment="layers_3d"
+            className="relative bg-surface rounded-ot-surface px-8 py-8 rte-3d-face"
+            {...pa('content')}
+          >
+            <RichText content={content ?? undefined} elements={elements} />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Standard / Lead / TOC ───────────────────────────────────────────────────
   return (
     <section className={sectionCva({ color, size })}>
       <div
@@ -221,13 +309,6 @@ export default function RichTextBlock({
         data-color={color}
         data-size={size}
         data-treatment={treatment !== "standard" ? treatment : undefined}
-        data-ruled-headings={ruledHeadings ? "" : undefined}
-        data-scale={textScale !== "body" ? textScale : undefined}
-        data-weight={textWeight !== "regular" ? textWeight : undefined}
-        data-ground={ground !== "flat" ? ground : undefined}
-        data-dividers={dividers !== "rule" ? dividers : undefined}
-        data-numbered={numberedHeadings ? "" : undefined}
-        data-reveal={reveal !== "none" ? reveal : undefined}
         className={innerCva({ alignment, size })}
         {...pa('content')}
       >
