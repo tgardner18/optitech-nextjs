@@ -276,13 +276,22 @@ export default function RichTextBlock({
   if (treatment === 'layers_3d') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} pb-6 pr-6`}>
+        {/* pb-10/pr-10 (40px) gives the 4 × 10px depth layers room to show */}
+        <div className={`${innerCva({ alignment, size })} relative pb-10 pr-10`}>
+          {/* Full-size layer rectangles — ordered back-to-front in DOM so each
+              later sibling paints on top. Each is inset 10px from the outer
+              container right/bottom so it matches the card face width/height,
+              then translated to its offset position. */}
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-10 translate-y-10 rounded-ot-surface rte-3d-l4 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-7.5 translate-y-7.5 rounded-ot-surface rte-3d-l3 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-5 translate-y-5 rounded-ot-surface rte-3d-l2 hidden md:block" />
+          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-2.5 translate-y-2.5 rounded-ot-surface rte-3d-l1 hidden md:block" />
           <div
             data-rich-text=""
             data-color={color}
             data-size={size}
             data-treatment="layers_3d"
-            className="bg-surface rounded-ot-surface px-8 py-8 rte-layers-3d"
+            className="relative bg-surface rounded-ot-surface px-8 py-8 rte-3d-face"
             {...pa('content')}
           >
             <RichText content={content ?? undefined} elements={elements} />

@@ -2178,20 +2178,19 @@ body {
   border-radius: var(--ot-radius-surface);
 }
 
-/* Hard 45° multi-layer extrude — mirrors the ot-depth-extrude text treatment.
- * Four even 6px strips at 6/12/18/24px give the eye clear distinct layers.
- * Colors step brand → mid → dark → near-black so each strip reads individually.
- * One formula works in both modes: dark mode fades to black; light mode stamps
- * dark teal layers against white — both read as 3D depth.                     */
-.rte-layers-3d {
-  outline: 2px solid oklch(from var(--ot-brand) calc(l * 0.60) c h);
+/* 3D Layers Extrude — four full-size rectangle layers stacked behind the card
+ * face at 10/20/30/40px offsets. Each is an absolutely-positioned div so the
+ * full layer shape (not just an edge strip) is visible right and bottom.
+ * Colors step brand → 70% → 45% → 20% lightness so each slab reads distinctly.
+ * Face gets a crisp outline to separate it from layer 1.                      */
+.rte-3d-face {
+  outline: 2px solid oklch(from var(--ot-brand) calc(l * 0.55) c h);
   outline-offset: 0;
-  box-shadow:
-    6px  6px  0 var(--ot-brand),
-    12px 12px 0 oklch(from var(--ot-brand) calc(l * 0.68) c h),
-    18px 18px 0 oklch(from var(--ot-brand) calc(l * 0.38) c h),
-    24px 24px 0 oklch(from var(--ot-brand) calc(l * 0.16) calc(c * 0.60) h);
 }
+.rte-3d-l1 { background: var(--ot-brand); }
+.rte-3d-l2 { background: oklch(from var(--ot-brand) calc(l * 0.70) c h); }
+.rte-3d-l3 { background: oklch(from var(--ot-brand) calc(l * 0.45) c h); }
+.rte-3d-l4 { background: oklch(from var(--ot-brand) calc(l * 0.20) calc(c * 0.55) h); }
 
 /* ── Practitioner portrait card ───────────────────────────────────────────────
  * The portrait-first directory card. A resting chromatic elevation (brand-hued,
