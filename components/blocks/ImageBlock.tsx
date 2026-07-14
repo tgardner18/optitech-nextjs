@@ -193,8 +193,8 @@ export default function ImageBlock({
     <div
       ref={containerRef}
       className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-100${frame === "offset" ? " z-10" : ""}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`
+        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-100${frame === "offset" ? " z-10 bg-canvas" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10 bg-canvas" : ""}`
       }
       style={glowStyle}
       {...(previewAttrs?.image ?? {})}
