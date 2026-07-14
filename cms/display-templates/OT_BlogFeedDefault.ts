@@ -16,6 +16,15 @@ export const OT_BlogFeedDefault = displayTemplate({
         brand:   { displayName: 'Brand',            sortOrder: 30 },
       },
     },
+    defaultView: {
+      displayName: 'Default View',
+      editor:      'select',
+      sortOrder:   15,
+      choices: {
+        grid: { displayName: 'Grid / Cards (Default)', sortOrder: 10 },
+        list: { displayName: 'List',                   sortOrder: 20 },
+      },
+    },
     columns: {
       displayName: 'Grid Columns',
       editor:      'select',

@@ -24,6 +24,7 @@
 
   /* Text sizes */
   --text-display:  var(--ot-text-display);
+  --text-hero:     var(--ot-text-hero);
   --text-headline: var(--ot-text-headline);
   --text-subhead:  var(--ot-text-subhead);
   --text-title:    var(--ot-text-title);

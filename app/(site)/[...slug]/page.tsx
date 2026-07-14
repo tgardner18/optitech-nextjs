@@ -208,10 +208,18 @@ async function CmsPage({ params, searchParams }: Props) {
       ver:           sp_str('ver'),
       loc:           previewLocale,
     }
-    try {
-      exp = await getClient().getPreviewContent(previewParams, { cache: false })
-    } catch {
-      exp = null
+    // Retry up to 3 times — Content Graph can lag 5–30s behind a save, so the
+    // first attempt may find the key not yet indexed. Short backoff covers this
+    // without making the editor wait noticeably on the happy path.
+    exp = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 600))
+      try {
+        exp = await getClient().getPreviewContent(previewParams, { cache: false })
+        break
+      } catch {
+        // swallow — will retry or fall through to null
+      }
     }
 
     const previewResolveFailed = !exp || exp.__typename === '_Page'
