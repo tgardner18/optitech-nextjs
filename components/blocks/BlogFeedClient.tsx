@@ -261,11 +261,13 @@ export type BlogFeedClientProps = {
    */
   topicFilter?: string | null
   /** Grid column count in card view: 2 or 3 */
-  columns:  2 | 3
+  columns:     2 | 3
   /** True when the parent section has brand background (adjusts chip/text colours) */
-  onBrand:  boolean
+  onBrand:     boolean
   /** ID of the anchor element above the feed for scroll-on-page-change */
-  anchorId: string
+  anchorId:    string
+  /** Initial view mode — set by the CMS editor; visitor can still toggle */
+  defaultView?: 'grid' | 'list'
 }
 
 type View = 'grid' | 'list'
@@ -278,8 +280,9 @@ export default function BlogFeedClient({
   columns,
   onBrand,
   anchorId,
+  defaultView = 'grid',
 }: BlogFeedClientProps) {
-  const [view,        setView]   = useState<View>('grid')
+  const [view,        setView]   = useState<View>(defaultView)
   const [activeTopic, setTopic]  = useState<string | null>(null)
   const [page,        setPage]   = useState(1)
   const [mounted,     setMounted] = useState(false)

@@ -8,10 +8,13 @@ export type BlogFeedColor       = 'canvas' | 'surface' | 'brand'
 export type BlogFeedColumns     = 'col2' | 'col3'
 export type BlogFeedHeadingSize = 'display' | 'headline' | 'title'
 
+export type BlogFeedView = 'grid' | 'list'
+
 export type BlogFeedStyleOptions = {
   color?:       BlogFeedColor
   columns?:     BlogFeedColumns
   headingSize?: BlogFeedHeadingSize
+  defaultView?: BlogFeedView
 }
 
 export type BlogFeedBlockProps = {
@@ -60,6 +63,7 @@ export default function BlogFeedBlock({
     color       = 'canvas',
     columns     = 'col3',
     headingSize = 'headline',
+    defaultView = 'grid',
   } = styleOptions
 
   const onBrand = color === 'brand'
@@ -101,6 +105,7 @@ export default function BlogFeedBlock({
           columns={colCount}
           onBrand={onBrand}
           anchorId={anchorId}
+          defaultView={defaultView}
         />
 
       </div>

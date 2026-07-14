@@ -4,7 +4,7 @@ import { OT_BlogFeedBlock as OT_BlogFeedBlockContentType } from '@/cms/content-t
 import { getRequestLocale, getRequestBaseUrl } from '@/lib/optimizely'
 import { getBlogFeedPosts }  from '@/lib/blogFeed'
 import BlogFeedBlock         from '@/components/blocks/BlogFeedBlock'
-import type { BlogFeedColor, BlogFeedColumns, BlogFeedHeadingSize } from '@/components/blocks/BlogFeedBlock'
+import type { BlogFeedColor, BlogFeedColumns, BlogFeedHeadingSize, BlogFeedView } from '@/components/blocks/BlogFeedBlock'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,9 +66,10 @@ export default async function OT_BlogFeedBlockAdapter({
   const { posts, topics } = await getBlogFeedPosts(locale, articleRootPath, effectiveSiteBase, topicFilter)
 
   // ── Display settings ──────────────────────────────────────────────────────
-  const color       = String(displaySettings.color       ?? 'canvas')  as BlogFeedColor
-  const columns     = String(displaySettings.columns     ?? 'col3')    as BlogFeedColumns
+  const color       = String(displaySettings.color       ?? 'canvas')   as BlogFeedColor
+  const columns     = String(displaySettings.columns     ?? 'col3')     as BlogFeedColumns
   const headingSize = String(displaySettings.headingSize ?? 'headline') as BlogFeedHeadingSize
+  const defaultView = String(displaySettings.defaultView ?? 'grid')     as BlogFeedView
 
   // ── Heading — localised field ─────────────────────────────────────────────
   // The heading property has isLocalized: true. The SDK resolves the correct
@@ -83,7 +84,7 @@ export default async function OT_BlogFeedBlockAdapter({
         topics={topics}
         pageSize={pageSize}
         topicFilter={topicFilter}
-        styleOptions={{ color, columns, headingSize }}
+        styleOptions={{ color, columns, headingSize, defaultView }}
         pa={pa}
       />
     </div>
