@@ -9,13 +9,8 @@ import { Maximize2, X } from "lucide-react";
 // ─── Style option types (map 1:1 to CMS content properties) ─────────────────
 
 export type ImageStyleOptions = {
-  /** Lock to a specific aspect ratio — no value renders at the natural image proportion */
+  /** Lock to a specific aspect ratio — only used for standalone sections where height should be constrained */
   ratio?: "16:9" | "4:3" | "3:2" | "1:1";
-  /** Floor the rendered height. Ignored when an aspect ratio is also set (prevents
-   *  the CSS aspect-ratio + min-height width-expansion overflow). */
-  minHeight?: "none" | "sm" | "md" | "lg" | "xl";
-  /** Cap the rendered height so tall images don't dominate narrow columns */
-  maxHeight?: "none" | "xs" | "sm" | "md" | "lg";
   /** Teal brand wash via mix-blend-mode: multiply — works best on light-toned imagery */
   overlay?: boolean;
   /**
@@ -51,9 +46,14 @@ export type ImageBlockProps = {
   styleOptions?: ImageStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
   /** Fill the parent column's height instead of constraining by aspect ratio.
-   *  Used by OT_ImageBlock when editorial text sits alongside the image so the
-   *  image stretches to match the text column rather than stopping at 16:9. */
+   *  true  — standalone in a VB column: stretch to fill the column height.
+   *  false — editorial layout: use CSS aspect-ratio; object-fit is then
+   *          controlled by objectFit prop. */
   fillHeight?: boolean;
+  /** Controls how the image fills its container. Defaults to "cover".
+   *  Use "contain" in editorial layouts so detail images (diagrams,
+   *  screenshots) show in full without cropping. */
+  objectFit?: "cover" | "contain";
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -66,21 +66,6 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
 };
 
 
-const MIN_H_PX: Record<NonNullable<ImageStyleOptions["minHeight"]>, number> = {
-  none: 0,
-  sm:   320,
-  md:   480,
-  lg:   640,
-  xl:   800,
-};
-
-const MAX_H_CLASS: Record<NonNullable<ImageStyleOptions["maxHeight"]>, string> = {
-  none: "",
-  xs:   "max-h-[200px]",
-  sm:   "max-h-[320px]",
-  md:   "max-h-[480px]",
-  lg:   "max-h-[640px]",
-};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -91,11 +76,10 @@ export default function ImageBlock({
   styleOptions = {},
   previewAttrs,
   fillHeight = false,
+  objectFit = "cover",
 }: ImageBlockProps) {
   const {
     ratio,
-    minHeight       = "none",
-    maxHeight       = "none",
     overlay         = false,
     frame,
     animate         = false,
@@ -144,8 +128,7 @@ export default function ImageBlock({
     };
   }, [lightboxOpen]);
 
-  const aspectClass = ratio ? RATIO_CLASS[ratio] : "";
-  const maxHClass   = MAX_H_CLASS[maxHeight];
+  const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
 
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
@@ -179,7 +162,7 @@ export default function ImageBlock({
     position: "absolute",
     left: "6%",
     right: "6%",
-    top: "28%",
+    top: "75%",
     bottom: "-28px",
     background:
       "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
@@ -190,17 +173,16 @@ export default function ImageBlock({
   };
 
   /*
-   * Glow frame: brand inset ring + outer border; accent adds a 1px chromatic halo
-   * outside the brand border and a directional bloom rising from below.
+   * Glow frame: gradient brand→accent wrapper (3 px on all sides) with an
+   * outer ambient bloom — mirrors the .rte-glow-frame treatment in RichText.
    */
   const glowStyle: React.CSSProperties = frame === "glow"
     ? {
+        background:   "linear-gradient(135deg, var(--ot-brand), var(--ot-accent))",
+        borderRadius: "var(--ot-radius-surface)",
         boxShadow:
-          "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
-          "0 0 0 1px var(--ot-bloom-brand-border), " +
-          "0 0 0 2px var(--ot-bloom-accent-border), " +
-          "0 0 52px var(--ot-bloom-brand-faint), " +
-          "0 20px 72px var(--ot-bloom-accent-faint)",
+          "0 0 32px 8px var(--ot-bloom-brand-faint), " +
+          "0 0 64px 20px var(--ot-bloom-accent-faint)",
       }
     : {};
 
@@ -210,20 +192,9 @@ export default function ImageBlock({
     <div
       ref={containerRef}
       className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1${frame === "offset" ? " z-10" : ""}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${maxHClass ? ` ${maxHClass}` : ""}${frame === "offset" ? " z-10" : ""}`
+        ? `relative overflow-hidden rounded-ot-surface flex-1${frame !== "glow" ? " min-h-100" : ""}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
       }
-      style={{
-        ...glowStyle,
-        // minHeight is suppressed when an aspect ratio is set: combining both causes
-        // CSS to expand the container WIDTH to maintain the ratio at the forced height,
-        // overflowing into adjacent columns. The frame wrapper's overflow-hidden clips
-        // this, but clipping looks wrong. Fill mode always gets the floor (no ratio class
-        // is applied there, so no conflict).
-        minHeight: fillHeight
-          ? (MIN_H_PX[minHeight] || 320)
-          : (!ratio ? (MIN_H_PX[minHeight] || 320) : undefined),
-      }}
       {...(previewAttrs?.image ?? {})}
     >
       {animate && (
@@ -238,7 +209,7 @@ export default function ImageBlock({
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className={frame !== "glow" && objectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
         {overlay && (
@@ -269,15 +240,20 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative${frame === "glow" ? " mx-4" : " w-full"}${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-        <div className={
-          frame === "offset"
-            ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-            : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-        }>
+        <div
+          className={
+            frame === "offset"
+              ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              : frame === "glow"
+              ? `p-[3px]${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+          }
+          style={frame === "glow" ? glowStyle : undefined}
+        >
           {frame === "offset" && (
             <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import { Calendar, Clock, MapPin, Monitor, Award, ArrowRight, User } from 'lucide-react'
 import type { EventPageContent } from '@/lib/events'
 import {
@@ -208,7 +209,7 @@ export default function EventPage({ content, pa }: Props) {
                   className="max-w-(--ot-measure-wide) [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty [&>p:first-of-type]:mb-lg"
                   {...pa?.('description')}
                   // CMS-managed rich text — not user input
-                  dangerouslySetInnerHTML={{ __html: description.html }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(description.html) }}
                 />
               )}
 

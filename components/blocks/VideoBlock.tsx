@@ -30,6 +30,10 @@ export type VideoBlockProps = {
   caption?: string;
   styleOptions?: VideoStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
+  /** Fill the parent column's height instead of constraining by aspect ratio.
+   *  Used by OT_VideoBlock so the video stretches to match an adjacent column
+   *  rather than stopping at its natural 16:9 proportion. */
+  fillHeight?: boolean;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,6 +81,7 @@ export default function VideoBlock({
   caption,
   styleOptions = {},
   previewAttrs,
+  fillHeight = false,
 }: VideoBlockProps) {
   const {
     ratio,
@@ -128,19 +133,21 @@ export default function VideoBlock({
     if (playing) requestAnimationFrame(() => iframeRef.current?.focus());
   }, [playing]);
 
-  const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
+  // Fill mode: drop the aspect-ratio constraint so the container can grow to
+  // match the adjacent column height. The 400px min-h in the container class
+  // provides a floor for single-column sections with no adjacent content to
+  // define the row height.
+  const aspectClass = fillHeight ? "" : (ratio ? RATIO_CLASS[ratio] : "aspect-video");
 
-  const glowStyle: React.CSSProperties =
-    frame === "glow"
-      ? {
-          boxShadow:
-            "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
-            "0 0 0 1px var(--ot-bloom-brand-border), " +
-            "0 0 0 2px var(--ot-bloom-accent-border), " +
-            "0 0 52px var(--ot-bloom-brand-faint), " +
-            "0 20px 72px var(--ot-bloom-accent-faint)",
-        }
-      : {};
+  const glowStyle: React.CSSProperties = frame === "glow"
+    ? {
+        background:   "linear-gradient(135deg, var(--ot-brand), var(--ot-accent))",
+        borderRadius: "var(--ot-radius-surface)",
+        boxShadow:
+          "0 0 32px 8px var(--ot-bloom-brand-faint), " +
+          "0 0 64px 20px var(--ot-bloom-accent-faint)",
+      }
+    : {};
 
   /*
    * Shadow bloom — brand pools bottom-left, accent pools bottom-right.
@@ -151,7 +158,7 @@ export default function VideoBlock({
     position:   "absolute",
     left:       "6%",
     right:      "6%",
-    top:        "28%",
+    top:        "75%",
     bottom:     "-28px",
     background:
       "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
@@ -165,13 +172,22 @@ export default function VideoBlock({
   const hasBelowCaption = caption && captionPosition === "below";
 
   return (
-    <figure className={`relative w-full${shadow ? " isolate pb-7" : ""}`}>
+    <figure className={`relative${frame === "glow" ? " mx-4" : " w-full"}${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
       {/* Chromatic shadow bloom */}
       {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-      {/* Offset frame outer wrapper */}
-      <div className={frame === "offset" ? "relative pr-3 pb-3" : ""}>
+      {/* Offset / glow frame outer wrapper */}
+      <div
+        className={
+          frame === "offset"
+            ? `relative pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+            : frame === "glow"
+            ? `p-[3px]${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+            : fillHeight ? "flex-1 min-h-0 flex flex-col" : ""
+        }
+        style={frame === "glow" ? glowStyle : undefined}
+      >
         {frame === "offset" && (
           <div
             aria-hidden="true"
@@ -179,10 +195,9 @@ export default function VideoBlock({
           />
         )}
 
-        {/* Aspect-ratio container */}
+        {/* Aspect-ratio / fill container */}
         <div
-          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`}
-          style={glowStyle}
+          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${fillHeight ? ` flex-1${frame !== "glow" ? " min-h-100" : ""}` : ""}${frame === "offset" ? " z-10" : ""}${frame === "glow" ? " bg-canvas" : ""}`}
         >
           {playing ? (
 

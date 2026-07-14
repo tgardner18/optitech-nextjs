@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
@@ -140,7 +141,7 @@ function SpotlightFooter({ view }: { view: FooterView }) {
           {descriptionHtml && (
             <div
               className={cn(PROSE, 'mt-sm max-w-(--ot-measure-tight) text-body leading-body text-fg-muted [&_p+p]:mt-[0.5em]')}
-              dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(descriptionHtml) }}
             />
           )}
 
@@ -211,7 +212,7 @@ function CenteredFooter({ view }: { view: FooterView }) {
         {descriptionHtml && (
           <div
             className={cn(PROSE, 'mt-sm text-body leading-body text-balance text-fg-muted max-w-[58ch] [&_p+p]:mt-[0.5em]')}
-            dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(descriptionHtml) }}
           />
         )}
 

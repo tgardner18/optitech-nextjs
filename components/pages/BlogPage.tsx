@@ -1,4 +1,5 @@
 import type { BlogPageContent, BlogPostSummary } from '@/lib/blog'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import PrimaryTextDepth3D from '@/components/blocks/PrimaryTextDepth3D.client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -532,7 +533,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
           className="mx-auto max-w-5xl px-md"
           {...pa?.('body')}
           // CMS-managed rich text — not user input
-          dangerouslySetInnerHTML={{ __html: body?.html ?? '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(body?.html) }}
         />
       </section>
 
@@ -643,7 +644,7 @@ export default function BlogPage({ content, latestPosts, pa }: Props) {
                   {authorRef.bio?.html && (
                     <div
                       className="accent-ink-prose mt-md text-body leading-body text-fg max-w-(--ot-measure-tight) [&_p]:m-0 [&_p+p]:mt-[0.75em] [&_strong]:font-semibold [&_strong]:text-fg"
-                      dangerouslySetInnerHTML={{ __html: authorRef.bio.html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(authorRef.bio.html) }}
                     />
                   )}
 
