@@ -162,7 +162,7 @@ export default function ImageBlock({
     position: "absolute",
     left: "6%",
     right: "6%",
-    top: "28%",
+    top: "75%",
     bottom: "-28px",
     background:
       "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
@@ -173,17 +173,16 @@ export default function ImageBlock({
   };
 
   /*
-   * Glow frame: brand inset ring + outer border; accent adds a 1px chromatic halo
-   * outside the brand border and a directional bloom rising from below.
+   * Glow frame: gradient brand→accent wrapper (3 px on all sides) with an
+   * outer ambient bloom — mirrors the .rte-glow-frame treatment in RichText.
    */
   const glowStyle: React.CSSProperties = frame === "glow"
     ? {
+        background:   "linear-gradient(135deg, var(--ot-brand), var(--ot-accent))",
+        borderRadius: "var(--ot-radius-surface)",
         boxShadow:
-          "inset 0 0 0 2px var(--ot-bloom-brand-ring), " +
-          "0 0 0 1px var(--ot-bloom-brand-border), " +
-          "0 0 0 2px var(--ot-bloom-accent-border), " +
-          "0 0 52px var(--ot-bloom-brand-faint), " +
-          "0 20px 72px var(--ot-bloom-accent-faint)",
+          "0 0 32px 8px var(--ot-bloom-brand-faint), " +
+          "0 0 64px 20px var(--ot-bloom-accent-faint)",
       }
     : {};
 
@@ -193,10 +192,9 @@ export default function ImageBlock({
     <div
       ref={containerRef}
       className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1 min-h-100${frame === "offset" ? " z-10" : ""}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}`
+        ? `relative overflow-hidden rounded-ot-surface flex-1${frame !== "glow" ? " min-h-100" : ""}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
       }
-      style={glowStyle}
       {...(previewAttrs?.image ?? {})}
     >
       {animate && (
@@ -211,7 +209,7 @@ export default function ImageBlock({
           src={src}
           alt={alt}
           fill
-          className={objectFit === "contain" ? "object-contain" : "object-cover"}
+          className={frame !== "glow" && objectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
         {overlay && (
@@ -242,15 +240,20 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative w-full${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative${frame === "glow" ? " mx-4" : " w-full"}${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
-        <div className={
-          frame === "offset"
-            ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-            : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-        }>
+        <div
+          className={
+            frame === "offset"
+              ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              : frame === "glow"
+              ? `p-[3px]${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+          }
+          style={frame === "glow" ? glowStyle : undefined}
+        >
           {frame === "offset" && (
             <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
           )}

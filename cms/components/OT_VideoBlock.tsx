@@ -64,7 +64,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center`}
+      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center pt-xl`}
       data-stagger={staggerAttr}
     >
       <div className={`min-w-0 ${mediaOrder}`}>
