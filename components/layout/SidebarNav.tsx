@@ -7,6 +7,7 @@ import { LocaleSelector } from '@/components/layout/LocaleSelector'
 import { SidebarNavItem } from '@/components/layout/SidebarNavItem'
 import { SidebarNavShell } from '@/components/layout/SidebarNavClient'
 import SearchTrigger from '@/components/search/SearchTrigger'
+import { draftMode } from 'next/headers'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 import { getEnabledLanguages } from '@/lib/i18n/getEnabledLanguages'
 import { t } from '@/lib/i18n/t'
@@ -52,6 +53,7 @@ function normalizeNavHref(rawUrl: string | null | undefined, locale: Locale, dom
  * Skip link: position:fixed so it always appears at viewport top on focus, not inside the rail.
  */
 export default async function SidebarNav() {
+  const { isEnabled: isPreview } = await draftMode()
   const domain   = await getRequestDomain()
   const locale   = await getRequestLocale()
   const settings = await getSiteSettings(domain, locale)
@@ -110,7 +112,7 @@ export default async function SidebarNav() {
       </a>
 
       {/* ── Desktop sidebar rail — client shell handles animation + toggle ─────── */}
-      <SidebarNavShell>
+      <SidebarNavShell defaultOpen={!isPreview}>
         {/* Logo */}
         <div className="px-lg py-md shrink-0 border-b border-fg/8">
           <a
