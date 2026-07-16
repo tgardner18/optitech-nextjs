@@ -24,7 +24,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           {/* Content shifts right of the fixed rail. The margin is driven by
               --ot-sidebar-width (emitted by buildThemeCSS, 0px when not sidebar).
               On mobile the rail is hidden, so no margin applies below lg. */}
-          <div className="ot-sidebar-content flex flex-col min-h-dvh">
+          <div className="ot-sidebar-content flex flex-col min-h-dvh" data-nav="sidebar">
             <main id="main-content" className="flex-1">{children}</main>
             <Footer />
             <ScrollToTop />
@@ -39,7 +39,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <SearchProvider>
         {navbarStyle === 'split-bar' ? <SplitHeader /> : <Header />}
         <SiteSearch />
-        <main id="main-content" className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1" data-nav={navbarStyle}>{children}</main>
         <Footer />
         <ScrollToTop />
       </SearchProvider>
