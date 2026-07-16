@@ -2174,11 +2174,6 @@ body {
     0 48px 96px oklch(from var(--ot-brand) l c h / 0.04);
 }
 
-.rte-sidebar-rail {
-  background: var(--ot-brand);
-  border-radius: var(--ot-radius-surface);
-}
-
 /* 3D Layers Extrude — four full-size rectangle layers stacked behind the card
  * face at 10/20/30/40px offsets. Each is an absolutely-positioned div so the
  * full layer shape (not just an edge strip) is visible right and bottom.

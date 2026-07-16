@@ -29,7 +29,8 @@ export type RichTextStyleOptions = {
    * - glow_frame: gradient-bordered premium frame with ambient glow
    * - layered_depth: brand depth panel offset lower-right behind the content card
    * - float_elevation: compound multi-layer chromatic elevation shadow
-   * - sidebar_accent: brand rail anchored left, extending above and below the card
+   * - sidebar_accent: brand top rule + tinted wash (not a left/right stripe — see the
+   *   ban on side-stripe borders in DESIGN.md's absolute-bans list)
    * - layers_3d: hard multi-layer 45° box-shadow extrude — same depth as the text effect
    */
   treatment?: "standard" | "lead" | "toc" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent" | "layers_3d";
@@ -246,23 +247,24 @@ export default function RichTextBlock({
     );
   }
 
-  // ── Sidebar Accent Rail ─────────────────────────────────────────────────────
+  // ── Accent Rail ──────────────────────────────────────────────────────────────
+  // A brand top rule + tinted wash on the card. Earlier versions of this treatment
+  // used a full-height brand-colored bar flush to the card's left edge — visually
+  // identical to the banned "side-stripe border" pattern (DESIGN.md absolute bans:
+  // no border-left/border-right > 1px as a decorative accent) even though it was a
+  // positioned div rather than a literal `border-left`. Rewritten per the design
+  // system's own suggested alternative: a full border edge (here, the top rule) plus
+  // a background tint, instead of a side stripe.
   if (treatment === 'sidebar_accent') {
     return (
       <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} relative py-3 pl-6`}>
-          {/* Brand rail — structural element positioned left of the card, extending
-              slightly above and below. Uses a div (not border-left) per design rules. */}
-          <div
-            aria-hidden
-            className="absolute top-0 left-0 bottom-0 w-[10px] rte-sidebar-rail hidden md:block"
-          />
+        <div className={innerCva({ alignment, size })}>
           <div
             data-rich-text=""
             data-color={color}
             data-size={size}
             data-treatment="sidebar_accent"
-            className="bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
+            className="bg-brand/5 rounded-ot-surface border-t-[3px] border-brand px-8 py-8 rte-depth-card"
             {...pa('content')}
           >
             <RichText content={content ?? undefined} elements={elements} />

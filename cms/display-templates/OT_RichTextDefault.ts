@@ -46,7 +46,7 @@ export const OT_RichTextDefault = displayTemplate({
         glow_frame:      { displayName: 'Gradient Border Glow Frame',   sortOrder: 40 },
         layered_depth:   { displayName: 'Layered Depth Offset',         sortOrder: 50 },
         float_elevation: { displayName: 'Premium Float Elevation',      sortOrder: 60 },
-        sidebar_accent:  { displayName: 'Sidebar Accent Rail',          sortOrder: 70 },
+        sidebar_accent:  { displayName: 'Accent Rail',                  sortOrder: 70 },
         layers_3d:       { displayName: '3D Layers Extrude',            sortOrder: 80 },
       },
     },
