@@ -233,9 +233,9 @@ The background MUST stay low-alpha — a high-alpha or opaque fill occludes the 
 
 **Rule:** Glass earns its blur when there is something visually interesting beneath — an image, a brand fill, a layered section background. Glass over a flat same-color surface is a non-effect. Sticky navigation glass is always appropriate.
 
-### Chromatic shadows (tinted to brand)
+### Chromatic shadows (default) and neutral shadows (vertical-theme option)
 
-All shadows carry the brand hue. Neutral grey shadows break the mineral palette.
+The **default system uses brand-hued shadows** — every shadow carries the brand hue via bloom tokens, reinforcing the mineral palette and making shadow a design element, not just elevation.
 
 **Resting elevation** (cards or panels above field):
 ```
@@ -246,6 +246,8 @@ box-shadow: 0 4px 24px var(--ot-bloom-brand-faint)
 ```
 box-shadow: 0 8px 32px var(--ot-bloom-brand-faint), 0 16px 48px var(--ot-bloom-accent-faint)
 ```
+
+**Neutral / grey shadows are permitted for vertical themes** where the brand color makes a poor shadow tint — very light or desaturated brand colors, achromatic themes, or verticals (healthcare, legal, retail) where a chromatic shadow would look unintended. When using neutral shadows in a vertical theme, derive the alpha from the surface rather than hardcoding `rgba(0,0,0,...)`: `oklch(from var(--ot-fg) l c h / 0.12)` gives a neutral that adapts to dark/light mode automatically and follows any ThemeManager canvas override. Component authors building blocks for the default theme should still prefer chromatic shadows; grey shadows are a vertical-theme-level decision, not a component-level one.
 
 ### Bloom / glow effects (media and cards)
 
@@ -417,13 +419,13 @@ When impeccable introduces a new effect, document it here under the relevant com
 
 - **Don't** hardcode `oklch(55% 0.18 195)` or any color literal in component code. That color lives in `tokens.css` as `--ot-brand`. Component code references the token.
 - **Don't** use light frosted glass (white/near-white `backdrop-blur` on light backgrounds). The system's glass is dark-tinted. If it looks like an iOS popover, it's wrong.
-- **Don't** use neutral grey shadows (`rgba(0,0,0,0.2)` etc.). Shadows carry the brand hue via bloom tokens.
+- **Don't** use neutral grey shadows in the default theme components (`rgba(0,0,0,0.2)` etc.) — the default system uses brand-hued bloom shadows. Neutral shadows are acceptable at the vertical-theme level when the brand color makes a poor shadow tint; derive them from `--ot-fg` rather than hardcoding `rgba(0,0,0,...)` so they adapt to dark/light mode.
 - **Don't** use the SaaS cream aesthetic: off-white cards, pastel gradient blobs, rounded pill buttons, floating feature icon grids.
 - **Don't** reach for a vertical's cliché-by-reflex when theming a new industry: healthcare teal-on-white, financial services navy-and-gold, legal mahogany-and-serif, retail loud-discount-banners. A vertical theme must read as credible for its industry without being that category's obvious training-data default. Re-skin with a committed, considered palette, not the first guess.
 - **Don't** use corporate navy, or the synthwave/crypto look: neon-bright literals glowing on pure black (`#000`), laser grids receding into a void, chrome-and-magenta "Web3 energy." The ban is on *that specific aesthetic* — neon-on-true-black with token-bypassing color literals — **not** on a retro feel in general. Retro editorial display treatments are explicitly sanctioned (see the Do below and §4 *Retro display headers*); the line they must not cross is leaving the tinted-ground / semantic-token system.
 - **Don't** use side-stripe borders (a colored `border-left` or `border-right` > 1px as a decorative accent). Use background tints, full borders, or nothing.
 - **Don't** use Syne below headline scale, at weight above 525, or more than once per viewport.
-- **Don't** use display gradient fills (`display-gradient-*`) on sub-display type or more than once per composition.
+- **Don't** use gradient text fills (`.ot-fx-gradient`, `.ot-depth-liquid`, `.display-gradient-*`) below headline scale, or more than once per composition. Gradient text is a sanctioned display-moment effect — not body copy, not label text, not repeated through a page.
 - **Don't** assume a fixed container width inside block components. Blocks render at any width from a full-bleed section to a narrow column.
 - **Don't** introduce new layout-shifting animation properties without a `prefers-reduced-motion: reduce` fallback.
 - **Don't** add `rounded-lg`, `rounded-xl`, or `rounded-full` to buttons or cards. Sharp corners are the system's identity.

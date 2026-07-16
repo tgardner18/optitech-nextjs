@@ -390,12 +390,18 @@ export default function StatBlock({
             )}
             style={itemStyle}
           >
-            {/* ── Vertical column divider — desktop, continuous row only ─── */}
+            {/* ── Vertical column divider — desktop, continuous row only ───
+             * columns=3 renders grid-cols-1 sm:grid-cols-2 lg:grid-cols-3, so
+             * between md (divider turns on) and lg (3rd column appears) the
+             * grid is still 2-up. Item index 2 is a row-start in that 2-up
+             * layout, so its divider must wait for lg — otherwise it draws a
+             * stray rule to the left of an item that isn't sharing a row. */}
             {!glass && i > 0 && (
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute left-0 top-md bottom-md hidden md:block w-px',
+                  'absolute left-0 top-md bottom-md w-px',
+                  columns === 3 && i === 2 ? 'hidden lg:block' : 'hidden md:block',
                   dividerBgClass,
                 )}
                 style={dividerStyle}

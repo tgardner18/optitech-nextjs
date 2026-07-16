@@ -773,8 +773,8 @@ function RichTextShowcase() {
       </div>
 
       <VariantGroup
-        label="Sidebar Accent Rail"
-        note="treatment: &ldquo;sidebar_accent&rdquo; — brand-colored structural rail anchored to the left of the content card, extending slightly above and below. Implemented as a positioned element, not a border. Desktop only."
+        label="Accent Rail"
+        note="treatment: &ldquo;sidebar_accent&rdquo; — brand top rule plus a tinted card wash. An earlier version used a full-height bar on the card's left edge, which read as the banned side-stripe border pattern even though it wasn't a literal CSS border; rewritten to a top rule + background tint per DESIGN.md's own suggested alternative."
       />
       <div className="border-t border-fg/5">
         <VariantLabel label='treatment: "sidebar_accent" · canvas' />

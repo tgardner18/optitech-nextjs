@@ -396,7 +396,11 @@ function TriggerBar({
       if (isSide && mdUp) { left = 0; right = sw - 3 }  // vertical bar on the strip's left edge
       else                { top = y + h - 3 }           // 3px strip under the active trigger
     } else {
-      radius = tabStyle === 'pill' ? '9999px' : 'var(--radius-ot-control)'
+      // Both pill and button-group follow the Corner Style axis (--radius-ot-control:
+      // 0/4/8px for Sharp/Soft/Rounded) rather than a hardcoded 9999px — a literal pill
+      // shape would bypass the theme's corner setting, the one axis DESIGN.md reserves
+      // for controlling roundness. Under a "Rounded" theme this still reads as a pill.
+      radius = 'var(--radius-ot-control)'
     }
     indicatorClip = `inset(${top}px ${right}px ${bottom}px ${left}px round ${radius})`
   }
@@ -723,9 +727,10 @@ function TriggerButton({
         onClick={() => onSelect(index)}
         className={cn(
           baseClass,
-          // Actual pill geometry — matches the sliding indicator's round 9999px.
+          // Follows the Corner Style axis (rounded-ot-control) rather than a hardcoded
+          // rounded-full — see the matching note on the slide indicator's radius calc.
           // overflow-hidden keeps the autoplay sweep inside the curved ends.
-          'rounded-full overflow-hidden px-md py-sm text-sm font-semibold tracking-label uppercase',
+          'rounded-ot-control overflow-hidden px-md py-sm text-sm font-semibold tracking-label uppercase',
           isActive
             ? (slideIndicator ? activeTextClass('pill', color) : pillActive)
             : pillInactive,
