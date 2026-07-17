@@ -76,7 +76,7 @@ const eyebrowCva = cva("text-label tracking-label uppercase font-semibold", {
 });
 
 const headlineCva = cva(
-  "text-display font-extrabold leading-display tracking-display",
+  "text-hero font-extrabold leading-display tracking-display",
   {
     variants: {
       color: {

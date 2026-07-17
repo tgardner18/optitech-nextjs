@@ -10,22 +10,27 @@ const STORAGE_KEY = 'ot-sidebar-open'
 // Sets data-sidebar-open on <html> so CSS can adjust the content margin and
 // the compact search panel position without JS round-trips.
 
-export function SidebarNavShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(true)
+export function SidebarNavShell({ children, defaultOpen = true }: { children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
 
-  // Hydrate from localStorage on mount (server always renders open).
+  // On the live site: hydrate from localStorage so the user's last preference
+  // is restored. In preview (defaultOpen=false) skip this — we always start
+  // collapsed and don't want stored live-site prefs leaking into the VB view.
   useEffect(() => {
+    if (!defaultOpen) return
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored === 'false') setOpen(false)
     } catch {}
-  }, [])
+  }, [defaultOpen])
 
-  // Sync open state → HTML data attribute + localStorage.
+  // Sync open state → HTML data attribute + localStorage (live site only).
   useEffect(() => {
     document.documentElement.dataset.sidebarOpen = open ? 'true' : 'false'
-    try { localStorage.setItem(STORAGE_KEY, String(open)) } catch {}
-  }, [open])
+    if (defaultOpen) {
+      try { localStorage.setItem(STORAGE_KEY, String(open)) } catch {}
+    }
+  }, [open, defaultOpen])
 
   return (
     <>

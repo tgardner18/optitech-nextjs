@@ -16,12 +16,19 @@ import type { ChartStyleOptions } from '@/cms/styling/OT_ChartBlock.styling'
  */
 
 export const CHART_PALETTES: Record<string, string[]> = {
-  // Brand palette: primary token + accent token + two brand-family tones
+  // Brand palette: primary token + three brand-family tones derived from it via
+  // relative color syntax. Series 2-4 deliberately do NOT reuse var(--ot-accent) —
+  // a CMS theme is only required to keep brand and accent individually AA-compliant,
+  // not hue/lightness-distinct from EACH OTHER, so a theme that sets accent close to
+  // brand (e.g. two shades of the same gold) would collapse a 2-series chart into one
+  // indistinguishable line. Deriving every tone from --ot-brand with large, fixed
+  // lightness deltas guarantees separation regardless of the accent value, while still
+  // tracking a CMS rebrand automatically (unlike a hardcoded literal).
   brand: [
     'var(--ot-brand)',
-    'var(--ot-accent)',
-    'oklch(72% 0.10 195)',   /* token-exempt: fixed brand-family data-viz tone, consumed by Recharts as SVG attr */
-    'oklch(38% 0.12 195)',   /* token-exempt: fixed brand-family data-viz tone, consumed by Recharts as SVG attr */
+    'oklch(from var(--ot-brand) calc(l - 0.30) c h)',              /* token-exempt: brand-family data-viz tone, tracks --ot-brand via relative color syntax; consumed by Recharts as SVG attr */
+    'oklch(from var(--ot-brand) calc(l + 0.24) calc(c * 0.55) h)', /* token-exempt: brand-family data-viz tone, tracks --ot-brand via relative color syntax; consumed by Recharts as SVG attr */
+    'oklch(from var(--ot-brand) calc(l - 0.12) calc(c * 0.7) calc(h + 25))', /* token-exempt: brand-family data-viz tone, tracks --ot-brand via relative color syntax; consumed by Recharts as SVG attr */
   ],
 
   // Warm palette: amber-gold family in perceptually uniform OKLCH.

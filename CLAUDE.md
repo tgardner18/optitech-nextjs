@@ -61,10 +61,11 @@ Full design specs live in [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md). R
 **Key constraints:**
 - Committed color strategy: one saturated anchor fills 30–60% of the surface (not an accent)
 - Token-driven type system: one **themeable primary family** drives the whole hierarchy (display/headline/title/body/label) via `--ot-font-sans` — Poppins by default, swappable per vertical through the ThemeManager "Primary Font" axis to Source Serif 4, Sora, or Bricolage Grotesque (all weight-ladder-matched). Syne for accent moments only (headline scale and up, at most once per viewport), Geist Mono for code/data, Caveat for the QuoteBlock signature only. Reference `--ot-font-sans`, never a raw `--font-poppins`. Serif is allowed only as the Source Serif primary via the axis.
-- Layered depth system: dark glass, ambient shadows (can be resting), chromatic brand-hued shadows from the bloom tokens; `prefers-reduced-motion` required for all motion
+- Layered depth system: dark glass, ambient shadows (can be resting), chromatic brand-hued shadows from the bloom tokens by default; neutral/grey shadows are permitted at the vertical-theme level when the brand color makes a poor shadow tint — derive from `oklch(from var(--ot-fg) l c h / 0.12)` rather than hardcoding `rgba(0,0,0,...)`; `prefers-reduced-motion` required for all motion
 - WCAG 2.1 AA on all text and interactive states, in every theme
+- Gradient text is a **sanctioned display-moment effect** (via `.ot-fx-gradient`, `.ot-depth-liquid`, `.display-gradient-*`) — permitted at display/headline scale, at most once per composition. Not a banned technique; the rule is restraint and scale.
 
-**Hard prohibitions (from DESIGN.md):** no gradient text, no side-stripe borders >1px, no SaaS-cream/blob aesthetic, no corporate navy, no neon-on-black/Web3 energy, no layout-property animations, no vertical cliché-by-reflex (healthcare teal-on-white, finance navy-and-gold, legal mahogany-serif, retail loud-discount-banners).
+**Hard prohibitions (from DESIGN.md):** no side-stripe borders >1px, no SaaS-cream/blob aesthetic, no corporate navy, no neon-on-black/Web3 energy, no layout-property animations, no vertical cliché-by-reflex (healthcare teal-on-white, finance navy-and-gold, legal mahogany-serif, retail loud-discount-banners).
 
 ---
 
@@ -91,6 +92,10 @@ work under `cms/` or `components/blocks/`; it supersedes the generic `optimizely
 - `references/cms-composition-updates.md` — updating BlankExperience page compositions via MCP:
   full-replacement semantics, HTML angle-bracket XML hazard, payload size limit (~6–7 KB), required
   node fields per type, and the section/row/column/component nesting template.
+- `references/demo-site-workflow.md` — **start here for any multi-page demo site build**: two-phase
+  create pattern (shells first, then compose by ContentKey), hardcoded composition JSON, failure modes
+  (nodeType null = delete+recreate, duplicate pages = workflow resumed without ContentKey), workflow
+  script template, block display template reference, and time estimates.
 
 ### Adding a CMS-driven page route
 

@@ -52,6 +52,7 @@
 
   /* Scale */
   --ot-text-display:  clamp(3rem, 8vw, 6rem);
+  --ot-text-hero:     clamp(2.75rem, 7vw, 5rem);  /* hero headline — larger than headline, smaller than full display */
   --ot-text-headline: clamp(1.75rem, 4vw, 2.75rem);
   --ot-text-subhead:  1.5rem;   /* prose h2 / sub-headline tier between headline and title */
   --ot-text-title:    1.25rem;

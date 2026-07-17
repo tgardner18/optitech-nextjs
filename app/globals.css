@@ -24,6 +24,7 @@
 
   /* Text sizes */
   --text-display:  var(--ot-text-display);
+  --text-hero:     var(--ot-text-hero);
   --text-headline: var(--ot-text-headline);
   --text-subhead:  var(--ot-text-subhead);
   --text-title:    var(--ot-text-title);
@@ -2171,11 +2172,6 @@ body {
     0 8px 16px var(--ot-bloom-brand-faint),
     0 24px 48px oklch(from var(--ot-brand) l c h / 0.07),
     0 48px 96px oklch(from var(--ot-brand) l c h / 0.04);
-}
-
-.rte-sidebar-rail {
-  background: var(--ot-brand);
-  border-radius: var(--ot-radius-surface);
 }
 
 /* 3D Layers Extrude — four full-size rectangle layers stacked behind the card

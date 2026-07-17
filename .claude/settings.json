@@ -8,7 +8,10 @@
       "mcp__codegraph__codegraph_callees",
       "mcp__codegraph__codegraph_impact",
       "mcp__codegraph__codegraph_files",
-      "mcp__codegraph__codegraph_status"
+      "mcp__codegraph__codegraph_status",
+      "mcp__playwright__*",
+      "mcp__cms__*",
+      "Bash(*)"
     ]
   }
 }
