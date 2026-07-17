@@ -1,9 +1,9 @@
-import Image from 'next/image'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Button from '@/components/ui/Button'
 import MobileMenu from '@/components/layout/MobileMenu'
 import DesktopNav from '@/components/layout/DesktopNav'
 import { BrandMark } from '@/components/layout/BrandMark'
+import { LogoImage } from '@/components/layout/LogoImage'
 import { LocaleSelector } from '@/components/layout/LocaleSelector'
 import type { NavItem } from '@/components/layout/DesktopNav'
 import SearchTrigger from '@/components/search/SearchTrigger'
@@ -78,13 +78,16 @@ export default async function Header() {
   const ctaLabel       = settings?.ctaLabel ?? 'Get Started'
   const ctaHref        = normalizeNavHref(settings?.ctaUrl?.default, locale, domain)
 
-  const LOGO_IMG_CLASS: Record<string, string> = {
-    full:    'max-h-12 w-auto',
-    icon:    'h-12 w-12 object-contain',
-    compact: 'max-h-9 w-auto max-w-[160px]',
+  // Container owns the sizing — image uses h-full w-auto so any asset format
+  // (SVG with/without viewBox, PNG, WebP, any aspect ratio) scales correctly.
+  const LOGO_CONTAINER_CLASS: Record<string, string> = {
+    full:    'h-10 max-w-[200px] flex-shrink-0',
+    icon:    'h-10 w-10 flex-shrink-0',
+    compact: 'h-8 max-w-[160px] flex-shrink-0',
   }
+  const logoContainerClass = LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full
   const logoImgClass = [
-    LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full,
+    'h-full w-auto max-w-full object-contain object-left',
     logoInvertDark ? 'logo-invert-dark' : '',
   ].filter(Boolean).join(' ')
 
@@ -124,13 +127,11 @@ export default async function Header() {
 
           <a href={localizedHref('/', locale)} aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`} className="flex items-center h-12">
             {logoSrc ? (
-              <Image
+              <LogoImage
                 src={logoSrc}
                 alt={logoAlt}
-                width={444}
-                height={90}
-                className={logoImgClass}
-                priority
+                containerClass={logoContainerClass}
+                imgClass={logoImgClass}
               />
             ) : (
               <BrandMark name={siteName} className="text-fg" />
