@@ -41,7 +41,6 @@ export default function OT_DisclosureBlockAdapter({ content, displaySettings = {
         heading={content.heading ?? undefined}
         items={items}
         styleOptions={styleOptions}
-        pa={pa}
       />
     </div>
   )

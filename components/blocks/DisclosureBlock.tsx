@@ -18,7 +18,6 @@ export type DisclosureBlockProps = {
   heading?:      string
   items:         DisclosureItem[]
   styleOptions?: DisclosureStyleOptions
-  pa?:           (prop?: string | { key: string }) => Record<string, string | undefined>
 }
 
 // ─── Marker helpers ───────────────────────────────────────────────────────────
@@ -116,7 +115,6 @@ export default function DisclosureBlock({
   heading,
   items,
   styleOptions = {},
-  pa = () => ({}),
 }: DisclosureBlockProps) {
   const { style = 'finePrint', markerStyle = 'numeric' } = styleOptions
   const showMarkers = items.length > 1
@@ -131,11 +129,11 @@ export default function DisclosureBlock({
     >
       <div className={innerCva({ style })}>
         {heading && (
-          <p className={headingCva({ style })} {...pa('heading')}>
+          <p className={headingCva({ style })}>
             {heading}
           </p>
         )}
-        <ol className={listCva({ style })} {...pa('items')}>
+        <ol className={listCva({ style })}>
           {items.map((item, i) => (
             <li key={i} className="flex items-start">
               {showMarkers && (
