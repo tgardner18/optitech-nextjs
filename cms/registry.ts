@@ -34,6 +34,7 @@ import { OT_LocationListingDefault } from '@/cms/display-templates/OT_LocationLi
 import { OT_ContentRecommendationsDefault } from '@/cms/display-templates/OT_ContentRecommendationsDefault'
 import { OT_ProductRecommendationsDefault } from '@/cms/display-templates/OT_ProductRecommendationsDefault'
 import { OT_ComparisonTableDefault }        from '@/cms/display-templates/OT_ComparisonTableDefault'
+import { OT_DisclosureBlockDefault }       from '@/cms/display-templates/OT_DisclosureBlockDefault'
 
 // Content type definitions — required at runtime so the SDK's query builder
 // can generate the correct GraphQL fragments for each type
@@ -89,6 +90,8 @@ import { OT_ComparisonCell }        from '@/cms/content-types/OT_ComparisonCell'
 import { OT_ComparisonRow }         from '@/cms/content-types/OT_ComparisonRow'
 import { OT_ComparisonColumn }      from '@/cms/content-types/OT_ComparisonColumn'
 import { OT_ComparisonTableBlock }  from '@/cms/content-types/OT_ComparisonTableBlock'
+import { OT_DisclosureItem }        from '@/cms/content-types/OT_DisclosureItem'
+import { OT_DisclosureBlock }       from '@/cms/content-types/OT_DisclosureBlock'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -139,6 +142,7 @@ import OT_LocationProfileAdapter             from '@/cms/components/OT_LocationP
 import OT_ContentRecommendationsBlockAdapter from '@/cms/components/OT_ContentRecommendationsBlock'
 import OT_ProductRecommendationsBlockAdapter from '@/cms/components/OT_ProductRecommendationsBlock'
 import OT_ComparisonTableBlockAdapter        from '@/cms/components/OT_ComparisonTableBlock'
+import OT_DisclosureBlockAdapter            from '@/cms/components/OT_DisclosureBlock'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -190,6 +194,7 @@ initDisplayTemplateRegistry([
   OT_ContentRecommendationsDefault,
   OT_ProductRecommendationsDefault,
   OT_ComparisonTableDefault,
+  OT_DisclosureBlockDefault,
 ])
 
 initContentTypeRegistry([
@@ -245,6 +250,8 @@ initContentTypeRegistry([
   OT_ComparisonRow,
   OT_ComparisonColumn,
   OT_ComparisonTableBlock,
+  OT_DisclosureItem,
+  OT_DisclosureBlock,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -295,6 +302,7 @@ initReactComponentRegistry({
     OT_ContentRecommendationsBlock: OT_ContentRecommendationsBlockAdapter,
     OT_ProductRecommendationsBlock: OT_ProductRecommendationsBlockAdapter,
     OT_ComparisonTableBlock:        OT_ComparisonTableBlockAdapter,
+    OT_DisclosureBlock:             OT_DisclosureBlockAdapter,
     // Preview-only: lets /preview render the shared profile record (not used in compositions)
     OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     OT_LocationProfile:          OT_LocationProfileAdapter,

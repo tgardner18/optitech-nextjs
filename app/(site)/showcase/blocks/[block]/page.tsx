@@ -51,6 +51,7 @@ import FeatureGridPlayground from '../feature-grid-playground'
 import AccordionPlayground   from '../accordion-playground'
 import TabsPlayground        from '../tabs-playground'
 import BannerPlayground      from '../banner-playground'
+import DisclosurePlayground  from '../disclosure-playground'
 import CalloutPlayground     from '../callout-playground'
 import ButtonPlayground      from '../button-playground'
 import TrustRailPlayground   from '../trust-rail-playground'
@@ -64,6 +65,7 @@ const BLOCK_SLUGS = [
   'callout', 'divider', 'event-listing', 'practitioner-listing', 'location-listing',
   'content-recommendations', 'product-recommendations',
   'comparison-table',
+  'disclosure',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -94,6 +96,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'content-recommendations': { label: 'ContentRecommendationsBlock', cmsKey: 'OT_ContentRecommendationsBlock', description: 'Personalized content grid from Optimizely Content Recommendations (Idio). The ia.js tracker builds a per-visitor profile and the block fetches recommendations server-side at render time using the delivery key configured on the ThemeManager. Three color schemes. In production, items are personalized per visitor; the showcase uses static sample articles to demonstrate the layout.' },
   'product-recommendations': { label: 'ProductRecommendationsBlock', cmsKey: 'OT_ProductRecommendationsBlock', description: 'Live product recommendations from Optimizely Product Recommendations (Peerius). The engine returns recommendations client-side (via the peerius:recs event) for the configured widget position; the widget renders a card grid with a "Show all" expand. When the engine returns nothing it shows an empty state. In production, recs are live and personalized; the showcase uses static sample products.' },
   'comparison-table': { label: 'ComparisonTableBlock', cmsKey: 'OT_ComparisonTableBlock', description: 'Side-by-side comparison of plans, tiers, or account types. Grouped rows divide the table into named sections. Cells support a Lucide icon, short text, or both — an empty cell renders a dash. One column can be marked as featured to receive the brand-color treatment and a badge. On mobile a column-selector tab bar replaces the full grid, with swipe gesture support.' },
+  'disclosure':       { label: 'DisclosureBlock',      cmsKey: 'OT_DisclosureBlock',      description: 'Legal and regulatory disclosures, rate notices, and footnotes. Items are auto-numbered (¹ ² ³ or a b c) — single-item blocks suppress the marker. Two styles: Fine Print (ultra-subtle footnote treatment) and Section (slightly elevated zone). Heading and marker style are content-type properties; no display template settings to configure.' },
 }
 
 export function generateStaticParams() {
@@ -2886,6 +2889,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'content-recommendations': return <ContentRecommendationsShowcase />
     case 'product-recommendations': return <ProductRecommendationsShowcase />
     case 'comparison-table':        return <ComparisonTableShowcase />
+    case 'disclosure':              return <><BlockHeader slug="disclosure" /><DisclosurePlayground /></>
     default:                 return notFound()
   }
 }

@@ -44,6 +44,7 @@ export const CATEGORIES: ShowcaseCategory[] = [
       { label: 'Content Recommendations', slug: 'content-recommendations' },
       { label: 'Product Recommendations', slug: 'product-recommendations' },
       { label: 'Comparison Table',        slug: 'comparison-table'        },
+      { label: 'Disclosure',              slug: 'disclosure'              },
     ],
   },
   {

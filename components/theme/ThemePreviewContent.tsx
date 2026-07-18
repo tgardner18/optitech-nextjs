@@ -3,16 +3,17 @@ import BannerBlock from '@/components/blocks/BannerBlock'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const LOGO_IMG_CLASS: Record<string, string> = {
-  full:    'max-h-10 w-auto',
-  icon:    'h-10 w-10 object-contain',
-  compact: 'max-h-7 w-auto max-w-[160px]',
+// Container owns the height; img uses h-full w-auto — mirrors Header.tsx fix.
+const LOGO_CONTAINER_CLASS: Record<string, string> = {
+  full:    'h-10 max-w-[200px]',
+  icon:    'h-10 w-10',
+  compact: 'h-8 max-w-[160px]',
 }
 
-const LOGO_IMG_CLASS_SM: Record<string, string> = {
-  full:    'max-h-9 w-auto',
-  icon:    'h-9 w-9 object-contain',
-  compact: 'max-h-6 w-auto max-w-[140px]',
+const LOGO_CONTAINER_CLASS_SM: Record<string, string> = {
+  full:    'h-9 max-w-[200px]',
+  icon:    'h-9 w-9',
+  compact: 'h-6 max-w-[140px]',
 }
 
 type ColorField = { key: string; label: string; mode: 'dark' | 'light' | 'both' }
@@ -79,13 +80,13 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
               Header size — <code className="font-mono text-fg">logoFit: {logoFit}</code>
             </p>
             <div className="bg-canvas/80 border border-fg/10 px-md py-md flex items-center justify-between">
-              <div className="flex items-center h-10">
-                <Image
+              <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={logoSrc}
                   alt={logoAlt}
-                  width={200}
-                  height={40}
-                  className={`${LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full}${invertDark ? ' logo-invert-dark' : ''}`}
+                  className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
+                  style={{ color: 'transparent' }}
                 />
               </div>
               <div className="hidden sm:flex items-center gap-lg">
@@ -102,13 +103,13 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
           <div>
             <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">Footer size</p>
             <div className="bg-canvas border border-fg/10 px-md py-lg flex items-start justify-between gap-lg">
-              <div className="flex items-center h-9">
-                <Image
+              <div className={LOGO_CONTAINER_CLASS_SM[logoFit] ?? LOGO_CONTAINER_CLASS_SM.full}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={logoSrc}
                   alt={logoAlt}
-                  width={200}
-                  height={40}
-                  className={`${LOGO_IMG_CLASS_SM[logoFit] ?? LOGO_IMG_CLASS_SM.full}${invertDark ? ' logo-invert-dark' : ''}`}
+                  className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
+                  style={{ color: 'transparent' }}
                 />
               </div>
               <p className="text-label tracking-label uppercase text-fg-muted self-end">{copyright}</p>
@@ -125,16 +126,16 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
                   <p className="text-label tracking-label uppercase font-semibold text-brand mb-md">
                     {fit}{fit === logoFit ? ' · active' : ''}
                   </p>
-                  <div className="flex items-center h-10 mb-sm">
-                    <Image
+                  <div className={`${LOGO_CONTAINER_CLASS[fit]} mb-sm`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={logoSrc}
                       alt={logoAlt}
-                      width={200}
-                      height={40}
-                      className={`${LOGO_IMG_CLASS[fit]}${invertDark ? ' logo-invert-dark' : ''}`}
+                      className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
+                      style={{ color: 'transparent' }}
                     />
                   </div>
-                  <p className="font-mono text-label text-fg-muted/60">{LOGO_IMG_CLASS[fit]}</p>
+                  <p className="font-mono text-label text-fg-muted/60">{LOGO_CONTAINER_CLASS[fit]}</p>
                 </div>
               ))}
             </div>
@@ -148,17 +149,23 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
               <div className="grid grid-cols-2 gap-md">
                 <div className="p-md flex flex-col gap-md" style={{ background: 'oklch(12% 0.012 195)' }}>
                   <p className="text-label tracking-label uppercase font-semibold" style={{ color: 'oklch(68% 0.06 195)' }}>Dark mode — filter applied</p>
-                  <Image src={logoSrc} alt={logoAlt} width={200} height={40}
-                    className={LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full}
-                    style={{ filter: 'brightness(0) invert(1)' }}
-                  />
+                  <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoSrc} alt={logoAlt}
+                      className="h-full w-auto max-w-full object-contain object-left"
+                      style={{ color: 'transparent', filter: 'brightness(0) invert(1)' }}
+                    />
+                  </div>
                 </div>
                 <div className="p-md flex flex-col gap-md" style={{ background: 'oklch(97% 0.005 195)' }}>
                   <p className="text-label tracking-label uppercase font-semibold" style={{ color: 'oklch(38% 0.05 195)' }}>Light mode — no filter</p>
-                  <Image src={logoSrc} alt={logoAlt} width={200} height={40}
-                    className={LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full}
-                    style={{ filter: 'none' }}
-                  />
+                  <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoSrc} alt={logoAlt}
+                      className="h-full w-auto max-w-full object-contain object-left"
+                      style={{ color: 'transparent', filter: 'none' }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
