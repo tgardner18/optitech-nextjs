@@ -1,3 +1,4 @@
+import '@/cms/registry'
 import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
 import type { PreviewParams } from '@optimizely/cms-sdk'
