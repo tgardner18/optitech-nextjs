@@ -1,135 +1,142 @@
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
+import { TokenCopyButton } from './TokenCopyButton'
 
 type TokenEntry = { tokenKey?: string; tokenValue?: string }
-
 type Props = { content: any }
 
 export default function OT_TokenManagerAdapter({ content }: Props) {
-  const { pa }    = getPreviewUtils(content)
-  const tokens    = (content?.tokens ?? []) as TokenEntry[]
-  const domains   = (content?.domains ?? []) as string[]
-  const defined   = tokens.filter(t => t?.tokenKey)
+  const { pa }  = getPreviewUtils(content)
+  const tokens  = (content?.tokens ?? []) as TokenEntry[]
+  const domains = (content?.domains ?? []) as string[]
+  const defined = tokens.filter(t => t?.tokenKey)
 
   return (
     <div
       {...pa(content.__composition)}
       className="min-h-screen bg-canvas text-fg"
-      data-theme="dark"
+      data-theme="light"
     >
-      {/* Header */}
-      <div className="border-b border-fg/10 px-md py-sm bg-surface flex items-start gap-md">
-        <div className="flex-1 min-w-0">
-          <span className="text-label tracking-label uppercase font-semibold text-brand">
-            Token Manager Preview
-          </span>
-          <p className="text-label text-fg-muted mt-xs leading-relaxed">
-            Tokens replace <code className="bg-fg/10 px-1 rounded font-mono text-[0.75rem]">{'{{key}}'}</code> placeholders
-            in any content field at render time — headlines, body copy, metadata, CTAs, anywhere.
-            Token keys are language-neutral; values translate per locale.
-          </p>
-        </div>
-        {domains.length > 0 && (
-          <div className="shrink-0 text-right">
-            <p className="text-label text-fg-muted/50 uppercase tracking-label text-[0.7rem] font-semibold mb-xs">
-              Associated domains
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="border-b border-fg/10 bg-surface px-md py-md">
+        <div className="flex items-start gap-lg">
+
+          <div className="flex-1 min-w-0">
+            <p className="text-[0.625rem] font-semibold tracking-[0.18em] uppercase text-fg-muted/50 mb-1">
+              Token Manager
             </p>
-            {domains.map((d, i) => (
-              <p key={i} className="font-mono text-label text-fg-muted/70">{d}</p>
-            ))}
+            <p className="text-label text-fg-muted leading-relaxed max-w-[56ch]">
+              Copy a{' '}
+              <code className="font-mono bg-fg/8 border border-fg/10 px-1 rounded text-[0.75rem] text-fg/70">
+                {'{{key}}'}
+              </code>{' '}
+              placeholder and paste it into any CMS text field. Values update everywhere when edited here — no page edits needed.
+            </p>
           </div>
-        )}
+
+          {domains.length > 0 && (
+            <div className="shrink-0 flex flex-col items-end gap-xs pt-0.5">
+              <p className="text-[0.5625rem] uppercase tracking-[0.15em] text-fg-muted/40 font-semibold">
+                Domains
+              </p>
+              {domains.map((d, i) => (
+                <span
+                  key={i}
+                  className="font-mono text-[0.6875rem] bg-fg/5 border border-fg/10 text-fg-muted/55 px-2 py-0.5 rounded"
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+          )}
+
+        </div>
       </div>
 
-      {/* Token table */}
+      {/* ── Body ───────────────────────────────────────────────────────────── */}
       <div className="px-md pt-lg pb-xl lg:px-lg">
 
-        {/* Author instruction bar */}
-        <div className="bg-brand/10 border border-brand/20 rounded px-md py-sm mb-lg flex items-start gap-sm">
-          <span className="text-brand mt-px shrink-0 text-body">→</span>
-          <p className="text-label text-fg-muted leading-relaxed">
-            To use a token, copy the <strong className="text-fg font-semibold">How to use</strong> string exactly
-            and paste it into any CMS text field. When the page renders the token will be replaced by its value.
-            Editing the value here updates every page that references the token — no page edits needed.
-          </p>
-        </div>
-
         {defined.length === 0 ? (
-          <div className="border border-fg/10 rounded px-lg py-xl text-center">
-            <p className="text-title font-semibold text-fg/40 mb-sm">No tokens defined</p>
-            <p className="text-label text-fg-muted/60">
-              Click <strong className="text-fg/60 font-medium">+ Add item</strong> under Token Definitions in the editor to add your first token.
+          <div className="rounded-md border border-fg/8 bg-surface/40 px-lg py-xl text-center">
+            <p className="text-title font-semibold text-fg/25 mb-sm">No tokens defined</p>
+            <p className="text-label text-fg-muted/45 leading-relaxed">
+              Click{' '}
+              <strong className="text-fg/50 font-medium">+ Add item</strong>{' '}
+              under Token Definitions in the editor panel to add your first token.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-label">
-              <thead>
-                <tr className="border-b border-fg/10">
-                  <th className="text-left py-sm pr-lg text-label uppercase tracking-label text-fg-muted/60 font-semibold w-1/4">
-                    Token Key
-                  </th>
-                  <th className="text-left py-sm pr-lg text-label uppercase tracking-label text-fg-muted/60 font-semibold w-1/3">
-                    How to use in content
-                  </th>
-                  <th className="text-left py-sm text-label uppercase tracking-label text-fg-muted/60 font-semibold">
-                    Renders as
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-fg/5" {...pa('tokens')}>
+          <>
+            {/* ── Token table ──────────────────────────────────────────────── */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-label min-w-120">
+                <thead>
+                  <tr className="border-b-2 border-fg/8">
+                    <th className="w-[24%] pb-sm pr-lg text-left text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-fg-muted/45">
+                      Token key
+                    </th>
+                    <th className="w-[38%] pb-sm pr-lg text-left text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-fg-muted/45">
+                      Paste into content
+                    </th>
+                    <th className="pb-sm text-left text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-fg-muted/45">
+                      Renders as
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-fg/5" {...pa('tokens')}>
+                  {defined.map((token, i) => {
+                    const key         = token.tokenKey?.trim() ?? ''
+                    const value       = token.tokenValue ?? ''
+                    const placeholder = `{{${key}}}`
+                    return (
+                      <tr key={i} className="hover:bg-fg/2 transition-colors duration-75">
+                        <td className="py-2.5 pr-lg align-middle">
+                          <span className="font-mono text-[0.8125rem] text-fg/65">{key}</span>
+                        </td>
+                        <td className="py-2.5 pr-lg align-middle">
+                          <TokenCopyButton text={placeholder} />
+                        </td>
+                        <td className="py-2.5 align-middle">
+                          {value ? (
+                            <span className="text-fg/80 leading-snug">{value}</span>
+                          ) : (
+                            <span className="text-[0.8125rem] italic text-fg/30">no value set</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Quick copy ───────────────────────────────────────────────── */}
+            <div className="mt-xl border-t border-fg/8 pt-lg">
+              <p className="mb-sm text-[0.5625rem] font-semibold uppercase tracking-[0.18em] text-fg-muted/40">
+                Quick copy
+              </p>
+              <div className="flex flex-wrap gap-xs">
                 {defined.map((token, i) => {
-                  const key   = token.tokenKey?.trim() ?? ''
-                  const value = token.tokenValue ?? ''
+                  const key         = token.tokenKey?.trim() ?? ''
+                  const placeholder = `{{${key}}}`
                   return (
-                    <tr key={i} className="group">
-                      <td className="py-sm pr-lg align-middle">
-                        <span className="font-mono text-fg/80">{key}</span>
-                      </td>
-                      <td className="py-sm pr-lg align-middle">
-                        <code className="bg-fg/8 border border-fg/12 px-2 py-0.5 rounded font-mono text-brand text-[0.8125rem]">
-                          {`{{${key}}}`}
-                        </code>
-                      </td>
-                      <td className="py-sm align-middle">
-                        {value ? (
-                          <span className="text-fg">{value}</span>
-                        ) : (
-                          <span className="text-fg-muted/40 italic">no value set</span>
-                        )}
-                      </td>
-                    </tr>
+                    <span key={i} className="inline-flex items-center gap-xs text-label">
+                      <TokenCopyButton text={placeholder} />
+                      {token.tokenValue && (
+                        <span
+                          className="max-w-[14ch] truncate text-fg-muted/40"
+                          title={token.tokenValue}
+                        >
+                          {token.tokenValue}
+                        </span>
+                      )}
+                    </span>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </div>
+          </>
         )}
 
-        {/* Quick-reference */}
-        {defined.length > 0 && (
-          <div className="mt-xl pt-lg border-t border-fg/10">
-            <p className="text-label uppercase tracking-label text-fg-muted/50 font-semibold mb-sm">
-              Quick reference — copy any token string
-            </p>
-            <div className="flex flex-wrap gap-sm">
-              {defined.map((token, i) => {
-                const key = token.tokenKey?.trim() ?? ''
-                return (
-                  <div
-                    key={i}
-                    className="bg-surface border border-fg/10 rounded px-sm py-xs flex items-center gap-xs"
-                  >
-                    <code className="font-mono text-brand text-[0.8125rem]">{`{{${key}}}`}</code>
-                    <span className="text-fg-muted/40">→</span>
-                    <span className="text-fg-muted text-label truncate max-w-[180px]">
-                      {token.tokenValue ?? <em>empty</em>}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
