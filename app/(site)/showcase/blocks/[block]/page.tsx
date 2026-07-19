@@ -52,9 +52,10 @@ import AccordionPlayground   from '../accordion-playground'
 import TabsPlayground        from '../tabs-playground'
 import BannerPlayground      from '../banner-playground'
 import DisclosurePlayground  from '../disclosure-playground'
-import CalloutPlayground     from '../callout-playground'
-import ButtonPlayground      from '../button-playground'
-import TrustRailPlayground   from '../trust-rail-playground'
+import CalloutPlayground      from '../callout-playground'
+import ButtonPlayground       from '../button-playground'
+import TrustRailPlayground    from '../trust-rail-playground'
+import TokenManagerPlayground from '../token-manager-playground'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ const BLOCK_SLUGS = [
   'content-recommendations', 'product-recommendations',
   'comparison-table',
   'disclosure',
+  'token-manager',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -97,6 +99,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'product-recommendations': { label: 'ProductRecommendationsBlock', cmsKey: 'OT_ProductRecommendationsBlock', description: 'Live product recommendations from Optimizely Product Recommendations (Peerius). The engine returns recommendations client-side (via the peerius:recs event) for the configured widget position; the widget renders a card grid with a "Show all" expand. When the engine returns nothing it shows an empty state. In production, recs are live and personalized; the showcase uses static sample products.' },
   'comparison-table': { label: 'ComparisonTableBlock', cmsKey: 'OT_ComparisonTableBlock', description: 'Side-by-side comparison of plans, tiers, or account types. Grouped rows divide the table into named sections. Cells support a Lucide icon, short text, or both — an empty cell renders a dash. One column can be marked as featured to receive the brand-color treatment and a badge. On mobile a column-selector tab bar replaces the full grid, with swipe gesture support.' },
   'disclosure':       { label: 'DisclosureBlock',      cmsKey: 'OT_DisclosureBlock',      description: 'Legal and regulatory disclosures, rate notices, and footnotes. Items are auto-numbered (¹ ² ³ or a b c) — single-item blocks suppress the marker. Two styles: Fine Print (ultra-subtle footnote treatment) and Section (slightly elevated zone). Heading and marker style are content-type properties; no display template settings to configure.' },
+  'token-manager':    { label: 'TokenManager',          cmsKey: 'OT_TokenManager',          description: 'Global text-token system. Authors define key–value pairs (e.g. product-name → Advantage Checking); any CMS field that contains {{product-name}} receives the value at render time — in the CMS preview and on published pages. Token keys are language-neutral; values can be translated per locale. Singleton shared block, like ThemeManager.' },
 }
 
 export function generateStaticParams() {
@@ -2890,6 +2893,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'product-recommendations': return <ProductRecommendationsShowcase />
     case 'comparison-table':        return <ComparisonTableShowcase />
     case 'disclosure':              return <><BlockHeader slug="disclosure" /><DisclosurePlayground /></>
+    case 'token-manager':           return <><BlockHeader slug="token-manager" /><TokenManagerPlayground /></>
     default:                 return notFound()
   }
 }

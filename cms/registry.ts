@@ -92,6 +92,8 @@ import { OT_ComparisonColumn }      from '@/cms/content-types/OT_ComparisonColum
 import { OT_ComparisonTableBlock }  from '@/cms/content-types/OT_ComparisonTableBlock'
 import { OT_DisclosureItem }        from '@/cms/content-types/OT_DisclosureItem'
 import { OT_DisclosureBlock }       from '@/cms/content-types/OT_DisclosureBlock'
+import { OT_TokenEntry }            from '@/cms/content-types/OT_TokenEntry'
+import { OT_TokenManager }          from '@/cms/content-types/OT_TokenManager'
 
 // OptiForm content types — built-in Forms for Visual Builder element schemas
 import { OptiFormsContainerData }   from '@/cms/content-types/OptiFormsContainerData'
@@ -143,6 +145,7 @@ import OT_ContentRecommendationsBlockAdapter from '@/cms/components/OT_ContentRe
 import OT_ProductRecommendationsBlockAdapter from '@/cms/components/OT_ProductRecommendationsBlock'
 import OT_ComparisonTableBlockAdapter        from '@/cms/components/OT_ComparisonTableBlock'
 import OT_DisclosureBlockAdapter            from '@/cms/components/OT_DisclosureBlock'
+import OT_TokenManagerAdapter               from '@/cms/components/OT_TokenManager'
 
 // OptiForm component adapters
 import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
@@ -160,6 +163,8 @@ import OptiFormsUrlElementAdapter       from '@/cms/components/OptiFormsUrlEleme
 import BlankSectionAdapter    from '@/cms/compositions/Section'
 import RowAdapter             from '@/cms/compositions/Row'
 import ColumnAdapter          from '@/cms/compositions/Column'
+
+import { createTokenAwareResolver } from '@/lib/with-tokens'
 
 initDisplayTemplateRegistry([
   OT_HeroDefault,
@@ -252,6 +257,8 @@ initContentTypeRegistry([
   OT_ComparisonTableBlock,
   OT_DisclosureItem,
   OT_DisclosureBlock,
+  OT_TokenEntry,
+  OT_TokenManager,
   // OptiForm types
   OptiFormsContainerData,
   OptiFormsDependencyRule,
@@ -268,7 +275,7 @@ initContentTypeRegistry([
 ])
 
 initReactComponentRegistry({
-  resolver: {
+  resolver: createTokenAwareResolver({
     // Content blocks
     OT_HeroBlock:        OT_HeroBlockAdapter,
     OT_ButtonBlock:      OT_ButtonBlockAdapter,
@@ -303,6 +310,7 @@ initReactComponentRegistry({
     OT_ProductRecommendationsBlock: OT_ProductRecommendationsBlockAdapter,
     OT_ComparisonTableBlock:        OT_ComparisonTableBlockAdapter,
     OT_DisclosureBlock:             OT_DisclosureBlockAdapter,
+    OT_TokenManager:                OT_TokenManagerAdapter,
     // Preview-only: lets /preview render the shared profile record (not used in compositions)
     OT_PractitionerProfile:      OT_PractitionerProfileAdapter,
     OT_LocationProfile:          OT_LocationProfileAdapter,
@@ -322,5 +330,5 @@ initReactComponentRegistry({
     OptiFormsTextareaElement:  OptiFormsTextareaElementAdapter,
     OptiFormsTextboxElement:   OptiFormsTextboxElementAdapter,
     OptiFormsUrlElement:       OptiFormsUrlElementAdapter,
-  },
+  }),
 })

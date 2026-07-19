@@ -1,3 +1,4 @@
+import '@/cms/registry'
 import type { PreviewParams } from '@optimizely/cms-sdk'
 import {
   OptimizelyComponent,
@@ -62,6 +63,62 @@ async function PreviewPage({ searchParams }: Props) {
         continue
       }
       break
+    }
+  }
+
+  // ── OT_TokenManager fallback ─────────────────────────────────────────────────
+  // getPreviewContent fails for OT_TokenManager in two ways:
+  //   1. GraphMissingContentTypeError — Turbopack module isolation: the SDK's
+  //      internal contentTypeRegistry instance is separate from the one populated
+  //      by our initContentTypeRegistry call, so getContentType() returns undefined
+  //   2. GraphResponseError "could not be found" — no valid preview_token, so the
+  //      version-specific previewFilter query fails auth
+  // Two additional Graph quirks to work around:
+  //   a. Graph stores keys WITHOUT hyphens; _Content(where: key eq "uuid-with-dashes")
+  //      returns empty — strip hyphens from the key before querying
+  //   b. _Content returns __typename: "_Component" (base type), not "OT_TokenManager" —
+  //      query the specific type so OptimizelyComponent finds the right adapter
+  const isRegistryErr = lastErr instanceof Error && lastErr.message.includes('not available in the component registry')
+  const isNotFoundErr = lastErr instanceof Error && lastErr.message.includes('could not be found')
+  if (!content && (isRegistryErr || isNotFoundErr)) {
+    console.log('[fallback] triggered, err:', (lastErr as Error)?.constructor?.name)
+    const rawKey        = sp('key')
+    const fallbackKey   = rawKey.replace(/-/g, '')  // Graph stores keys without hyphens
+    console.log('[fallback] rawKey:', rawKey, 'stripped:', fallbackKey)
+    const fallbackLoc   = sp('loc') || 'en'
+    const fallbackToken = sp('preview_token') || undefined  // undefined → SDK uses API-key auth
+    if (fallbackKey) {
+      try {
+        const raw = await getClient().request(
+          `query GetTokenManagerPreview($key: String!, $loc: [Locales]) {
+            OT_TokenManager(
+              where: { _metadata: { key: { eq: $key } } }
+              locale: $loc
+              limit: 1
+            ) {
+              items {
+                __typename
+                _metadata { key types url { default hierarchical } }
+                domains
+                tokens { tokenKey tokenValue }
+              }
+            }
+          }`,
+          { key: fallbackKey, loc: [fallbackLoc] },
+          fallbackToken,
+        )
+        const item = (raw as any)?.OT_TokenManager?.items?.[0]
+        console.log('[fallback] item typename:', item?.__typename ?? 'null')
+        if (item) {
+          content = {
+            ...item,
+            __context: { edit: sp('ctx') === 'edit', preview_token: fallbackToken },
+          }
+          lastErr = undefined
+        }
+      } catch (fbErr) {
+        console.error('[fallback] query threw:', (fbErr as Error)?.constructor?.name, (fbErr as Error)?.message?.slice(0, 300))
+      }
     }
   }
 
