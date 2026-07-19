@@ -7,11 +7,29 @@ export function TokenCopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
 
   async function copy() {
+    let ok = false
+    // navigator.clipboard is blocked inside the CMS Visual Builder iframe
+    // (no clipboard-write permission on the iframe). Fall back to the legacy
+    // execCommand approach which works in all iframe contexts.
     try {
       await navigator.clipboard.writeText(text)
+      ok = true
+    } catch {
+      try {
+        const el = document.createElement('textarea')
+        el.value = text
+        el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0'
+        document.body.appendChild(el)
+        el.focus()
+        el.select()
+        ok = document.execCommand('copy')
+        document.body.removeChild(el)
+      } catch {}
+    }
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {}
+    }
   }
 
   return (
