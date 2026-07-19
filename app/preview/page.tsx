@@ -81,10 +81,8 @@ async function PreviewPage({ searchParams }: Props) {
   const isRegistryErr = lastErr instanceof Error && lastErr.message.includes('not available in the component registry')
   const isNotFoundErr = lastErr instanceof Error && lastErr.message.includes('could not be found')
   if (!content && (isRegistryErr || isNotFoundErr)) {
-    console.log('[fallback] triggered, err:', (lastErr as Error)?.constructor?.name)
     const rawKey        = sp('key')
     const fallbackKey   = rawKey.replace(/-/g, '')  // Graph stores keys without hyphens
-    console.log('[fallback] rawKey:', rawKey, 'stripped:', fallbackKey)
     const fallbackLoc   = sp('loc') || 'en'
     const fallbackToken = sp('preview_token') || undefined  // undefined → SDK uses API-key auth
     if (fallbackKey) {
@@ -108,7 +106,6 @@ async function PreviewPage({ searchParams }: Props) {
           fallbackToken,
         )
         const item = (raw as any)?.OT_TokenManager?.items?.[0]
-        console.log('[fallback] item typename:', item?.__typename ?? 'null')
         if (item) {
           content = {
             ...item,
@@ -116,8 +113,8 @@ async function PreviewPage({ searchParams }: Props) {
           }
           lastErr = undefined
         }
-      } catch (fbErr) {
-        console.error('[fallback] query threw:', (fbErr as Error)?.constructor?.name, (fbErr as Error)?.message?.slice(0, 300))
+      } catch {
+        // keep original lastErr
       }
     }
   }
