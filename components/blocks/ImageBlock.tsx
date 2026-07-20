@@ -37,6 +37,8 @@ export type ImageStyleOptions = {
    * the small rendition is hard to read.
    */
   lightbox?: boolean;
+  /** True when rendered on a brand-colored background — inverts frame/animate accents to fg-on-brand */
+  invertedBg?: boolean;
 };
 
 export type ImageBlockProps = {
@@ -86,6 +88,7 @@ export default function ImageBlock({
     captionPosition = "inset",
     shadow          = false,
     lightbox        = false,
+    invertedBg      = false,
   } = styleOptions;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -200,7 +203,7 @@ export default function ImageBlock({
       {animate && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-brand z-20 pointer-events-none"
+          className={`absolute inset-0 z-20 pointer-events-none ${invertedBg ? "bg-fg-on-brand" : "bg-brand"}`}
           style={barStyle}
         />
       )}
@@ -255,7 +258,7 @@ export default function ImageBlock({
           style={frame === "glow" ? glowStyle : undefined}
         >
           {frame === "offset" && (
-            <div aria-hidden="true" className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface" />
+            <div aria-hidden="true" className={`absolute top-3 left-3 right-0 bottom-0 rounded-ot-surface ${invertedBg ? "bg-fg-on-brand/20" : "bg-brand"}`} />
           )}
 
           {lightbox ? (

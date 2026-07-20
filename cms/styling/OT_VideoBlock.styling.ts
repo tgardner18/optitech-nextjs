@@ -14,5 +14,6 @@ export function getVideoStyles(s: Record<string, string | boolean>): VideoStyleO
     frame:           (s.frame === 'none' || !s.frame) ? undefined : s.frame as VideoStyleOptions['frame'],
     captionPosition: (s.captionPosition ?? 'below') as VideoStyleOptions['captionPosition'],
     shadow:          s.shadow === 'true' || s.shadow === true,
+    invertedBg:      s.bgColor === 'brand',
   }
 }

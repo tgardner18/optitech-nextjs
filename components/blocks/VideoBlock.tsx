@@ -20,6 +20,8 @@ export type VideoStyleOptions = {
   captionPosition?: "inset" | "below";
   /** Dual-source chromatic bloom shadow — teal left, signal green right */
   shadow?: boolean;
+  /** True when rendered on a brand-colored background — inverts frame accents to fg-on-brand */
+  invertedBg?: boolean;
 };
 
 export type VideoBlockProps = {
@@ -89,6 +91,7 @@ export default function VideoBlock({
     frame,
     captionPosition = "inset",
     shadow          = false,
+    invertedBg      = false,
   } = styleOptions;
 
   const meta = parseSrc(src);
@@ -191,7 +194,7 @@ export default function VideoBlock({
         {frame === "offset" && (
           <div
             aria-hidden="true"
-            className="absolute top-3 left-3 right-0 bottom-0 bg-brand rounded-ot-surface"
+            className={`absolute top-3 left-3 right-0 bottom-0 rounded-ot-surface ${invertedBg ? "bg-fg-on-brand/20" : "bg-brand"}`}
           />
         )}
 

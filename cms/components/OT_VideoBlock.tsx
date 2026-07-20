@@ -72,12 +72,12 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
       data-stagger={staggerAttr}
     >
-      <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch ${hasBg ? 'px-lg py-xl' : 'py-xl'}`}>
+      <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch md:min-h-125 ${hasBg ? 'px-lg py-xl' : 'py-xl'}`}>
         <div className={`min-w-0 flex flex-col ${mediaOrder}`}>
           {mediaEl}
         </div>
 
-        <div className={`min-w-0 flex flex-col gap-md ${textOrder} ${textEdgePadding}`}>
+        <div className={`min-w-0 flex flex-col gap-md justify-center ${textOrder} ${textEdgePadding}`}>
           {content.eyebrow && (
             <span
               {...pa('eyebrow')}
@@ -100,6 +100,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
             <div
               {...pa('body')}
               data-rich-text=""
+              data-color={onBrand ? 'brand' : undefined}
               className={`text-body leading-relaxed max-w-[60ch] ${onBrand ? 'text-fg-on-brand/80' : 'text-fg-muted'}`}
             >
               {content.body.json
