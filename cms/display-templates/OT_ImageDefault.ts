@@ -6,6 +6,17 @@ export const OT_ImageDefault = displayTemplate({
   contentType: 'OT_ImageBlock',
   isDefault: true,
   settings: {
+    bgColor: {
+      displayName: 'Background',
+      editor:      'select',
+      sortOrder:   5,
+      choices: {
+        canvas:  { displayName: 'Canvas (Default)', sortOrder: 10 },
+        surface: { displayName: 'Surface',          sortOrder: 20 },
+        brand:   { displayName: 'Brand',            sortOrder: 30 },
+        muted:   { displayName: 'Muted',            sortOrder: 40 },
+      },
+    },
     ratio: {
       displayName: 'Aspect ratio',
       editor: 'select',

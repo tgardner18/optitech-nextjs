@@ -6,6 +6,17 @@ export const OT_VideoDefault = displayTemplate({
   contentType: 'OT_VideoBlock',
   isDefault: true,
   settings: {
+    bgColor: {
+      displayName: 'Background',
+      editor:      'select',
+      sortOrder:   5,
+      choices: {
+        canvas:  { displayName: 'Canvas (Default)', sortOrder: 10 },
+        surface: { displayName: 'Surface',          sortOrder: 20 },
+        brand:   { displayName: 'Brand',            sortOrder: 30 },
+        muted:   { displayName: 'Muted',            sortOrder: 40 },
+      },
+    },
     ratio: {
       displayName: 'Aspect ratio',
       editor: 'select',

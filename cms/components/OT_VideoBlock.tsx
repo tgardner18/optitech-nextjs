@@ -36,7 +36,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
     )
   }
 
-  // Editorial: fillHeight=false so CSS aspect-ratio provides height reliably in VB
+  // Editorial: fillHeight=true so the video column stretches to match the text column.
   const mediaEl = (
     <VideoBlock
       src={content.videoUrl ?? ''}
@@ -44,9 +44,14 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ caption: pa('caption') }}
-      fillHeight={false}
+      fillHeight={true}
     />
   )
+
+  const bgColor  = String(displaySettings?.bgColor ?? 'canvas')
+  const bgClass  = ({ surface: 'bg-surface', brand: 'bg-brand', muted: 'bg-fg/5' } as Record<string,string>)[bgColor] ?? ''
+  const hasBg    = Boolean(bgClass)
+  const onBrand  = bgColor === 'brand'
 
   const gridCols =
     mediaSide === 'right'
@@ -64,55 +69,57 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   return (
     <div
       {...pa(content.__composition)}
-      className={`w-full grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-center pt-xl`}
+      className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
       data-stagger={staggerAttr}
     >
-      <div className={`min-w-0 ${mediaOrder}`}>
-        {mediaEl}
-      </div>
+      <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch ${hasBg ? 'px-lg py-xl' : 'py-xl'}`}>
+        <div className={`min-w-0 flex flex-col ${mediaOrder}`}>
+          {mediaEl}
+        </div>
 
-      <div className={`min-w-0 flex flex-col gap-md ${textOrder} ${textEdgePadding}`}>
-        {content.eyebrow && (
-          <span
-            {...pa('eyebrow')}
-            className="text-label uppercase tracking-wide text-brand font-semibold"
-          >
-            {content.eyebrow}
-          </span>
-        )}
-
-        {content.heading && (
-          <h2
-            {...pa('heading')}
-            className="text-headline font-bold text-fg text-wrap-balance leading-tight"
-          >
-            {content.heading}
-          </h2>
-        )}
-
-        {content.body && (
-          <div
-            {...pa('body')}
-            data-rich-text=""
-            className="text-body text-fg-muted leading-relaxed max-w-[60ch]"
-          >
-            {content.body.json
-              ? <RichText content={content.body.json} />
-              : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
-            }
-          </div>
-        )}
-
-        {content.ctaUrl?.default && (
-          <div className="mt-sm">
-            <a
-              href={content.ctaUrl.default}
-              className="btn-signal inline-flex items-center gap-sm px-lg py-sm bg-brand text-fg-on-brand text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick"
+        <div className={`min-w-0 flex flex-col gap-md ${textOrder} ${textEdgePadding}`}>
+          {content.eyebrow && (
+            <span
+              {...pa('eyebrow')}
+              className={`text-label uppercase tracking-wide font-semibold ${onBrand ? 'text-fg-on-brand/70' : 'text-brand'}`}
             >
-              {content.ctaLabel || 'Learn more'}
-            </a>
-          </div>
-        )}
+              {content.eyebrow}
+            </span>
+          )}
+
+          {content.heading && (
+            <h2
+              {...pa('heading')}
+              className={`text-headline font-bold text-wrap-balance leading-tight ${onBrand ? 'text-fg-on-brand' : 'text-fg'}`}
+            >
+              {content.heading}
+            </h2>
+          )}
+
+          {content.body && (
+            <div
+              {...pa('body')}
+              data-rich-text=""
+              className={`text-body leading-relaxed max-w-[60ch] ${onBrand ? 'text-fg-on-brand/80' : 'text-fg-muted'}`}
+            >
+              {content.body.json
+                ? <RichText content={content.body.json} />
+                : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
+              }
+            </div>
+          )}
+
+          {content.ctaUrl?.default && (
+            <div className="mt-sm">
+              <a
+                href={content.ctaUrl.default}
+                className={`btn-signal inline-flex items-center gap-sm px-lg py-sm text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick ${onBrand ? 'bg-fg-on-brand text-brand' : 'bg-brand text-fg-on-brand'}`}
+              >
+                {content.ctaLabel || 'Learn more'}
+              </a>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
