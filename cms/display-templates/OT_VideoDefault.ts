@@ -14,7 +14,6 @@ export const OT_VideoDefault = displayTemplate({
         canvas:  { displayName: 'Canvas (Default)', sortOrder: 10 },
         surface: { displayName: 'Surface',          sortOrder: 20 },
         brand:   { displayName: 'Brand',            sortOrder: 30 },
-        muted:   { displayName: 'Muted',            sortOrder: 40 },
       },
     },
     ratio: {

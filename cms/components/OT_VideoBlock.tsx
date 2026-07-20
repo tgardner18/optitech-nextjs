@@ -49,7 +49,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   )
 
   const bgColor  = String(displaySettings?.bgColor ?? 'canvas')
-  const bgClass  = ({ surface: 'bg-surface', brand: 'bg-brand', muted: 'bg-fg/5' } as Record<string,string>)[bgColor] ?? ''
+  const bgClass  = ({ surface: 'bg-surface', brand: 'bg-brand' } as Record<string,string>)[bgColor] ?? ''
   const hasBg    = Boolean(bgClass)
   const onBrand  = bgColor === 'brand'
 
