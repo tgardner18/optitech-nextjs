@@ -1,5 +1,5 @@
 import 'server-only'
-import { getRequestLocale } from '@/lib/optimizely'
+import { getRequestLocale, getRequestDomain } from '@/lib/optimizely'
 import { getTokenMap, applyTokensToContent } from '@/lib/tokens'
 
 type AnyAdapter = (props: any) => any
@@ -7,7 +7,8 @@ type AnyAdapter = (props: any) => any
 function wrapWithTokens(Adapter: AnyAdapter): AnyAdapter {
   return async function TokenAwareAdapter(props: any) {
     const locale = await getRequestLocale()
-    const tokens = await getTokenMap(locale)
+    const domain = await getRequestDomain()
+    const tokens = await getTokenMap(locale, domain)
     // Fast path: no tokens defined — skip the deep-replace entirely.
     if (!Object.keys(tokens).length) return Adapter(props)
     const content = props.content != null
