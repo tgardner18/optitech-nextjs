@@ -266,7 +266,7 @@ export default function ImageBlock({
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className={`${fillHeight ? "flex-1 " : ""}block w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
+              className={`${fillHeight ? "flex-1 flex flex-col" : "block"} w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
             >
               {imageContainerEl}
             </button>
