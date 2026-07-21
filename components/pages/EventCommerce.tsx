@@ -26,6 +26,13 @@ function savings(nonMember: string, member: string): string {
   return `$${Number.isInteger(diff) ? diff : diff.toFixed(2)}`
 }
 
+function savingsPct(nonMember: string, member: string): number {
+  const a = parseDollars(nonMember)
+  const b = parseDollars(member)
+  if (a === null || b === null || a <= 0 || b >= a) return 0
+  return Math.round(((a - b) / a) * 100)
+}
+
 interface Props {
   productId?:       string | null
   nonMemberPrice?:  string | null
@@ -33,6 +40,7 @@ interface Props {
   registrationUrl?: string | null
   isVirtual?:       boolean
   initialIsMember?: boolean
+  restrictions?:    string | null
 }
 
 export default function EventCommerce({
@@ -42,6 +50,7 @@ export default function EventCommerce({
   registrationUrl,
   isVirtual = false,
   initialIsMember = false,
+  restrictions,
 }: Props) {
   const [mounted,  setMounted]  = useState(false)
   const [isMember, setIsMember] = useState(initialIsMember)
@@ -85,7 +94,56 @@ export default function EventCommerce({
     )
   }
 
-  // ── Paid event ───────────────────────────────────────────────────────────────
+  // ── Non-restricted paid event — show both prices as a membership incentive ───
+  const isRestricted = restrictions === 'bankMember'
+  if (hasPricing && !isRestricted && nonMemberPrice && memberPrice) {
+    const pct = savingsPct(nonMemberPrice, memberPrice)
+    return (
+      <>
+        <div className="px-lg pt-md pb-lg border-t border-fg/10 space-y-2">
+          {productId && (
+            <p className="text-xs text-fg-muted/60 font-mono mb-3">ID: {productId}</p>
+          )}
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-semibold" style={{ color: GOLD }}>ABA Member Price</span>
+            <span className="text-lg font-bold text-fg">{memberPrice}</span>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm text-fg-muted">Non-Member Price</span>
+            <span className="text-lg text-fg-muted">{nonMemberPrice}</span>
+          </div>
+          {pct > 0 && (
+            <p className="text-sm font-bold pt-1" style={{ color: GOLD }}>
+              Save {pct}% as a member
+            </p>
+          )}
+        </div>
+        <style>{`
+          .aba-cart-btn {
+            transition: background-color 200ms ease, transform 150ms ease;
+          }
+          .aba-cart-btn:not(:disabled):hover { transform: translateY(-1px); }
+          .aba-cart-btn:not(:disabled):active { transform: translateY(0); }
+        `}</style>
+        <button
+          type="button"
+          onClick={addToCart}
+          disabled={added}
+          className="aba-cart-btn group flex w-full items-center justify-center gap-2 rounded-ot-control px-lg py-md text-label uppercase tracking-label font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-default"
+          style={{ backgroundColor: added ? '#15803d' : NAVY, outlineColor: NAVY }}
+          aria-live="polite"
+        >
+          {added ? (
+            <><Check size={16} strokeWidth={2.5} className="flex-none" aria-hidden />Added to Cart</>
+          ) : (
+            <><ShoppingCart size={16} strokeWidth={1.75} className="flex-none motion-safe:transition-transform duration-150 group-hover:scale-110" aria-hidden />Add to Cart</>
+          )}
+        </button>
+      </>
+    )
+  }
+
+  // ── Paid event — restricted (member gating) ──────────────────────────────────
   const showMemberRate = mounted && isMember && !!memberPrice
   const saving         = showMemberRate && nonMemberPrice ? savings(nonMemberPrice, memberPrice!) : ''
 

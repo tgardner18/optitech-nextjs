@@ -406,6 +406,7 @@ export default async function EventPage({ content, pa }: Props) {
                   registrationUrl={regUrl}
                   isVirtual={isVirtual}
                   initialIsMember={initialIsMember}
+                  restrictions={restrictions}
                 />
 
                 {/* Fallback: plain register link when no commerce fields are set */}
