@@ -55,58 +55,55 @@ export default function EventMemberGate({
   return (
     <>
       {teaserHtml && (
-        <div className="relative">
+        <div className="relative mb-2">
           <div
             data-rich-text=""
             data-color="canvas"
             className="max-w-(--ot-measure-wide) [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty"
-            // CMS-managed rich text
             dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(teaserHtml) }}
           />
-          {/* Gradient fade from content into wall */}
           <div
-            className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+            className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
             style={{ background: 'linear-gradient(to bottom, transparent, var(--ot-canvas, #fff))' }}
             aria-hidden
           />
         </div>
       )}
 
-      {/* Sign-in wall */}
-      <div
-        className={`flex flex-col items-center text-center rounded-ot-surface border border-fg/10 bg-surface px-8 py-12 ${teaserHtml ? '-mt-4' : 'mt-0'}`}
-      >
-        <span
-          className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-5"
-          style={{ backgroundColor: `${NAVY}12` }}
+      {/* Sign-in wall — block layout (not flex-col items-center) to prevent text collapse */}
+      <style>{`
+        .aba-wall-signin {
+          background-color: ${NAVY};
+          transition: background-color 150ms ease, transform 150ms ease;
+        }
+        .aba-wall-signin:hover { background-color: ${NAVY_D}; transform: translateY(-1px); }
+        .aba-wall-signin:active { transform: translateY(0); }
+        .aba-wall-register {
+          border: 1.5px solid ${NAVY}55;
+          color: ${NAVY};
+          transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+        }
+        .aba-wall-register:hover { background-color: ${NAVY}08; border-color: ${NAVY}; transform: translateY(-1px); }
+        .aba-wall-register:active { transform: translateY(0); }
+      `}</style>
+
+      <div className="w-full text-center rounded-ot-surface border border-fg/10 bg-surface px-8 py-12">
+        <div
+          className="mx-auto flex items-center justify-center w-14 h-14 rounded-full mb-5"
+          style={{ backgroundColor: `${NAVY}10` }}
           aria-hidden
         >
-          <ShieldCheck size={22} strokeWidth={1.75} style={{ color: NAVY }} />
-        </span>
+          <ShieldCheck size={26} strokeWidth={1.5} style={{ color: NAVY }} />
+        </div>
 
         <h3 className="text-title font-semibold text-fg mb-2">
           Sign in to see additional details
         </h3>
-        <p className="text-sm text-fg-muted mb-7 max-w-xs leading-relaxed">
-          Full event details, agenda, and speakers are available to ABA Bank Members.
+        <p className="mx-auto text-sm text-fg-muted mb-8 leading-relaxed" style={{ maxWidth: '36ch' }}>
+          Agenda, speakers, and full event details are exclusive to ABA Bank Members.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <style>{`
-            .aba-wall-signin {
-              background-color: ${NAVY};
-              transition: background-color 150ms ease, transform 150ms ease;
-            }
-            .aba-wall-signin:hover { background-color: ${NAVY_D}; transform: translateY(-1px); }
-            .aba-wall-signin:active { transform: translateY(0); }
-            .aba-wall-register {
-              border: 2px solid ${NAVY};
-              color: ${NAVY};
-              transition: background-color 150ms ease, transform 150ms ease;
-            }
-            .aba-wall-register:hover { background-color: ${NAVY}0f; transform: translateY(-1px); }
-            .aba-wall-register:active { transform: translateY(0); }
-          `}</style>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('aba-open-signin'))}
@@ -129,13 +126,6 @@ export default function EventMemberGate({
             </a>
           )}
         </div>
-
-        {/* After hydration: if still not mounted, show nothing sensitive */}
-        {!mounted && (
-          <p className="mt-4 text-xs text-fg-muted/60">
-            Already a member? Sign in above to access all event details.
-          </p>
-        )}
       </div>
     </>
   )

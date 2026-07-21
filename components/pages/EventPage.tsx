@@ -11,8 +11,9 @@ import {
   timeZoneAbbr,
   getInitials,
 } from '@/lib/eventFormat'
-import EventMemberGate from './EventMemberGate'
-import EventCommerce   from './EventCommerce'
+import EventMemberGate       from './EventMemberGate'
+import EventCommerce          from './EventCommerce'
+import EventRestrictedLayout  from './EventRestrictedLayout'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -256,139 +257,13 @@ export default async function EventPage({ content, pa }: Props) {
         </header>
       )}
 
-      {/* ── Body — 65/35 two-column ──────────────────────────────────────────── */}
+      {/* ── Body — 65/35 two-column (sidebar hidden for restricted non-members) ── */}
       <section className="bg-canvas pt-xl pb-2xl">
         <div className="mx-auto max-w-5xl px-md lg:px-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-[65fr_35fr] gap-xl items-start">
-
-            {/* Main column — wrapped in gate for member-restricted events */}
-            <div className="order-2 lg:order-1 min-w-0">
-              <EventMemberGate
-                restrictions={restrictions}
-                teaserHtml={teaserHtml}
-                registrationUrl={regUrl}
-                initialIsMember={initialIsMember}
-              >
-                {/* Description */}
-                {description?.html && (
-                  <div
-                    data-rich-text=""
-                    data-color="canvas"
-                    className="max-w-(--ot-measure-wide) [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty [&>p:first-of-type]:mb-lg"
-                    {...pa?.('description')}
-                    // CMS-managed rich text — not user input
-                    dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(description.html) }}
-                  />
-                )}
-
-                {/* Agenda */}
-                {agenda && agenda.length > 0 && (
-                  <section className="mt-2xl" {...pa?.('agenda')}>
-                    <SectionHeading>Agenda</SectionHeading>
-                    <ol className="relative">
-                      {agenda.map((item, i) => {
-                        const isLast = i === agenda.length - 1
-                        const t = splitTimeRange(item.time)
-                        return (
-                          <li key={i} className="flex gap-md pb-xl last:pb-0">
-                            <div className="w-22 flex-none pt-0.5 text-right font-mono text-xs leading-tight whitespace-nowrap">
-                              {t && (
-                                t.end ? (
-                                  <>
-                                    <span className="block text-fg font-medium">{t.start}</span>
-                                    <span className="block text-fg-muted">– {t.end}</span>
-                                  </>
-                                ) : (
-                                  <span className="block text-fg font-medium">{t.start}</span>
-                                )
-                              )}
-                            </div>
-                            <div className="relative flex-none w-2.5 self-stretch">
-                              <span className="absolute left-1/2 -translate-x-1/2 top-1 block w-2.5 h-2.5 rounded-full border-2 border-brand bg-canvas" aria-hidden />
-                              {!isLast && (
-                                <span
-                                  className="absolute left-1/2 -translate-x-1/2 top-4 bottom-0 block w-px"
-                                  style={{ background: 'oklch(from var(--ot-brand) l c h / 0.25)' }}
-                                  aria-hidden
-                                />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0 pb-1">
-                              {item.title && <p className="text-body font-semibold text-fg leading-snug">{item.title}</p>}
-                              {item.description && <p className="text-body text-fg-muted mt-xs text-pretty">{item.description}</p>}
-                              {item.speaker && (
-                                <p className="flex items-center gap-xs mt-sm text-xs italic text-brand">
-                                  <User size={12} strokeWidth={1.75} className="flex-none" aria-hidden />
-                                  {item.speaker}
-                                </p>
-                              )}
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
-                  </section>
-                )}
-
-                {/* Speakers */}
-                {speakers && speakers.length > 0 && (
-                  <section className="mt-2xl" {...pa?.('speakers')}>
-                    <SectionHeading>Speakers</SectionHeading>
-                    <ul className="flex flex-col gap-3">
-                      {speakers.map((sp, i) => {
-                        const photo    = sp.headshot?.url?.default || null
-                        const profile  = sp.profileUrl?.default || null
-                        const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
-                        const initials = getInitials(sp.name)
-                        return (
-                          <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 rounded-ot-surface overflow-hidden bg-surface border border-fg/10 px-6 py-5">
-                            {photo ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={photo}
-                                alt={sp.name ?? ''}
-                                className="flex-none w-24 h-24 rounded-full object-cover"
-                                style={{ boxShadow: '0 0 0 2px oklch(from var(--ot-brand) l c h / 0.3)' }}
-                              />
-                            ) : (
-                              <div
-                                className="flex-none flex items-center justify-center w-24 h-24 rounded-full text-[1.5rem] font-bold text-brand"
-                                style={{
-                                  background: 'oklch(from var(--ot-brand) l c h / 0.15)',
-                                  border:     '1px solid oklch(from var(--ot-brand) l c h / 0.3)',
-                                }}
-                                aria-hidden
-                              >
-                                {initials || <User size={32} strokeWidth={1.75} aria-hidden />}
-                              </div>
-                            )}
-                            <div className="min-w-0 flex-1 text-center md:text-left">
-                              {sp.name && <p className="text-title font-bold text-fg leading-snug">{sp.name}</p>}
-                              {subline && <p className="text-sm text-fg-muted mt-0.5">{subline}</p>}
-                              {sp.bio && <p className="text-sm text-fg-muted/80 leading-snug mt-sm line-clamp-3 text-pretty">{sp.bio}</p>}
-                              {profile && (
-                                <a
-                                  href={profile}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="group mt-sm inline-flex items-center gap-xs text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                                >
-                                  View Profile
-                                  <ArrowRight size={13} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
-                                </a>
-                              )}
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </section>
-                )}
-              </EventMemberGate>
-            </div>
-
-            {/* Sidebar */}
-            <aside className="order-1 lg:order-2 lg:sticky lg:top-24 min-w-0">
+          <EventRestrictedLayout
+            isRestricted={isRestricted}
+            initialSidebar={!isRestricted || initialIsMember}
+            sidebar={
               <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10">
                 <div className="p-lg flex flex-col">
                   {rows.map((row, i) => (
@@ -397,8 +272,6 @@ export default async function EventPage({ content, pa }: Props) {
                     </div>
                   ))}
                 </div>
-
-                {/* Commerce — pricing + CTA (replaces the old plain Register link) */}
                 <EventCommerce
                   productId={productId}
                   nonMemberPrice={nonMemberPrice}
@@ -408,13 +281,131 @@ export default async function EventPage({ content, pa }: Props) {
                   initialIsMember={initialIsMember}
                   restrictions={restrictions}
                 />
-
-                {/* Fallback: plain register link when no commerce fields are set */}
-                {!hasPricing && !regUrl && null}
               </div>
-            </aside>
+            }
+          >
+            <EventMemberGate
+              restrictions={restrictions}
+              teaserHtml={teaserHtml}
+              registrationUrl={regUrl}
+              initialIsMember={initialIsMember}
+            >
+              {/* Description */}
+              {description?.html && (
+                <div
+                  data-rich-text=""
+                  data-color="canvas"
+                  className="max-w-(--ot-measure-wide) [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty [&>p:first-of-type]:mb-lg"
+                  {...pa?.('description')}
+                  dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(description.html) }}
+                />
+              )}
 
-          </div>
+              {/* Agenda */}
+              {agenda && agenda.length > 0 && (
+                <section className="mt-2xl" {...pa?.('agenda')}>
+                  <SectionHeading>Agenda</SectionHeading>
+                  <ol className="relative">
+                    {agenda.map((item, i) => {
+                      const isLast = i === agenda.length - 1
+                      const t = splitTimeRange(item.time)
+                      return (
+                        <li key={i} className="flex gap-md pb-xl last:pb-0">
+                          <div className="w-22 flex-none pt-0.5 text-right font-mono text-xs leading-tight whitespace-nowrap">
+                            {t && (
+                              t.end ? (
+                                <>
+                                  <span className="block text-fg font-medium">{t.start}</span>
+                                  <span className="block text-fg-muted">– {t.end}</span>
+                                </>
+                              ) : (
+                                <span className="block text-fg font-medium">{t.start}</span>
+                              )
+                            )}
+                          </div>
+                          <div className="relative flex-none w-2.5 self-stretch">
+                            <span className="absolute left-1/2 -translate-x-1/2 top-1 block w-2.5 h-2.5 rounded-full border-2 border-brand bg-canvas" aria-hidden />
+                            {!isLast && (
+                              <span
+                                className="absolute left-1/2 -translate-x-1/2 top-4 bottom-0 block w-px"
+                                style={{ background: 'oklch(from var(--ot-brand) l c h / 0.25)' }}
+                                aria-hidden
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 pb-1">
+                            {item.title && <p className="text-body font-semibold text-fg leading-snug">{item.title}</p>}
+                            {item.description && <p className="text-body text-fg-muted mt-xs text-pretty">{item.description}</p>}
+                            {item.speaker && (
+                              <p className="flex items-center gap-xs mt-sm text-xs italic text-brand">
+                                <User size={12} strokeWidth={1.75} className="flex-none" aria-hidden />
+                                {item.speaker}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </section>
+              )}
+
+              {/* Speakers */}
+              {speakers && speakers.length > 0 && (
+                <section className="mt-2xl" {...pa?.('speakers')}>
+                  <SectionHeading>Speakers</SectionHeading>
+                  <ul className="flex flex-col gap-3">
+                    {speakers.map((sp, i) => {
+                      const photo    = sp.headshot?.url?.default || null
+                      const profile  = sp.profileUrl?.default || null
+                      const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
+                      const initials = getInitials(sp.name)
+                      return (
+                        <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 rounded-ot-surface overflow-hidden bg-surface border border-fg/10 px-6 py-5">
+                          {photo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={photo}
+                              alt={sp.name ?? ''}
+                              className="flex-none w-24 h-24 rounded-full object-cover"
+                              style={{ boxShadow: '0 0 0 2px oklch(from var(--ot-brand) l c h / 0.3)' }}
+                            />
+                          ) : (
+                            <div
+                              className="flex-none flex items-center justify-center w-24 h-24 rounded-full text-[1.5rem] font-bold text-brand"
+                              style={{
+                                background: 'oklch(from var(--ot-brand) l c h / 0.15)',
+                                border:     '1px solid oklch(from var(--ot-brand) l c h / 0.3)',
+                              }}
+                              aria-hidden
+                            >
+                              {initials || <User size={32} strokeWidth={1.75} aria-hidden />}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1 text-center md:text-left">
+                            {sp.name && <p className="text-title font-bold text-fg leading-snug">{sp.name}</p>}
+                            {subline && <p className="text-sm text-fg-muted mt-0.5">{subline}</p>}
+                            {sp.bio && <p className="text-sm text-fg-muted/80 leading-snug mt-sm line-clamp-3 text-pretty">{sp.bio}</p>}
+                            {profile && (
+                              <a
+                                href={profile}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group mt-sm inline-flex items-center gap-xs text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                              >
+                                View Profile
+                                <ArrowRight size={13} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
+                              </a>
+                            )}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </section>
+              )}
+            </EventMemberGate>
+          </EventRestrictedLayout>
         </div>
       </section>
     </article>
