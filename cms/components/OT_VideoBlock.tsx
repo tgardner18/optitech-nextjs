@@ -21,9 +21,14 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
   const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
+  const contentWidth  = String(displaySettings?.contentWidth ?? 'default')
+  const standaloneCls = contentWidth === 'full' ? 'w-full'
+    : contentWidth === 'wide'    ? 'max-w-7xl mx-auto w-full'
+    : /* default */                'max-w-5xl mx-auto w-full'
+
   if (!hasEditorial) {
     return (
-      <div {...pa(content.__composition)} className="w-full flex-1 min-h-0 flex flex-col" data-stagger={staggerAttr}>
+      <div {...pa(content.__composition)} className={`${standaloneCls} flex-1 min-h-0 flex flex-col`} data-stagger={staggerAttr}>
         <VideoBlock
           src={content.videoUrl ?? ''}
           title={content.title ?? ''}

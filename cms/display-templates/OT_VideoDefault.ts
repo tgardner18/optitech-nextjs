@@ -6,6 +6,16 @@ export const OT_VideoDefault = displayTemplate({
   contentType: 'OT_VideoBlock',
   isDefault: true,
   settings: {
+    contentWidth: {
+      displayName: 'Width',
+      editor:      'select',
+      sortOrder:   1,
+      choices: {
+        default: { displayName: 'Default (Recommended)', sortOrder: 10 },
+        wide:    { displayName: 'Wide',                  sortOrder: 20 },
+        full:    { displayName: 'Full bleed',             sortOrder: 30 },
+      },
+    },
     bgColor: {
       displayName: 'Background',
       editor:      'select',

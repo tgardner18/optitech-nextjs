@@ -33,13 +33,16 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
     </div>
   )
 
+  const contentWidth  = String(displaySettings?.contentWidth ?? 'default')
+  const standaloneCls = contentWidth === 'full' ? 'w-full'
+    : contentWidth === 'wide'    ? 'max-w-7xl mx-auto w-full'
+    : /* default */                'max-w-5xl mx-auto w-full'
+
   if (!hasEditorial) {
-    // Standalone in a VB column: fill the column height so the image matches
-    // adjacent content. 400px floor (from ImageBlock min-h-100) for single-column sections.
     return (
       <div
         {...pa(content.__composition)}
-        className="w-full flex-1 min-h-0 flex flex-col"
+        className={`${standaloneCls} flex-1 min-h-0 flex flex-col`}
         data-stagger={staggerAttr}
       >
         {!imageSrc ? placeholder : (
