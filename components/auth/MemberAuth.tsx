@@ -252,6 +252,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
             alt="American Bankers Association"
             className="h-12 w-auto"
             loading="eager"
+            style={{ filter: 'brightness(0) invert(1)' }}
           />
         </div>
 
