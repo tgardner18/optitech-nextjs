@@ -77,7 +77,8 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
       data-stagger={staggerAttr}
     >
-      <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch md:min-h-125 ${hasBg ? 'px-lg py-xl' : 'py-xl'}`}>
+      <div className={standaloneCls}>
+        <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch md:min-h-125 md:grid-rows-[1fr] ${hasBg ? 'px-lg py-xl' : 'py-xl'}`}>
         <div className={`min-w-0 flex flex-col ${mediaOrder}`}>
           {mediaEl}
         </div>
@@ -125,6 +126,7 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
               </a>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
