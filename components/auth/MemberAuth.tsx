@@ -43,6 +43,10 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
 
   useEffect(() => {
     startTransition(() => { setReady(true); setSignedIn(hasCookie()) })
+    // Any component on the page can open the sign-in modal via this event
+    const onOpenSignIn = () => setOpen(true)
+    window.addEventListener('aba-open-signin', onOpenSignIn)
+    return () => window.removeEventListener('aba-open-signin', onOpenSignIn)
   }, [])
 
   useEffect(() => {
@@ -181,7 +185,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
       role="dialog"
       aria-modal="true"
       aria-label="Member Sign In"
-      className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+      className="fixed inset-0 z-300 flex items-center justify-center p-4"
       style={{ backgroundColor: 'oklch(5% 0.01 255 / 0.75)', backdropFilter: 'blur(6px)' }}
       onClick={e => { if (e.target === e.currentTarget) setOpen(false) }}
     >

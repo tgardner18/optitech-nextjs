@@ -45,6 +45,10 @@ export type EventPageContent = {
   creditType?:     string | null
   creditHours?:    number | null
   registrationUrl?: { default?: string | null } | null
+  restrictions?:    string | null
+  productId?:       string | null
+  nonMemberPrice?:  string | null
+  memberPrice?:     string | null
   speakers?:       Array<{
     name?:         string | null
     title?:        string | null
@@ -130,6 +134,10 @@ const EVENT_PAGE_QUERY = `
         creditHours
         featuredImage { url { default } }
         registrationUrl { default }
+        restrictions
+        productId
+        nonMemberPrice
+        memberPrice
         speakers {
           name
           title

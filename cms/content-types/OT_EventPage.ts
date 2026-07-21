@@ -152,6 +152,50 @@ export const OT_EventPage = contentType({
       sortOrder:   130,
     },
 
+    // ── Access restrictions ──────────────────────────────────────────────────────
+    // Controls content-gating on the event page. When set to 'bankMember',
+    // non-authenticated visitors see only the first paragraph + a sign-in prompt.
+    // The aba_member_session cookie (set by MemberAuth) is used for client-side
+    // gating — this is a demo-fidelity simulation, not a security boundary.
+    restrictions: {
+      type:        'string',
+      format:      'selectOne',
+      displayName: 'Restrictions',
+      description: "Content access level. 'Bank Member' gates the full event details behind the ABA member sign-in flow.",
+      group:       'OT_Content',
+      sortOrder:   135,
+      enum: [
+        { value: 'none',       displayName: 'None' },
+        { value: 'bankMember', displayName: 'Bank Member' },
+      ],
+    },
+
+    // ── Commerce (AMS simulation) ────────────────────────────────────────────────
+    // In production these would be sourced from Nimble AMS. In the demo they are
+    // authored directly in the CMS. When pricing is set, the event page renders
+    // a commerce sidebar section with member/non-member pricing and an Add to Cart CTA.
+    productId: {
+      type:        'string',
+      displayName: 'Product ID',
+      description: 'The AMS product identifier (e.g. ABAWebID0011492). Displayed on the event page commerce section.',
+      group:       'OT_Content',
+      sortOrder:   10,
+    },
+    nonMemberPrice: {
+      type:        'string',
+      displayName: 'Non-Member Price',
+      description: 'Formatted price string for non-members (e.g. $310.00). Leave blank for free events.',
+      group:       'OT_Content',
+      sortOrder:   20,
+    },
+    memberPrice: {
+      type:        'string',
+      displayName: 'Member Price',
+      description: 'Formatted price string for ABA members (e.g. $210.00). Highlighted when visitor is signed in as a member.',
+      group:       'OT_Content',
+      sortOrder:   30,
+    },
+
     // ── Speakers & Agenda ───────────────────────────────────────────────────────
     // Arrays of structured sub-components (OT_EventSpeaker / OT_AgendaItem).
     // Localization is handled field-by-field on the sub-component properties,
