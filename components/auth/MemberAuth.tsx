@@ -185,46 +185,50 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
       style={{ backgroundColor: 'oklch(5% 0.01 255 / 0.75)', backdropFilter: 'blur(6px)' }}
       onClick={e => { if (e.target === e.currentTarget) setOpen(false) }}
     >
-      <style>{`
-        @media (prefers-reduced-motion: no-preference) {
-          .aba-dialog {
-            animation: aba-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
-          }
-          @keyframes aba-in {
-            from { opacity: 0; transform: scale(0.96) translateY(10px); }
-            to   { opacity: 1; transform: scale(1)    translateY(0);    }
-          }
-        }
-        .aba-input {
-          transition: border-color 150ms ease, box-shadow 150ms ease;
-        }
-        .aba-input:focus {
-          outline: none;
-          border-color: ${NAVY};
-          box-shadow: 0 0 0 3px ${NAVY}22;
-        }
-        .aba-signin-btn {
-          background-color: ${NAVY};
-          transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
-        }
-        .aba-signin-btn:hover {
-          background-color: ${NAVY_DARK};
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px ${NAVY}55;
-        }
-        .aba-signin-btn:active {
-          transform: translateY(0);
-          box-shadow: none;
-        }
-      `}</style>
-
+      {/* Inline styles kept here — no Tailwind sizing classes on the card so flex layout
+          can't interfere with width computation inside the centering container. */}
       <div
-        className="aba-dialog relative w-full max-w-sm overflow-hidden"
+        className="aba-dialog relative"
         style={{
+          width: '100%',
+          maxWidth: '28rem',
+          overflow: 'hidden',
           borderRadius: '12px',
-          boxShadow: '0 32px 80px oklch(4% 0.01 255 / 0.6)',
+          boxShadow: '0 32px 80px rgba(4, 5, 20, 0.6)',
         }}
       >
+        <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            .aba-dialog {
+              animation: aba-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+            }
+            @keyframes aba-in {
+              from { opacity: 0; transform: scale(0.96) translateY(10px); }
+              to   { opacity: 1; transform: scale(1)    translateY(0);    }
+            }
+          }
+          .aba-input {
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+          }
+          .aba-input:focus {
+            outline: none;
+            border-color: ${NAVY};
+            box-shadow: 0 0 0 3px ${NAVY}22;
+          }
+          .aba-signin-btn {
+            background-color: ${NAVY};
+            transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+          }
+          .aba-signin-btn:hover {
+            background-color: ${NAVY_DARK};
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px ${NAVY}55;
+          }
+          .aba-signin-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+          }
+        `}</style>
         {/* Close */}
         <button
           type="button"
