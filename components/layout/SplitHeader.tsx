@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import ThemeToggle from '@/components/ui/ThemeToggle'
-import Button from '@/components/ui/Button'
+import MemberAuth from '@/components/auth/MemberAuth'
 import MobileMenu from '@/components/layout/MobileMenu'
 import DesktopNav from '@/components/layout/DesktopNav'
 import { BrandMark } from '@/components/layout/BrandMark'
@@ -150,9 +150,9 @@ export default async function SplitHeader() {
               <ThemeToggle />
             </div>
 
-            {/* CTA — inset from pill edge with generous vertical breathing room */}
+            {/* Member auth — inset from pill edge with generous vertical breathing room */}
             <div className="pr-2.5 pl-xs py-1.5">
-              <Button href={ctaHref} size="sm">{ctaLabel}</Button>
+              <MemberAuth />
             </div>
           </div>
 
@@ -170,7 +170,7 @@ export default async function SplitHeader() {
           <div className="flex items-center gap-sm">
             <SearchTrigger />
             <ThemeToggle />
-            <MobileMenu navItems={navItems} ctaLabel={ctaLabel} ctaHref={ctaHref} enabledLocales={enabledLocales} />
+            <MobileMenu navItems={navItems} enabledLocales={enabledLocales} />
           </div>
         </div>
 

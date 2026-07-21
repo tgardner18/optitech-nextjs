@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer"
 import ScrollToTop from "@/components/ui/ScrollToTop"
 import { SearchProvider } from "@/components/search/SearchProvider"
 import SiteSearch from "@/components/search/SiteSearch"
+import MemberWelcomeBanner from "@/components/auth/MemberWelcomeBanner"
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider"
 import { getRequestLocale, getRequestDomain, getSiteSettings } from "@/lib/optimizely"
 import { resolveNavbarStyle } from "@/lib/theme-axes"
@@ -46,6 +47,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <LocaleProvider locale={locale}>
         <SearchProvider>
           {navbarStyle === 'split-bar' ? <SplitHeader /> : <Header />}
+          <MemberWelcomeBanner />
           <SiteSearch />
           <main id="main-content" className="flex-1">{children}</main>
           <Footer />

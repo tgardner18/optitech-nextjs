@@ -1,5 +1,5 @@
 import ThemeToggle from '@/components/ui/ThemeToggle'
-import Button from '@/components/ui/Button'
+import MemberAuth from '@/components/auth/MemberAuth'
 import MobileMenu from '@/components/layout/MobileMenu'
 import DesktopNav from '@/components/layout/DesktopNav'
 import { BrandMark } from '@/components/layout/BrandMark'
@@ -144,13 +144,13 @@ export default async function Header() {
             <SearchTrigger />
             <LocaleSelector enabledLocales={enabledLocales} />
             <ThemeToggle />
-            <Button href={ctaHref} size="sm">{ctaLabel}</Button>
+            <MemberAuth />
           </div>
 
           <div className="lg:hidden flex items-center gap-sm">
             <SearchTrigger />
             <ThemeToggle />
-            <MobileMenu navItems={navItems} ctaLabel={ctaLabel} ctaHref={ctaHref} enabledLocales={enabledLocales} />
+            <MobileMenu navItems={navItems} enabledLocales={enabledLocales} />
           </div>
 
         </div>

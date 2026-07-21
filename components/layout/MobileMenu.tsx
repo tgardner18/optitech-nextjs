@@ -3,7 +3,7 @@
 import { useState, useEffect, startTransition } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import Button from '@/components/ui/Button'
+import MemberAuth from '@/components/auth/MemberAuth'
 import { LocaleSelectorMobile } from '@/components/layout/LocaleSelector'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
 import type { NavItem } from '@/components/layout/DesktopNav'
@@ -11,12 +11,12 @@ import { useTranslation } from '@/lib/i18n/useTranslation'
 
 type Props = {
   navItems:        NavItem[]
-  ctaLabel:        string
-  ctaHref:         string
+  ctaLabel?:       string
+  ctaHref?:        string
   enabledLocales?: string[]
 }
 
-export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales }: Props) {
+export default function MobileMenu({ navItems, enabledLocales }: Props) {
   const [open,        setOpen]        = useState(false)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
   const [mounted,     setMounted]     = useState(false)
@@ -157,7 +157,7 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
           </nav>
 
           <div className="mt-lg px-md">
-            <Button href={ctaHref} onClick={close}>{ctaLabel}</Button>
+            <MemberAuth mobile onMenuClose={close} />
           </div>
         </div>,
         document.body

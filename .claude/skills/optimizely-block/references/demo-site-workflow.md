@@ -176,6 +176,29 @@ Using flat `nodeType: "component"` blocks (no sections) is simpler and valid. Se
 richText property value format: `{ "value": { "html": "<p>...</p>" } }`  
 string property value format: `{ "value": "plain text" }`
 
+### Array of component sub-items (CRITICAL format)
+
+Array properties (stats, features, tabs, items) use this format — verified live July 2026:
+
+```json
+"stats": {
+  "value": [
+    {
+      "properties": {
+        "value":   { "value": "5,000+" },
+        "label":   { "value": "Member Banks" },
+        "context": { "value": "Across all 50 states" }
+      }
+    }
+  ]
+}
+```
+
+**Each item is `{ "properties": { propName: { "value": "..." } } }` — no `contentType` wrapper.**
+All other formats produce: "Could not read value as 'component'. Expected object."
+
+See `references/cms-composition-updates.md` for the full section/row/column nesting template.
+
 ---
 
 ## Blog Articles (OT_BlogPage)
