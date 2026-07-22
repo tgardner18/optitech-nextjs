@@ -3,20 +3,35 @@
 import { useState, useEffect } from 'react'
 
 const COOKIE       = 'aba_member_session'
+const ROLE_COOKIE  = 'aba_member_role'
 const DISMISS_KEY  = 'aba-banner-dismissed'
 const NAVY         = '#1D4B8C'
 const GOLD         = '#C8962C'
+
+const ROLE_NAMES: Record<string, string> = {
+  compliance_executive: 'Alex',
+  compliance_analyst:   'Morgan',
+}
 
 function isSignedIn() {
   if (typeof document === 'undefined') return false
   return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
 }
 
+function getFirstName(): string {
+  if (typeof document === 'undefined') return 'Alex'
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${ROLE_COOKIE}=`))
+  const role = pair?.slice(ROLE_COOKIE.length + 1) ?? ''
+  return ROLE_NAMES[role] ?? 'Alex'
+}
+
 export default function MemberWelcomeBanner() {
-  const [visible,  setVisible]  = useState(false)
-  const [animate,  setAnimate]  = useState(false)
+  const [visible,   setVisible]   = useState(false)
+  const [animate,   setAnimate]   = useState(false)
+  const [firstName, setFirstName] = useState('Alex')
 
   function show() {
+    setFirstName(getFirstName())
     sessionStorage.removeItem(DISMISS_KEY)
     setVisible(true)
     // One rAF to paint the initial invisible state before animating in
@@ -37,6 +52,7 @@ export default function MemberWelcomeBanner() {
   }
 
   useEffect(() => {
+    if (isSignedIn()) setFirstName(getFirstName())
     check()
     window.addEventListener('aba-member-signed-in',  show)
     window.addEventListener('aba-member-signed-out', hide)
@@ -91,7 +107,7 @@ export default function MemberWelcomeBanner() {
               style={{ backgroundColor: GOLD }}
             />
             <p className="text-sm text-white leading-snug truncate">
-              <span className="font-semibold">Welcome back, Alex.</span>
+              <span className="font-semibold">Welcome back, {firstName}.</span>
               {' '}Your exclusive member resources are now accessible.
             </p>
           </div>

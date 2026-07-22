@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useId } from 'react'
 import {
   LayoutGrid, List, Calendar as CalendarIcon,
   ChevronLeft, ChevronRight, ChevronRight as ChevronGo,
-  MapPin, Video, Award, CalendarX2, ArrowRight,
+  MapPin, Video, Award, CalendarX2, ArrowRight, Lock,
 } from 'lucide-react'
 import type { EventCardData } from '@/lib/events'
 import {
@@ -64,6 +64,26 @@ function TypeBadge({ type, className = '' }: { type: string; className?: string 
   return (
     <span className={`inline-flex items-center rounded-ot-control bg-brand text-fg-on-brand px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}>
       {eventTypeLabel(type)}
+    </span>
+  )
+}
+
+// Members-only badge — ABA gold to signal exclusive content.
+// Positioned as an overlay in cards, inline in list rows.
+const MEMBER_GOLD = '#C8962C'
+
+function MemberBadge({ className = '' }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-0.75 px-2 py-0.5 rounded-ot-control text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}
+      style={{
+        backgroundColor: `${MEMBER_GOLD}1a`,
+        color: MEMBER_GOLD,
+        border: `1px solid ${MEMBER_GOLD}40`,
+      }}
+    >
+      <Lock size={8} strokeWidth={2.5} aria-hidden />
+      Members Only
     </span>
   )
 }
@@ -142,6 +162,10 @@ function EventCard({ event, color }: { event: EventCardData; color: Color }) {
         )}
         {/* Type badge — overlays the top-left of the media / placeholder area */}
         {event.eventType && <TypeBadge type={event.eventType} className="absolute top-3 left-3" />}
+        {/* Members-only badge — top-right overlay */}
+        {event.restrictions === 'bankMember' && (
+          <MemberBadge className="absolute top-3 right-3" />
+        )}
       </div>
 
       {/* Body */}
@@ -195,7 +219,12 @@ function EventListRow({ event }: { event: EventCardData }) {
     >
       <DateBlock event={event} />
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-xs">
-        {event.eventType && <TypeBadge type={event.eventType} className="self-start" />}
+        {(event.eventType || event.restrictions === 'bankMember') && (
+          <div className="flex flex-wrap items-center gap-xs self-start">
+            {event.eventType && <TypeBadge type={event.eventType} />}
+            {event.restrictions === 'bankMember' && <MemberBadge />}
+          </div>
+        )}
         <h3 className="text-title leading-title font-semibold text-fg text-balance group-hover:underline decoration-fg/20 underline-offset-2">
           {event.title}
         </h3>

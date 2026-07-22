@@ -3,47 +3,100 @@
 import { useState, useEffect, useRef, startTransition } from 'react'
 import { createPortal } from 'react-dom'
 
-const COOKIE      = 'aba_member_session'
-const DEMO_EMAIL  = 'member@aba.com'
-const DEMO_PASS   = 'Member1234'
-const MEMBER      = { first: 'Alex', full: 'Alex Reynolds', initials: 'AR', type: 'Preferred Member', since: '2019' }
-const LOGO_SRC    = 'https://app-epsaastroti73molt001.cms.optimizely.com/siteassets/f1eee953a1dd47f184819db5f8f02699/theme/aba-logo.svg'
-const NAVY        = '#1D4B8C'
-const NAVY_DARK   = '#153970'
-const GOLD        = '#C8962C'
+// ─── Personas ──────────────────────────────────────────────────────────────────
 
-function hasCookie() {
+const PERSONAS = [
+  {
+    id:       'alex',
+    role:     'compliance_executive',   // written to aba_member_role for Optimizely Web targeting
+    first:    'Alex',
+    full:     'Alex Reynolds',
+    initials: 'AR',
+    title:    'Chief Compliance Officer',
+    email:    'alex.reynolds@aba.com',
+    password: 'Member1234',
+    since:    '2019',
+  },
+  {
+    id:       'morgan',
+    role:     'compliance_analyst',
+    first:    'Morgan',
+    full:     'Morgan Chen',
+    initials: 'MC',
+    title:    'Compliance Analyst',
+    email:    'morgan.chen@aba.com',
+    password: 'Member1234',
+    since:    '2024',
+  },
+] as const
+
+type Persona = typeof PERSONAS[number]
+
+// ─── Cookies ───────────────────────────────────────────────────────────────────
+
+const COOKIE      = 'aba_member_session'   // presence = signed in (existing behaviour)
+const ROLE_COOKIE = 'aba_member_role'      // role slug — read by Optimizely Web targeting
+
+function hasCookie(): boolean {
   if (typeof document === 'undefined') return false
   return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
 }
-function writeCookie() {
-  document.cookie = `${COOKIE}=active; path=/; SameSite=Lax; max-age=${60 * 60 * 24 * 30}`
+
+function getPersonaFromCookie(): Persona {
+  if (typeof document === 'undefined') return PERSONAS[0]
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${ROLE_COOKIE}=`))
+  const role = pair?.slice(ROLE_COOKIE.length + 1) ?? ''
+  return (PERSONAS as readonly Persona[]).find(p => p.role === role) ?? PERSONAS[0]
 }
-function eraseCookie() {
+
+function writeCookies(persona: Persona): void {
+  const opts = `path=/; SameSite=Lax; max-age=${60 * 60 * 24 * 30}`
+  document.cookie = `${COOKIE}=active; ${opts}`
+  document.cookie = `${ROLE_COOKIE}=${persona.role}; ${opts}`
+}
+
+function eraseCookies(): void {
   document.cookie = `${COOKIE}=; path=/; max-age=0; SameSite=Lax`
+  document.cookie = `${ROLE_COOKIE}=; path=/; max-age=0; SameSite=Lax`
 }
+
 function fire(type: 'signed-in' | 'signed-out') {
   window.dispatchEvent(new CustomEvent(`aba-member-${type}`))
 }
 
+// ─── Colours ───────────────────────────────────────────────────────────────────
+
+const LOGO_SRC  = 'https://app-epsaastroti73molt001.cms.optimizely.com/siteassets/f1eee953a1dd47f184819db5f8f02699/theme/aba-logo.svg'
+const NAVY      = '#1D4B8C'
+const NAVY_DARK = '#153970'
+const GOLD      = '#C8962C'
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
 interface Props {
-  mobile?:       boolean
-  onMenuClose?:  () => void
+  mobile?:      boolean
+  onMenuClose?: () => void
 }
 
 export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
-  const [ready,    setReady]    = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
-  const [open,     setOpen]     = useState(false)
-  const [dropOpen, setDropOpen] = useState(false)
-  const [showPw,   setShowPw]   = useState(false)
-  const [email,    setEmail]    = useState(DEMO_EMAIL)
-  const [pass,     setPass]     = useState(DEMO_PASS)
+  const [ready,          setReady]          = useState(false)
+  const [signedIn,       setSignedIn]       = useState(false)
+  const [open,           setOpen]           = useState(false)
+  const [dropOpen,       setDropOpen]       = useState(false)
+  const [showPw,         setShowPw]         = useState(false)
+  const [activePersona,  setActivePersona]  = useState<Persona>(PERSONAS[0])
+  const [selectedPersona, setSelectedPersona] = useState<Persona>(PERSONAS[0])
+  const [email,          setEmail]          = useState(PERSONAS[0].email)
+  const [pass,           setPass]           = useState(PERSONAS[0].password)
   const dropRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    startTransition(() => { setReady(true); setSignedIn(hasCookie()) })
-    // Any component on the page can open the sign-in modal via this event
+    startTransition(() => {
+      const isIn = hasCookie()
+      setReady(true)
+      setSignedIn(isIn)
+      if (isIn) setActivePersona(getPersonaFromCookie())
+    })
     const onOpenSignIn = () => setOpen(true)
     window.addEventListener('aba-open-signin', onOpenSignIn)
     return () => window.removeEventListener('aba-open-signin', onOpenSignIn)
@@ -65,9 +118,16 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
     return () => document.removeEventListener('keydown', fn)
   }, [open])
 
+  function selectPersona(p: Persona) {
+    setSelectedPersona(p)
+    setEmail(p.email)
+    setPass(p.password)
+  }
+
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    writeCookie()
+    writeCookies(selectedPersona)
+    setActivePersona(selectedPersona)
     setSignedIn(true)
     setOpen(false)
     fire('signed-in')
@@ -75,13 +135,13 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
   }
 
   function signOut() {
-    eraseCookie()
+    eraseCookies()
     setSignedIn(false)
     setDropOpen(false)
     fire('signed-out')
   }
 
-  // Skeleton during SSR / hydration — prevents layout shift
+  // Skeleton during SSR / hydration
   if (!ready) {
     return (
       <div
@@ -99,8 +159,8 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
           className="mb-4 pb-4 border-b border-fg/10"
           style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: '12px' }}
         >
-          <p className="text-sm font-semibold text-fg">{MEMBER.full}</p>
-          <p className="text-xs text-fg-muted mt-0.5">{MEMBER.type} · since {MEMBER.since}</p>
+          <p className="text-sm font-semibold text-fg">{activePersona.full}</p>
+          <p className="text-xs text-fg-muted mt-0.5">{activePersona.title}</p>
         </div>
         <button
           type="button"
@@ -121,7 +181,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
           type="button"
           onClick={() => setDropOpen(v => !v)}
           aria-expanded={dropOpen}
-          aria-label={`Account menu for ${MEMBER.full}`}
+          aria-label={`Account menu for ${activePersona.full}`}
           className="flex items-center gap-2 rounded-full pl-1 pr-2.5 py-1 text-fg hover:bg-fg/8 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <span
@@ -129,9 +189,9 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
             className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-[11px] font-bold tracking-wide shrink-0"
             style={{ backgroundColor: NAVY }}
           >
-            {MEMBER.initials}
+            {activePersona.initials}
           </span>
-          <span className="text-sm font-medium hidden xl:block">{MEMBER.first}</span>
+          <span className="text-sm font-medium hidden xl:block">{activePersona.first}</span>
           <svg
             aria-hidden="true"
             width="12" height="12" viewBox="0 0 12 12" fill="none"
@@ -142,10 +202,11 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
         </button>
 
         {dropOpen && (
-          <div className="absolute right-0 top-full mt-2 w-56 rounded-lg bg-canvas border border-fg/10 shadow-xl py-1 z-50">
+          <div className="absolute right-0 top-full mt-2 w-60 rounded-lg bg-canvas border border-fg/10 shadow-xl py-1 z-50">
             <div className="px-4 py-3 border-b border-fg/8">
-              <p className="text-sm font-semibold text-fg leading-snug">{MEMBER.full}</p>
-              <p className="text-xs text-fg-muted mt-0.5">{MEMBER.type} · since {MEMBER.since}</p>
+              <p className="text-sm font-semibold text-fg leading-snug">{activePersona.full}</p>
+              <p className="text-xs text-fg-muted mt-0.5">{activePersona.title}</p>
+              <p className="text-xs mt-1" style={{ color: GOLD }}>Member since {activePersona.since}</p>
             </div>
             <button
               type="button"
@@ -189,13 +250,11 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
       style={{ backgroundColor: 'oklch(5% 0.01 255 / 0.75)', backdropFilter: 'blur(6px)' }}
       onClick={e => { if (e.target === e.currentTarget) setOpen(false) }}
     >
-      {/* Inline styles kept here — no Tailwind sizing classes on the card so flex layout
-          can't interfere with width computation inside the centering container. */}
       <div
         className="aba-dialog relative"
         style={{
           width: '100%',
-          maxWidth: '28rem',
+          maxWidth: '30rem',
           overflow: 'hidden',
           borderRadius: '12px',
           boxShadow: '0 32px 80px rgba(4, 5, 20, 0.6)',
@@ -232,7 +291,26 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
             transform: translateY(0);
             box-shadow: none;
           }
+          .aba-persona-card {
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: border-color 150ms ease, background-color 150ms ease;
+            text-align: left;
+            width: 100%;
+            background: transparent;
+          }
+          .aba-persona-card:hover {
+            border-color: ${GOLD}88;
+            background-color: ${GOLD}08;
+          }
+          .aba-persona-card.selected {
+            border-color: ${GOLD};
+            background-color: ${GOLD}12;
+          }
         `}</style>
+
         {/* Close */}
         <button
           type="button"
@@ -245,7 +323,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
           </svg>
         </button>
 
-        {/* Navy header — logo always readable on brand background */}
+        {/* Navy header */}
         <div
           className="flex items-center justify-center px-8 py-8"
           style={{ backgroundColor: NAVY }}
@@ -268,9 +346,42 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
           <h2 className="text-xl font-semibold mb-1.5" style={{ color: '#111827' }}>
             Member Sign In
           </h2>
-          <p className="text-sm mb-6 leading-relaxed" style={{ color: '#6b7280' }}>
+          <p className="text-sm mb-5 leading-relaxed" style={{ color: '#6b7280' }}>
             Access exclusive member resources and benefits.
           </p>
+
+          {/* Persona selector */}
+          <div className="mb-5">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2.5" style={{ color: '#9ca3af' }}>
+              Sign in as
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {PERSONAS.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectPersona(p)}
+                  className={`aba-persona-card${selectedPersona.id === p.id ? ' selected' : ''}`}
+                  aria-pressed={selectedPersona.id === p.id}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-[10px] font-bold shrink-0"
+                      style={{ backgroundColor: NAVY }}
+                    >
+                      {p.initials}
+                    </span>
+                    <span className="text-sm font-semibold leading-tight" style={{ color: '#111827' }}>
+                      {p.full}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-snug pl-9" style={{ color: '#6b7280' }}>
+                    {p.title}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <form onSubmit={submit} noValidate>
             <div className="mb-4">
@@ -333,7 +444,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
               <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.25"/>
               <path d="M8 7.5v3.5M8 5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            Demo — credentials pre-filled
+            Demo — select a profile and credentials are pre-filled
           </p>
         </div>
       </div>
