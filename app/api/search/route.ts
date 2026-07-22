@@ -41,7 +41,7 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchBlogs($query: String!, $limit: Int!, $locale: String!${domainVar}) {
@@ -75,7 +75,7 @@ function buildContentQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchContent($query: String!, $limit: Int!, $locale: String!${domainVar}) {
@@ -103,7 +103,7 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchBlankExperiences($query: String!, $limit: Int!, $locale: String!${domainVar}) {
@@ -135,7 +135,7 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
 // that map to an in-scope page are emitted. Locale is always applied.
 function buildPractitionerProfileQuery(semantic: boolean): string {
   const ranking = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchPractitioners($query: String!, $limit: Int!, $locale: String!) {
@@ -195,7 +195,7 @@ function buildEventQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchEvents($query: String!, $limit: Int!, $locale: String!${domainVar}) {
