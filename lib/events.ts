@@ -110,6 +110,7 @@ const EVENTS_QUERY = `
         description { html }
         featuredImage { url { default } }
         registrationUrl { default }
+        restrictions
       }
     }
   }
