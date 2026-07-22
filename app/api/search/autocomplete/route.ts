@@ -13,11 +13,15 @@ const SCOPE_QUERY = `
   }
 `
 
-// Autocomplete is powered by a lightweight relevance search rather than
-// Graph's native autocomplete field (which requires queryable indexing,
-// incompatible with the searchable indexing needed for fulltext search).
-// Returning actual content titles as suggestions is also a better demo
-// experience — it shows the content directly, not just word completions.
+// Autocomplete uses a single _Content query so all content types compete on
+// the same relevance score — blogs don't crowd out events just because they're
+// fetched first. We over-fetch (20) then filter out settings/nav singletons
+// client-side, stopping once we have 8 usable suggestions.
+const EXCLUDED_TYPES = new Set([
+  'OT_SiteSettings', 'OT_ThemeManager', 'OT_NavigationItem',
+  'OT_NavigationSubItem', 'OT_FooterColumn', 'OT_FooterLink',
+])
+
 function buildSuggestQuery(withDomain: boolean): string {
   const domainVar   = withDomain ? ', $domain: String' : ''
   const metaFilter  = withDomain
@@ -25,25 +29,17 @@ function buildSuggestQuery(withDomain: boolean): string {
     : '_metadata: { locale: { eq: $locale } }'
   return `
     query SuggestSearch($query: String!, $locale: String!${domainVar}) {
-      OT_BlogPage(
+      _Content(
         orderBy: { _ranking: RELEVANCE }
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
           ${metaFilter}
         }
-        limit: 5
+        limit: 20
       ) {
-        items { headline }
-      }
-      OT_EventPage(
-        orderBy: { _ranking: RELEVANCE }
-        where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
-          ${metaFilter}
+        items {
+          _metadata { displayName types url { default } }
         }
-        limit: 4
-      ) {
-        items { title }
       }
     }
   `
@@ -84,14 +80,17 @@ export async function GET(req: NextRequest) {
 
     const seen        = new Set<string>()
     const suggestions: string[] = []
+    const items: any[] = (data as any)?._Content?.items ?? []
 
-    const headlines: string[] = ((data as any)?.OT_BlogPage?.items  ?? []).map((i: any) => i.headline).filter(Boolean)
-    const titles:    string[] = ((data as any)?.OT_EventPage?.items ?? []).map((i: any) => i.title).filter(Boolean)
-
-    for (const s of [...headlines, ...titles]) {
-      if (!seen.has(s)) {
-        seen.add(s)
-        suggestions.push(s)
+    for (const item of items) {
+      const types: string[]  = item._metadata?.types ?? []
+      const name: string     = item._metadata?.displayName ?? ''
+      if (!name) continue
+      if (!item._metadata?.url?.default) continue
+      if (types.some((t: string) => EXCLUDED_TYPES.has(t))) continue
+      if (!seen.has(name)) {
+        seen.add(name)
+        suggestions.push(name)
         if (suggestions.length >= 8) break
       }
     }

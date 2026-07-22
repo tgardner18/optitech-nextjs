@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
   Search, X, Maximize2, Minimize2,
   FileText, Newspaper, LayoutGrid, Sparkles, Hash, List, SlidersHorizontal,
-  CalendarDays, MapPin, Video, ExternalLink,
+  CalendarDays, MapPin, Video, ExternalLink, Code2,
 } from 'lucide-react'
 import { useSearch } from './SearchProvider'
 import { useTranslation } from '@/lib/i18n/useTranslation'
@@ -68,11 +68,14 @@ export default function SiteSearch() {
   const [suggestions,     setSuggestions]     = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [focusedSugIdx,   setFocusedSugIdx]   = useState(-1)
+  const [showDevPanel,    setShowDevPanel]    = useState(false)
+  const [queryCopied,     setQueryCopied]     = useState(false)
 
   const inputRef           = useRef<HTMLInputElement>(null)
   const resultsRef         = useRef<HTMLElement>(null)
   const debounceRef        = useRef<ReturnType<typeof setTimeout>>(undefined)
   const suggestDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const lastSearchUrlRef   = useRef<string>('')
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -97,6 +100,7 @@ export default function SiteSearch() {
       setSuggestions([])
       setShowSuggestions(false)
       setFocusedSugIdx(-1)
+      setShowDevPanel(false)
     }
   }, [isOpen])
 
@@ -126,7 +130,9 @@ export default function SiteSearch() {
     try {
       const params = new URLSearchParams({ q: q.trim(), type })
       if (useSemanticSearch) params.set('semantic', 'true')
-      const res  = await fetch(`/api/search?${params}`)
+      const fetchUrl = `/api/search?${params}`
+      lastSearchUrlRef.current = fetchUrl
+      const res  = await fetch(fetchUrl)
       const data: SearchResult[] = await res.json()
       setResults(data)
       setFocusedIdx(-1)
@@ -159,8 +165,6 @@ export default function SiteSearch() {
 
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      setSuggestions([])
-      setShowSuggestions(false)
       runSearch(value, typeFilter, semantic)
     }, 350)
   }
@@ -424,40 +428,159 @@ export default function SiteSearch() {
   // ─── Suggestion dropdown ───────────────────────────────────────────────────
 
   function SuggestionList({ compact: isCompact }: { compact: boolean }) {
-    if (!showSuggestions || suggestions.length === 0) return null
     return (
-      <ul
-        role="listbox"
-        aria-label="Search suggestions"
-        data-suggestions-list
-        className={[
-          'absolute top-full left-0 right-0 z-20 overflow-hidden',
-          'bg-canvas border border-fg/12 shadow-[0_8px_32px_oklch(0%_0_0_/_0.20)]',
-          isCompact ? 'rounded-b-ot-surface mt-[1px]' : 'rounded-ot-surface mt-xs',
-        ].join(' ')}
+      <AnimatePresence>
+        {showSuggestions && suggestions.length > 0 && (
+          <motion.div
+            key="suggestions-panel"
+            role="listbox"
+            aria-label="Suggested results"
+            data-suggestions-list
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0,  scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: dur(100) } }}
+            transition={{ duration: dur(180), ease: [0.16, 1, 0.3, 1] }}
+            className={[
+              'absolute top-full left-0 right-0 z-20 overflow-hidden',
+              'bg-canvas border border-fg/12 shadow-[0_12px_40px_oklch(0%_0_0/0.22)]',
+              isCompact ? 'rounded-b-ot-surface mt-px' : 'rounded-ot-surface mt-xs',
+            ].join(' ')}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-3.5 py-2.25 border-b border-fg/8">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={11} className="text-brand/70" aria-hidden />
+                <span className="text-[10px] uppercase tracking-[0.12em] font-bold text-fg-muted/50 select-none">
+                  Suggested results
+                </span>
+              </div>
+              <button
+                type="button"
+                onMouseDown={e => { e.preventDefault(); setShowSuggestions(false); setFocusedSugIdx(-1) }}
+                aria-label="Dismiss suggestions"
+                className="text-fg-muted/30 hover:text-fg-muted transition-colors duration-100 p-0.75 rounded"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            {/* Items */}
+            <ul>
+              {suggestions.map((s, i) => (
+                <li key={s} role="option" aria-selected={focusedSugIdx === i}>
+                  <button
+                    data-suggestion-item
+                    type="button"
+                    onMouseDown={e => { e.preventDefault(); handleSuggestionSelect(s) }}
+                    className={[
+                      'w-full text-left flex items-center gap-sm transition-colors duration-100',
+                      'border-b border-fg/5 last:border-0',
+                      isCompact ? 'px-3.5 py-2.5' : 'px-4.5 py-3.25',
+                      focusedSugIdx === i
+                        ? 'bg-brand/10'
+                        : 'hover:bg-brand/6',
+                    ].join(' ')}
+                  >
+                    <Search size={isCompact ? 11 : 13} className="shrink-0 text-fg-muted/30" aria-hidden />
+                    <span className={`font-medium text-fg flex-1 ${isCompact ? 'text-[13px]' : 'text-[15px]'}`}>
+                      {s}
+                    </span>
+                    <span className="text-[10px] text-fg-muted/25 font-mono shrink-0 ml-sm select-none">
+                      ↵
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
+
+  // ─── Developer query panel ────────────────────────────────────────────────
+
+  function DevQueryPanel() {
+    const url = lastSearchUrlRef.current
+    const ranking = semantic
+      ? '_ranking: SEMANTIC\n_semanticWeight: 1.0'
+      : '_ranking: RELEVANCE'
+    const snippet = `# API request\nGET ${url || '/api/search?q=<query>&type=all'}\n\n# Graph strategy\nordering:  ${ranking.replace('\n', '\n           ')}\nfulltext:  fuzzy: true, synonyms: ONE\npinning:   phrase-based (blogs, events, pages)\nscoping:   OT_ThemeManager.frontEndDomain`
+
+    const handleCopy = () => {
+      navigator.clipboard.writeText(snippet).then(() => {
+        setQueryCopied(true)
+        setTimeout(() => setQueryCopied(false), 1800)
+      })
+    }
+
+    return (
+      <motion.div
+        key="dev-panel"
+        initial={{ opacity: 0, y: 8, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: dur(100) } }}
+        transition={{ duration: dur(200), ease: [0.16, 1, 0.3, 1] }}
+        className="absolute bottom-14 right-5 z-20 w-[min(420px,calc(100vw-40px))]"
+        style={{
+          background: 'oklch(0.11 0.01 250)',
+          borderRadius: 'var(--ot-radius-surface)',
+          border: '1px solid oklch(1 0 0 / 0.10)',
+          boxShadow: '0 16px 48px oklch(0 0 0 / 0.55)',
+          fontFamily: 'var(--font-geist-mono, monospace)',
+        }}
       >
-        {suggestions.map((s, i) => (
-          <li key={s} role="option" aria-selected={focusedSugIdx === i}>
-            <button
-              data-suggestion-item
-              type="button"
-              // mousedown fires before blur — prevent blur so the input stays focused
-              onMouseDown={e => { e.preventDefault(); handleSuggestionSelect(s) }}
-              className={[
-                'w-full text-left flex items-center gap-sm transition-colors duration-100',
-                'border-b border-fg/6 last:border-0',
-                isCompact ? 'px-md py-[10px]' : 'px-[18px] py-[13px]',
-                focusedSugIdx === i ? 'bg-brand/8' : 'hover:bg-brand/6',
-              ].join(' ')}
+        {/* Panel header */}
+        <div
+          className="flex items-center justify-between px-md py-2.5 border-b"
+          style={{ borderColor: 'oklch(1 0 0 / 0.08)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <Code2 size={13} style={{ color: 'oklch(0.72 0.14 175)' }} aria-hidden />
+            <span
+              className="text-[10px] uppercase tracking-[0.12em] font-bold select-none"
+              style={{ color: 'oklch(0.72 0.14 175)' }}
             >
-              <Search size={isCompact ? 11 : 13} className="shrink-0 text-fg-muted/30" aria-hidden />
-              <span className={`font-medium text-fg ${isCompact ? 'text-[13px]' : 'text-[15px]'}`}>
-                {s}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+              Query inspector
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopy}
+            aria-label="Copy query details"
+            className="text-[10px] uppercase tracking-[0.08em] font-bold transition-colors duration-150 px-sm py-1 rounded"
+            style={{
+              color: queryCopied ? 'oklch(0.72 0.14 175)' : 'oklch(0.55 0.01 250)',
+              background: queryCopied ? 'oklch(0.72 0.14 175 / 0.12)' : 'transparent',
+            }}
+          >
+            {queryCopied ? '✓ Copied' : 'Copy'}
+          </button>
+        </div>
+        {/* Panel body */}
+        <pre
+          className="px-md py-md text-[11.5px] leading-relaxed overflow-x-auto whitespace-pre-wrap break-all"
+          style={{ color: 'oklch(0.72 0.01 250)' }}
+        >
+          <span style={{ color: 'oklch(0.55 0.01 250)' }}># API request{'\n'}</span>
+          <span style={{ color: 'oklch(0.85 0.14 175)' }}>GET </span>
+          <span style={{ color: 'oklch(0.82 0.01 250)' }}>{url || '/api/search?q=<query>&type=all'}</span>
+          {'\n\n'}
+          <span style={{ color: 'oklch(0.55 0.01 250)' }}># Graph strategy{'\n'}</span>
+          <span style={{ color: 'oklch(0.65 0.01 250)' }}>ordering:  </span>
+          <span style={{ color: semantic ? 'oklch(0.82 0.18 310)' : 'oklch(0.82 0.01 250)' }}>
+            {semantic ? '_ranking: SEMANTIC  _semanticWeight: 1.0' : '_ranking: RELEVANCE'}
+          </span>
+          {'\n'}
+          <span style={{ color: 'oklch(0.65 0.01 250)' }}>fulltext:  </span>
+          <span style={{ color: 'oklch(0.82 0.01 250)' }}>fuzzy: true, synonyms: ONE</span>
+          {'\n'}
+          <span style={{ color: 'oklch(0.65 0.01 250)' }}>pinning:   </span>
+          <span style={{ color: 'oklch(0.82 0.01 250)' }}>phrase-based (blogs, events, pages)</span>
+          {'\n'}
+          <span style={{ color: 'oklch(0.65 0.01 250)' }}>scoping:   </span>
+          <span style={{ color: 'oklch(0.82 0.01 250)' }}>OT_ThemeManager.frontEndDomain</span>
+        </pre>
+      </motion.div>
     )
   }
 
@@ -734,7 +857,7 @@ export default function SiteSearch() {
 
     return (
       <div
-        className="flex flex-col h-full overflow-hidden"
+        className="relative flex flex-col h-full overflow-hidden"
         style={{
           background: [
             'radial-gradient(ellipse 145% 58% at 50% -4%, oklch(from var(--ot-brand) l c h / 0.38) 0%, transparent 66%)',
@@ -800,7 +923,7 @@ export default function SiteSearch() {
                 value={query}
                 onChange={e => handleQueryChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onBlur={() => setTimeout(() => { setShowSuggestions(false); setFocusedSugIdx(-1) }, 150)}
+                onBlur={() => setTimeout(() => { if (!document.activeElement?.closest('[data-suggestions-list]')) { setShowSuggestions(false); setFocusedSugIdx(-1) } }, 200)}
                 placeholder={t('search.placeholder')}
                 autoComplete="off"
                 spellCheck={false}
@@ -924,6 +1047,29 @@ export default function SiteSearch() {
 
           </div>
         </div>
+
+        {/* Developer query panel + toggle button */}
+        <div className="absolute bottom-5 right-5 z-20 flex flex-col items-end gap-xs">
+          <AnimatePresence>
+            {showDevPanel && DevQueryPanel()}
+          </AnimatePresence>
+          <button
+            type="button"
+            onClick={() => setShowDevPanel(v => !v)}
+            aria-label={showDevPanel ? 'Hide query inspector' : 'Show query inspector'}
+            aria-pressed={showDevPanel}
+            title="Query inspector"
+            className={[
+              'flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200',
+              'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2',
+              showDevPanel
+                ? 'text-brand bg-brand/15 ring-1 ring-brand/30'
+                : 'text-fg-muted/35 bg-canvas/70 ring-1 ring-fg/10 hover:text-fg hover:bg-fg/8 backdrop-blur-sm',
+            ].join(' ')}
+          >
+            <Code2 size={16} />
+          </button>
+        </div>
       </div>
     )
   }
@@ -981,7 +1127,7 @@ export default function SiteSearch() {
                 value={query}
                 onChange={e => handleQueryChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onBlur={() => setTimeout(() => { setShowSuggestions(false); setFocusedSugIdx(-1) }, 150)}
+                onBlur={() => setTimeout(() => { if (!document.activeElement?.closest('[data-suggestions-list]')) { setShowSuggestions(false); setFocusedSugIdx(-1) } }, 200)}
                 placeholder={t('search.placeholderCompact')}
                 autoComplete="off"
                 spellCheck={false}
