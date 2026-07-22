@@ -141,6 +141,7 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
     setSignedIn(false)
     setDropOpen(false)
     fire('signed-out')
+    ;(window as any).zaius?.anonymize?.()
   }
 
   // Skeleton during SSR / hydration
