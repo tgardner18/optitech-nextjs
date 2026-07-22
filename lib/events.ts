@@ -24,6 +24,7 @@ export type EventCardData = {
   creditHours?:     number
   imageUrl?:        string | null
   registrationUrl?: string
+  restrictions?:    string | null
 }
 
 /** Full event content for the event page (components/pages/EventPage.tsx). */
@@ -183,6 +184,7 @@ function toCardData(item: any): EventCardData {
     summary:         stripHtml(item.description?.html) || undefined,
     imageUrl:        item.featuredImage?.url?.default ?? null,
     registrationUrl: item.registrationUrl?.default ?? undefined,
+    restrictions:    item.restrictions ?? null,
   }
 }
 
