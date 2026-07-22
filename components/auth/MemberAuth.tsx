@@ -13,7 +13,7 @@ const PERSONAS = [
     full:     'Alex Reynolds',
     initials: 'AR',
     title:    'Chief Compliance Officer',
-    email:    'alex.reynolds@meridianbank.com',
+    email:    'alex.reynolds@pinnaclebankers.com',
     password: 'Member1234',
     since:    '2019',
   },
