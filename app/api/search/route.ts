@@ -33,20 +33,26 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
     : 'orderBy: { _ranking: RELEVANCE }'
+  // In semantic mode, drop fuzzy/synonyms — those are keyword-expansion features
+  // that dilute the semantic signal by widening the match pool beyond intent.
+  const fulltextArgs = semantic
+    ? 'match: $query'
+    : 'match: $query, fuzzy: true, synonyms: ONE'
   return `
     query SearchBlogs($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_BlogPage(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          _fulltext: { ${fulltextArgs} }
           ${metaFilter}
         }
         limit: $limit
         tracking: { phrase: $query, source: "/search" }
       ) {
         items {
+          _score
           _track
           _metadata { key published url { default base } }
           headline
@@ -66,14 +72,15 @@ function buildContentQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
     : 'orderBy: { _ranking: RELEVANCE }'
+  const fulltextArgs = semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'
   return `
     query SearchContent($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       _Content(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          _fulltext: { ${fulltextArgs} }
           ${metaFilter}
         }
         limit: $limit
@@ -94,14 +101,15 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
     : 'orderBy: { _ranking: RELEVANCE }'
+  const fulltextArgs = semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'
   return `
     query SearchBlankExperiences($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       BlankExperience(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          _fulltext: { ${fulltextArgs} }
           ${metaFilter}
         }
         limit: $limit
@@ -125,14 +133,15 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
 // that map to an in-scope page are emitted. Locale is always applied.
 function buildPractitionerProfileQuery(semantic: boolean): string {
   const ranking = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
     : 'orderBy: { _ranking: RELEVANCE }'
+  const fulltextArgs = semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'
   return `
     query SearchPractitioners($query: String!, $limit: Int!, $locale: String!) {
       OT_PractitionerProfile(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          _fulltext: { ${fulltextArgs} }
           _metadata: { locale: { eq: $locale } }
         }
         limit: $limit
@@ -185,14 +194,15 @@ function buildEventQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
     : 'orderBy: { _ranking: RELEVANCE }'
+  const fulltextArgs = semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'
   return `
     query SearchEvents($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_EventPage(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          _fulltext: { ${fulltextArgs} }
           ${metaFilter}
         }
         limit: $limit
@@ -297,6 +307,7 @@ export async function GET(req: NextRequest) {
       const blogQuery = buildBlogQuery(withDomain, semantic)
       const data = await getClient().request(blogQuery, baseVars)
       const items: any[] = (data as any)?.OT_BlogPage?.items ?? []
+      console.log(`[search:blog] semantic=${semantic} scores:`, items.map(i => ({ title: i.headline, score: i._score })))
       for (const item of items) {
         if (!item._metadata?.url?.default) continue
         if (seen.has(item._metadata.key)) continue
