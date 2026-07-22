@@ -86,8 +86,8 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
   const [showPw,         setShowPw]         = useState(false)
   const [activePersona,  setActivePersona]  = useState<Persona>(PERSONAS[0])
   const [selectedPersona, setSelectedPersona] = useState<Persona>(PERSONAS[0])
-  const [email,          setEmail]          = useState(PERSONAS[0].email)
-  const [pass,           setPass]           = useState(PERSONAS[0].password)
+  const [email,          setEmail]          = useState<string>(PERSONAS[0].email)
+  const [pass,           setPass]           = useState<string>(PERSONAS[0].password)
   const dropRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
