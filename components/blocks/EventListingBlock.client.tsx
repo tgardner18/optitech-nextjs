@@ -75,14 +75,10 @@ const MEMBER_GOLD = '#C8962C'
 function MemberBadge({ className = '' }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-0.75 px-2 py-0.5 rounded-ot-control text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}
-      style={{
-        backgroundColor: `${MEMBER_GOLD}1a`,
-        color: MEMBER_GOLD,
-        border: `1px solid ${MEMBER_GOLD}40`,
-      }}
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-ot-control text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none text-white ${className}`}
+      style={{ backgroundColor: MEMBER_GOLD }}
     >
-      <Lock size={8} strokeWidth={2.5} aria-hidden />
+      <Lock size={9} strokeWidth={2.5} aria-hidden />
       Members Only
     </span>
   )
