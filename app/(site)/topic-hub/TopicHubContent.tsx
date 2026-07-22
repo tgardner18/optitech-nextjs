@@ -200,9 +200,9 @@ const SUGGESTED_TOPICS = [
 
 function SectionHeading({ icon: Icon, label }: { icon: typeof CalendarDays; label: string }) {
   return (
-    <header className="flex items-center gap-sm mb-lg">
-      <Icon size={20} className="text-brand flex-none" aria-hidden />
-      <h2 className="text-headline leading-headline font-bold text-fg">{label}</h2>
+    <header className="flex items-center gap-sm mb-lg pb-sm border-b border-fg/8">
+      <Icon size={16} className="text-brand flex-none" aria-hidden />
+      <h2 className="text-title leading-title font-semibold text-fg">{label}</h2>
     </header>
   )
 }
@@ -296,85 +296,88 @@ export default function TopicHubContent() {
   return (
     <>
       {/* ── Hero ── */}
-      <section className="bg-canvas border-b border-fg/8 px-md py-2xl lg:px-lg">
-        <div className="mx-auto max-w-3xl">
+      <section className="bg-canvas border-b border-fg/8 px-md lg:px-lg py-lg">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-md lg:gap-xl">
 
-          <div className="flex items-center gap-xs mb-md">
-            <Sparkles size={16} className="text-brand" aria-hidden />
-            <span className="text-label font-semibold uppercase tracking-label text-brand">
-              AI-Powered Discovery
-            </span>
-          </div>
+            {/* Brand stamp */}
+            <div className="flex-none lg:w-56 xl:w-64">
+              <div className="flex items-center gap-xs mb-xs">
+                <Sparkles size={13} className="text-brand" aria-hidden />
+                <span className="text-label font-semibold uppercase tracking-label text-brand">
+                  AI-Powered Discovery
+                </span>
+              </div>
+              <h1
+                className="text-display leading-none tracking-display font-extrabold"
+                style={{ WebkitTextStroke: '2px var(--color-brand)', color: 'transparent' }}
+              >
+                Topic Hub
+              </h1>
+            </div>
 
-          <h1 className="text-display leading-display tracking-display font-extrabold text-fg mb-sm">
-            Topic Hub
-          </h1>
-          <p className="text-title leading-title text-fg-muted mb-xl text-pretty">
-            Explore everything we have on any subject. Powered by semantic AI: no exact keywords needed.
-          </p>
+            {/* Search column */}
+            <div className="flex-1 min-w-0">
+              <form onSubmit={handleSubmit} role="search" aria-label="Topic search">
+                <div className="relative">
+                  <Search
+                    size={16}
+                    className="absolute left-md top-1/2 -translate-y-1/2 text-fg-muted/50 pointer-events-none"
+                    aria-hidden
+                  />
+                  <input
+                    ref={inputRef}
+                    type="search"
+                    value={inputValue}
+                    onChange={handleInput}
+                    placeholder="Enter a topic, question, or phrase…"
+                    aria-label="Topic or phrase"
+                    autoFocus
+                    className="w-full pl-10 pr-12 py-md bg-surface border border-fg/15 rounded-ot-control text-body text-fg placeholder:text-fg-muted/40 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 motion-safe:transition-all motion-safe:duration-200 appearance-none"
+                  />
+                  {loading && (
+                    <Loader2
+                      size={16}
+                      className="absolute right-md top-1/2 -translate-y-1/2 text-brand animate-spin"
+                      aria-label="Loading…"
+                    />
+                  )}
+                </div>
+              </form>
 
-          <form onSubmit={handleSubmit} role="search" aria-label="Topic search">
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute left-md top-1/2 -translate-y-1/2 text-fg-muted/50 pointer-events-none"
-                aria-hidden
-              />
-              <input
-                ref={inputRef}
-                type="search"
-                value={inputValue}
-                onChange={handleInput}
-                placeholder="Enter a topic, question, or phrase…"
-                aria-label="Topic or phrase"
-                autoFocus
-                className="w-full pl-[2.75rem] pr-[3rem] py-md bg-surface border border-fg/15 rounded-ot-control text-title text-fg placeholder:text-fg-muted/40 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 motion-safe:transition-all motion-safe:duration-200 appearance-none"
-              />
-              {loading && (
-                <Loader2
-                  size={16}
-                  className="absolute right-md top-1/2 -translate-y-1/2 text-brand animate-spin"
-                  aria-label="Loading…"
-                />
+              {/* Query confirmation — inline, no banner */}
+              {activeQuery && !loading && (
+                <p className="mt-xs text-label text-fg-muted/70">
+                  Showing results for{' '}
+                  <span className="font-semibold text-fg-muted">"{activeQuery}"</span>
+                </p>
+              )}
+
+              {/* Suggested topics */}
+              {!inputValue && (
+                <div className="mt-sm flex flex-wrap gap-xs items-center">
+                  <span className="text-label text-fg-muted/60 shrink-0">Try:</span>
+                  {SUGGESTED_TOPICS.map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => handleSuggest(t)}
+                      className="text-label text-fg-muted border border-fg/15 rounded-ot-control px-sm py-xs hover:border-brand hover:text-fg motion-safe:transition-all motion-safe:duration-150 cursor-pointer"
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          </form>
 
-          {/* Suggested topics — shown only when input is empty */}
-          {!inputValue && (
-            <div className="mt-md flex flex-wrap gap-sm items-center">
-              <span className="text-label text-fg-muted/60 shrink-0">Try:</span>
-              {SUGGESTED_TOPICS.map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => handleSuggest(t)}
-                  className="text-label text-fg-muted border border-fg/15 rounded-ot-control px-sm py-xs hover:border-brand hover:text-fg motion-safe:transition-all motion-safe:duration-150 cursor-pointer"
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
-      {/* ── Results area ── */}
+      {/* ── Results ── */}
       <div className="bg-canvas min-h-[50vh]">
-
-        {/* Query label */}
-        {activeQuery && (
-          <div className="border-b border-fg/8 px-md lg:px-lg py-sm">
-            <div className="mx-auto max-w-7xl">
-              <p className="text-label text-fg-muted">
-                Results for{' '}
-                <span className="font-semibold text-fg">"{activeQuery}"</span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="mx-auto max-w-7xl px-md lg:px-lg py-xl space-y-2xl">
+        <div className="mx-auto max-w-7xl px-md lg:px-lg py-lg space-y-xl">
 
           {/* Events & Training */}
           {(loading || events.length > 0) && (
@@ -429,7 +432,7 @@ export default function TopicHubContent() {
 
           {/* No results */}
           {noResults && (
-            <div className="text-center py-2xl">
+            <div className="text-center py-xl">
               <p className="text-title text-fg-muted">No results found for "{activeQuery}"</p>
               <p className="mt-xs text-body text-fg-muted/60">
                 Try different phrasing or one of the suggested topics above.
@@ -439,8 +442,8 @@ export default function TopicHubContent() {
 
           {/* Initial empty state */}
           {!inputValue && !loading && (
-            <div className="py-2xl text-center">
-              <Sparkles size={36} className="mx-auto mb-md text-brand/20" aria-hidden />
+            <div className="py-xl text-center">
+              <Sparkles size={32} className="mx-auto mb-md text-brand/20" aria-hidden />
               <p className="text-title text-fg-muted">Enter a topic above to discover related content</p>
               <p className="mt-xs text-body text-fg-muted/50">
                 Results are curated across events, research, and pages using semantic AI.
