@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom'
 const PERSONAS = [
   {
     id:       'alex',
-    role:     'compliance_executive',   // written to aba_member_role for Optimizely Web targeting
+    role:     'compliance_executive',   // value written to aba_member_type for Optimizely Web targeting
     first:    'Alex',
     full:     'Alex Reynolds',
     initials: 'AR',
@@ -34,30 +34,30 @@ type Persona = typeof PERSONAS[number]
 
 // ─── Cookies ───────────────────────────────────────────────────────────────────
 
-const COOKIE      = 'aba_member_session'   // presence = signed in (existing behaviour)
-const ROLE_COOKIE = 'aba_member_role'      // role slug — read by Optimizely Web targeting
+// Single cookie: value is the role slug, readable by Optimizely Web for targeting.
+// Presence (any non-empty value) means signed in.
+const COOKIE = 'aba_member_type'
 
 function hasCookie(): boolean {
   if (typeof document === 'undefined') return false
-  return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))
+  return !!pair && pair.slice(COOKIE.length + 1).length > 0
 }
 
 function getPersonaFromCookie(): Persona {
   if (typeof document === 'undefined') return PERSONAS[0]
-  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${ROLE_COOKIE}=`))
-  const role = pair?.slice(ROLE_COOKIE.length + 1) ?? ''
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))
+  const role = pair?.slice(COOKIE.length + 1) ?? ''
   return (PERSONAS as readonly Persona[]).find(p => p.role === role) ?? PERSONAS[0]
 }
 
 function writeCookies(persona: Persona): void {
   const opts = `path=/; SameSite=Lax; max-age=${60 * 60 * 24 * 30}`
-  document.cookie = `${COOKIE}=active; ${opts}`
-  document.cookie = `${ROLE_COOKIE}=${persona.role}; ${opts}`
+  document.cookie = `${COOKIE}=${persona.role}; ${opts}`
 }
 
 function eraseCookies(): void {
   document.cookie = `${COOKIE}=; path=/; max-age=0; SameSite=Lax`
-  document.cookie = `${ROLE_COOKIE}=; path=/; max-age=0; SameSite=Lax`
 }
 
 function fire(type: 'signed-in' | 'signed-out') {

@@ -3,14 +3,15 @@
 import { useState, useEffect, startTransition } from 'react'
 import { ShoppingCart, Check, Tag, ArrowRight } from 'lucide-react'
 
-const COOKIE = 'aba_member_session'
+const COOKIE = 'aba_member_type'
 const NAVY   = '#1D4B8C'
 const NAVY_D = '#153970'
 const GOLD   = '#C8962C'
 
 function hasMemberCookie() {
   if (typeof document === 'undefined') return false
-  return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))
+  return !!pair && pair.slice(COOKIE.length + 1).length > 0
 }
 
 function parseDollars(s: string): number | null {

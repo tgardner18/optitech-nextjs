@@ -133,7 +133,7 @@ export default async function EventPage({ content, pa }: Props) {
 
   // Server-side cookie read — no client-side flash for gated content
   const cookieStore  = await cookies()
-  const initialIsMember = cookieStore.get('aba_member_session')?.value === 'active'
+  const initialIsMember = (cookieStore.get('aba_member_type')?.value ?? '').length > 0
 
   const imageUrl      = featuredImage?.url?.default || null
   const dateLabel     = formatEventDate(startDate, endDate)

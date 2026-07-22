@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-const COOKIE       = 'aba_member_session'
-const ROLE_COOKIE  = 'aba_member_role'
+const COOKIE       = 'aba_member_type'
 const DISMISS_KEY  = 'aba-banner-dismissed'
 const NAVY         = '#1D4B8C'
 const GOLD         = '#C8962C'
@@ -13,16 +12,18 @@ const ROLE_NAMES: Record<string, string> = {
   compliance_analyst:   'Morgan',
 }
 
+function getRole(): string {
+  if (typeof document === 'undefined') return ''
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))
+  return pair?.slice(COOKIE.length + 1) ?? ''
+}
+
 function isSignedIn() {
-  if (typeof document === 'undefined') return false
-  return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
+  return getRole().length > 0
 }
 
 function getFirstName(): string {
-  if (typeof document === 'undefined') return 'Alex'
-  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${ROLE_COOKIE}=`))
-  const role = pair?.slice(ROLE_COOKIE.length + 1) ?? ''
-  return ROLE_NAMES[role] ?? 'Alex'
+  return ROLE_NAMES[getRole()] ?? 'Alex'
 }
 
 export default function MemberWelcomeBanner() {

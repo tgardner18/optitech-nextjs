@@ -4,13 +4,14 @@ import { useState, useEffect, startTransition } from 'react'
 import { ShieldCheck, LogIn } from 'lucide-react'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 
-const COOKIE = 'aba_member_session'
+const COOKIE = 'aba_member_type'
 const NAVY   = '#1D4B8C'
 const NAVY_D = '#153970'
 
 function hasMemberCookie() {
   if (typeof document === 'undefined') return false
-  return document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE}=active`))
+  const pair = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))
+  return !!pair && pair.slice(COOKIE.length + 1).length > 0
 }
 
 interface Props {
