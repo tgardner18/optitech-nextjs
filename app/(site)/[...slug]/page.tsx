@@ -11,7 +11,7 @@ import {
   getSiteSettings,
   setRequestContext,
 } from '@/lib/optimizely'
-import { getBlogPage, getLatestBlogPosts, getAuthorName, fetchAuthorByKey } from '@/lib/blog'
+import { getBlogPage, getRelatedBlogPosts, getAuthorName, fetchAuthorByKey } from '@/lib/blog'
 import { getCampaignPage, getCampaignPageMeta, mapCampaignPageRaw } from '@/lib/campaign'
 import { getEventPage } from '@/lib/events'
 import { getPractitioner } from '@/lib/practitioners'
@@ -293,7 +293,7 @@ async function CmsPage({ params, searchParams }: Props) {
         blogContent = { ...blogContent, authorRef: resolvedAuthor } as typeof blogContent
       }
 
-      const latestPosts = await getLatestBlogPosts(contentKey, locale, baseUrl)
+      const latestPosts = await getRelatedBlogPosts(blogContent, locale, baseUrl)
 
       if (blogContent) {
         // ── Draft mode context ──────────────────────────────────────────────────

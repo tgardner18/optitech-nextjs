@@ -156,6 +156,37 @@ const LATEST_POSTS_QUERY = `
   }
 `
 
+// Semantic similarity query — matches by vector embedding when available,
+// falls back to BM25 relevance. Fetches 8 candidates so site-scoping and
+// current-post exclusion still leave at least 3.
+const RELATED_POSTS_QUERY = `
+  query GetRelatedBlogPosts($query: String!, $locale: String!) {
+    OT_BlogPage(
+      limit: 8,
+      orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }
+      where: {
+        _fulltext: { match: $query }
+        _metadata: { locale: { eq: $locale }, status: { eq: "Published" } }
+      }
+    ) {
+      items {
+        _metadata { key published url { default base } }
+        headline
+        topic
+        featuredImage { url { default } }
+        authorRef { key }
+        readTime
+      }
+    }
+    OT_Author(limit: 20) {
+      items {
+        _metadata { key }
+        name
+      }
+    }
+  }
+`
+
 // ─── Data access ────────────────────────────────────────────────────────────────
 
 /**
@@ -297,5 +328,87 @@ export const getLatestBlogPosts = cache(async function getLatestBlogPosts(
       })
   } catch {
     return []
+  }
+})
+
+function scopeAndMap(
+  items: any[],
+  authorMap: Map<string, string>,
+  excludeKey: string | undefined,
+  siteBaseUrl: string | null | undefined,
+): BlogPostSummary[] {
+  let scoped = items
+  if (siteBaseUrl) {
+    const base = siteBaseUrl.replace(/\/$/, '')
+    scoped = items.filter(p => {
+      const b = p._metadata?.url?.base
+      const d = p._metadata?.url?.default
+      if (typeof b === 'string' && b) return b.replace(/\/$/, '') === base
+      if (typeof d === 'string' && d) return d.startsWith(base + '/') || d === base
+      return true
+    })
+  }
+  const seen = new Set<string>()
+  return scoped
+    .filter(p => {
+      const k = p._metadata?.key as string | undefined
+      if (!k || seen.has(k) || k === excludeKey) return false
+      seen.add(k)
+      return true
+    })
+    .map(p => {
+      const ak = p.authorRef?.key as string | undefined
+      const name = ak ? authorMap.get(ak) : undefined
+      return { ...p, authorRef: name ? { name } : null }
+    })
+}
+
+/**
+ * Returns 3 blog posts semantically related to `content` using Optimizely
+ * Content Graph's vector-similarity ranking. Falls back to the 3 most-recent
+ * posts (with the current post excluded) when the semantic query returns
+ * fewer than 3 results.
+ */
+export const getRelatedBlogPosts = cache(async function getRelatedBlogPosts(
+  content: BlogPageContent | null,
+  locale = 'en',
+  siteBaseUrl?: string | null,
+): Promise<BlogPostSummary[]> {
+  const currentKey = content?._metadata?.key
+
+  if (!content) {
+    return getLatestBlogPosts(currentKey, locale, siteBaseUrl)
+  }
+
+  const bodyText = content.body?.html
+    ? content.body.html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+    : ''
+  const query = [content.headline, content.topic, bodyText].filter(Boolean).join(' ').trim()
+
+  if (query.length < 5) {
+    return getLatestBlogPosts(currentKey, locale, siteBaseUrl)
+  }
+
+  try {
+    const data = await getClient().request(RELATED_POSTS_QUERY, { query, locale })
+    const rawItems: any[] = (data as any)?.OT_BlogPage?.items ?? []
+    const authorItems: any[] = (data as any)?.OT_Author?.items ?? []
+    const authorMap = new Map<string, string>()
+    for (const a of authorItems) {
+      const ak = a._metadata?.key as string | undefined
+      if (ak && a.name) authorMap.set(ak, a.name as string)
+    }
+
+    const related = scopeAndMap(rawItems, authorMap, currentKey, siteBaseUrl).slice(0, 3)
+
+    if (related.length >= 3) return related
+
+    // Pad with latest posts if semantic returned fewer than 3
+    const relatedKeys = new Set([currentKey, ...related.map(p => p._metadata?.key)])
+    const latest = (await getLatestBlogPosts(currentKey, locale, siteBaseUrl))
+      .filter(p => !relatedKeys.has(p._metadata?.key))
+    return [...related, ...latest].slice(0, 3)
+  } catch {
+    return getLatestBlogPosts(currentKey, locale, siteBaseUrl)
   }
 })
