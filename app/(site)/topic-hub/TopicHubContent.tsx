@@ -307,8 +307,8 @@ export default function TopicHubContent() {
           <h1 className="text-display leading-display tracking-display font-extrabold text-fg mb-sm">
             Topic Hub
           </h1>
-          <p className="text-title leading-title text-fg-muted mb-xl max-w-lg text-pretty">
-            Explore everything we have on any subject. Powered by semantic AI — no exact keywords needed.
+          <p className="text-title leading-title text-fg-muted mb-xl text-pretty">
+            Explore everything we have on any subject. Powered by semantic AI: no exact keywords needed.
           </p>
 
           <form onSubmit={handleSubmit} role="search" aria-label="Topic search">
