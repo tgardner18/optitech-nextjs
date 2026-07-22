@@ -131,6 +131,8 @@ export default function MemberAuth({ mobile = false, onMenuClose }: Props) {
     setSignedIn(true)
     setOpen(false)
     fire('signed-in')
+    // Identify the member in Optimizely Data Platform
+    ;(window as any).zaius?.customer?.({ email: selectedPersona.email })
     onMenuClose?.()
   }
 
