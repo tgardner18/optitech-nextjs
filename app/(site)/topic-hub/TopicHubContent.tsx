@@ -215,12 +215,13 @@ export default function TopicHubContent() {
 
   const initialTopic = searchParams.get('topic') ?? ''
 
-  const [inputValue,  setInputValue]  = useState(initialTopic)
-  const [activeQuery, setActiveQuery] = useState(initialTopic)
+  const [inputValue,    setInputValue]    = useState(initialTopic)
+  const [activeQuery,   setActiveQuery]   = useState(initialTopic)
   const [blogs,   setBlogs]   = useState<SearchResult[]>([])
   const [events,  setEvents]  = useState<SearchResult[]>([])
   const [pages,   setPages]   = useState<SearchResult[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading,       setLoading]       = useState(false)
+  const [showAllBlogs,  setShowAllBlogs]  = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const inputRef    = useRef<HTMLInputElement>(null)
@@ -234,12 +235,13 @@ export default function TopicHubContent() {
       return
     }
     setLoading(true)
-    const base = `/api/search?semantic=true&limit=6&q=${encodeURIComponent(trimmed)}`
+    setShowAllBlogs(false)
+    const qs = encodeURIComponent(trimmed)
     try {
       const [b, e, p] = await Promise.all([
-        fetch(`${base}&type=Blog`).then(r => r.json()).catch(() => []),
-        fetch(`${base}&type=Event`).then(r => r.json()).catch(() => []),
-        fetch(`${base}&type=Page`).then(r => r.json()).catch(() => []),
+        fetch(`/api/search?semantic=true&limit=9&type=Blog&q=${qs}`).then(r => r.json()).catch(() => []),
+        fetch(`/api/search?semantic=true&limit=6&type=Event&q=${qs}`).then(r => r.json()).catch(() => []),
+        fetch(`/api/search?semantic=true&limit=6&type=Page&q=${qs}`).then(r => r.json()).catch(() => []),
       ])
       setBlogs(Array.isArray(b) ? b : [])
       setEvents(Array.isArray(e) ? e : [])
@@ -393,10 +395,22 @@ export default function TopicHubContent() {
               <SectionHeading icon={Newspaper} label="News & Research" />
               <div className="grid gap-md grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {loading
-                  ? Array.from({ length: 3 }).map((_, i) => <BlogSkeleton key={i} />)
-                  : blogs.map(r => <BlogCard key={r.id} result={r} />)
+                  ? Array.from({ length: 6 }).map((_, i) => <BlogSkeleton key={i} />)
+                  : blogs.slice(0, showAllBlogs ? 9 : 6).map(r => <BlogCard key={r.id} result={r} />)
                 }
               </div>
+              {!loading && blogs.length > 6 && !showAllBlogs && (
+                <div className="mt-lg flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllBlogs(true)}
+                    className="inline-flex items-center gap-sm px-lg py-sm border border-fg/20 rounded-ot-control text-body font-semibold text-fg-muted hover:border-brand hover:text-brand motion-safe:transition-all motion-safe:duration-150 cursor-pointer"
+                  >
+                    View more
+                    <span className="text-label text-fg-muted/60">+{blogs.length - 6}</span>
+                  </button>
+                </div>
+              )}
             </section>
           )}
 
