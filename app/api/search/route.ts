@@ -60,14 +60,18 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
   `
 }
 
-function buildContentQuery(withDomain: boolean): string {
+function buildContentQuery(withDomain: boolean, semantic: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
   const metaFilter   = withDomain
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
+  const ranking      = semantic
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchContent($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       _Content(
+        ${ranking}
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
           ${metaFilter}
@@ -84,15 +88,18 @@ function buildContentQuery(withDomain: boolean): string {
   `
 }
 
-function buildBlankExperienceQuery(withDomain: boolean): string {
+function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
   const metaFilter   = withDomain
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
+  const ranking      = semantic
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchBlankExperiences($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       BlankExperience(
-        orderBy: { _ranking: RELEVANCE }
+        ${ranking}
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
           ${metaFilter}
@@ -116,11 +123,14 @@ function buildBlankExperienceQuery(withDomain: boolean): string {
 // URL-less shared component, so it is NOT domain-scoped here; site isolation is
 // enforced on the page side (buildPractitionerPagesQuery), and only profiles
 // that map to an in-scope page are emitted. Locale is always applied.
-function buildPractitionerProfileQuery(): string {
+function buildPractitionerProfileQuery(semantic: boolean): string {
+  const ranking = semantic
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchPractitioners($query: String!, $limit: Int!, $locale: String!) {
       OT_PractitionerProfile(
-        orderBy: { _ranking: RELEVANCE }
+        ${ranking}
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
           _metadata: { locale: { eq: $locale } }
@@ -169,15 +179,18 @@ function buildPractitionerPagesQuery(withDomain: boolean): string {
 // Event search — surfaces OT_EventPage with the fields that matter for events
 // (date + location carry as much weight as the title). description is HTML-stripped
 // to a short excerpt by the caller.
-function buildEventQuery(withDomain: boolean): string {
+function buildEventQuery(withDomain: boolean, semantic: boolean): string {
   const domainVar    = withDomain ? ', $domain: String' : ''
   const metaFilter   = withDomain
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
+  const ranking      = semantic
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.3 }'
+    : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchEvents($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_EventPage(
-        orderBy: { _ranking: RELEVANCE }
+        ${ranking}
         where: {
           _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
           ${metaFilter}
@@ -311,7 +324,7 @@ export async function GET(req: NextRequest) {
   // ── Event results ──────────────────────────────────────────────────────────
   if (type === 'all' || type === 'Event') {
     try {
-      const eventQuery = buildEventQuery(withDomain)
+      const eventQuery = buildEventQuery(withDomain, semantic)
       const data = await getClient().request(eventQuery, baseVars)
       const items: any[] = (data as any)?.OT_EventPage?.items ?? []
       for (const item of items) {
@@ -355,7 +368,7 @@ export async function GET(req: NextRequest) {
   if (type === 'all' || type === 'Page') {
     try {
       const profileVars = { query: q, limit, locale }
-      const profileData = await getClient().request(buildPractitionerProfileQuery(), profileVars)
+      const profileData = await getClient().request(buildPractitionerProfileQuery(semantic), profileVars)
       const profiles: any[] = (profileData as any)?.OT_PractitionerProfile?.items ?? []
 
       if (profiles.length > 0) {
@@ -412,7 +425,7 @@ export async function GET(req: NextRequest) {
   // deduplication; _Content then fills in any remaining non-experience pages.
   if (type === 'all' || type === 'Page') {
     try {
-      const expQuery = buildBlankExperienceQuery(withDomain)
+      const expQuery = buildBlankExperienceQuery(withDomain, semantic)
       const data = await getClient().request(expQuery, baseVars)
       const items: any[] = (data as any)?.BlankExperience?.items ?? []
       for (const item of items) {
@@ -437,7 +450,7 @@ export async function GET(req: NextRequest) {
     // ── Generic page fallback (_Content) ────────────────────────────────────
     // Catches _page-typed content not covered by the typed query above.
     try {
-      const contentQuery = buildContentQuery(withDomain)
+      const contentQuery = buildContentQuery(withDomain, semantic)
       const data = await getClient().request(contentQuery, baseVars)
       const items: any[] = (data as any)?._Content?.items ?? []
       for (const item of items) {
