@@ -62,13 +62,17 @@ export default function SiteSearch() {
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
   const [focusedIdx,  setFocusedIdx]  = useState(-1)
   const [mounted,     setMounted]     = useState(false)
-  const [semantic,    setSemantic]    = useState(false)
-  const [flashFilter, setFlashFilter] = useState<TypeFilter | null>(null)
-  const [viewMode,    setViewMode]    = useState<ViewMode>('list')
+  const [semantic,        setSemantic]        = useState(false)
+  const [flashFilter,     setFlashFilter]     = useState<TypeFilter | null>(null)
+  const [viewMode,        setViewMode]        = useState<ViewMode>('list')
+  const [suggestions,     setSuggestions]     = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [focusedSugIdx,   setFocusedSugIdx]   = useState(-1)
 
-  const inputRef    = useRef<HTMLInputElement>(null)
-  const resultsRef  = useRef<HTMLElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const inputRef           = useRef<HTMLInputElement>(null)
+  const resultsRef         = useRef<HTMLElement>(null)
+  const debounceRef        = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const suggestDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -90,6 +94,9 @@ export default function SiteSearch() {
       setHasSearched(false)
       setTypeFilter('all')
       setTopicFilter(null)
+      setSuggestions([])
+      setShowSuggestions(false)
+      setFocusedSugIdx(-1)
     }
   }, [isOpen])
 
@@ -133,8 +140,40 @@ export default function SiteSearch() {
   const handleQueryChange = (value: string) => {
     setQuery(value)
     setTopicFilter(null)
+    setFocusedSugIdx(-1)
+
+    clearTimeout(suggestDebounceRef.current)
+    if (value.trim().length >= 2) {
+      suggestDebounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(value.trim())}`)
+          const data: string[] = await res.json()
+          setSuggestions(data)
+          setShowSuggestions(data.length > 0)
+        } catch {}
+      }, 150)
+    } else {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
+
     clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => runSearch(value, typeFilter, semantic), 300)
+    debounceRef.current = setTimeout(() => {
+      setSuggestions([])
+      setShowSuggestions(false)
+      runSearch(value, typeFilter, semantic)
+    }, 350)
+  }
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setQuery(suggestion)
+    setSuggestions([])
+    setShowSuggestions(false)
+    setFocusedSugIdx(-1)
+    clearTimeout(debounceRef.current)
+    clearTimeout(suggestDebounceRef.current)
+    runSearch(suggestion, typeFilter, semantic)
+    inputRef.current?.focus()
   }
 
   const handleTypeFilter = (f: TypeFilter) => {
@@ -178,6 +217,35 @@ export default function SiteSearch() {
   }, [router, closeSearch])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        const next = Math.min(focusedSugIdx + 1, suggestions.length - 1)
+        setFocusedSugIdx(next)
+        document.querySelectorAll<HTMLElement>('[data-suggestion-item]')[next]?.focus()
+        return
+      }
+      if (e.key === 'ArrowUp' && focusedSugIdx >= 0) {
+        e.preventDefault()
+        if (focusedSugIdx === 0) {
+          setFocusedSugIdx(-1)
+          inputRef.current?.focus()
+        } else {
+          const prev = focusedSugIdx - 1
+          setFocusedSugIdx(prev)
+          document.querySelectorAll<HTMLElement>('[data-suggestion-item]')[prev]?.focus()
+        }
+        return
+      }
+      if (e.key === 'Escape') {
+        // Dismiss suggestions only; prevent the document-level Escape from closing search.
+        e.nativeEvent.stopImmediatePropagation()
+        setShowSuggestions(false)
+        setFocusedSugIdx(-1)
+        return
+      }
+    }
+
     const items = resultsRef.current?.querySelectorAll<HTMLElement>('[data-result-item]')
     if (!items?.length) return
     if (e.key === 'ArrowDown') {
@@ -352,6 +420,46 @@ export default function SiteSearch() {
     )
   }
 
+
+  // ─── Suggestion dropdown ───────────────────────────────────────────────────
+
+  function SuggestionList({ compact: isCompact }: { compact: boolean }) {
+    if (!showSuggestions || suggestions.length === 0) return null
+    return (
+      <ul
+        role="listbox"
+        aria-label="Search suggestions"
+        data-suggestions-list
+        className={[
+          'absolute top-full left-0 right-0 z-20 overflow-hidden',
+          'bg-canvas border border-fg/12 shadow-[0_8px_32px_oklch(0%_0_0_/_0.20)]',
+          isCompact ? 'rounded-b-ot-surface mt-[1px]' : 'rounded-ot-surface mt-xs',
+        ].join(' ')}
+      >
+        {suggestions.map((s, i) => (
+          <li key={s} role="option" aria-selected={focusedSugIdx === i}>
+            <button
+              data-suggestion-item
+              type="button"
+              // mousedown fires before blur — prevent blur so the input stays focused
+              onMouseDown={e => { e.preventDefault(); handleSuggestionSelect(s) }}
+              className={[
+                'w-full text-left flex items-center gap-sm transition-colors duration-100',
+                'border-b border-fg/6 last:border-0',
+                isCompact ? 'px-md py-[10px]' : 'px-[18px] py-[13px]',
+                focusedSugIdx === i ? 'bg-brand/8' : 'hover:bg-brand/6',
+              ].join(' ')}
+            >
+              <Search size={isCompact ? 11 : 13} className="shrink-0 text-fg-muted/30" aria-hidden />
+              <span className={`font-medium text-fg ${isCompact ? 'text-[13px]' : 'text-[15px]'}`}>
+                {s}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 
   // ─── Loading dots ──────────────────────────────────────────────────────────
 
@@ -692,12 +800,14 @@ export default function SiteSearch() {
                 value={query}
                 onChange={e => handleQueryChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onBlur={() => setTimeout(() => { setShowSuggestions(false); setFocusedSugIdx(-1) }, 150)}
                 placeholder={t('search.placeholder')}
                 autoComplete="off"
                 spellCheck={false}
                 aria-label={t('search.inputLabel')}
                 aria-controls="search-results"
                 aria-autocomplete="list"
+                aria-expanded={showSuggestions}
                 className={[
                   'flex-1 bg-transparent text-fg py-sm outline-none',
                   'text-[1.1rem] font-medium placeholder:text-fg-muted/30',
@@ -714,6 +824,7 @@ export default function SiteSearch() {
                   <X size={13} />
                 </button>
               )}
+              {SuggestionList({ compact: false })}
             </div>
 
             {/* Filter section */}
@@ -860,37 +971,42 @@ export default function SiteSearch() {
         {/* Input area — visually boxed so it reads as a text field, not a label row */}
         <div className="px-md pt-[8px] pb-[10px] border-b border-fg/8 shrink-0">
           <label htmlFor="search-input-compact" className="sr-only">{t('search.inputLabel')}</label>
-          <div className="flex items-center gap-[8px] rounded-ot-control border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-2.5 py-2.25 transition-colors duration-150">
-            <Search size={14} className="shrink-0 text-fg-muted/45" aria-hidden />
-            <input
-              ref={inputRef}
-              id="search-input-compact"
-              type="search"
-              value={query}
-              onChange={e => handleQueryChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t('search.placeholderCompact')}
-              autoComplete="off"
-              spellCheck={false}
-              aria-label={t('search.inputLabel')}
-              aria-controls="search-results-compact"
-              aria-autocomplete="list"
-              className={[
-                'flex-1 bg-transparent text-fg placeholder:text-fg-muted/35',
-                'text-[14px] font-medium outline-none leading-none',
-                '[&::-webkit-search-cancel-button]:hidden',
-              ].join(' ')}
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => handleQueryChange('')}
-                aria-label={t('search.clearFilter')}
-                className="shrink-0 p-[3px] text-fg-muted/40 hover:text-fg transition-colors"
-              >
-                <X size={12} />
-              </button>
-            )}
+          <div className="relative">
+            <div className="flex items-center gap-[8px] rounded-ot-control border border-fg/18 bg-fg/5 focus-within:border-brand/55 focus-within:bg-brand/5 px-2.5 py-2.25 transition-colors duration-150">
+              <Search size={14} className="shrink-0 text-fg-muted/45" aria-hidden />
+              <input
+                ref={inputRef}
+                id="search-input-compact"
+                type="search"
+                value={query}
+                onChange={e => handleQueryChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={() => setTimeout(() => { setShowSuggestions(false); setFocusedSugIdx(-1) }, 150)}
+                placeholder={t('search.placeholderCompact')}
+                autoComplete="off"
+                spellCheck={false}
+                aria-label={t('search.inputLabel')}
+                aria-controls="search-results-compact"
+                aria-autocomplete="list"
+                aria-expanded={showSuggestions}
+                className={[
+                  'flex-1 bg-transparent text-fg placeholder:text-fg-muted/35',
+                  'text-[14px] font-medium outline-none leading-none',
+                  '[&::-webkit-search-cancel-button]:hidden',
+                ].join(' ')}
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => handleQueryChange('')}
+                  aria-label={t('search.clearFilter')}
+                  className="shrink-0 p-[3px] text-fg-muted/40 hover:text-fg transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+            {SuggestionList({ compact: true })}
           </div>
         </div>
 
