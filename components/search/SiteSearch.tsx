@@ -568,11 +568,13 @@ export default function SiteSearch() {
           <span style={{ color: 'oklch(0.55 0.01 250)' }}># Graph strategy{'\n'}</span>
           <span style={{ color: 'oklch(0.65 0.01 250)' }}>ordering:  </span>
           <span style={{ color: semantic ? 'oklch(0.82 0.18 310)' : 'oklch(0.82 0.01 250)' }}>
-            {semantic ? '_ranking: SEMANTIC  _semanticWeight: 1.0' : '_ranking: RELEVANCE'}
+            {semantic ? '_ranking: SEMANTIC  _semanticWeight: 0.5' : '_ranking: RELEVANCE'}
           </span>
           {'\n'}
           <span style={{ color: 'oklch(0.65 0.01 250)' }}>fulltext:  </span>
-          <span style={{ color: 'oklch(0.82 0.01 250)' }}>fuzzy: true, synonyms: ONE</span>
+          <span style={{ color: 'oklch(0.82 0.01 250)' }}>
+            {semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'}
+          </span>
           {'\n'}
           <span style={{ color: 'oklch(0.65 0.01 250)' }}>pinning:   </span>
           <span style={{ color: 'oklch(0.82 0.01 250)' }}>phrase-based (blogs, events, pages)</span>

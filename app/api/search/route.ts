@@ -21,6 +21,14 @@ const SCOPE_QUERY = `
   }
 `
 
+// In semantic mode use a clean match only — no fuzzy/synonyms — so the
+// vector model's intent-matching isn't diluted by keyword expansions.
+function fulltextClause(semantic: boolean): string {
+  return semantic
+    ? '_fulltext: { match: $query }'
+    : '_fulltext: { match: $query, fuzzy: true, synonyms: ONE }'
+}
+
 // Build a blog query with Graph-level locale scoping (always applied) and
 // optional domain scoping. Locale is sourced from the x-locale request header
 // so results are restricted to the site's active language.
@@ -33,14 +41,14 @@ function buildBlogQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchBlogs($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_BlogPage(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          ${fulltextClause(semantic)}
           ${metaFilter}
         }
         limit: $limit
@@ -67,14 +75,14 @@ function buildContentQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchContent($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       _Content(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          ${fulltextClause(semantic)}
           ${metaFilter}
         }
         limit: $limit
@@ -95,14 +103,14 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchBlankExperiences($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       BlankExperience(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          ${fulltextClause(semantic)}
           ${metaFilter}
         }
         limit: $limit
@@ -127,14 +135,14 @@ function buildBlankExperienceQuery(withDomain: boolean, semantic: boolean): stri
 // that map to an in-scope page are emitted. Locale is always applied.
 function buildPractitionerProfileQuery(semantic: boolean): string {
   const ranking = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchPractitioners($query: String!, $limit: Int!, $locale: String!) {
       OT_PractitionerProfile(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          ${fulltextClause(semantic)}
           _metadata: { locale: { eq: $locale } }
         }
         limit: $limit
@@ -187,14 +195,14 @@ function buildEventQuery(withDomain: boolean, semantic: boolean): string {
     ? '_metadata: { locale: { eq: $locale }, url: { base: { eq: $domain } } }'
     : '_metadata: { locale: { eq: $locale } }'
   const ranking      = semantic
-    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 1.0 }'
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.5 }'
     : 'orderBy: { _ranking: RELEVANCE }'
   return `
     query SearchEvents($query: String!, $limit: Int!, $locale: String!${domainVar}) {
       OT_EventPage(
         ${ranking}
         where: {
-          _fulltext: { match: $query, fuzzy: true, synonyms: ONE }
+          ${fulltextClause(semantic)}
           ${metaFilter}
         }
         limit: $limit
