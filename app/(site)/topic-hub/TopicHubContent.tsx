@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
-  Search, Sparkles, Loader2,
+  Search, Sparkles, Loader2, X,
   CalendarDays, Newspaper, FileText, BookOpen, Code2,
   MapPin, Video, ArrowRight, ArrowDownToLine,
 } from 'lucide-react'
@@ -278,8 +279,10 @@ function SectionHeading({ icon: Icon, label }: { icon: typeof CalendarDays; labe
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function TopicHubContent() {
-  const router       = useRouter()
-  const searchParams = useSearchParams()
+  const router               = useRouter()
+  const searchParams         = useSearchParams()
+  const prefersReducedMotion = useReducedMotion()
+  const dur = (ms: number) => prefersReducedMotion ? 0 : ms / 1000
 
   const initialTopic = searchParams.get('topic') ?? ''
 
@@ -395,6 +398,112 @@ export default function TopicHubContent() {
 
   return (
     <>
+      {/* ── Query inspector flyout ── */}
+      <AnimatePresence>
+        {showDevPanel && (
+          <>
+            <motion.div
+              key="th-query-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: dur(150) } }}
+              exit={{ opacity: 0, transition: { duration: dur(120) } }}
+              onClick={() => setShowDevPanel(false)}
+              className="fixed inset-0 z-40 bg-canvas/50 backdrop-blur-[2px]"
+              aria-hidden
+            />
+            <motion.div
+              key="th-query-flyout"
+              initial={{ x: '100%' }}
+              animate={{ x: 0, transition: { duration: dur(320), ease: [0.16, 1, 0.3, 1] } }}
+              exit={{ x: '100%', transition: { duration: dur(220), ease: [0.4, 0, 1, 1] } }}
+              role="dialog"
+              aria-label="Query inspector"
+              className="fixed top-0 right-0 bottom-0 z-50 flex flex-col"
+              style={{
+                width: 'min(480px, calc(100vw - 48px))',
+                background: 'oklch(0.085 0.008 240)',
+                borderLeft: '1px solid oklch(1 0 0 / 0.09)',
+                boxShadow: '-20px 0 80px oklch(0 0 0 / 0.50)',
+                fontFamily: 'var(--font-geist-mono, monospace)',
+              }}
+            >
+              {/* Header */}
+              <div
+                className="flex items-center justify-between px-md py-sm shrink-0"
+                style={{ borderBottom: '1px solid oklch(1 0 0 / 0.08)' }}
+              >
+                <div className="flex items-center gap-xs">
+                  <Code2 size={13} style={{ color: 'oklch(0.91 0.27 132)' }} aria-hidden />
+                  <span
+                    className="text-[10px] uppercase tracking-[0.14em] font-bold select-none"
+                    style={{ color: 'oklch(0.72 0.18 132)' }}
+                  >
+                    Query inspector
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDevPanel(false)}
+                  aria-label="Close query inspector"
+                  className="opacity-40 hover:opacity-90 transition-opacity duration-150 p-1 rounded"
+                  style={{ color: 'oklch(0.72 0.01 250)' }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                <pre
+                  className="px-md py-md text-[11px] leading-relaxed whitespace-pre-wrap break-all"
+                  style={{ color: 'oklch(0.72 0.01 250)' }}
+                >
+                  <span style={{ color: 'oklch(0.40 0.01 250)' }}>{'# API requests (parallel)\n'}</span>
+                  <span style={{ color: 'oklch(0.91 0.27 132)' }}>{'GET '}</span>
+                  <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Blog&limit=9&q=${q}\n`}</span>
+                  <span style={{ color: 'oklch(0.91 0.27 132)' }}>{'GET '}</span>
+                  <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Event&limit=6&q=${q}\n`}</span>
+                  <span style={{ color: 'oklch(0.91 0.27 132)' }}>{'GET '}</span>
+                  <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Page&limit=6&q=${q}\n`}</span>
+                  <span style={{ color: 'oklch(0.91 0.27 132)' }}>{'GET '}</span>
+                  <span style={{ color: 'oklch(0.80 0.22 132)' }}>{`/api/search/docs?q=${q}\n`}</span>
+                  {'\n'}
+                  <span style={{ color: 'oklch(0.40 0.01 250)' }}>{'# Content Graph strategy\n'}</span>
+                  <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'ordering:  '}</span>
+                  <span style={{ color: 'oklch(0.91 0.27 132)' }}>{'_ranking: SEMANTIC  _semanticWeight: 0.8\n'}</span>
+                  <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'fulltext:  '}</span>
+                  <span style={{ color: 'oklch(0.78 0.01 250)' }}>{'fuzzy: true, synonyms: ONE\n'}</span>
+                  <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'documents: '}</span>
+                  <span style={{ color: 'oklch(0.80 0.22 132)' }}>{'cmp_Asset (ABA folder) → _AssetItem CDN batch\n'}</span>
+                  <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'scoping:   '}</span>
+                  <span style={{ color: 'oklch(0.78 0.01 250)' }}>{'OT_ThemeManager.frontEndDomain'}</span>
+                </pre>
+              </div>
+
+              {/* Footer */}
+              <div
+                className="shrink-0 px-md py-sm flex items-center justify-end"
+                style={{ borderTop: '1px solid oklch(1 0 0 / 0.08)' }}
+              >
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  aria-label="Copy query details"
+                  className="text-[10px] uppercase tracking-widest font-bold px-md py-1.5 rounded-ot-control transition-all duration-150"
+                  style={{
+                    color:      copied ? 'oklch(0.91 0.27 132)' : 'oklch(0.55 0.01 250)',
+                    background: copied ? 'oklch(0.91 0.27 132 / 0.12)' : 'oklch(1 0 0 / 0.05)',
+                    border:     '1px solid oklch(1 0 0 / 0.08)',
+                  }}
+                >
+                  {copied ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ── Hero ── */}
       <section className="bg-canvas border-b border-fg/8 px-md lg:px-lg py-lg">
         <div className="mx-auto max-w-7xl">
@@ -455,18 +564,18 @@ export default function TopicHubContent() {
                   <button
                     type="button"
                     onClick={() => setShowDevPanel(v => !v)}
-                    aria-label="Toggle query inspector"
+                    aria-label={showDevPanel ? 'Hide query inspector' : 'Show query inspector'}
                     aria-pressed={showDevPanel}
-                    title="Query inspector"
                     className={[
-                      'flex items-center justify-center w-6 h-6 rounded transition-colors duration-150',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                      'flex items-center gap-1.25 px-sm h-7 rounded-full transition-all duration-200',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1',
                       showDevPanel
-                        ? 'text-brand bg-brand/10'
-                        : 'text-fg-muted/30 hover:text-fg-muted hover:bg-fg/5',
+                        ? 'text-brand bg-brand/12 ring-1 ring-brand/30'
+                        : 'text-fg-muted/55 bg-fg/5 ring-1 ring-fg/12 hover:text-fg hover:ring-fg/25 hover:bg-fg/8',
                     ].join(' ')}
                   >
-                    <Code2 size={13} />
+                    <Code2 size={12} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Query</span>
                   </button>
                 </div>
               )}
@@ -488,71 +597,7 @@ export default function TopicHubContent() {
                 </div>
               )}
 
-              {/* ── Query inspector panel ── */}
-              {showDevPanel && activeQuery && (
-                <div
-                  className="mt-sm overflow-hidden rounded-ot-surface border"
-                  style={{
-                    background: 'oklch(0.11 0.01 250)',
-                    borderColor: 'oklch(1 0 0 / 0.10)',
-                    boxShadow: '0 8px 32px oklch(0 0 0 / 0.40)',
-                    fontFamily: 'var(--font-geist-mono, monospace)',
-                  }}
-                >
-                  {/* Panel header */}
-                  <div
-                    className="flex items-center justify-between px-md py-2.5 border-b"
-                    style={{ borderColor: 'oklch(1 0 0 / 0.08)' }}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Code2 size={13} style={{ color: 'oklch(0.72 0.14 175)' }} aria-hidden />
-                      <span
-                        className="text-[10px] uppercase tracking-[0.12em] font-bold select-none"
-                        style={{ color: 'oklch(0.72 0.14 175)' }}
-                      >
-                        Query inspector
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      className="text-[10px] uppercase tracking-[0.08em] font-bold px-sm py-1 rounded transition-colors duration-150"
-                      style={{
-                        color:      copied ? 'oklch(0.72 0.14 175)' : 'oklch(0.55 0.01 250)',
-                        background: copied ? 'oklch(0.72 0.14 175 / 0.12)' : 'transparent',
-                      }}
-                    >
-                      {copied ? '✓ Copied' : 'Copy'}
-                    </button>
-                  </div>
-
-                  {/* Panel body */}
-                  <pre
-                    className="px-md py-md text-[11px] leading-relaxed overflow-x-auto whitespace-pre"
-                    style={{ color: 'oklch(0.72 0.01 250)' }}
-                  >
-                    <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'# API requests (parallel)\n'}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
-                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Blog&limit=9&q=${q}\n`}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
-                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Event&limit=6&q=${q}\n`}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
-                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Page&limit=6&q=${q}\n`}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
-                    <span style={{ color: 'oklch(0.82 0.14 310)' }}>{`/api/search/docs?q=${q}\n`}</span>
-                    {'\n'}
-                    <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'# Content Graph strategy\n'}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'ordering:  '}</span>
-                    <span style={{ color: 'oklch(0.82 0.18 310)' }}>{'_ranking: SEMANTIC  _semanticWeight: 0.8\n'}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'fulltext:  '}</span>
-                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'fuzzy: true, synonyms: ONE\n'}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'documents: '}</span>
-                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'cmp_Asset (ABA folder) → _AssetItem CDN batch\n'}</span>
-                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'scoping:   '}</span>
-                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'OT_ThemeManager.frontEndDomain'}</span>
-                  </pre>
-                </div>
-              )}
+              {/* Query inspector flyout — rendered at fragment root below */}
             </div>
 
           </div>
