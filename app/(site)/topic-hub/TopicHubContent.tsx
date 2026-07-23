@@ -4,11 +4,21 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Search, Sparkles, Loader2,
-  CalendarDays, Newspaper, FileText,
-  MapPin, Video, ArrowRight,
+  CalendarDays, Newspaper, FileText, BookOpen, Code2,
+  MapPin, Video, ArrowRight, ArrowDownToLine,
 } from 'lucide-react'
 import type { SearchResult } from '@/lib/search'
 import { eventTypeLabel } from '@/lib/eventFormat'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type DocResult = {
+  id:        string
+  title:     string
+  url:       string
+  extension: string | null
+  fileSize:  number | null
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,6 +29,11 @@ function formatShortDate(iso?: string): string | null {
       month: 'short', day: 'numeric', year: 'numeric',
     }).format(new Date(iso))
   } catch { return null }
+}
+
+function formatDocFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 // ─── Blog card ─────────────────────────────────────────────────────────────────
@@ -68,7 +83,7 @@ function BlogCard({ result }: { result: SearchResult }) {
 // ─── Event card ────────────────────────────────────────────────────────────────
 
 function EventCard({ result }: { result: SearchResult }) {
-  const typeLabel   = result.eventType ? eventTypeLabel(result.eventType) : null
+  const typeLabel    = result.eventType ? eventTypeLabel(result.eventType) : null
   const LocationIcon = result.locationType === 'virtual' ? Video : MapPin
   let month = '', day = ''
   if (result.startDate) {
@@ -118,11 +133,7 @@ function PageCard({ result }: { result: SearchResult }) {
       href={result.url}
       className="group flex items-start gap-md bg-surface border border-fg/8 rounded-ot-surface p-md card-hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <FileText
-        size={18}
-        className="flex-none text-brand mt-0.5"
-        aria-hidden
-      />
+      <FileText size={18} className="flex-none text-brand mt-0.5" aria-hidden />
       <div className="min-w-0 flex-1">
         <h3 className="text-title leading-title font-semibold text-fg group-hover:text-brand motion-safe:transition-colors motion-safe:duration-150">
           {result.title}
@@ -136,6 +147,50 @@ function PageCard({ result }: { result: SearchResult }) {
         className="flex-none text-fg-muted/30 group-hover:text-brand group-hover:translate-x-0.5 motion-safe:transition-all motion-safe:duration-150 mt-1"
         aria-hidden
       />
+    </a>
+  )
+}
+
+// ─── Doc row ───────────────────────────────────────────────────────────────────
+
+function DocRow({ doc }: { doc: DocResult }) {
+  const ext  = (doc.extension ?? 'pdf').toUpperCase()
+  const size = doc.fileSize ? formatDocFileSize(doc.fileSize) : null
+
+  return (
+    <a
+      href={doc.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-lg px-lg py-5.5 bg-surface border border-fg/8 rounded-ot-surface hover:border-brand/25 hover:bg-brand/2.5 motion-safe:transition-all motion-safe:duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    >
+      {/* File type badge */}
+      <span
+        aria-hidden
+        className="flex-none inline-flex items-center px-sm py-1.25 bg-brand text-fg-on-brand text-[0.625rem] font-bold uppercase tracking-[0.14em] leading-none rounded-xs"
+      >
+        {ext}
+      </span>
+
+      {/* Title + size */}
+      <div className="flex-1 min-w-0">
+        <p className="text-title font-semibold text-fg leading-snug line-clamp-1 group-hover:text-brand motion-safe:transition-colors motion-safe:duration-150">
+          {doc.title}
+        </p>
+        {size && (
+          <p className="text-label text-fg-muted/50 mt-0.5 tabular-nums">{size}</p>
+        )}
+      </div>
+
+      {/* Download CTA */}
+      <span className="flex-none flex items-center gap-xs text-label font-semibold uppercase tracking-label text-fg-muted group-hover:text-brand motion-safe:transition-colors motion-safe:duration-150">
+        <ArrowDownToLine
+          size={14}
+          className="motion-safe:group-hover:translate-y-0.5 motion-safe:transition-transform motion-safe:duration-150"
+          aria-hidden
+        />
+        Download
+      </span>
     </a>
   )
 }
@@ -185,6 +240,19 @@ function PageSkeleton() {
   )
 }
 
+function DocSkeleton() {
+  return (
+    <div className="flex items-center gap-lg px-lg py-5.5 bg-surface border border-fg/8 rounded-ot-surface animate-pulse">
+      <div className="w-9 h-5 bg-fg/8 rounded-xs flex-none" />
+      <div className="flex-1 space-y-xs">
+        <div className="h-4 bg-fg/8 rounded-full w-3/5" />
+        <div className="h-2.5 bg-fg/8 rounded-full w-12" />
+      </div>
+      <div className="w-20 h-3 bg-fg/8 rounded-full flex-none" />
+    </div>
+  )
+}
+
 // ─── Suggested topics ──────────────────────────────────────────────────────────
 
 const SUGGESTED_TOPICS = [
@@ -215,21 +283,25 @@ export default function TopicHubContent() {
 
   const initialTopic = searchParams.get('topic') ?? ''
 
-  const [inputValue,    setInputValue]    = useState(initialTopic)
-  const [activeQuery,   setActiveQuery]   = useState(initialTopic)
-  const [blogs,   setBlogs]   = useState<SearchResult[]>([])
-  const [events,  setEvents]  = useState<SearchResult[]>([])
-  const [pages,   setPages]   = useState<SearchResult[]>([])
-  const [loading,       setLoading]       = useState(false)
-  const [showAllBlogs,  setShowAllBlogs]  = useState(false)
+  const [inputValue,   setInputValue]   = useState(initialTopic)
+  const [activeQuery,  setActiveQuery]  = useState(initialTopic)
+  const [blogs,        setBlogs]        = useState<SearchResult[]>([])
+  const [events,       setEvents]       = useState<SearchResult[]>([])
+  const [pages,        setPages]        = useState<SearchResult[]>([])
+  const [docs,         setDocs]         = useState<DocResult[]>([])
+  const [loading,      setLoading]      = useState(false)
+  const [showAllBlogs, setShowAllBlogs] = useState(false)
+  const [showDevPanel, setShowDevPanel] = useState(false)
+  const [copied,       setCopied]       = useState(false)
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const inputRef    = useRef<HTMLInputElement>(null)
+  const debounceRef   = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const inputRef      = useRef<HTMLInputElement>(null)
+  const lastQueryRef  = useRef<string>('')
 
   const runSearch = useCallback(async (q: string) => {
     const trimmed = q.trim()
     if (trimmed.length < 2) {
-      setBlogs([]); setEvents([]); setPages([])
+      setBlogs([]); setEvents([]); setPages([]); setDocs([])
       setActiveQuery('')
       setLoading(false)
       return
@@ -237,18 +309,21 @@ export default function TopicHubContent() {
     setLoading(true)
     setShowAllBlogs(false)
     const qs = encodeURIComponent(trimmed)
+    lastQueryRef.current = trimmed
     try {
-      const [b, e, p] = await Promise.all([
+      const [b, e, p, d] = await Promise.all([
         fetch(`/api/search?semantic=true&limit=9&type=Blog&q=${qs}`).then(r => r.json()).catch(() => []),
         fetch(`/api/search?semantic=true&limit=6&type=Event&q=${qs}`).then(r => r.json()).catch(() => []),
         fetch(`/api/search?semantic=true&limit=6&type=Page&q=${qs}`).then(r => r.json()).catch(() => []),
+        fetch(`/api/search/docs?q=${qs}`).then(r => r.json()).catch(() => []),
       ])
       setBlogs(Array.isArray(b) ? b : [])
       setEvents(Array.isArray(e) ? e : [])
       setPages(Array.isArray(p) ? p : [])
+      setDocs(Array.isArray(d) ? d : [])
       setActiveQuery(trimmed)
     } catch {
-      setBlogs([]); setEvents([]); setPages([])
+      setBlogs([]); setEvents([]); setPages([]); setDocs([])
     }
     setLoading(false)
   }, [])
@@ -290,8 +365,33 @@ export default function TopicHubContent() {
     runSearch(inputValue)
   }
 
-  const hasResults = blogs.length > 0 || events.length > 0 || pages.length > 0
+  function handleCopy() {
+    const q = encodeURIComponent(lastQueryRef.current)
+    const snippet = [
+      `# Topic Hub — last search: "${lastQueryRef.current}"`,
+      ``,
+      `# API requests (parallel)`,
+      `GET /api/search?semantic=true&type=Blog&limit=9&q=${q}`,
+      `GET /api/search?semantic=true&type=Event&limit=6&q=${q}`,
+      `GET /api/search?semantic=true&type=Page&limit=6&q=${q}`,
+      `GET /api/search/docs?q=${q}`,
+      ``,
+      `# Content Graph strategy`,
+      `ordering:  _ranking: SEMANTIC  _semanticWeight: 0.8`,
+      `fulltext:  fuzzy: true, synonyms: ONE`,
+      `documents: cmp_Asset (ABA folder) → _AssetItem CDN batch`,
+      `scoping:   OT_ThemeManager.frontEndDomain`,
+    ].join('\n')
+    navigator.clipboard.writeText(snippet).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    })
+  }
+
+  const hasResults = blogs.length > 0 || events.length > 0 || pages.length > 0 || docs.length > 0
   const noResults  = !loading && activeQuery.length >= 2 && !hasResults
+
+  const q = encodeURIComponent(lastQueryRef.current || activeQuery)
 
   return (
     <>
@@ -345,12 +445,30 @@ export default function TopicHubContent() {
                 </div>
               </form>
 
-              {/* Query confirmation — inline, no banner */}
+              {/* Query confirmation + dev panel toggle */}
               {activeQuery && !loading && (
-                <p className="mt-xs text-label text-fg-muted/70">
-                  Showing results for{' '}
-                  <span className="font-semibold text-fg-muted">"{activeQuery}"</span>
-                </p>
+                <div className="mt-xs flex items-center gap-sm">
+                  <p className="text-label text-fg-muted/70 flex-1">
+                    Showing results for{' '}
+                    <span className="font-semibold text-fg-muted">"{activeQuery}"</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowDevPanel(v => !v)}
+                    aria-label="Toggle query inspector"
+                    aria-pressed={showDevPanel}
+                    title="Query inspector"
+                    className={[
+                      'flex items-center justify-center w-6 h-6 rounded transition-colors duration-150',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                      showDevPanel
+                        ? 'text-brand bg-brand/10'
+                        : 'text-fg-muted/30 hover:text-fg-muted hover:bg-fg/5',
+                    ].join(' ')}
+                  >
+                    <Code2 size={13} />
+                  </button>
+                </div>
               )}
 
               {/* Suggested topics */}
@@ -367,6 +485,72 @@ export default function TopicHubContent() {
                       {t}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* ── Query inspector panel ── */}
+              {showDevPanel && activeQuery && (
+                <div
+                  className="mt-sm overflow-hidden rounded-ot-surface border"
+                  style={{
+                    background: 'oklch(0.11 0.01 250)',
+                    borderColor: 'oklch(1 0 0 / 0.10)',
+                    boxShadow: '0 8px 32px oklch(0 0 0 / 0.40)',
+                    fontFamily: 'var(--font-geist-mono, monospace)',
+                  }}
+                >
+                  {/* Panel header */}
+                  <div
+                    className="flex items-center justify-between px-md py-2.5 border-b"
+                    style={{ borderColor: 'oklch(1 0 0 / 0.08)' }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Code2 size={13} style={{ color: 'oklch(0.72 0.14 175)' }} aria-hidden />
+                      <span
+                        className="text-[10px] uppercase tracking-[0.12em] font-bold select-none"
+                        style={{ color: 'oklch(0.72 0.14 175)' }}
+                      >
+                        Query inspector
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopy}
+                      className="text-[10px] uppercase tracking-[0.08em] font-bold px-sm py-1 rounded transition-colors duration-150"
+                      style={{
+                        color:      copied ? 'oklch(0.72 0.14 175)' : 'oklch(0.55 0.01 250)',
+                        background: copied ? 'oklch(0.72 0.14 175 / 0.12)' : 'transparent',
+                      }}
+                    >
+                      {copied ? '✓ Copied' : 'Copy'}
+                    </button>
+                  </div>
+
+                  {/* Panel body */}
+                  <pre
+                    className="px-md py-md text-[11px] leading-relaxed overflow-x-auto whitespace-pre"
+                    style={{ color: 'oklch(0.72 0.01 250)' }}
+                  >
+                    <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'# API requests (parallel)\n'}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
+                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Blog&limit=9&q=${q}\n`}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
+                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Event&limit=6&q=${q}\n`}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
+                    <span style={{ color: 'oklch(0.82 0.01 250)' }}>{`/api/search?semantic=true&type=Page&limit=6&q=${q}\n`}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'GET '}</span>
+                    <span style={{ color: 'oklch(0.82 0.14 310)' }}>{`/api/search/docs?q=${q}\n`}</span>
+                    {'\n'}
+                    <span style={{ color: 'oklch(0.55 0.01 250)' }}>{'# Content Graph strategy\n'}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'ordering:  '}</span>
+                    <span style={{ color: 'oklch(0.82 0.18 310)' }}>{'_ranking: SEMANTIC  _semanticWeight: 0.8\n'}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'fulltext:  '}</span>
+                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'fuzzy: true, synonyms: ONE\n'}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'documents: '}</span>
+                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'cmp_Asset (ABA folder) → _AssetItem CDN batch\n'}</span>
+                    <span style={{ color: 'oklch(0.65 0.01 250)' }}>{'scoping:   '}</span>
+                    <span style={{ color: 'oklch(0.72 0.01 250)' }}>{'OT_ThemeManager.frontEndDomain'}</span>
+                  </pre>
                 </div>
               )}
             </div>
@@ -430,6 +614,19 @@ export default function TopicHubContent() {
             </section>
           )}
 
+          {/* Recommended Documents */}
+          {(loading || docs.length > 0) && (
+            <section aria-label="Recommended Documents">
+              <SectionHeading icon={BookOpen} label="Recommended Documents" />
+              <div className="flex flex-col gap-sm">
+                {loading
+                  ? <DocSkeleton />
+                  : docs.map(doc => <DocRow key={doc.id} doc={doc} />)
+                }
+              </div>
+            </section>
+          )}
+
           {/* No results */}
           {noResults && (
             <div className="text-center py-xl">
@@ -446,7 +643,7 @@ export default function TopicHubContent() {
               <Sparkles size={32} className="mx-auto mb-md text-brand/20" aria-hidden />
               <p className="text-title text-fg-muted">Enter a topic above to discover related content</p>
               <p className="mt-xs text-body text-fg-muted/50">
-                Results are curated across events, research, and pages using semantic AI.
+                Results are curated across events, research, pages, and documents using semantic AI.
               </p>
             </div>
           )}
