@@ -435,7 +435,7 @@ export default function TopicHubContent() {
                 <div className="flex items-center gap-xs">
                   <Code2 size={13} style={{ color: 'oklch(0.91 0.27 132)' }} aria-hidden />
                   <span
-                    className="text-[10px] uppercase tracking-[0.14em] font-bold select-none"
+                    className="text-[11px] uppercase tracking-[0.14em] font-bold select-none"
                     style={{ color: 'oklch(0.72 0.18 132)' }}
                   >
                     Query inspector
@@ -455,7 +455,7 @@ export default function TopicHubContent() {
               {/* Body */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden">
                 <pre
-                  className="px-md py-md text-[11px] leading-relaxed whitespace-pre-wrap break-all"
+                  className="px-md py-lg text-[14px] leading-[1.9] whitespace-pre-wrap break-all"
                   style={{ color: 'oklch(0.72 0.01 250)' }}
                 >
                   <span style={{ color: 'oklch(0.40 0.01 250)' }}>{'# API requests (parallel)\n'}</span>
