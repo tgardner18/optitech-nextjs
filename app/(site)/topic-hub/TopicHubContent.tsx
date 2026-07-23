@@ -174,7 +174,7 @@ function DocRow({ doc }: { doc: DocResult }) {
 
       {/* Title + size */}
       <div className="flex-1 min-w-0">
-        <p className="text-title font-semibold text-fg leading-snug line-clamp-1 group-hover:text-brand motion-safe:transition-colors motion-safe:duration-150">
+        <p className="text-title font-semibold text-fg leading-snug line-clamp-1 capitalize group-hover:text-brand motion-safe:transition-colors motion-safe:duration-150">
           {doc.title}
         </p>
         {size && (

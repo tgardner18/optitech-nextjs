@@ -497,14 +497,20 @@ export default function SiteSearch() {
     )
   }
 
-  // ─── Developer query panel ────────────────────────────────────────────────
+  // ─── Developer query flyout ────────────────────────────────────────────────
 
   function DevQueryPanel() {
     const url = lastSearchUrlRef.current
-    const ranking = semantic
-      ? '_ranking: SEMANTIC\n_semanticWeight: 1.0'
-      : '_ranking: RELEVANCE'
-    const snippet = `# API request\nGET ${url || '/api/search?q=<query>&type=all'}\n\n# Graph strategy\nordering:  ${ranking.replace('\n', '\n           ')}\nfulltext:  fuzzy: true, synonyms: ONE\npinning:   phrase-based (blogs, events, pages)\nscoping:   OT_ThemeManager.frontEndDomain`
+    const snippet = [
+      '# API request',
+      `GET ${url || '/api/search?q=<query>&type=all'}`,
+      '',
+      '# Graph strategy',
+      `ordering:  ${semantic ? '_ranking: SEMANTIC  _semanticWeight: 0.8' : '_ranking: RELEVANCE'}`,
+      `fulltext:  ${semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'}`,
+      'pinning:   phrase-based (blogs, events, pages)',
+      'scoping:   OT_ThemeManager.frontEndDomain',
+    ].join('\n')
 
     const handleCopy = () => {
       navigator.clipboard.writeText(snippet).then(() => {
@@ -515,73 +521,92 @@ export default function SiteSearch() {
 
     return (
       <motion.div
-        key="dev-panel"
-        initial={{ opacity: 0, y: 8, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: dur(100) } }}
-        transition={{ duration: dur(200), ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-14 right-5 z-20 w-[min(420px,calc(100vw-40px))]"
+        key="dev-flyout"
+        initial={{ x: '100%' }}
+        animate={{ x: 0, transition: { duration: dur(320), ease: [0.16, 1, 0.3, 1] } }}
+        exit={{ x: '100%', transition: { duration: dur(220), ease: [0.4, 0, 1, 1] } }}
+        className="absolute top-0 right-0 bottom-0 z-30 flex flex-col"
         style={{
-          background: 'oklch(0.11 0.01 250)',
-          borderRadius: 'var(--ot-radius-surface)',
-          border: '1px solid oklch(1 0 0 / 0.10)',
-          boxShadow: '0 16px 48px oklch(0 0 0 / 0.55)',
+          width: 'min(480px, calc(100% - 160px))',
+          background: 'oklch(0.10 0.01 250)',
+          borderLeft: '1px solid oklch(1 0 0 / 0.09)',
+          boxShadow: '-20px 0 80px oklch(0 0 0 / 0.45)',
           fontFamily: 'var(--font-geist-mono, monospace)',
         }}
       >
-        {/* Panel header */}
+        {/* Header */}
         <div
-          className="flex items-center justify-between px-md py-2.5 border-b"
-          style={{ borderColor: 'oklch(1 0 0 / 0.08)' }}
+          className="flex items-center justify-between px-md py-sm shrink-0"
+          style={{ borderBottom: '1px solid oklch(1 0 0 / 0.08)' }}
         >
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-xs">
             <Code2 size={13} style={{ color: 'oklch(0.72 0.14 175)' }} aria-hidden />
             <span
-              className="text-[10px] uppercase tracking-[0.12em] font-bold select-none"
-              style={{ color: 'oklch(0.72 0.14 175)' }}
+              className="text-[10px] uppercase tracking-[0.14em] font-bold select-none"
+              style={{ color: 'oklch(0.60 0.08 175)' }}
             >
               Query inspector
             </span>
           </div>
           <button
             type="button"
+            onClick={() => setShowDevPanel(false)}
+            aria-label="Close query inspector"
+            className="opacity-40 hover:opacity-90 transition-opacity duration-150 p-1 rounded"
+            style={{ color: 'oklch(0.72 0.01 250)' }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <pre
+            className="px-md py-md text-[11.5px] leading-relaxed whitespace-pre-wrap break-all"
+            style={{ color: 'oklch(0.72 0.01 250)' }}
+          >
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}># API request{'\n'}</span>
+            <span style={{ color: 'oklch(0.85 0.14 175)' }}>GET </span>
+            <span style={{ color: 'oklch(0.82 0.01 250)' }}>{url || '/api/search?q=<query>&type=all'}</span>
+            {'\n\n'}
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}># Graph strategy{'\n'}</span>
+            <span style={{ color: 'oklch(0.65 0.01 250)' }}>ordering:  </span>
+            <span style={{ color: semantic ? 'oklch(0.82 0.18 310)' : 'oklch(0.82 0.01 250)' }}>
+              {semantic ? '_ranking: SEMANTIC  _semanticWeight: 0.8' : '_ranking: RELEVANCE'}
+            </span>
+            {'\n'}
+            <span style={{ color: 'oklch(0.65 0.01 250)' }}>fulltext:  </span>
+            <span style={{ color: 'oklch(0.82 0.01 250)' }}>
+              {semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'}
+            </span>
+            {'\n'}
+            <span style={{ color: 'oklch(0.65 0.01 250)' }}>pinning:   </span>
+            <span style={{ color: 'oklch(0.82 0.01 250)' }}>phrase-based (blogs, events, pages)</span>
+            {'\n'}
+            <span style={{ color: 'oklch(0.65 0.01 250)' }}>scoping:   </span>
+            <span style={{ color: 'oklch(0.82 0.01 250)' }}>OT_ThemeManager.frontEndDomain</span>
+          </pre>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="shrink-0 px-md py-sm flex items-center justify-end"
+          style={{ borderTop: '1px solid oklch(1 0 0 / 0.08)' }}
+        >
+          <button
+            type="button"
             onClick={handleCopy}
             aria-label="Copy query details"
-            className="text-[10px] uppercase tracking-[0.08em] font-bold transition-colors duration-150 px-sm py-1 rounded"
+            className="text-[10px] uppercase tracking-widest font-bold px-md py-1.5 rounded-ot-control transition-all duration-150"
             style={{
               color: queryCopied ? 'oklch(0.72 0.14 175)' : 'oklch(0.55 0.01 250)',
-              background: queryCopied ? 'oklch(0.72 0.14 175 / 0.12)' : 'transparent',
+              background: queryCopied ? 'oklch(0.72 0.14 175 / 0.12)' : 'oklch(1 0 0 / 0.05)',
+              border: '1px solid oklch(1 0 0 / 0.08)',
             }}
           >
             {queryCopied ? '✓ Copied' : 'Copy'}
           </button>
         </div>
-        {/* Panel body */}
-        <pre
-          className="px-md py-md text-[11.5px] leading-relaxed overflow-x-auto whitespace-pre-wrap break-all"
-          style={{ color: 'oklch(0.72 0.01 250)' }}
-        >
-          <span style={{ color: 'oklch(0.55 0.01 250)' }}># API request{'\n'}</span>
-          <span style={{ color: 'oklch(0.85 0.14 175)' }}>GET </span>
-          <span style={{ color: 'oklch(0.82 0.01 250)' }}>{url || '/api/search?q=<query>&type=all'}</span>
-          {'\n\n'}
-          <span style={{ color: 'oklch(0.55 0.01 250)' }}># Graph strategy{'\n'}</span>
-          <span style={{ color: 'oklch(0.65 0.01 250)' }}>ordering:  </span>
-          <span style={{ color: semantic ? 'oklch(0.82 0.18 310)' : 'oklch(0.82 0.01 250)' }}>
-            {semantic ? '_ranking: SEMANTIC  _semanticWeight: 0.8' : '_ranking: RELEVANCE'}
-          </span>
-          {'\n'}
-          <span style={{ color: 'oklch(0.65 0.01 250)' }}>fulltext:  </span>
-          <span style={{ color: 'oklch(0.82 0.01 250)' }}>
-            {semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'}
-          </span>
-          {'\n'}
-          <span style={{ color: 'oklch(0.65 0.01 250)' }}>pinning:   </span>
-          <span style={{ color: 'oklch(0.82 0.01 250)' }}>phrase-based (blogs, events, pages)</span>
-          {'\n'}
-          <span style={{ color: 'oklch(0.65 0.01 250)' }}>scoping:   </span>
-          <span style={{ color: 'oklch(0.82 0.01 250)' }}>OT_ThemeManager.frontEndDomain</span>
-        </pre>
       </motion.div>
     )
   }
@@ -870,6 +895,23 @@ export default function SiteSearch() {
 
         {/* Top bar — controls only, no search wordmark */}
         <div className="flex items-center justify-end px-md lg:px-2xl py-2.5 shrink-0 gap-xs">
+          {/* Query inspector toggle — desktop/demo only */}
+          <button
+            type="button"
+            onClick={() => setShowDevPanel(v => !v)}
+            aria-label={showDevPanel ? 'Hide query inspector' : 'Show query inspector'}
+            aria-pressed={showDevPanel}
+            className={[
+              'hidden md:flex items-center gap-1.25 px-sm h-9 rounded-ot-control transition-all duration-200',
+              'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2',
+              showDevPanel
+                ? 'bg-brand/15 text-brand ring-1 ring-brand/30'
+                : 'text-fg-muted/50 bg-fg/7 ring-1 ring-fg/10 hover:text-fg hover:ring-fg/25 hover:bg-fg/10',
+            ].join(' ')}
+          >
+            <Code2 size={14} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Query</span>
+          </button>
           <button
             type="button"
             onClick={toggleMode}
@@ -1050,28 +1092,10 @@ export default function SiteSearch() {
           </div>
         </div>
 
-        {/* Developer query panel + toggle button */}
-        <div className="absolute bottom-5 right-5 z-20 flex flex-col items-end gap-xs">
-          <AnimatePresence>
-            {showDevPanel && DevQueryPanel()}
-          </AnimatePresence>
-          <button
-            type="button"
-            onClick={() => setShowDevPanel(v => !v)}
-            aria-label={showDevPanel ? 'Hide query inspector' : 'Show query inspector'}
-            aria-pressed={showDevPanel}
-            title="Query inspector"
-            className={[
-              'flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200',
-              'focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2',
-              showDevPanel
-                ? 'text-brand bg-brand/15 ring-1 ring-brand/30'
-                : 'text-fg-muted/35 bg-canvas/70 ring-1 ring-fg/10 hover:text-fg hover:bg-fg/8 backdrop-blur-sm',
-            ].join(' ')}
-          >
-            <Code2 size={16} />
-          </button>
-        </div>
+        {/* Query inspector flyout — slides in from right edge */}
+        <AnimatePresence>
+          {showDevPanel && DevQueryPanel()}
+        </AnimatePresence>
       </div>
     )
   }
