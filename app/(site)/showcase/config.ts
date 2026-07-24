@@ -54,9 +54,10 @@ export const CATEGORIES: ShowcaseCategory[] = [
     match: '/showcase/pages',
     href:  '/showcase/pages/blog',
     items: [
-      { label: 'Blog',   slug: 'blog'   },
-      { label: 'Event',  slug: 'event'  },
-      { label: 'Folder', slug: 'folder' },
+      { label: 'Blog',      slug: 'blog'      },
+      { label: 'Event',     slug: 'event'     },
+      { label: 'Topic Hub', slug: 'topic-hub' },
+      { label: 'Folder',    slug: 'folder'    },
     ],
   },
   {

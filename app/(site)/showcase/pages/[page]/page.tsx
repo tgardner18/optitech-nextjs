@@ -2,12 +2,13 @@ import type { Metadata }       from 'next'
 import { notFound }             from 'next/navigation'
 import { SectionLabel }         from '../../components'
 import EventPage from '@/components/pages/EventPage'
+import TopicHubPage from '@/components/pages/TopicHubPage'
 import BlogPlayground from '../blog-playground'
 
 // ─── Static params ─────────────────────────────────────────────────────────
 
 export function generateStaticParams() {
-  return [{ page: 'blog' }, { page: 'event' }, { page: 'folder' }]
+  return [{ page: 'blog' }, { page: 'event' }, { page: 'topic-hub' }, { page: 'folder' }]
 }
 
 export async function generateMetadata({
@@ -17,9 +18,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { page } = await params
   const labels: Record<string, string> = {
-    blog:   'Blog Page',
-    event:  'Event Page',
-    folder: 'Folder Page',
+    blog:       'Blog Page',
+    event:      'Event Page',
+    'topic-hub': 'Topic Hub Page',
+    folder:     'Folder Page',
   }
   const label = labels[page]
   if (!label) return {}
@@ -131,6 +133,43 @@ function EventPageShowcase() {
   )
 }
 
+// ─── Topic Hub page showcase ───────────────────────────────────────────────
+
+const MOCK_TOPIC_HUB_CONFIG = {
+  headerName:           'Topic Hub',
+  headerEffect:         'outline',
+  damFolderContainerId: null,
+  searchRecommendations: [
+    { label: 'Cardiac Care' },
+    { label: 'Annual Reports' },
+    { label: 'Patient Resources' },
+    { label: 'Clinical Trials' },
+  ],
+  contentBuckets: [
+    { sectionHeadline: 'News & Research',    sectionIcon: 'Newspaper',    sectionContentType: 'blogs'         },
+    { sectionHeadline: 'Events & Training',  sectionIcon: 'CalendarDays', sectionContentType: 'events'        },
+    { sectionHeadline: 'Pages',              sectionIcon: 'Globe',        sectionContentType: 'experiences'   },
+    { sectionHeadline: 'Locations',          sectionIcon: 'MapPin',       sectionContentType: 'locations'     },
+    { sectionHeadline: 'Care Team',          sectionIcon: 'Users',        sectionContentType: 'practitioners' },
+  ],
+}
+
+function TopicHubShowcase() {
+  return (
+    <>
+      <section className="px-md pt-xl pb-lg lg:px-lg">
+        <SectionLabel index="Pages · OT_TopicHubPage" title="Topic Hub Page" />
+        <p className="text-body leading-body text-fg-muted max-w-[65ch]">
+          A CMS-configurable content discovery page powered by semantic AI search. The header effect, recommendation pills, and content bucket layout are all set in the CMS. The demo below is pre-populated with mock config — enter a topic to see the search UI respond.
+        </p>
+      </section>
+      <section className="border-t border-fg/5">
+        <TopicHubPage config={MOCK_TOPIC_HUB_CONFIG as any} />
+      </section>
+    </>
+  )
+}
+
 // ─── Folder page showcase ───────────────────────────────────────────────────
 
 function FolderPageShowcase() {
@@ -170,8 +209,9 @@ export default async function ShowcasePageTypePage({ params }: Props) {
         <BlogPlayground />
       </>
     )
-    case 'event':  return <EventPageShowcase />
-    case 'folder': return <FolderPageShowcase />
-    default:       return notFound()
+    case 'event':      return <EventPageShowcase />
+    case 'topic-hub':  return <TopicHubShowcase />
+    case 'folder':     return <FolderPageShowcase />
+    default:           return notFound()
   }
 }

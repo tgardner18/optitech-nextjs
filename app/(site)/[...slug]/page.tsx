@@ -14,6 +14,7 @@ import {
 import { getBlogPage, getRelatedBlogPosts, getAuthorName, fetchAuthorByKey } from '@/lib/blog'
 import { getCampaignPage, getCampaignPageMeta, mapCampaignPageRaw } from '@/lib/campaign'
 import { getEventPage } from '@/lib/events'
+import { getTopicHubPage } from '@/lib/topicHub'
 import { getPractitioner } from '@/lib/practitioners'
 import { practitionerName, primaryArea, bioPreview } from '@/lib/practitionerFormat'
 import PractitionerHeader from '@/components/practitioner/PractitionerHeader'
@@ -25,6 +26,7 @@ import { resolveContentVariant } from '@/lib/fx'
 import BlogPage                from '@/components/pages/BlogPage'
 import CampaignPage            from '@/components/pages/CampaignPage'
 import EventPage               from '@/components/pages/EventPage'
+import TopicHubPage            from '@/components/pages/TopicHubPage'
 import Script                  from 'next/script'
 import { DraftStateBanner }    from '@/components/preview/DraftStateBanner'
 import { ExternalPreviewLinkPanel } from '@/components/preview/ExternalPreviewLinkPanel'
@@ -136,6 +138,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       schemaType: eventContent?.schemaType || 'Event',
     }
     return buildPageMetadata(seoFields, settings ?? {}, path)
+  }
+
+  // Topic Hub page — fetch SEO fields from the targeted query
+  if (exp?.__typename === 'OT_TopicHubPage' && exp?._metadata?.key) {
+    const hubContent = await getTopicHubPage(exp._metadata.key as string, locale)
+    return buildPageMetadata(
+      (hubContent ?? {}) as PageSeoFields,
+      settings ?? {},
+      path,
+    )
   }
 
   // Practitioner page — _experience; build SEO from page fields with a smart
@@ -487,6 +499,26 @@ async function CmsPage({ params, searchParams }: Props) {
             )}
             {dm.isEnabled && <NextPreviewComponent />}
             <EventPage content={eventContent as any} />
+          </>
+        )
+      }
+    }
+
+    // Topic Hub page — configurable AI-powered content discovery page
+    if (exp?.__typename === 'OT_TopicHubPage') {
+      const contentKey = exp._metadata?.key as string | undefined
+      const hubContent = dm.isEnabled
+        ? exp
+        : (contentKey ? await getTopicHubPage(contentKey, locale) : null)
+
+      if (hubContent) {
+        return (
+          <>
+            {dm.isEnabled && cmsUrl && (
+              <Script src={`${cmsUrl}/util/javascript/communicationinjector.js`} />
+            )}
+            {dm.isEnabled && <NextPreviewComponent />}
+            <TopicHubPage config={hubContent as any} />
           </>
         )
       }

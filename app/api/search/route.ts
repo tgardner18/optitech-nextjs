@@ -252,10 +252,38 @@ const SETTINGS_TYPES = new Set([
   'OT_FooterLink',
 ])
 
+function buildLocationQuery(semantic: boolean): string {
+  const ranking = semantic
+    ? 'orderBy: { _ranking: SEMANTIC, _semanticWeight: 0.8 }'
+    : 'orderBy: { _ranking: RELEVANCE }'
+  return `
+    query SearchLocations($query: String!, $limit: Int!, $locale: String!) {
+      OT_LocationProfile(
+        ${ranking}
+        where: {
+          ${fulltextClause(semantic)}
+          _metadata: { locale: { eq: $locale } }
+        }
+        limit: $limit
+        tracking: { phrase: $query, source: "/search" }
+      ) {
+        items {
+          _track
+          _metadata { key }
+          locationName
+          locationLabel
+          address
+          image { url { default } }
+        }
+      }
+    }
+  `
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const q        = (searchParams.get('q') ?? '').trim()
-  const type     = (searchParams.get('type') ?? 'all') as 'all' | 'Blog' | 'Page' | 'Event'
+  const type     = (searchParams.get('type') ?? 'all') as 'all' | 'Blog' | 'Page' | 'Event' | 'Location' | 'Practitioner' | 'Experience'
   const semantic = searchParams.get('semantic') === 'true'
   const limit    = 16
 
@@ -376,7 +404,7 @@ export async function GET(req: NextRequest) {
   // BlankExperience/_Content blocks so the resolved page keys land in `seen`
   // first — OT_PractitionerPage is an _experience, so the generic _Content
   // fallback would otherwise re-emit it as a bare Page without the headshot.
-  if (type === 'all' || type === 'Page') {
+  if (type === 'all' || type === 'Page' || type === 'Practitioner') {
     try {
       const profileVars = { query: q, limit, locale }
       const profileData = await getClient().request(buildPractitionerProfileQuery(semantic), profileVars)
@@ -414,15 +442,18 @@ export async function GET(req: NextRequest) {
             : (page._metadata.displayName ?? 'Untitled')
           const bioHtml     = (profile.bio?.html as string | undefined) || undefined
 
+          const resultType = (type === 'Practitioner') ? 'Practitioner' : 'Page'
           results.push({
-            id:        pageKey,
+            id:                pageKey,
             title,
-            url:       absoluteUrl(page._metadata.url.default, page._metadata.url.base) as string,
-            type:      'Page',
-            published: page._metadata.published || undefined,
-            excerpt:   bioHtml ? stripHtml(bioHtml) : undefined,
-            imageUrl:  profile.headshot?.url?.default || undefined,
-            _track:    withTrackAuth(profile._track),
+            url:               absoluteUrl(page._metadata.url.default, page._metadata.url.base) as string,
+            type:              resultType,
+            published:         page._metadata.published || undefined,
+            excerpt:           bioHtml ? stripHtml(bioHtml) : undefined,
+            imageUrl:          profile.headshot?.url?.default || undefined,
+            credentials:       (profile.credentials as string | undefined) || undefined,
+            practitionerTitle: undefined,
+            _track:            withTrackAuth(profile._track),
           })
         }
       }
@@ -434,7 +465,7 @@ export async function GET(req: NextRequest) {
   // ── Experience results (typed — enriched with seoDescription / ogImage) ──
   // Runs before the generic _Content query so enriched data wins the seen-Set
   // deduplication; _Content then fills in any remaining non-experience pages.
-  if (type === 'all' || type === 'Page') {
+  if (type === 'all' || type === 'Page' || type === 'Experience') {
     try {
       const expQuery = buildBlankExperienceQuery(withDomain, semantic)
       const data = await getClient().request(expQuery, baseVars)
@@ -460,6 +491,9 @@ export async function GET(req: NextRequest) {
 
     // ── Generic page fallback (_Content) ────────────────────────────────────
     // Catches _page-typed content not covered by the typed query above.
+    // Skip when called with explicit type=Experience — caller only wants BlankExperience.
+    if (type === 'Experience') return NextResponse.json(results)
+
     try {
       const contentQuery = buildContentQuery(withDomain, semantic)
       const data = await getClient().request(contentQuery, baseVars)
@@ -483,6 +517,35 @@ export async function GET(req: NextRequest) {
       }
     } catch (err) {
       console.error('[search] content query failed:', err)
+    }
+  }
+
+  // ── Location results ─────────────────────────────────────────────────────
+  // OT_LocationProfile is a _component with no URL of its own. Results are
+  // informational-only (no navigation link). Locale-scoped but not domain-scoped
+  // since locations are shared across an org rather than owned by one site.
+  if (type === 'Location') {
+    try {
+      const locVars = { query: q, limit, locale }
+      const locData = await getClient().request(buildLocationQuery(semantic), locVars)
+      const items: any[] = (locData as any)?.OT_LocationProfile?.items ?? []
+      for (const item of items) {
+        const key = item._metadata?.key as string | undefined
+        if (!key || seen.has(key)) continue
+        seen.add(key)
+        results.push({
+          id:            key,
+          title:         (item.locationName as string | undefined) ?? 'Location',
+          url:           '',
+          type:          'Location',
+          address:       (item.address as string | undefined) || undefined,
+          locationBadge: (item.locationLabel as string | undefined) || undefined,
+          imageUrl:      item.image?.url?.default || undefined,
+          _track:        withTrackAuth(item._track),
+        })
+      }
+    } catch (err) {
+      console.error('[search] location query failed:', err)
     }
   }
 
