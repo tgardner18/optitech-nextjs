@@ -55,8 +55,6 @@ const MOCK_EVENT_CONFERENCE = {
   locationType: 'inPerson',
   venueName:   'Pier 27 Conference Center',
   city:        'San Francisco, CA',
-  creditType:  'CPE',
-  creditHours: 18,
   registrationUrl: { default: 'https://example.com/register' },
   agenda: [
     { time: '9:00 AM – 9:45 AM',   title: 'Keynote: The Experience Decade',         description: 'Where digital experience is heading, and why the next challenge is organisational, not technical.', speaker: 'Nadia Okafor' },

@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useId } from 'react'
 import {
   LayoutGrid, List, Calendar as CalendarIcon,
   ChevronLeft, ChevronRight, ChevronRight as ChevronGo,
-  MapPin, Video, Award, CalendarX2, ArrowRight, Lock,
+  MapPin, Video, CalendarX2, ArrowRight,
 } from 'lucide-react'
 import type { EventCardData } from '@/lib/events'
 import {
@@ -12,7 +12,6 @@ import {
   formatEventDate,
   formatEventTime,
   formatEventLocation,
-  formatCredit,
   eventDateBlock,
   isUpcoming,
   startOfDay,
@@ -64,33 +63,6 @@ function TypeBadge({ type, className = '' }: { type: string; className?: string 
   return (
     <span className={`inline-flex items-center rounded-ot-control bg-brand text-fg-on-brand px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}>
       {eventTypeLabel(type)}
-    </span>
-  )
-}
-
-// Members-only badge — ABA gold to signal exclusive content.
-// Positioned as an overlay in cards, inline in list rows.
-const MEMBER_GOLD = '#C8962C'
-
-function MemberBadge({ className = '' }: { className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-ot-control text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none text-white ${className}`}
-      style={{ backgroundColor: MEMBER_GOLD }}
-    >
-      <Lock size={9} strokeWidth={2.5} aria-hidden />
-      Members Only
-    </span>
-  )
-}
-
-function CreditPill({ event }: { event: EventCardData }) {
-  const label = formatCredit(event.creditType, event.creditHours)
-  if (!label) return null
-  return (
-    <span className="inline-flex items-center gap-xs text-label font-semibold text-fg-muted">
-      <Award size={13} strokeWidth={2} className="text-brand" aria-hidden />
-      {label}
     </span>
   )
 }
@@ -158,10 +130,6 @@ function EventCard({ event, color }: { event: EventCardData; color: Color }) {
         )}
         {/* Type badge — overlays the top-left of the media / placeholder area */}
         {event.eventType && <TypeBadge type={event.eventType} className="absolute top-3 left-3" />}
-        {/* Members-only badge — top-right overlay */}
-        {event.restrictions === 'bankMember' && (
-          <MemberBadge className="absolute top-3 right-3" />
-        )}
       </div>
 
       {/* Body */}
@@ -171,7 +139,6 @@ function EventCard({ event, color }: { event: EventCardData; color: Color }) {
         </h3>
         <div className="mt-auto flex flex-col gap-xs">
           <LocationLine event={event} />
-          <CreditPill event={event} />
         </div>
       </div>
     </a>
@@ -215,10 +182,9 @@ function EventListRow({ event }: { event: EventCardData }) {
     >
       <DateBlock event={event} />
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-xs">
-        {(event.eventType || event.restrictions === 'bankMember') && (
+        {event.eventType && (
           <div className="flex flex-wrap items-center gap-xs self-start">
-            {event.eventType && <TypeBadge type={event.eventType} />}
-            {event.restrictions === 'bankMember' && <MemberBadge />}
+            <TypeBadge type={event.eventType} />
           </div>
         )}
         <h3 className="text-title leading-title font-semibold text-fg text-balance group-hover:underline decoration-fg/20 underline-offset-2">
@@ -227,7 +193,6 @@ function EventListRow({ event }: { event: EventCardData }) {
         <div className="flex flex-wrap items-center gap-x-md gap-y-xs">
           <span className="text-label text-fg-muted">{formatEventDate(event.startDate, event.endDate)}{time && ` · ${time}`}</span>
           <LocationLine event={event} />
-          <CreditPill event={event} />
         </div>
       </div>
       <div className="hidden sm:flex items-center shrink-0 text-fg-muted/40 group-hover:text-brand transition-transform duration-150 group-hover:translate-x-0.5">
@@ -621,7 +586,7 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
             className={`inline-flex items-center gap-xs px-sm py-xs text-label uppercase tracking-label font-semibold
               transition-colors duration-150 ease-quick cursor-pointer
               ${i > 0 ? 'border-l border-fg/15' : ''}
-              ${active ? 'bg-brand text-fg-on-brand' : 'text-fg-muted hover:text-fg hover:bg-fg/[0.04]'}
+              ${active ? 'bg-brand text-fg-on-brand' : 'text-fg-muted hover:text-fg hover:bg-fg/4'}
               focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`}
           >
             <Icon size={16} strokeWidth={1.75} aria-hidden />
@@ -783,12 +748,12 @@ export default function EventListingClient({
 
           <div className="flex items-center gap-md">
             {showPastCtrl && (
-              <label className="inline-flex items-center gap-xs min-h-[44px] text-label uppercase tracking-label font-semibold text-fg-muted cursor-pointer select-none">
+              <label className="inline-flex items-center gap-xs min-h-11 text-label uppercase tracking-label font-semibold text-fg-muted cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={showPast}
                   onChange={e => setShowPast(e.target.checked)}
-                  className="accent-[var(--ot-brand)] w-4 h-4"
+                  className="accent-brand w-4 h-4"
                 />
                 Show past events
               </label>

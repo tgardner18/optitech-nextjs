@@ -118,31 +118,6 @@ export const OT_EventPage = contentType({
       indexingType: 'searchable',
     },
 
-    // ── Continuing-education credit ─────────────────────────────────────────────
-    creditType: {
-      type:        'string',
-      format:      'selectOne',
-      displayName: 'Credit Type',
-      description: 'Continuing-education credit offered, if any (CLE for legal, CME/CE for health, CPE for finance).',
-      group:       'OT_Content',
-      sortOrder:   110,
-      enum: [
-        { value: 'none', displayName: 'No Credit' },
-        { value: 'CLE',  displayName: 'CLE (Legal)' },
-        { value: 'CME',  displayName: 'CME (Medical)' },
-        { value: 'CE',   displayName: 'CE (Continuing Education)' },
-        { value: 'CPE',  displayName: 'CPE (Accounting/Finance)' },
-        { value: 'PDU',  displayName: 'PDU (Project Management)' },
-      ],
-    },
-    creditHours: {
-      type:        'float',
-      displayName: 'Credit Hours',
-      description: 'Number of credit hours awarded (e.g. 1.5). Only shown when a credit type is set.',
-      group:       'OT_Content',
-      sortOrder:   120,
-    },
-
     // ── Registration ────────────────────────────────────────────────────────────
     registrationUrl: {
       type:        'url',
@@ -150,50 +125,6 @@ export const OT_EventPage = contentType({
       description: 'Where attendees register or join. Drives the primary CTA on the event page and card.',
       group:       'OT_Content',
       sortOrder:   130,
-    },
-
-    // ── Access restrictions ──────────────────────────────────────────────────────
-    // Controls content-gating on the event page. When set to 'bankMember',
-    // non-authenticated visitors see only the first paragraph + a sign-in prompt.
-    // The aba_member_session cookie (set by MemberAuth) is used for client-side
-    // gating — this is a demo-fidelity simulation, not a security boundary.
-    restrictions: {
-      type:        'string',
-      format:      'selectOne',
-      displayName: 'Restrictions',
-      description: "Content access level. 'Bank Member' gates the full event details behind the ABA member sign-in flow.",
-      group:       'OT_Content',
-      sortOrder:   135,
-      enum: [
-        { value: 'none',       displayName: 'None' },
-        { value: 'bankMember', displayName: 'Bank Member' },
-      ],
-    },
-
-    // ── Commerce (AMS simulation) ────────────────────────────────────────────────
-    // In production these would be sourced from Nimble AMS. In the demo they are
-    // authored directly in the CMS. When pricing is set, the event page renders
-    // a commerce sidebar section with member/non-member pricing and an Add to Cart CTA.
-    productId: {
-      type:        'string',
-      displayName: 'Product ID',
-      description: 'The AMS product identifier (e.g. ABAWebID0011492). Displayed on the event page commerce section.',
-      group:       'OT_Content',
-      sortOrder:   10,
-    },
-    nonMemberPrice: {
-      type:        'string',
-      displayName: 'Non-Member Price',
-      description: 'Formatted price string for non-members (e.g. $310.00). Leave blank for free events.',
-      group:       'OT_Content',
-      sortOrder:   20,
-    },
-    memberPrice: {
-      type:        'string',
-      displayName: 'Member Price',
-      description: 'Formatted price string for ABA members (e.g. $210.00). Highlighted when visitor is signed in as a member.',
-      group:       'OT_Content',
-      sortOrder:   30,
     },
 
     // ── Speakers & Agenda ───────────────────────────────────────────────────────

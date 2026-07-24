@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
-import { cookies } from 'next/headers'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
-import { Calendar, Clock, MapPin, Monitor, Award, ArrowRight, User } from 'lucide-react'
+import { Calendar, Clock, MapPin, Monitor, ArrowRight, User } from 'lucide-react'
 import type { EventPageContent } from '@/lib/events'
 import {
   eventTypeLabel,
@@ -11,9 +10,6 @@ import {
   timeZoneAbbr,
   getInitials,
 } from '@/lib/eventFormat'
-import EventMemberGate       from './EventMemberGate'
-import EventCommerce          from './EventCommerce'
-import EventRestrictedLayout  from './EventRestrictedLayout'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,21 +18,6 @@ type PreviewAttrs = (field: string) => Record<string, unknown>
 type Props = {
   content: EventPageContent
   pa?:     PreviewAttrs
-}
-
-// ─── ABA brand constants ─────────────────────────────────────────────────────
-
-const GOLD = '#C8962C'
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Extract the first <p>...</p> from an HTML string for use as a teaser. */
-function extractTeaser(html: string): string {
-  const start = html.indexOf('<p')
-  if (start === -1) return ''
-  const end = html.indexOf('</p>', start)
-  if (end === -1) return html.slice(start)
-  return html.slice(start, end + 4)
 }
 
 // ─── Type badge ─────────────────────────────────────────────────────────────────
@@ -52,22 +33,6 @@ function TypeBadge({ type, onImage = false }: { type: string; onImage?: boolean 
     >
       {!onImage && <span className="block w-6 h-px bg-accent flex-none" aria-hidden />}
       {eventTypeLabel(type)}
-    </span>
-  )
-}
-
-// ─── "Bank Members Only" badge ───────────────────────────────────────────────
-
-function MemberBadge({ onImage = false }: { onImage?: boolean }) {
-  return (
-    <span
-      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-      style={{
-        backgroundColor: GOLD,
-        color: onImage ? '#1a1a2e' : '#1a1a2e',
-      }}
-    >
-      ABA Bank Members Only
     </span>
   )
 }
@@ -118,38 +83,22 @@ function SectionHeading({ children }: { children: string }) {
 
 // ─── Page component ─────────────────────────────────────────────────────────────
 
-export default async function EventPage({ content, pa }: Props) {
+export default function EventPage({ content, pa }: Props) {
   const {
     title, eventType,
     description, featuredImage,
     startDate, endDate,
     locationType, venueName, city,
-    creditType, creditHours,
     registrationUrl,
     speakers, agenda,
-    restrictions,
-    productId, nonMemberPrice, memberPrice,
   } = content
 
-  // Server-side cookie read — no client-side flash for gated content
-  const cookieStore  = await cookies()
-  const initialIsMember = (cookieStore.get('aba_member_type')?.value ?? '').length > 0
-
-  const imageUrl      = featuredImage?.url?.default || null
-  const dateLabel     = formatEventDate(startDate, endDate)
-  const timeLabel     = formatEventTime(startDate, endDate)
-  const tzAbbr        = timeZoneAbbr(startDate)
-  const regUrl        = registrationUrl?.default || null
-  const isVirtual     = locationType === 'virtual'
-  const isRestricted  = restrictions === 'bankMember'
-  const hasPricing    = !!(nonMemberPrice || memberPrice)
-  const teaserHtml    = extractTeaser(description?.html || '')
-
-  const hasCredit =
-    !!creditType && creditType !== 'none' && typeof creditHours === 'number' && creditHours > 0
-  const creditHoursLabel = hasCredit
-    ? (Number.isInteger(creditHours!) ? String(creditHours) : creditHours!.toFixed(1))
-    : ''
+  const imageUrl  = featuredImage?.url?.default || null
+  const dateLabel = formatEventDate(startDate, endDate)
+  const timeLabel = formatEventTime(startDate, endDate)
+  const tzAbbr    = timeZoneAbbr(startDate)
+  const regUrl    = registrationUrl?.default || null
+  const isVirtual = locationType === 'virtual'
 
   // ── Sidebar rows ─────────────────────────────────────────────────────────────
   const rows: ReactNode[] = []
@@ -183,33 +132,6 @@ export default async function EventPage({ content, pa }: Props) {
       </DetailRow>,
     )
   }
-  if (hasCredit) {
-    rows.push(
-      <DetailRow key="credit" icon={Award} label="Professional Credit">
-        <span className="block text-title font-bold text-fg leading-none">{creditHoursLabel}</span>
-        <span className="block text-label uppercase tracking-label text-fg-muted mt-0.5">{creditType}</span>
-      </DetailRow>,
-    )
-  }
-
-  // ── Meta line (date + restriction badge) shown in the hero for restricted events
-  const heroMetaLine = isRestricted && (dateLabel || timeLabel) ? (
-    <div className="flex flex-wrap items-center gap-3 mb-md">
-      {(dateLabel || timeLabel) && (
-        <span className="text-sm font-medium" style={{ color: imageUrl ? 'rgba(255,255,255,0.8)' : undefined }}>
-          {[dateLabel, timeLabel && `${timeLabel}${tzAbbr ? ` ${tzAbbr}` : ''}`].filter(Boolean).join(' ')}
-        </span>
-      )}
-      <MemberBadge onImage={!!imageUrl} />
-    </div>
-  ) : null
-
-  // ── Non-image header restriction row (no featured image) ─────────────────────
-  const textHeaderBadge = isRestricted && !imageUrl ? (
-    <div className="flex flex-wrap items-center gap-3 mb-md">
-      <MemberBadge />
-    </div>
-  ) : null
 
   return (
     <article>
@@ -236,7 +158,6 @@ export default async function EventPage({ content, pa }: Props) {
           <div className="relative z-10 px-md lg:px-xl pb-xl">
             <div className="mx-auto max-w-5xl">
               {eventType && <div className="mb-md" {...pa?.('eventType')}><TypeBadge type={eventType} onImage /></div>}
-              {heroMetaLine}
               <h1 className="text-headline lg:text-display leading-headline lg:leading-display tracking-headline font-bold text-fg text-balance max-w-[20ch]" {...pa?.('title')}>
                 {title}
               </h1>
@@ -248,8 +169,6 @@ export default async function EventPage({ content, pa }: Props) {
           <div className="h-0.75 bg-brand" />
           <div className="mx-auto max-w-5xl px-md lg:px-xl pt-xl pb-lg">
             {eventType && <div className="mb-md" {...pa?.('eventType')}><TypeBadge type={eventType} /></div>}
-            {textHeaderBadge}
-            {heroMetaLine}
             <h1 className="text-headline lg:text-display leading-headline lg:leading-display tracking-headline font-bold text-fg text-balance max-w-[20ch]" {...pa?.('title')}>
               {title}
             </h1>
@@ -257,40 +176,12 @@ export default async function EventPage({ content, pa }: Props) {
         </header>
       )}
 
-      {/* ── Body — 65/35 two-column (sidebar hidden for restricted non-members) ── */}
+      {/* ── Body — 65/35 two-column ─────────────────────────────────────────── */}
       <section className="bg-canvas pt-xl pb-2xl">
         <div className="mx-auto max-w-5xl px-md lg:px-xl">
-          <EventRestrictedLayout
-            isRestricted={isRestricted}
-            initialSidebar={!isRestricted || initialIsMember}
-            sidebar={
-              <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10">
-                <div className="p-lg flex flex-col">
-                  {rows.map((row, i) => (
-                    <div key={i} className={i > 0 ? 'mt-md pt-md border-t border-fg/10' : ''}>
-                      {row}
-                    </div>
-                  ))}
-                </div>
-                <EventCommerce
-                  productId={productId}
-                  nonMemberPrice={nonMemberPrice}
-                  memberPrice={memberPrice}
-                  registrationUrl={regUrl}
-                  isVirtual={isVirtual}
-                  initialIsMember={initialIsMember}
-                  restrictions={restrictions}
-                />
-              </div>
-            }
-          >
-            <EventMemberGate
-              restrictions={restrictions}
-              teaserHtml={teaserHtml}
-              registrationUrl={regUrl}
-              initialIsMember={initialIsMember}
-            >
-              {/* Description */}
+          <div className="grid grid-cols-1 gap-xl items-start lg:grid-cols-[65fr_35fr]">
+            {/* Main content */}
+            <div className="order-2 lg:order-1 min-w-0">
               {description?.html && (
                 <div
                   data-rich-text=""
@@ -404,8 +295,34 @@ export default async function EventPage({ content, pa }: Props) {
                   </ul>
                 </section>
               )}
-            </EventMemberGate>
-          </EventRestrictedLayout>
+            </div>
+
+            {/* Sidebar */}
+            <aside className="order-1 lg:order-2 lg:sticky lg:top-24 min-w-0">
+              <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10">
+                <div className="p-lg flex flex-col">
+                  {rows.map((row, i) => (
+                    <div key={i} className={i > 0 ? 'mt-md pt-md border-t border-fg/10' : ''}>
+                      {row}
+                    </div>
+                  ))}
+                </div>
+                {regUrl && (
+                  <div className="px-lg pb-lg">
+                    <a
+                      href={regUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-signal group flex items-center justify-center gap-xs rounded-ot-control bg-brand text-fg-on-brand px-lg py-md text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      {isVirtual ? 'Join' : 'Register'}
+                      <ArrowRight size={16} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     </article>

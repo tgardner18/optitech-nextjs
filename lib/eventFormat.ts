@@ -204,11 +204,3 @@ export function getInitials(name?: string | null): string {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase()
 }
 
-/** Credit label, e.g. "1.5 CLE". Empty when no credit. */
-export function formatCredit(creditType?: string | null, creditHours?: number | null): string {
-  if (!creditType || creditType === 'none') return ''
-  const hrs = typeof creditHours === 'number' && creditHours > 0
-    ? `${Number.isInteger(creditHours) ? creditHours : creditHours.toFixed(1)} `
-    : ''
-  return `${hrs}${creditType}`
-}
