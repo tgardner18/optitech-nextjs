@@ -894,7 +894,7 @@ export default function SiteSearch() {
       >
 
         {/* Top bar — controls only, no search wordmark */}
-        <div className="flex items-center justify-end px-md lg:px-2xl py-2.5 shrink-0 gap-xs">
+        <div className="flex items-center justify-end px-md lg:px-2xl py-2.5 shrink-0 gap-sm">
           {/* Query inspector toggle — desktop/demo only */}
           <button
             type="button"
