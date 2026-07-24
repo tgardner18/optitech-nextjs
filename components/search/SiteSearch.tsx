@@ -528,9 +528,9 @@ export default function SiteSearch() {
         className="absolute top-0 right-0 bottom-0 z-30 flex flex-col"
         style={{
           width: 'min(480px, calc(100% - 160px))',
-          background: 'oklch(0.10 0.01 250)',
+          background: 'oklch(0.085 0.008 240)',
           borderLeft: '1px solid oklch(1 0 0 / 0.09)',
-          boxShadow: '-20px 0 80px oklch(0 0 0 / 0.45)',
+          boxShadow: '-20px 0 80px oklch(0 0 0 / 0.50)',
           fontFamily: 'var(--font-geist-mono, monospace)',
         }}
       >
@@ -540,10 +540,10 @@ export default function SiteSearch() {
           style={{ borderBottom: '1px solid oklch(1 0 0 / 0.08)' }}
         >
           <div className="flex items-center gap-xs">
-            <Code2 size={13} style={{ color: 'oklch(0.72 0.14 175)' }} aria-hidden />
+            <Code2 size={13} style={{ color: 'oklch(0.91 0.27 132)' }} aria-hidden />
             <span
-              className="text-[10px] uppercase tracking-[0.14em] font-bold select-none"
-              style={{ color: 'oklch(0.60 0.08 175)' }}
+              className="text-[11px] uppercase tracking-[0.14em] font-bold select-none"
+              style={{ color: 'oklch(0.72 0.18 132)' }}
             >
               Query inspector
             </span>
@@ -562,29 +562,29 @@ export default function SiteSearch() {
         {/* Body */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <pre
-            className="px-md py-md text-[11.5px] leading-relaxed whitespace-pre-wrap break-all"
+            className="px-md py-lg text-[14px] leading-[1.9] whitespace-pre-wrap break-all"
             style={{ color: 'oklch(0.72 0.01 250)' }}
           >
-            <span style={{ color: 'oklch(0.55 0.01 250)' }}># API request{'\n'}</span>
-            <span style={{ color: 'oklch(0.85 0.14 175)' }}>GET </span>
+            <span style={{ color: 'oklch(0.40 0.01 250)' }}># API request{'\n'}</span>
+            <span style={{ color: 'oklch(0.91 0.27 132)' }}>GET </span>
             <span style={{ color: 'oklch(0.82 0.01 250)' }}>{url || '/api/search?q=<query>&type=all'}</span>
             {'\n\n'}
-            <span style={{ color: 'oklch(0.55 0.01 250)' }}># Graph strategy{'\n'}</span>
-            <span style={{ color: 'oklch(0.65 0.01 250)' }}>ordering:  </span>
-            <span style={{ color: semantic ? 'oklch(0.82 0.18 310)' : 'oklch(0.82 0.01 250)' }}>
+            <span style={{ color: 'oklch(0.40 0.01 250)' }}># Graph strategy{'\n'}</span>
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}>ordering:  </span>
+            <span style={{ color: semantic ? 'oklch(0.91 0.27 132)' : 'oklch(0.78 0.01 250)' }}>
               {semantic ? '_ranking: SEMANTIC  _semanticWeight: 0.8' : '_ranking: RELEVANCE'}
             </span>
             {'\n'}
-            <span style={{ color: 'oklch(0.65 0.01 250)' }}>fulltext:  </span>
-            <span style={{ color: 'oklch(0.82 0.01 250)' }}>
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}>fulltext:  </span>
+            <span style={{ color: 'oklch(0.78 0.01 250)' }}>
               {semantic ? 'match: $query' : 'match: $query, fuzzy: true, synonyms: ONE'}
             </span>
             {'\n'}
-            <span style={{ color: 'oklch(0.65 0.01 250)' }}>pinning:   </span>
-            <span style={{ color: 'oklch(0.82 0.01 250)' }}>phrase-based (blogs, events, pages)</span>
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}>pinning:   </span>
+            <span style={{ color: 'oklch(0.78 0.01 250)' }}>phrase-based (blogs, events, pages)</span>
             {'\n'}
-            <span style={{ color: 'oklch(0.65 0.01 250)' }}>scoping:   </span>
-            <span style={{ color: 'oklch(0.82 0.01 250)' }}>OT_ThemeManager.frontEndDomain</span>
+            <span style={{ color: 'oklch(0.55 0.01 250)' }}>scoping:   </span>
+            <span style={{ color: 'oklch(0.78 0.01 250)' }}>OT_ThemeManager.frontEndDomain</span>
           </pre>
         </div>
 
@@ -599,8 +599,8 @@ export default function SiteSearch() {
             aria-label="Copy query details"
             className="text-[10px] uppercase tracking-widest font-bold px-md py-1.5 rounded-ot-control transition-all duration-150"
             style={{
-              color: queryCopied ? 'oklch(0.72 0.14 175)' : 'oklch(0.55 0.01 250)',
-              background: queryCopied ? 'oklch(0.72 0.14 175 / 0.12)' : 'oklch(1 0 0 / 0.05)',
+              color:      queryCopied ? 'oklch(0.91 0.27 132)' : 'oklch(0.55 0.01 250)',
+              background: queryCopied ? 'oklch(0.91 0.27 132 / 0.12)' : 'oklch(1 0 0 / 0.05)',
               border: '1px solid oklch(1 0 0 / 0.08)',
             }}
           >
