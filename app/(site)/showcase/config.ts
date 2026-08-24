@@ -46,6 +46,7 @@ export const CATEGORIES: ShowcaseCategory[] = [
       { label: 'Comparison Table',        slug: 'comparison-table'        },
       { label: 'Disclosure',              slug: 'disclosure'              },
       { label: 'Token Manager',           slug: 'token-manager'           },
+      { label: 'Carousel',               slug: 'carousel'                },
     ],
   },
   {
