@@ -56,6 +56,7 @@ import CalloutPlayground      from '../callout-playground'
 import ButtonPlayground       from '../button-playground'
 import TrustRailPlayground    from '../trust-rail-playground'
 import TokenManagerPlayground from '../token-manager-playground'
+import CarouselPlayground     from '../carousel-playground'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ const BLOCK_SLUGS = [
   'comparison-table',
   'disclosure',
   'token-manager',
+  'carousel',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -100,6 +102,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'comparison-table': { label: 'ComparisonTableBlock', cmsKey: 'OT_ComparisonTableBlock', description: 'Side-by-side comparison of plans, tiers, or account types. Grouped rows divide the table into named sections. Cells support a Lucide icon, short text, or both — an empty cell renders a dash. One column can be marked as featured to receive the brand-color treatment and a badge. On mobile a column-selector tab bar replaces the full grid, with swipe gesture support.' },
   'disclosure':       { label: 'DisclosureBlock',      cmsKey: 'OT_DisclosureBlock',      description: 'Legal and regulatory disclosures, rate notices, and footnotes. Items are auto-numbered (¹ ² ³ or a b c) — single-item blocks suppress the marker. Two styles: Fine Print (ultra-subtle footnote treatment) and Section (slightly elevated zone). Heading and marker style are content-type properties; no display template settings to configure.' },
   'token-manager':    { label: 'TokenManager',          cmsKey: 'OT_TokenManager',          description: 'Global text-token system. Authors define key–value pairs (e.g. product-name → Advantage Checking); any CMS field that contains {{product-name}} receives the value at render time — in the CMS preview and on published pages. Token keys are language-neutral; values can be translated per locale. Singleton shared block, like ThemeManager.' },
+  'carousel':         { label: 'CarouselBlock',         cmsKey: 'OT_CarouselBlock',         description: 'Editorial slideshow with 2–8 slides. Full-bleed mode uses the image as a full-width background with a gradient overlay; split mode places the image on the left with a content panel on the right. Four transition styles (slide, cover, fade, morph), autoplay with three speeds, loop or bounce mode, peek control to reveal adjacent slides, and a dot + arrow nav bar.' },
 }
 
 export function generateStaticParams() {
@@ -2894,6 +2897,7 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'comparison-table':        return <ComparisonTableShowcase />
     case 'disclosure':              return <><BlockHeader slug="disclosure" /><DisclosurePlayground /></>
     case 'token-manager':           return <><BlockHeader slug="token-manager" /><TokenManagerPlayground /></>
+    case 'carousel':                return <><BlockHeader slug="carousel" /><CarouselPlayground /></>
     default:                 return notFound()
   }
 }
