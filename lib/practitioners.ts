@@ -36,7 +36,6 @@ export type PractitionerData = {
   officeLocation?: string
   languages?:     string
   linkedIn?:      string
-  groupTag?:      string
   url:            string
 }
 
@@ -67,7 +66,6 @@ const PROFILE_FIELDS = `
   officeLocation
   languages
   linkedIn { default }
-  groupTag
 `
 
 const PRACTITIONER_QUERY = `
@@ -82,18 +80,22 @@ const PRACTITIONER_QUERY = `
 `
 
 // Listing query — fetches up to Optimizely Graph's hard per-query cap of 100.
-// Site scoping / group-tag filtering is applied in JS below so the directory's
-// filter options can be derived from exactly the loaded set.
-const PRACTITIONERS_QUERY = `
-  query GetPractitioners($locale: String!) {
-    OT_PractitionerProfile(
-      limit: 100,
-      where: { _metadata: { locale: { eq: $locale } } }
-    ) {
-      items { ${PROFILE_FIELDS} }
+// When siteKey is provided, the Graph WHERE clause filters by the queryable
+// siteKey field so only profiles belonging to this site are returned.
+function buildPractitionersQuery(withSiteKey: boolean): string {
+  const skVar    = withSiteKey ? ', $siteKey: String' : ''
+  const skFilter = withSiteKey ? '\n      siteKey: { eq: $siteKey }' : ''
+  return `
+    query GetPractitioners($locale: String!${skVar}) {
+      OT_PractitionerProfile(
+        limit: 100,
+        where: { _metadata: { locale: { eq: $locale } }${skFilter} }
+      ) {
+        items { ${PROFILE_FIELDS} }
+      }
     }
-  }
-`
+  `
+}
 
 // Maps each practitioner record key → the URL of the OT_PractitionerPage that
 // references it, so directory cards/rows link to the real profile page rather
@@ -138,7 +140,6 @@ function toPractitionerData(item: any, url: string): PractitionerData {
     officeLocation: item.officeLocation ?? undefined,
     languages:      item.languages ?? undefined,
     linkedIn:       item.linkedIn?.default ?? undefined,
-    groupTag:       item.groupTag ?? undefined,
     url,
   }
 }
@@ -171,23 +172,25 @@ export const getPractitioner = cache(async function getPractitioner(
 
 /**
  * Fetches published practitioner records for the directory listing.
- * Filters by groupTag when provided, dedups by key, resolves each record's
- * profile-page URL, and applies the optional limit last. Returns the
- * PractitionerCardData shape the listing/card/row components consume.
- *
- * React-cached so multiple listing blocks on one page share a round-trip.
+ * When siteKey is provided the Graph WHERE clause restricts results to profiles
+ * whose siteKey field matches — isolating one site on a shared CMS instance.
+ * Dedups by key, resolves each record's profile-page URL, and applies the
+ * optional limit last. React-cached so multiple listing blocks share a round-trip.
  */
 export const getAllPractitioners = cache(async function getAllPractitioners(
-  options?: { groupTag?: string; limit?: number; locale?: string },
+  options?: { siteKey?: string; limit?: number; locale?: string },
 ): Promise<PractitionerCardData[]> {
-  const locale = options?.locale ?? 'en'
+  const locale  = options?.locale ?? 'en'
+  const siteKey = options?.siteKey
+  const query   = buildPractitionersQuery(!!siteKey)
+  const vars    = { locale, ...(siteKey ? { siteKey } : {}) }
   try {
     const [profilesData, pagesData] = await Promise.all([
-      getClient().request(PRACTITIONERS_QUERY, { locale }),
+      getClient().request(query, vars),
       getClient().request(PRACTITIONER_PAGES_QUERY, { locale }).catch(() => null),
     ])
 
-    let items: any[] = (profilesData as any)?.OT_PractitionerProfile?.items ?? []
+    const items: any[] = (profilesData as any)?.OT_PractitionerProfile?.items ?? []
 
     // key → profile-page URL map (a practitioner may have no page yet)
     const pageItems: any[] = (pagesData as any)?.OT_PractitionerPage?.items ?? []
@@ -196,11 +199,6 @@ export const getAllPractitioners = cache(async function getAllPractitioners(
       const refKey = p.practitionerRef?.key as string | undefined
       const url    = p._metadata?.url?.default as string | undefined
       if (refKey && url && !pageUrlByKey.has(refKey)) pageUrlByKey.set(refKey, url)
-    }
-
-    // Group-tag scope — restrict to one vertical when requested.
-    if (options?.groupTag) {
-      items = items.filter(p => (p.groupTag ?? '') === options.groupTag)
     }
 
     // Dedup by key (Graph returns one row per locale variant).
@@ -214,7 +212,6 @@ export const getAllPractitioners = cache(async function getAllPractitioners(
 
     const mapped = unique
       .map(item => toPractitionerData(item, pageUrlByKey.get(item._metadata?.key) ?? ''))
-      // Sort by last name, then first — a stable, scannable directory order.
       .sort((a, b) =>
         (a.lastName || a.firstName).localeCompare(b.lastName || b.firstName),
       )

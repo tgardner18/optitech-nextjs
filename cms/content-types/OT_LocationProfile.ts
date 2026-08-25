@@ -72,13 +72,13 @@ export const OT_LocationProfile = contentType({
       group:       'OT_Content',
       sortOrder:   50,
     },
-    groupTag: {
+    siteKey: {
       type:         'string',
-      maxLength:    40,
-      displayName:  'Group Tag',
-      description:  'Associates this location with a vertical or brand. Must match the Group Tag Filter on any listing block that should include this location. e.g. "optimedical" / "optitech-offices".',
+      maxLength:    120,
+      displayName:  'Site Key',
+      description:  'The domain of the site this location belongs to — e.g. "optitech-nextjs-tim.vercel.app". Must match the Front End Domain set in ThemeManager. Used to scope location search results to the correct site.',
       group:        'OT_Content',
-      sortOrder:    60,
+      sortOrder:    70,
       indexingType: 'queryable',
     },
   },

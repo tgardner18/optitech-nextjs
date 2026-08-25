@@ -264,5 +264,13 @@ export const OT_ThemeManager = contentType({
       group: 'OT_Integrations',
       sortOrder: 70,
     },
+    googleAnalyticsId: {
+      type: 'string',
+      maxLength: 30,
+      displayName: 'Google Analytics Measurement ID',
+      description: 'GA4 Measurement ID (e.g. G-LGLHDKGRA4F). When set, the gtag.js snippet is injected for this domain and pageviews are tracked automatically.',
+      group: 'OT_Integrations',
+      sortOrder: 80,
+    },
   },
 })

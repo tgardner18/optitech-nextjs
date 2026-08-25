@@ -2,7 +2,7 @@ import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils }              from '@optimizely/cms-sdk/react/server'
 import { OT_StatBlock as OT_StatBlockContentType } from '@/cms/content-types/OT_StatBlock'
 import { getStatBlockStyles, getStatBlockIcons } from '@/cms/styling/OT_StatBlock.styling'
-import StatBlock, { type StatItem }     from '@/components/blocks/StatBlock'
+import StatBlock, { type StatItem, type StatEffect } from '@/components/blocks/StatBlock'
 
 type Props = {
   content:          ContentProps<typeof OT_StatBlockContentType>
@@ -52,6 +52,7 @@ export default function OT_StatBlockAdapter({ content, displaySettings = {} }: P
   const styleOptions      = getStatBlockStyles(displaySettings)
   const slotIcons         = getStatBlockIcons(displaySettings)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
+  const effect            = (content.effect ?? 'none') as StatEffect
 
   // Slot icons (display settings) take precedence; content icon is the fallback
   const stats: StatItem[] = buildStats(content).map((stat, i) => ({
@@ -70,6 +71,7 @@ export default function OT_StatBlockAdapter({ content, displaySettings = {} }: P
         heading={content.heading ?? undefined}
         stats={stats}
         styleOptions={styleOptions}
+        effect={effect}
       />
     </div>
   )

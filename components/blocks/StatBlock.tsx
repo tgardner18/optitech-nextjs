@@ -43,13 +43,18 @@ export type StatItem = {
 }
 
 export type StatBlockStyleOptions = {
-  columns?:   2 | 3 | 4
-  color?:     'brand' | 'canvas' | 'surface'
+  columns?:      2 | 3 | 4
+  color?:        'brand' | 'canvas' | 'surface'
   /** Wraps the stat row in a frosted glass panel layered over the background color */
-  glass?:     boolean
-  showIcons?: boolean
-  animate?:   boolean
+  glass?:        boolean
+  showIcons?:    boolean
+  /** 'inline' (default) — icon left of the label row. 'above' — icon centered above the numeral. */
+  iconPlacement?: 'inline' | 'above'
+  animate?:      boolean
 }
+
+/** Visual treatment applied to each stat numeral — authored as a CMS content property. */
+export type StatEffect = 'none' | 'gradient' | 'glow'
 
 // ─── Value parser ─────────────────────────────────────────────────────────────
 
@@ -74,21 +79,35 @@ function easeOutQuart(t: number): number {
 
 // ─── CVA variants ─────────────────────────────────────────────────────────────
 
-const sectionCva = cva('px-md lg:px-lg', {
+const sectionPaddingCva = cva('px-md lg:px-lg', {
   variants: {
-    color: {
-      brand:   'bg-brand-fill',
-      canvas:  'bg-canvas',
-      surface: 'bg-surface',
-    },
     columns: {
       2: 'py-md lg:py-lg',
       3: 'py-md lg:py-lg',
       4: 'py-sm lg:py-md',
     },
   },
-  defaultVariants: { color: 'brand', columns: 3 },
+  defaultVariants: { columns: 3 },
 })
+
+// Returns the section background class. Brand always uses the rich gradient fill
+// (so backdrop-filter on child .bg-glass cards has tonal variance to blur against).
+// Canvas/surface with glass use the banner gradient backdrops — same reason.
+function sectionBgClass(color: 'brand' | 'canvas' | 'surface', glass: boolean): string {
+  if (color === 'brand') return 'bg-brand-fill'
+  if (glass) return color === 'surface' ? 'banner-bg-surface-glass' : 'banner-bg-canvas-glass'
+  return color === 'surface' ? 'bg-surface' : 'bg-canvas'
+}
+
+// Returns the glass card class for a stat item panel.
+// Brand (dark section): bg-glass uses --ot-fg at 7% → faint white tint on dark → dark frosted glass.
+// Canvas/surface (light section): banner-glass / banner-glass-surface use --ot-canvas / --ot-surface
+// at 55–64% → frosted near-white panels → Apple-style light glassmorphism.
+function glassCardClass(color: 'brand' | 'canvas' | 'surface'): string {
+  if (color === 'surface') return 'banner-glass-surface'
+  if (color === 'canvas')  return 'banner-glass'
+  return 'bg-glass'
+}
 
 const gridCva = cva('grid', {
   variants: {
@@ -199,6 +218,8 @@ export type StatBlockProps = {
   heading?:      string
   stats:         StatItem[]
   styleOptions?: StatBlockStyleOptions
+  /** Numeral visual effect — sourced from the CMS content property, not display settings. */
+  effect?:       StatEffect
 }
 
 export default function StatBlock({
@@ -206,14 +227,18 @@ export default function StatBlock({
   heading,
   stats,
   styleOptions = {},
+  effect = 'none',
 }: StatBlockProps) {
   const {
-    columns   = 3,
-    color     = 'brand',
-    glass     = false,
-    showIcons = false,
-    animate   = true,
+    columns       = 3,
+    color         = 'brand',
+    glass         = false,
+    showIcons     = false,
+    iconPlacement = 'inline',
+    animate       = true,
   } = styleOptions
+
+  const iconAbove = showIcons && iconPlacement === 'above'
 
   const ref    = useRef<HTMLElement>(null)
   const parsed = stats.map(s => parseValue(s.value))
@@ -310,7 +335,7 @@ export default function StatBlock({
 
   // Extra bottom room so the stats don't sit flush against the section's
   // bottom edge — pairs with the header's mb above the grid for balance.
-  const outerClass = cn(sectionCva({ color, columns }), 'pb-lg lg:pb-xl')
+  const outerClass = cn(sectionPaddingCva({ columns }), sectionBgClass(color, glass), 'pb-lg lg:pb-xl')
 
   // Glass: each stat is its own frosted card separated by a gap (the section
   // color shows through the gaps). Non-glass: a single continuous row with
@@ -358,6 +383,8 @@ export default function StatBlock({
           : {}
 
         // ── Hairline rule draws in from the left (scaleX) ─────────────────
+        // When iconAbove the rule is centered (mx-auto); transformOrigin stays
+        // 'left' for the animation — the visual difference is imperceptible.
         const ruleStyle: React.CSSProperties = shouldAnim
           ? {
               transform:       entered ? 'scaleX(1)' : 'scaleX(0)',
@@ -365,8 +392,6 @@ export default function StatBlock({
               transition:      `transform 0.55s var(--ot-ease-kinetic) ${staggerMs + COUNT_LAG + 60}ms`,
             }
           : {}
-
-        // (watermark icon removed — icons now render inline with the label)
 
         const Icon = stat.icon ? ICONS[stat.icon] : null
         const disp = displayFor(p, i)
@@ -376,11 +401,15 @@ export default function StatBlock({
             key={i}
             className={cn(
               'relative overflow-hidden flex flex-col',
+              iconAbove && 'items-center',
               glass
                 // Frosted card: symmetric padding, no dividers — gaps separate them.
-                ? 'bg-glass p-md md:p-lg'
+                // Card class is color-specific: bg-glass (dark/brand), banner-glass (canvas/surface light).
+                ? cn(glassCardClass(color), 'p-md md:p-lg')
                 : [
-                    'py-md md:py-lg px-md md:pl-xl md:pr-0',
+                    iconAbove
+                      ? 'py-md md:py-lg px-md'
+                      : 'py-md md:py-lg px-md md:pl-xl md:pr-0',
                     // Mobile horizontal separator — 4-col uses 2×2 grid so suppress
                     // the border on the 2nd item (it shares a row with item 1).
                     columns === 4
@@ -390,12 +419,7 @@ export default function StatBlock({
             )}
             style={itemStyle}
           >
-            {/* ── Vertical column divider — desktop, continuous row only ───
-             * columns=3 renders grid-cols-1 sm:grid-cols-2 lg:grid-cols-3, so
-             * between md (divider turns on) and lg (3rd column appears) the
-             * grid is still 2-up. Item index 2 is a row-start in that 2-up
-             * layout, so its divider must wait for lg — otherwise it draws a
-             * stray rule to the left of an item that isn't sharing a row. */}
+            {/* ── Vertical column divider — desktop, continuous row only ──── */}
             {!glass && i > 0 && (
               <span
                 aria-hidden="true"
@@ -408,11 +432,25 @@ export default function StatBlock({
               />
             )}
 
+            {/* ── Icon above — centered above the numeral when iconPlacement='above' */}
+            {iconAbove && Icon && (
+              <Icon
+                aria-hidden="true"
+                className={cn(iconBadgeCva({ color }), 'mb-sm')}
+                size={38}
+                strokeWidth={1.5}
+                style={labelStyle}
+              />
+            )}
+
             {/* ── Value (count-up) ──────────────────────────────────────── */}
             <p
               className={cn(
                 valueCva({ color, columns }),
+                iconAbove && 'text-center',
                 colPulse[i] && shouldAnim && 'animate-stat-pulse',
+                effect === 'gradient' && 'ot-fx-gradient font-semibold',
+                effect === 'glow'     && 'stat-effect-glow',
               )}
               aria-hidden="true"
             >
@@ -427,17 +465,25 @@ export default function StatBlock({
               aria-hidden="true"
               className={cn(
                 'block h-px w-8 mt-sm shrink-0',
+                iconAbove && 'mx-auto',
                 color === 'brand' ? 'bg-fg-on-brand/20' : 'bg-brand/25',
               )}
               style={ruleStyle}
             />
 
-            {/* ── Label + context — icon left / text right when icon is on ── */}
+            {/* ── Label + context ───────────────────────────────────────────
+             * inline: icon left, text right.
+             * above:  icon already rendered above numeral; text is centered. */}
             <div
-              className={cn('mt-sm flex items-center', showIcons && Icon ? 'gap-sm' : '')}
+              className={cn(
+                'mt-sm flex',
+                iconAbove          ? 'flex-col items-center text-center gap-xs'
+                : showIcons && Icon ? 'items-center gap-sm'
+                : '',
+              )}
               style={labelStyle}
             >
-              {showIcons && Icon && (
+              {!iconAbove && showIcons && Icon && (
                 <Icon
                   aria-hidden="true"
                   className={iconBadgeCva({ color })}
@@ -445,7 +491,7 @@ export default function StatBlock({
                   strokeWidth={1.5}
                 />
               )}
-              <div className="flex flex-col gap-xs">
+              <div className={cn('flex flex-col gap-xs', iconAbove && 'items-center')}>
                 <p className={labelCva({ color })}>{stat.label}</p>
                 {stat.context && (
                   <p className={contextCva({ color })}>{stat.context}</p>
@@ -458,9 +504,10 @@ export default function StatBlock({
     </ul>
   )
 
-  // brand fill is always dark; glass overlay is always dark — assert dark theme
-  // so nested tokens (text-fg, text-fg-muted) resolve correctly on any site theme.
-  const isDarkSurface = color === 'brand' || glass
+  // brand fill is always dark — assert dark theme so nested tokens resolve correctly.
+  // Canvas/surface glass stays in its natural (light) theme; the banner-glass* panel
+  // classes are designed for light mode and use canvas/surface-derived tints.
+  const isDarkSurface = color === 'brand'
 
   const header = (eyebrow || heading) ? (
     <header className="flex flex-col gap-xs mb-lg lg:mb-xl max-w-screen-md">

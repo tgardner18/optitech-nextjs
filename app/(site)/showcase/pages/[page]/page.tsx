@@ -136,6 +136,7 @@ function EventPageShowcase() {
 const MOCK_TOPIC_HUB_CONFIG = {
   headerName:           'Topic Hub',
   headerEffect:         'outline',
+  siteDomain:           null,
   damFolderContainerId: null,
   searchRecommendations: [
     { label: 'Cardiac Care' },

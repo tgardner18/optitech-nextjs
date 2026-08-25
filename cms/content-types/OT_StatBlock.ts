@@ -25,5 +25,18 @@ export const OT_StatBlock = contentType({
       sortOrder:   10,
       items:       { type: 'component', contentType: OT_StatItem },
     },
+    effect: {
+      type:        'string',
+      format:      'selectOne',
+      displayName: 'Numeral effect',
+      description: 'Visual treatment applied to each stat numeral. Works in all colour modes.',
+      group:       'OT_Content',
+      sortOrder:   30,
+      enum: [
+        { value: 'none',     displayName: 'None — flat colour (default)' },
+        { value: 'gradient', displayName: 'Gradient — brand-to-accent diagonal fill' },
+        { value: 'glow',     displayName: 'Glow — backlit bloom behind the numeral' },
+      ],
+    },
   },
 })

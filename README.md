@@ -194,22 +194,46 @@ CMP_CALLBACK_SECRET=           # must match the "callback secret" set on the CMP
 # Vercel, since CMP fetches the completed URL later on a possibly-different instance).
 KV_REST_API_URL=               # also accepts UPSTASH_REDIS_REST_URL
 KV_REST_API_TOKEN=             # also accepts UPSTASH_REDIS_REST_TOKEN
+
+# Publish-to-CMS (phase 4) — target container for new blog pages.
+# Set this to the CMS content key of the folder/container where CMP-published
+# blog posts should be created (e.g. the key of your "Blog" content folder).
+# Find it in the CMS Visual Builder URL or via the Management API.
+# Without this var the publish webhook is captured but the CMS write is skipped.
+CMP_BLOG_CONTAINER_KEY=        # CMS content key of the target blog container
 ```
 
 If `CMP_*` are unset the webhook still captures and the renderer still works locally — it just skips verification and the acknowledge/complete round-trip.
+
+### Publish to CMS (phase 4)
+
+When a CMP workflow completes, CMP fires an `asset_published` event. This app listens on **`/api/cmp-publish`** and automatically creates or updates a draft `OT_BlogPage` in the CMS — so content moves from CMP to the CMS without any manual copy-paste.
+
+**How it works:**
+
+1. CMP POSTs `asset_published` to `/api/cmp-publish` with the finalized content.
+2. The handler verifies `CMP_CALLBACK_SECRET`, maps the payload (reusing the same `lib/cmpBlog.ts` mapper as the preview flow), and calls the CMS Management API to create a new `OT_BlogPage` inside the container specified by `CMP_BLOG_CONTAINER_KEY`.
+3. On re-publish, the handler looks up the CMS key it assigned on first create (stored in the durable KV store under the CMP `content_guid`) and **updates** the existing page instead of creating a duplicate.
+4. The featured image is referenced directly from the CMP/shared DAM via a `cms://content/<guid>` federated reference — no asset copy needed.
+
+The write is best-effort: if the CMS write fails the webhook still returns `200` so CMP does not retry. The outcome (`created`, `updated`, `skipped`, or `error`) is logged to Vercel Functions and included in the webhook response body.
 
 ### Setup steps
 
 1. **Create a CMP App** (CMP → **Settings → Apps**) with App Role *Other*. Save and copy its `client_id` / `client_secret` → `CMP_CLIENT_ID` / `CMP_CLIENT_SECRET`. The redirect URL field is required by the form but unused by this integration.
 2. **Provision the durable store**: Vercel project → **Storage → Upstash → Redis**, then **connect it to the project**. Vercel injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
 3. **Recreate the blog content type in CMP** (`cmp_opti_blog`) with field keys matching the mapping in [`lib/cmpBlog.ts`](lib/cmpBlog.ts): `headline`, `subHeadline`, `topic` (choice), `featuredImage` (library-asset), `body` (rich-text), `readTime`.
-4. **Create the CMP webhook** (CMP → **Settings → Webhooks**): event `content_preview_requested`, target URL `https://<your-deployment>/api/cmp-preview`, and set a **callback secret** — use the same value as `CMP_CALLBACK_SECRET`.
-5. **Set all env vars in Vercel** (Production) and **redeploy**, then click **Preview** on a CMP blog.
+4. **Create the preview webhook** (CMP → **Settings → Webhooks**): event `content_preview_requested`, target URL `https://<your-deployment>/api/cmp-preview`, and set a **callback secret** — use the same value as `CMP_CALLBACK_SECRET`.
+5. **Create the publish webhook** (CMP → **Settings → Webhooks**): event `asset_published`, target URL `https://<your-deployment>/api/cmp-publish`, same callback secret as above.
+6. **Find your blog container key**: in the CMS Visual Builder, open the folder where blog pages should live and copy its content key from the URL or item metadata. Set it as `CMP_BLOG_CONTAINER_KEY`.
+7. **Set all env vars in Vercel** (Production) and **redeploy**, then click **Preview** on a CMP blog to test the preview flow, and complete a CMP workflow to test the publish flow.
 
 ### Inspecting & troubleshooting
 
-- **GET `/api/cmp-preview`** returns the most recently captured webhook delivery as JSON — handy for confirming payload shape.
-- The handler logs each step to the Vercel **Functions** logs, prefixed `[cmp-preview]` — including the verbatim `acknowledge →` and `complete →` status + response body. If `complete` is not 2xx, that logged body names the exact field at fault.
+- **GET `/api/cmp-preview`** returns the most recently captured preview webhook delivery as JSON — handy for confirming payload shape.
+- **GET `/api/cmp-publish`** returns the most recently captured publish webhook delivery as JSON, including the `cmsWrite` outcome (`created`, `updated`, `skipped`, or `error` with detail).
+- The handlers log each step to the Vercel **Functions** logs, prefixed `[cmp-preview]` and `[cmp-publish]` respectively.
+- If the publish write is `skipped` with reason `CMP_BLOG_CONTAINER_KEY not set`, add that env var and redeploy.
 - The render page accepts `?id=<preview_id>` (a specific delivery) and `?style=impact|atmospheric|editorial` (header treatment; defaults to `editorial`).
 - Framing inside CMP is already permitted by the global `frame-ancestors … *.cms.optimizely.com` policy in [`next.config.mjs`](next.config.mjs).
 
@@ -217,11 +241,13 @@ If `CMP_*` are unset the webhook still captures and the renderer still works loc
 
 | Concern | Location |
 |---|---|
-| Webhook handler (verify → store → acknowledge/complete) | [`app/api/cmp-preview/route.ts`](app/api/cmp-preview/route.ts) |
+| Preview webhook handler (verify → store → acknowledge/complete) | [`app/api/cmp-preview/route.ts`](app/api/cmp-preview/route.ts) |
+| Publish webhook handler (verify → create/update `OT_BlogPage`) | [`app/api/cmp-publish/route.ts`](app/api/cmp-publish/route.ts) |
 | Render page | [`app/cmp-preview/page.tsx`](app/cmp-preview/page.tsx) |
 | CMP API client (token, callbacks, asset resolve) | [`lib/cmpApi.ts`](lib/cmpApi.ts) |
 | Payload → `BlogPageContent` mapping | [`lib/cmpBlog.ts`](lib/cmpBlog.ts) |
-| Durable delivery store (Upstash REST + in-memory fallback) | [`lib/cmpPreviewStore.ts`](lib/cmpPreviewStore.ts) |
+| Durable delivery store + `content_guid` → CMS key map | [`lib/cmpPreviewStore.ts`](lib/cmpPreviewStore.ts) |
+| CMS Management API client (`upsertBlogPage`) | [`lib/cmsApi.ts`](lib/cmsApi.ts) |
 
 ## OptiAdmin Dashboard
 
@@ -252,6 +278,48 @@ The **Analytics** and **Settings** sections in the sidebar are placeholders and 
 | Data / auth API routes | [`app/api/opti-admin/`](app/api/opti-admin/) |
 | UI components (shell, nav, clients) | [`components/admin/`](components/admin/) |
 | Auth helpers, Graph queries, content-type list | [`lib/admin/`](lib/admin/) |
+
+## Topic Hub
+
+`OT_TopicHubPage` is a search-driven content hub — a single page that fans out into configurable "buckets" of results (blog posts, events, practitioners, locations, documents, and more), each backed by an Optimizely Graph query. Editors configure it through the Visual Builder; the page renders results client-side as visitors search or filter.
+
+### Required environment variables
+
+The Topic Hub queries documents (PDFs, slide decks, etc.) from the Optimizely Content Marketing Platform (CMP) DAM. That query authenticates with the CMP API, so the same CMP credentials used by the CMP Content Preview feature are required:
+
+```bash
+CMP_CLIENT_ID=      # CMP App client_id (Settings → Apps in CMP)
+CMP_CLIENT_SECRET=  # CMP App client_secret
+```
+
+Without these, the document/asset bucket returns no results. All other bucket types (blogs, events, practitioners, locations) query Optimizely Graph and do not require CMP credentials.
+
+### DAM folder setup
+
+To scope asset search to the content belonging to a specific site, create a dedicated folder in the CMP DAM and place all site-related assets inside it. Then copy the folder's **Content Graph GUID** and paste it into the **DAM Folder ID** field on the `OT_TopicHubPage` content item in the Visual Builder. Without this, the asset bucket searches all accessible assets across your CMP instance.
+
+To find the folder GUID: navigate to the folder in the CMP DAM, open its detail panel, and copy the ID from the URL or the item metadata.
+
+### Scoping practitioners and locations to a site
+
+`OT_PractitionerProfile` and `OT_LocationProfile` content items each have a **Site Key** field. The Topic Hub filters these records by matching the `siteKey` field against the **Front-end Domain** value configured on your ThemeManager content item — this is how one shared CMS instance can host profiles for multiple sites without them bleeding across.
+
+For practitioners and locations to appear in Topic Hub results:
+
+1. Open **ThemeManager** in the Visual Builder and confirm the **Front-end Domain** field is set to the site's hostname (e.g. `your-site.vercel.app`).
+2. On each `OT_PractitionerProfile` or `OT_LocationProfile` item, set **Site Key** to the same value.
+
+If the Site Key on a profile does not match the ThemeManager Front-end Domain, that record is excluded from results — this is the most common reason practitioners or locations appear empty on a working hub.
+
+### Where things live
+
+| Concern | Location |
+|---|---|
+| CMS content type | [`cms/content-types/OT_TopicHubPage.ts`](cms/content-types/OT_TopicHubPage.ts) |
+| Graph data fetcher | [`lib/topicHub.ts`](lib/topicHub.ts) |
+| Page renderer (client component) | [`components/pages/TopicHubPage.tsx`](components/pages/TopicHubPage.tsx) |
+| Search query + result types | [`lib/search.ts`](lib/search.ts) |
+| Site key resolver | [`lib/optimizely.ts`](lib/optimizely.ts) (`getSiteKey`) |
 
 ## Deployment
 

@@ -5,12 +5,12 @@ import { contentType } from '@optimizely/cms-sdk'
 // layouts, client-side search, and dynamically-derived filters. Editors drop it
 // onto any page in the Visual Builder.
 //
-// `groupTagFilter` restricts the listing to a vertical subset — "medical"
-// shows only medical practitioners, "legal" only legal — which is how one
-// block type serves every vertical without code changes. Leave it blank to show
-// all practitioners. Practitioners are fetched at render time in the adapter
-// (cms/components/OT_PractitionerListingBlock.tsx); search and filtering happen
-// client-side from the loaded set, with filter options derived from the data.
+// Site scoping is automatic: the adapter reads the site's frontEndDomain from
+// ThemeManager and passes it as the `siteKey` filter so only profiles belonging
+// to the current site are loaded. Practitioners are fetched at render time in
+// the adapter (cms/components/OT_PractitionerListingBlock.tsx); search and
+// filtering happen client-side from the loaded set, with filter options derived
+// from the data.
 //
 // Property forms follow the SDK's learned-the-hard-way rules (CLAUDE.md):
 // isLocalized (not `localized`), top-level maxLength (no `validation` wrapper).
@@ -18,7 +18,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_PractitionerListingBlock = contentType({
   key:         'OT_PractitionerListingBlock',
   displayName: 'Practitioner Listing',
-  description: 'Searchable, filterable directory of practitioners pulled from Practitioner Profiles. Scope it to a vertical with the Group Tag Filter.',
+  description: 'Searchable, filterable directory of practitioners pulled from Practitioner Profiles. Automatically scoped to the current site via the Site Key field on each profile.',
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -52,14 +52,6 @@ export const OT_PractitionerListingBlock = contentType({
       description: 'Optional supporting text below the heading.',
       group:       'OT_Content',
       sortOrder:   20,
-    },
-    groupTagFilter: {
-      type:        'string',
-      maxLength:   40,
-      displayName: 'Group Tag Filter',
-      description: 'Restricts the listing to practitioners whose Group Tag matches this value — e.g. "medical", "legal", "technology". Leave blank to show all practitioners.',
-      group:       'OT_Content',
-      sortOrder:   30,
     },
     maxItems: {
       type:        'integer',

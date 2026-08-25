@@ -43,7 +43,6 @@ export default function OT_PractitionerProfileAdapter({ content }: Props) {
     officeLocation: content.officeLocation ?? undefined,
     languages:      content.languages ?? undefined,
     linkedIn:       content.linkedIn?.default ?? undefined,
-    groupTag:       content.groupTag ?? undefined,
     url:            '',
   }
 

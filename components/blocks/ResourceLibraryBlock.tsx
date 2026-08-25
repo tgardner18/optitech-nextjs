@@ -110,8 +110,8 @@ export default function ResourceLibraryBlock({
       {/* ── Content ── */}
       {unconfigured ? (
         <EmptyState
-          message="No collection selected"
-          sub="Browse DAM and pick an anchor asset to populate this library."
+          message="No folder configured"
+          sub="Enter a DAM Folder ID in the block properties to populate this library."
         />
       ) : empty ? (
         <EmptyState

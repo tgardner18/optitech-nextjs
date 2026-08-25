@@ -136,12 +136,24 @@ function getScrimClass(
   hasImage:    boolean,
 ): string {
   if (treatment === 'glass') {
-    const map: Record<string, string> = {
-      canvas:  'bg-canvas/45',
-      surface: 'bg-surface/45',
-      brand:   'bg-brand/40',
+    if (!hasImage) {
+      // Rich gradient backdrops — give backdrop-filter tonal variance to frost over.
+      // A flat solid color makes backdrop-filter invisible; these give it something.
+      const map: Record<string, string> = {
+        canvas:  'banner-bg-canvas-glass',
+        surface: 'banner-bg-surface-glass',
+        brand:   'banner-bg-brand-glass',
+      }
+      return map[color] ?? 'banner-bg-canvas-glass'
     }
-    return map[color] ?? 'bg-canvas/45'
+    // With image: very light tint so the photo bleeds through strongly.
+    // The glass panel + heavy blur handle legibility; the overlay only adds subtle color.
+    const map: Record<string, string> = {
+      canvas:  'bg-canvas/15',
+      surface: 'bg-surface/18',
+      brand:   'bg-brand/30',
+    }
+    return map[color] ?? 'bg-canvas/15'
   }
   // Solid color background when there is no image to show through.
   if (!hasImage) {
@@ -325,7 +337,9 @@ export default function BannerBlock({
             isCentered
               ? `items-center text-center ${isDisplay ? 'max-w-250' : 'max-w-160'} w-full`
               : `items-start text-left  ${isDisplay ? 'max-w-225' : 'max-w-140'} w-full`,
-            isBrand ? 'banner-glass-brand' : 'banner-glass',
+            isBrand             ? 'banner-glass-brand'
+            : color === 'surface' ? 'banner-glass-surface'
+            : 'banner-glass',
           )}>
             {eyebrowEl}
             {headingEl}

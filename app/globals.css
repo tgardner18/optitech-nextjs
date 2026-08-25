@@ -237,6 +237,141 @@ html {
   letter-spacing: -0.01em;
 }
 
+/* ── StatBlock — numeral effects ─────────────────────────────────────────────
+ *
+ * Two opt-in visual treatments for the count-up numeral, applied via the
+ * CMS `effect` content property. Each has dark/light/brand-fill variants so
+ * it works in every color × glass × page-theme combination.
+ *
+ * gradient — delegates to the existing .ot-fx-gradient class (no new CSS).
+ *            font-weight is bumped to semibold in the component so the thicker
+ *            strokes make the colour sweep clearly visible.
+ * glow     — multi-layer text-shadow bloom using brand + accent tokens.
+ *
+ * Cascade contract (mirrors the pattern used by .ot-fx-gradient):
+ *   1. base class — dark-context defaults (plain canvas/surface dark panels).
+ *   2. [data-theme="light"] — light-mode overrides (html carries this attr).
+ *   3. .bg-brand-fill — brand section overrides LAST so they always win.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Glow ────────────────────────────────────────────────────────────────────
+ * Two-layer rendering mirrors .ot-fx-glow:
+ *   text-shadow  — soft per-glyph bloom contained within text metrics.
+ *   filter:drop-shadow — chromatic aurora that spills beyond the glyph edge,
+ *     a tight high-alpha brand core (backlit edge) + wide accent outer bloom.
+ * Together these read as "lit from within" with a genuine two-colour halo. */
+.stat-effect-glow {
+  text-shadow:
+    0 0 0.45em oklch(from var(--ot-brand)  l c h / 0.55),
+    0 0 1.30em oklch(from var(--ot-brand)  l c h / 0.28),
+    0 0 2.80em oklch(from var(--ot-brand)  l c h / 0.14),
+    0 0 0.30em oklch(from var(--ot-accent) l c h / 0.22);
+  filter:
+    drop-shadow(0 0 0.10em oklch(from var(--ot-brand)  l c h / 0.72))
+    drop-shadow(0 0 0.72em oklch(from var(--ot-accent) l c h / 0.38));
+}
+
+/* Light mode: soften both layers so the bloom reads as aura, not mud. */
+[data-theme="light"] .stat-effect-glow {
+  text-shadow:
+    0 0 0.35em oklch(from var(--ot-brand)  l c h / 0.20),
+    0 0 0.90em oklch(from var(--ot-brand)  l c h / 0.10),
+    0 0 0.28em oklch(from var(--ot-accent) l c h / 0.14);
+  filter:
+    drop-shadow(0 0 0.08em oklch(from var(--ot-brand)  l c h / 0.30))
+    drop-shadow(0 0 0.45em oklch(from var(--ot-accent) l c h / 0.20));
+}
+
+/* Brand fill (dark bg): accent-led — accent core + brand outer aurora.
+   Brand-on-brand core would disappear; accent is bright against the dark field. */
+.bg-brand-fill .stat-effect-glow {
+  text-shadow:
+    0 0 0.45em oklch(from var(--ot-accent)       l c h / 0.65),
+    0 0 1.50em oklch(from var(--ot-accent)       l c h / 0.38),
+    0 0 3.00em oklch(from var(--ot-brand)        l c h / 0.20),
+    0 0 0.32em oklch(from var(--ot-fg-on-brand)  l c h / 0.18);
+  filter:
+    drop-shadow(0 0 0.10em oklch(from var(--ot-accent) l c h / 0.75))
+    drop-shadow(0 0 0.80em oklch(from var(--ot-brand)  l c h / 0.32));
+}
+
+/* ── Quote Block · Bubble treatment ─────────────────────────────────────────
+ * Three shadow classes set --bq-tail-color so the CSS triangle tail colour
+ * auto-matches the bubble surface without separate overrides.               */
+.bq-bubble-shadow-brand {
+  --bq-tail-color: oklch(97% 0.004 195);
+  box-shadow:
+    0 4px 28px oklch(from var(--ot-brand) l c h / 0.28),
+    0 1px 6px  oklch(from var(--ot-brand) l c h / 0.14);
+}
+.bq-bubble-shadow-canvas {
+  --bq-tail-color: var(--ot-surface);
+  box-shadow:
+    0 4px 20px oklch(from var(--ot-fg) l c h / 0.08),
+    0 1px 4px  oklch(from var(--ot-fg) l c h / 0.05);
+}
+.bq-bubble-shadow-surface {
+  --bq-tail-color: var(--ot-canvas);
+  box-shadow:
+    0 4px 20px oklch(from var(--ot-fg) l c h / 0.08),
+    0 1px 4px  oklch(from var(--ot-fg) l c h / 0.05);
+}
+.bq-tail {
+  position: absolute;
+  bottom: -20px;
+  left: 3rem;
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 20px solid var(--bq-tail-color);
+}
+
+/* ── Quote Block · Glow treatment ───────────────────────────────────────────
+ * Single card; chromatic box-shadow bloom adapts to theme (no forced dark).
+ *
+ *   .quote-glow-card  — the card; multi-layer brand + accent bloom
+ *   .quote-glow-mark  — visible ❝ mark (28%); text-shadow leaks outside the
+ *                       card and layers with box-shadow as a secondary bloom
+ *
+ * Dark mode (default): strong neon-border ring, matching image block intensity.
+ * Light mode: softer ambient glow that still reads as a chromatic effect.      */
+
+/* ── Quote card ─────────────────────────────────────────────────────────────── */
+.quote-glow-card {
+  box-shadow:
+    0 0 0 1px   oklch(from var(--ot-brand)  l c h / 0.55),
+    0 0 8px 2px oklch(from var(--ot-brand)  l c h / 0.42),
+    0 0 24px 6px oklch(from var(--ot-brand) l c h / 0.26),
+    0 0 60px 12px oklch(from var(--ot-brand) l c h / 0.14),
+    0 4px 32px  oklch(from var(--ot-accent) l c h / 0.14),
+    inset 0 0 18px oklch(from var(--ot-brand) l c h / 0.05);
+}
+
+[data-theme="light"] .quote-glow-card {
+  box-shadow:
+    0 0 0 1px   oklch(from var(--ot-brand)  l c h / 0.25),
+    0 0 8px 2px oklch(from var(--ot-brand)  l c h / 0.18),
+    0 4px 24px  oklch(from var(--ot-brand)  l c h / 0.12),
+    0 4px 10px  oklch(from var(--ot-accent) l c h / 0.08);
+}
+
+/* ── Mark (secondary bloom source) ─────────────────────────────────────────── */
+/* Mark is text-brand/[0.28] — visible as a glyph. Text-shadow radiates outward
+   beyond the card border (no overflow:hidden on the card), layering with the
+   box-shadow bloom to create a second focal point inside the composition.      */
+.quote-glow-mark {
+  text-shadow:
+    0 0 0.30em oklch(from var(--ot-brand)  l c h / 0.55),
+    0 0 1.20em oklch(from var(--ot-brand)  l c h / 0.30),
+    0 0 3.50em oklch(from var(--ot-brand)  l c h / 0.18),
+    0 0 0.22em oklch(from var(--ot-accent) l c h / 0.22);
+  filter:
+    drop-shadow(0 0 0.12em oklch(from var(--ot-brand)  l c h / 0.65))
+    drop-shadow(0 0 0.90em oklch(from var(--ot-accent) l c h / 0.30));
+}
+
 /* ── ScrollToTop ─────────────────────────────────────────────────────────────
  *
  * .scroll-top-btn
@@ -647,6 +782,117 @@ html {
   [data-stagger="draw"][data-in] .ot-divider-bloom { animation: otDividerFade 0.5s var(--ot-ease-kinetic) both; animation-delay: 200ms; } /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
   /* bleed: a pure fade up from nothing, eased in — no transform */
   [data-stagger="draw"][data-in] .ot-divider-bleed { animation: otDividerFade 0.4s ease-in both; } /* dur-exempt: 400ms — nearest base(320) Δ80ms */
+}
+
+/* ── Split-bar masthead entrance ──────────────────────────────────────────
+ * Rides the same MotionObserver as the row stagger above. Two stagger hosts
+ * — data-stagger="split-left" and data-stagger="split-right" — sit on either
+ * side of the centered logo (SplitHeader.tsx) and slide in from the outer
+ * edges toward it, performing the "split" the nav style is named for. Reuses
+ * the generic [data-stagger][data-in] > *:nth-child(n) delay rules above for
+ * the per-link cascade within each wing.
+ *
+ * IMPORTANT: the "to" keyframe ends at `transform: none`, not
+ * `translateX(0)`. Those are visually identical, but translateX(0) computes
+ * to a non-none matrix — which, left behind after the animation completes
+ * (fill-mode: both), permanently creates a new stacking context on the
+ * animated element. That silently traps the mega-menu dropdown's z-index
+ * inside it, so the dropdown can no longer out-rank the header's own
+ * ::after horizon hairline (which lives one level up, in the header's own
+ * stacking context) — the hairline was winning and painting a bright line
+ * straight across the open dropdown. Ending at the literal `none` keyword
+ * animates identically and lets the element return to having no stacking
+ * context of its own once the reveal finishes.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@keyframes splitInLeft  { from { opacity: 0; transform: translateX(-1.25rem); } to { opacity: 1; transform: none; } }
+@keyframes splitInRight { from { opacity: 0; transform: translateX(1.25rem); }  to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-ready [data-stagger="split-left"]:not([data-in])  > * { opacity: 0; transform: translateX(-1.25rem); }
+  .motion-ready [data-stagger="split-right"]:not([data-in]) > * { opacity: 0; transform: translateX(1.25rem); }
+
+  [data-stagger="split-left"][data-in]  > * { animation: splitInLeft  var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+  [data-stagger="split-right"][data-in] > * { animation: splitInRight var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
+}
+
+/* ── Split-bar masthead shell ────────────────────────────────────────────────
+ * The split-bar header (SplitHeaderShell.tsx) starts fully transparent on
+ * desktop — logo and nav read directly against the hero. Past the scroll
+ * threshold it crossfades to a glass surface and gains a brand→accent
+ * horizon hairline along the bottom edge — the same motif as the mega-menu
+ * dropdown and the footer, so the material change reads as one system rather
+ * than a one-off transition. Mobile keeps its own static glass bar (Tailwind
+ * classes on the header itself) and is untouched by this — scoped to lg+.
+ *
+ * Only paint properties animate (background-color, box-shadow,
+ * backdrop-filter, opacity) plus a transform:scale() on the logo — never a
+ * layout property — so the transition never reflows the page underneath the
+ * sticky header.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .split-shell {
+    background-color: transparent;
+    box-shadow: none;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition:
+      background-color var(--ot-dur-base) var(--ot-ease-kinetic),
+      box-shadow        var(--ot-dur-base) var(--ot-ease-kinetic),
+      backdrop-filter   var(--ot-dur-base) var(--ot-ease-kinetic);
+  }
+  .split-shell[data-scrolled="true"] {
+    background-color: color-mix(in oklch, var(--ot-surface) 88%, transparent);
+    box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  /* Horizon hairline — brand → accent gradient, fades in with the glass.
+   * z-index: -1 is load-bearing, not decorative: the mega-menu dropdown
+   * (DesktopNav.tsx) extends down through this same region when open, and
+   * must always paint above this line. z-index: auto would normally lose to
+   * the dropdown's explicit z-50 within their shared stacking context, but
+   * a completed CSS animation with fill-mode: both on an ancestor (the
+   * split-left/split-right entrance reveal) can leave that ancestor with a
+   * non-none resolved transform — which creates a stacking context of its
+   * own and traps the dropdown's z-index inside it, letting a z-index:auto
+   * sibling like this hairline win regardless of the dropdown's z-50. This
+   * varies by browser (observed correct in Chromium, broken in Safari) —
+   * rather than depend on every engine releasing that stacking context
+   * identically, pin this to z-index: -1 so it structurally cannot outrank
+   * *any* real content, independent of what any animation leaves behind.
+   * It still paints above the header's own background (that's the element's
+   * own box, category 1 — earlier than any z-index) so the line stays
+   * visible against the glass; it only loses to actual descendants. */
+  .split-shell::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent);
+    opacity: 0;
+    transition: opacity var(--ot-dur-base) var(--ot-ease-kinetic);
+  }
+  .split-shell[data-scrolled="true"]::after { opacity: 1; }
+
+  /* Logo settles to a smaller scale once the shell is glass */
+  .split-shell .split-logo {
+    transition: transform var(--ot-dur-base) var(--ot-ease-kinetic);
+  }
+  .split-shell[data-scrolled="true"] .split-logo {
+    transform: scale(0.86);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-shell,
+  .split-shell::after,
+  .split-shell .split-logo {
+    transition: none;
+  }
 }
 
 body {
@@ -2449,8 +2695,8 @@ body {
  * frost on light. This satisfies DESIGN.md's "never light-frosted on light
  * backgrounds" rule automatically, in both directions, without a second variant.
  *
- * (This is distinct from .banner-glass, which is a heavier OPAQUE canvas-75%
- * treatment — a different material, intentionally not unified with this one.)
+ * (This is distinct from .banner-glass, which uses a similar low-alpha approach
+ * but with color-specific backdrops; see the banner-glass section below.)
  *
  * background: oklch(from var(--ot-fg) l c h / 0.07) — low-alpha tint lets the
  *   backdrop-filter do the work; a higher-alpha/opaque fill would occlude the blur.
@@ -3229,24 +3475,112 @@ body {
   pointer-events: none;
 }
 
-/* ── Glass panels: dark-tinted frost for scrim=glass treatment ── */
-.banner-glass {
-  border-radius: var(--ot-radius-surface); /* Corner Style axis — 0px default */
-  background: oklch(from var(--ot-canvas) l c h / 0.75);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid oklch(from var(--ot-fg) l c h / 0.10);
-  box-shadow: 0 8px 40px oklch(from var(--ot-canvas) l c h / 0.50);
+/* ── No-image glass backdrops ─────────────────────────────────────────────────
+ *
+ * backdrop-filter is invisible against a flat color. These gradient backdrops
+ * give the blur filter tonal variance to react to — producing genuine frosting.
+ * The COLOR IDENTITY for each glass mode lives here; the panels stay near-neutral
+ * and pick up the backdrop's character through the blur.
+ */
+
+.banner-bg-canvas-glass {
+  background:
+    /* Brand/accent spots — chromatic character in any theme */
+    radial-gradient(ellipse 70% 60% at 20% 72%,
+      oklch(from var(--ot-brand) l calc(c * 0.18) h / 0.28) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 55% 50% at 82% 18%,
+      oklch(from var(--ot-accent) l calc(c * 0.20) h / 0.20) 0%,
+      transparent 55%),
+    /* Token-relative base: canvas → surface → darker canvas gives blur
+       real tonal range that follows the current theme */
+    linear-gradient(155deg,
+      oklch(from var(--ot-canvas) l c h) 0%,
+      oklch(from var(--ot-surface) l c h) 50%,
+      oklch(from var(--ot-canvas) calc(l * 0.92) calc(c * 1.1) h) 100%);
 }
 
-/* Brand-tinted glass: used when color=brand + treatment=glass */
+.banner-bg-surface-glass {
+  background:
+    /* Stronger radials to distinguish surface from canvas */
+    radial-gradient(ellipse 65% 55% at 26% 74%,
+      oklch(from var(--ot-brand) l calc(c * 0.22) h / 0.34) 0%,
+      transparent 58%),
+    radial-gradient(ellipse 52% 46% at 80% 20%,
+      oklch(from var(--ot-accent) l calc(c * 0.26) h / 0.24) 0%,
+      transparent 52%),
+    /* Surface backdrop is measurably brighter at center and deeper at edges
+       than canvas — creates clear visual differentiation between the two */
+    linear-gradient(155deg,
+      oklch(from var(--ot-surface) calc(l * 1.3) calc(c * 0.9) h) 0%,
+      oklch(from var(--ot-surface) l c h) 45%,
+      oklch(from var(--ot-surface) calc(l * 0.8) calc(c * 1.15) h) 100%);
+}
+
+/* Deep multi-stop brand gradient — ranges from dark brand to lighter brand so
+   the glass panel's blur reads as unmistakably brand-colored frosted glass */
+.banner-bg-brand-glass {
+  background:
+    radial-gradient(ellipse 62% 56% at 28% 40%,
+      oklch(from var(--ot-brand) calc(l * 1.20) c h) 0%,
+      transparent 52%),
+    radial-gradient(ellipse 48% 42% at 82% 72%,
+      oklch(from var(--ot-brand) calc(l * 0.85) calc(c * 1.08) h) 0%,
+      transparent 50%),
+    linear-gradient(145deg,
+      oklch(from var(--ot-brand) calc(l * 0.58) calc(c * 0.92) h) 0%,
+      oklch(from var(--ot-brand) calc(l * 0.88) c h) 38%,
+      oklch(from var(--ot-brand) calc(l * 1.10) c h) 65%,
+      oklch(from var(--ot-brand) calc(l * 0.76) calc(c * 1.06) h) 100%);
+}
+
+/* ── Glass panels ─────────────────────────────────────────────────────────────
+ *
+ * Vs the old 75%-opaque implementation:
+ *   1. Lower panel alpha (40–48%) — more see-through = genuinely glass-like
+ *   2. Higher blur (28–34px) — a thicker frost layer
+ *   3. saturate() boosted — pops backdrop color through the panel
+ *   4. Inset top-edge highlight — "the glass edge catches light" (the Apple tell)
+ *
+ * canvas / surface panels stay near-neutral frosted; color identity comes from
+ * the backdrop gradient, not the panel fill.
+ */
+
+.banner-glass {
+  border-radius: var(--ot-radius-surface);
+  background: oklch(from var(--ot-canvas) l c h / 0.55);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.09);
+  box-shadow:
+    0 8px 40px oklch(from var(--ot-fg) l c h / 0.08),
+    inset 0 1px 0 oklch(from var(--ot-canvas) l c h / 0.75);
+}
+
+/* Surface glass: notably more opaque + stronger shadow than canvas — ensures
+   the two modes are clearly distinguishable even when backdrop colors are similar */
+.banner-glass-surface {
+  border-radius: var(--ot-radius-surface);
+  background: oklch(from var(--ot-surface) l c h / 0.64);
+  backdrop-filter: blur(24px) saturate(155%);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.12);
+  box-shadow:
+    0 12px 48px oklch(from var(--ot-surface) l c h / 0.28),
+    inset 0 1px 0 oklch(from var(--ot-surface) l c h / 0.65);
+}
+
+/* Brand glass: light brand-hued tint reads as brand through the blurred backdrop */
 .banner-glass-brand {
-  border-radius: var(--ot-radius-surface); /* Corner Style axis — 0px default */
-  background: oklch(from var(--ot-brand) l c h / 0.15);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid oklch(from var(--ot-brand) l c h / 0.25);
-  box-shadow: 0 8px 40px var(--ot-bloom-brand-faint);
+  border-radius: var(--ot-radius-surface);
+  background: oklch(from var(--ot-brand) calc(l * 1.35) calc(c * 0.16) h / 0.20);
+  backdrop-filter: blur(34px) saturate(210%);
+  -webkit-backdrop-filter: blur(34px) saturate(210%);
+  border: 1px solid oklch(from var(--ot-brand) l c h / 0.30);
+  box-shadow:
+    0 8px 48px var(--ot-bloom-brand-faint),
+    0 24px 72px oklch(from var(--ot-brand) calc(l * 0.55) c h / 0.18),
+    inset 0 1px 0 oklch(from var(--ot-brand) calc(l * 1.50) calc(c * 0.14) h / 0.44);
 }
 
 /* ── Centered banner eyebrow — light-mode accent pill ──────────────────────────

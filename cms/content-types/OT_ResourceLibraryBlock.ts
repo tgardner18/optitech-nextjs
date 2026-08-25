@@ -39,22 +39,13 @@ export const OT_ResourceLibraryBlock = contentType({
       maxLength:   80,
       indexingType: 'searchable',
     },
-    // The editor clicks "Browse DAM" and picks any single asset from the target
-    // collection. The front-end uses this asset's collectionId to query all
-    // siblings from Optimizely Graph.
-    //
-    // allowedTypes is intentionally omitted here. The 'documents', 'images',
-    // 'video' keywords that control DAM picker visibility are UI-layer settings
-    // that can only be applied via the CMS Content Type Builder — they are not
-    // valid code-first schema values and cause a push failure if included.
-    // After pushing this type, open the property in the CMS builder and check
-    // "documents" (and optionally "images", "video") to enable the DAM picker.
-    anchorAsset: {
-      type:        'contentReference',
-      displayName: 'DAM Anchor Asset',
-      description: 'Browse DAM and pick any asset from the target collection. The block displays all assets in that collection.',
+    damFolderId: {
+      type:        'string',
+      displayName: 'DAM Folder ID',
+      description: 'Paste the ParentFolderGuid of the DAM folder (visible in the DAM URL bar). The block fetches and displays all assets in that folder.',
       group:       'OT_Content',
       sortOrder:   30,
+      maxLength:   100,
     },
   },
 })

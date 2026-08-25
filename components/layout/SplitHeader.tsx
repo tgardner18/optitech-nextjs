@@ -7,7 +7,7 @@ import { BrandMark } from '@/components/layout/BrandMark'
 import { LocaleSelector } from '@/components/layout/LocaleSelector'
 import SearchTrigger from '@/components/search/SearchTrigger'
 import { getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
-import { SplitLogoWrap } from '@/components/layout/SplitLogoWrap'
+import { SplitHeaderShell } from '@/components/layout/SplitHeaderShell'
 import { getEnabledLanguages } from '@/lib/i18n/getEnabledLanguages'
 import { t } from '@/lib/i18n/t'
 import { localizedHref, stripLocalePrefix } from '@/lib/i18n/config'
@@ -40,16 +40,24 @@ function normalizeNavHref(rawUrl: string | null | undefined, locale: Locale, dom
 }
 
 /**
- * Split-bar nav variant — transparent header on desktop, logo bare left, floating pill right.
+ * Split-bar nav variant — an editorial masthead, not a shrunk-down utility
+ * bar: the logo sits dead-center, and the primary links split into two wings
+ * that flank it. This is the style's namesake, and it earns the name twice —
+ * structurally (the wings) and kinetically:
  *
- * The pill (bg-surface/90 + backdrop-blur + rounded-full) contains nav links, icon
- * utilities, and the CTA. No full-width background band on desktop; content reads
- * through the gap between the two elements.
+ * - **First paint**: the two wings slide in from the outer edges toward the
+ *   logo (`data-stagger="split-left"` / `"split-right"` in globals.css) —
+ *   the header visibly performs a "split" resolving into place.
+ * - **On scroll**: the whole bar crossfades from a bare transparent masthead
+ *   (reads directly against the hero) into a glass surface with a
+ *   brand→accent horizon hairline along the bottom edge — the same motif as
+ *   the mega-menu dropdown and the footer, so the material change reads as
+ *   one system rather than a one-off transition. See `.split-shell` in
+ *   globals.css / `SplitHeaderShell.tsx` for the scroll-linked state.
  *
- * The pill's border-radius tracks the Corner Style axis via `rounded-ot-surface`
- * (`--ot-radius-surface`): sharp → 0px, soft → 8px, rounded → 20px.
- *
- * Mobile (< lg): glass sticky bar, logo left, hamburger right — identical to top-bar.
+ * Mobile (< lg): identical glass sticky bar to top-bar — logo left,
+ * hamburger right. The masthead is a desktop statement; small viewports
+ * don't have the width to earn a centered logo.
  */
 export default async function SplitHeader() {
   const domain   = await getRequestDomain()
@@ -65,9 +73,9 @@ export default async function SplitHeader() {
   const ctaHref        = normalizeNavHref(settings?.ctaUrl?.default, locale, domain)
 
   const LOGO_IMG_CLASS: Record<string, string> = {
-    full:    'max-h-12 w-auto',
-    icon:    'h-12 w-12 object-contain',
-    compact: 'max-h-9 w-auto max-w-[160px]',
+    full:    'max-h-10 w-auto',
+    icon:    'h-10 w-10 object-contain',
+    compact: 'max-h-8 w-auto max-w-[150px]',
   }
   const logoImgClass = [
     LOGO_IMG_CLASS[logoFit] ?? LOGO_IMG_CLASS.full,
@@ -91,8 +99,15 @@ export default async function SplitHeader() {
       }))
     : FALLBACK_NAV
 
+  // Split into two wings around the centered logo. The left wing takes the
+  // extra item on an odd count — the right wing also carries the utility
+  // icons and CTA, so keeping it one item lighter balances the two sides.
+  const splitPoint = Math.ceil(navItems.length / 2)
+  const leftItems  = navItems.slice(0, splitPoint)
+  const rightItems = navItems.slice(splitPoint)
+
   const logoEl = logoSrc ? (
-    <Image src={logoSrc} alt={logoAlt} width={444} height={90} className={logoImgClass} priority />
+    <Image src={logoSrc} alt={logoAlt} width={370} height={75} className={logoImgClass} priority />
   ) : (
     <BrandMark name={siteName} className="text-fg" />
   )
@@ -108,43 +123,29 @@ export default async function SplitHeader() {
         {t(locale, 'nav.skipToMain')}
       </a>
 
-      {/* ── Desktop: transparent header — logo bare left, pill right ─────────── */}
-      <header className="sticky top-0 z-50 lg:bg-transparent lg:border-none bg-canvas/80 backdrop-blur-md border-b border-fg/5 lg:backdrop-filter-none">
+      <SplitHeaderShell>
+        {/* ── Desktop masthead: left wing / centered logo / right wing ─────── */}
+        <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center gap-lg px-lg py-6">
 
-        <div className="hidden lg:flex items-center justify-between px-lg py-sm">
+          <div className="flex justify-end" data-stagger="split-left">
+            <DesktopNav navItems={leftItems} variant="split" ariaLabel="Primary navigation" />
+          </div>
 
-          {/* Logo — floats bare on hero, gains glass pill after scrolling */}
-          <SplitLogoWrap>
-            <a
-              href={localizedHref('/', locale)}
-              aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-              className="flex items-center h-12 shrink-0"
-              style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
-            >
-              {logoEl}
-            </a>
-          </SplitLogoWrap>
-
-          {/* Floating pill — nav links + utilities + CTA in one surface capsule */}
-          <div
-            className="flex items-center rounded-ot-surface border border-fg/15"
-            style={{
-              background:           'color-mix(in oklch, var(--ot-surface) 92%, transparent)',
-              backdropFilter:       'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-              boxShadow:            '0 2px 20px var(--ot-bloom-brand-faint), 0 1px 4px oklch(0 0 0 / 0.08)',
-            }}
+          <a
+            href={localizedHref('/', locale)}
+            aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
+            className="split-logo flex items-center justify-center h-10 shrink-0"
+            style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
           >
-            {/* Nav links */}
-            <div className="px-md">
-              <DesktopNav navItems={navItems} />
-            </div>
+            {logoEl}
+          </a>
 
-            {/* Separator */}
-            <div aria-hidden="true" className="w-px self-stretch bg-fg/10 my-sm" />
+          <div className="flex items-center justify-start gap-lg" data-stagger="split-right">
+            <DesktopNav navItems={rightItems} variant="split" ariaLabel="More navigation" />
 
-            {/* Icon utilities */}
-            <div className="flex items-center gap-xs px-sm py-sm">
+            <div aria-hidden="true" className="w-px h-6 bg-fg/15 shrink-0" />
+
+            <div className="flex items-center gap-xs shrink-0">
               <SearchTrigger />
               <LocaleSelector enabledLocales={enabledLocales} />
               <ThemeToggle />
@@ -173,8 +174,7 @@ export default async function SplitHeader() {
             <MobileMenu navItems={navItems} enabledLocales={enabledLocales} />
           </div>
         </div>
-
-      </header>
+      </SplitHeaderShell>
     </>
   )
 }

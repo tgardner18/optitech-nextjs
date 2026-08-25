@@ -54,6 +54,15 @@ export const OT_StatBlockDefault = displayTemplate({
         true:  { displayName: 'On',            sortOrder: 20 },
       },
     },
+    iconPlacement: {
+      displayName: 'Icon placement',
+      editor:      'select',
+      sortOrder:   45,
+      choices: {
+        inline: { displayName: 'Inline — left of label (default)', sortOrder: 10 },
+        above:  { displayName: 'Above — centered above numeral',   sortOrder: 20 },
+      },
+    },
     // ── Per-slot icon selectors ──────────────────────────────────────────────
     stat1Icon: { displayName: 'Stat 1 — Icon', editor: 'select', sortOrder: 50, choices: ICON_CHOICES_WITH_NONE },
     stat2Icon: { displayName: 'Stat 2 — Icon', editor: 'select', sortOrder: 60, choices: ICON_CHOICES_WITH_NONE },

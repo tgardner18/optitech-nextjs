@@ -4,16 +4,16 @@ import { BlockPlayground } from '../playground'
 import OT_StatBlock from '@/cms/components/OT_StatBlock'
 
 const STATS_4 = [
-  { value: '40%',    label: 'Faster deployment',   context: 'vs. baseline'       },
-  { value: '99.99%', label: 'Uptime SLA',           context: 'across all regions' },
-  { value: '2M+',    label: 'Active users',         context: 'and growing'        },
-  { value: '5x',     label: 'More content reuse',   context: 'across channels'    },
+  { value: '40%',    label: 'Faster deployment',   context: 'vs. baseline',        icon: 'zap'         },
+  { value: '99.99%', label: 'Uptime SLA',           context: 'across all regions',  icon: 'shield'      },
+  { value: '2M+',    label: 'Active users',         context: 'and growing',         icon: 'users'       },
+  { value: '5x',     label: 'More content reuse',   context: 'across channels',     icon: 'trendingUp'  },
 ]
 
 export default function StatPlayground() {
   return (
     <BlockPlayground
-      defaults={{ color: 'brand', columns: '3', glass: 'no' }}
+      defaults={{ color: 'brand', columns: '3', glass: 'no', effect: 'none', iconPlacement: 'inline', icons: 'no' }}
       controls={[
         {
           type: 'buttons',
@@ -44,12 +44,47 @@ export default function StatPlayground() {
             { label: 'On',  value: 'yes' },
           ],
         },
+        {
+          type: 'buttons',
+          key: 'effect',
+          label: 'Effect',
+          options: [
+            { label: 'None',     value: 'none'     },
+            { label: 'Gradient', value: 'gradient' },
+            { label: 'Glow',     value: 'glow'     },
+          ],
+        },
+        {
+          type: 'buttons',
+          key: 'icons',
+          label: 'Icons',
+          options: [
+            { label: 'Off', value: 'no'  },
+            { label: 'On',  value: 'yes' },
+          ],
+        },
+        {
+          type: 'buttons',
+          key: 'iconPlacement',
+          label: 'Icon placement',
+          options: [
+            { label: 'Inline', value: 'inline' },
+            { label: 'Above',  value: 'above'  },
+          ],
+        },
       ]}
     >
       {s => (
         <OT_StatBlock
-          content={{ stats: STATS_4.slice(0, parseInt(s.columns, 10)) } as any}
-          displaySettings={{ color: s.color, columns: s.columns, glass: s.glass === 'yes', animate: false }}
+          content={{ stats: STATS_4.slice(0, parseInt(s.columns, 10)), effect: s.effect } as any}
+          displaySettings={{
+            color:         s.color,
+            columns:       s.columns,
+            glass:         s.glass === 'yes',
+            animate:       false,
+            showIcons:     s.icons === 'yes',
+            iconPlacement: s.iconPlacement,
+          }}
         />
       )}
     </BlockPlayground>

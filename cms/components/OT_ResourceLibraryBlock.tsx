@@ -12,14 +12,11 @@ type Props = {
 
 // ─── OT_ResourceLibraryBlock adapter ─────────────────────────────────────────
 //
-// Async server component — performs the two-step Graph fetch at render time:
-//   1. Resolve collectionId from the editor-selected anchor DAM asset.
-//   2. Fetch all sibling assets from that collection, filtered by type.
+// Async server component — fetches DAM assets from the configured folder.
 //
-// assets === null  →  anchor not configured; shows "not configured" empty state.
-// assets === []    →  collection is empty / no filter matches; shows empty state.
-// Graph error      →  getResourceLibraryAssets catches and returns []; adapter
-//                     treats a missing anchor key as the "not configured" case.
+// assets === null  →  folder ID not configured; shows "not configured" empty state.
+// assets === []    →  folder is empty / no filter matches; shows empty state.
+// Graph error      →  getResourceLibraryAssets catches and returns [].
 
 export default async function OT_ResourceLibraryBlockAdapter({
   content,
@@ -29,19 +26,13 @@ export default async function OT_ResourceLibraryBlockAdapter({
   const styleOptions      = getResourceLibraryStyles(content.layout ? { ...displaySettings, layout: content.layout } : displaySettings)
   const entranceAnimation = String(displaySettings?.entranceAnimation ?? 'none')
 
-  // Extract text fields
-  const eyebrow = content.eyebrow ?? undefined
-  const title   = content.title   ?? undefined
+  const eyebrow    = content.eyebrow    ?? undefined
+  const title      = content.title      ?? undefined
+  const folderId   = content.damFolderId?.trim() || undefined
 
-  // Extract the anchor asset key from the CMS content reference.
-  // ContentReference objects expose `key` at the top level.
-  const anchorKey: string | undefined = content.anchorAsset?.key
-    ? String(content.anchorAsset.key)
-    : undefined
-
-  // null = anchor not configured; fetch only when key is present
-  const assets = anchorKey
-    ? await getResourceLibraryAssets(anchorKey, styleOptions.filterType)
+  // null = folder not configured; fetch only when folderId is present
+  const assets = folderId
+    ? await getResourceLibraryAssets(folderId, styleOptions.filterType)
     : null
 
   return (

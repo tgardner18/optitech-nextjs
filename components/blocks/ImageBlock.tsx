@@ -250,10 +250,10 @@ export default function ImageBlock({
         <div
           className={
             frame === "offset"
-              ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
               : frame === "glow"
-              ? `p-[3px]${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-              : `overflow-hidden${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
+              ? `p-[3px]${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
+              : `overflow-hidden${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
           }
           style={frame === "glow" ? glowStyle : undefined}
         >

@@ -19,26 +19,11 @@ export type ResourceAsset = {
 // CMP integration). The DAM folder is identified by ParentFolderGuid — the GUID
 // visible in the DAM URL bar (parentFolderGuid=...).
 //
-// Three-step pattern:
-//   1. Resolve ParentFolderGuid from the anchor cmp_Asset (_itemMetadata.key
-//      is the same value as cmp_Asset.Id and as ContentReference.key in the CMS).
-//   2. Fetch all cmp_Asset siblings in that folder (Title, MimeType, keys).
-//   3. Batch-fetch CDN download URLs from _AssetItem using sibling keys.
+// Two-step pattern:
+//   1. Fetch all cmp_Asset items in the folder (Title, MimeType, keys).
+//   2. Batch-fetch CDN download URLs from _AssetItem using the asset keys.
 //      _assetMetadata.url on _AssetItem is the only place the CDN URL lives;
 //      cmp_Asset itself has no url field.
-
-const ANCHOR_QUERY = `
-  query GetAnchorCmpAsset($key: String!) {
-    cmp_Asset(
-      where: { _itemMetadata: { key: { eq: $key } } }
-      limit: 1
-    ) {
-      items {
-        ParentFolderGuid
-      }
-    }
-  }
-`
 
 const SIBLINGS_QUERY = `
   query GetFolderSiblings($parentFolderGuid: String!) {
@@ -122,20 +107,16 @@ function matchesFilter(mime: string, filterType: string): boolean {
  * Fetches all CMP assets in the same DAM folder as the given anchor asset.
  *
  * anchorAssetKey — ContentReference.key of the cmp_Asset selected by the editor
- *                  (equals cmp_Asset._itemMetadata.key / cmp_Asset.Id)
- * filterType     — display-template value; filters by MIME type category
+ * folderGuid  — the ParentFolderGuid of the DAM folder (from the damFolderId
+ *               property; visible in the DAM URL bar as parentFolderGuid=...)
+ * filterType  — display-template value; filters by MIME type category
  */
 export async function getResourceLibraryAssets(
-  anchorAssetKey: string,
+  folderGuid: string,
   filterType = 'all',
 ): Promise<ResourceAsset[]> {
   try {
-    // ── Step 1: resolve the DAM folder GUID from the anchor CMP asset ─────────
-    const anchorData = await getClient().request(ANCHOR_QUERY, { key: anchorAssetKey })
-    const folderGuid = (anchorData as any)?.cmp_Asset?.items?.[0]?.ParentFolderGuid as string | undefined
-    if (!folderGuid) return []
-
-    // ── Step 2: fetch all cmp_Asset siblings in that DAM folder ───────────────
+    // ── Step 1: fetch all cmp_Asset items in the DAM folder ───────────────────
     const siblingsData = await getClient().request(SIBLINGS_QUERY, { parentFolderGuid: folderGuid })
     const siblings: Array<{ key: string; Title: string; MimeType: string }> =
       ((siblingsData as any)?.cmp_Asset?.items ?? [])
@@ -149,7 +130,7 @@ export async function getResourceLibraryAssets(
 
     if (!siblings.length) return []
 
-    // ── Step 3: batch-fetch CDN download URLs via _AssetItem ──────────────────
+    // ── Step 2: batch-fetch CDN download URLs via _AssetItem ──────────────────
     // cmp_Asset has no url field; _assetMetadata.url on _AssetItem is the source.
     const keys    = siblings.map(s => s.key)
     const urlData = await getClient().request(ASSET_URLS_QUERY, { keys })

@@ -56,10 +56,17 @@ async function PreviewPage({ searchParams }: Props) {
       break
     } catch (err) {
       lastErr = err
+      // Two known message formats for "Graph hasn't indexed this version yet":
+      //   "No content found for key …"  — SDK's generic not-found
+      //   "Content with key '…' could not be found." — preview-token query variant
+      // Both are transient; retry with back-off before giving up.
       const notIndexed =
-        err instanceof Error && err.message.includes('No content found for key')
-      if (notIndexed && attempt < 3) {
-        await new Promise(r => setTimeout(r, 250))
+        err instanceof Error && (
+          err.message.includes('No content found for key') ||
+          err.message.includes('could not be found')
+        )
+      if (notIndexed && attempt < 4) {
+        await new Promise(r => setTimeout(r, 350))
         continue
       }
       break

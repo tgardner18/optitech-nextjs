@@ -22,8 +22,8 @@ function BlockWrapper({ children, node }: { children: ReactNode; node: any }) {
 const widthClasses: Record<string, string> = {
   full:    'w-full px-1',
   narrow:  'max-w-4xl w-full mx-auto px-lg',
-  wide:    'max-w-7xl w-full mx-auto px-lg',
-  default: 'container mx-auto px-lg w-full',
+  default: 'max-w-[90rem] w-full mx-auto px-lg',
+  wide:    'max-w-[98rem] w-full mx-auto px-lg',
 }
 
 const verticalSpacingClasses: Record<string, string> = {

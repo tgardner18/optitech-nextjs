@@ -26,7 +26,6 @@ export type LocationData = {
   imageUrl?:     string
   address?:      string
   details?:      { html: string }
-  groupTag?:     string
   url:           string
   coordinates?:  { lat: number; lon: number }
 }
@@ -43,7 +42,6 @@ const LOCATION_FIELDS = `
   image { url { default } }
   address
   details { html }
-  groupTag
 `
 
 const LOCATION_QUERY = `
@@ -58,18 +56,22 @@ const LOCATION_QUERY = `
 `
 
 // Listing query — fetches up to Optimizely Graph's hard per-query cap of 100.
-// Group-tag filtering and the optional limit are applied in JS below so the
-// directory's label-filter chips can be derived from exactly the loaded set.
-const LOCATIONS_QUERY = `
-  query GetLocations($locale: String!) {
-    OT_LocationProfile(
-      limit: 100,
-      where: { _metadata: { locale: { eq: $locale } } }
-    ) {
-      items { ${LOCATION_FIELDS} }
+// When siteKey is provided, the Graph WHERE clause filters by the queryable
+// siteKey field so only locations belonging to this site are returned.
+function buildLocationsQuery(withSiteKey: boolean): string {
+  const skVar    = withSiteKey ? ', $siteKey: String' : ''
+  const skFilter = withSiteKey ? '\n      siteKey: { eq: $siteKey }' : ''
+  return `
+    query GetLocations($locale: String!${skVar}) {
+      OT_LocationProfile(
+        limit: 100,
+        where: { _metadata: { locale: { eq: $locale } }${skFilter} }
+      ) {
+        items { ${LOCATION_FIELDS} }
+      }
     }
-  }
-`
+  `
+}
 
 // ─── Shaping ─────────────────────────────────────────────────────────────────────
 
@@ -81,7 +83,6 @@ function toLocationData(item: any): LocationData {
     imageUrl:      item.image?.url?.default ?? undefined,
     address:       item.address ?? undefined,
     details:       item.details?.html ? { html: item.details.html } : undefined,
-    groupTag:      item.groupTag ?? undefined,
     url:           item._metadata?.url?.default ?? '',
   }
 }
@@ -112,25 +113,23 @@ export const getLocation = cache(async function getLocation(
 })
 
 /**
- * Fetches location records for the directory listing. Filters by groupTag when
- * provided, dedups by key, sorts by name, and applies the optional limit last.
- * Returns the LocationData shape the listing consumes — WITHOUT coordinates;
- * the server wrapper geocodes addresses before rendering the map.
+ * Fetches location records for the directory listing. When siteKey is provided
+ * the Graph WHERE clause restricts results to profiles whose siteKey field
+ * matches — isolating one site on a shared CMS instance. Dedups by key, sorts
+ * by name, and applies the optional limit last.
  *
  * React-cached so multiple listing blocks on one page share a round-trip.
  */
 export const getAllLocations = cache(async function getAllLocations(
-  options?: { groupTag?: string; limit?: number; locale?: string },
+  options?: { siteKey?: string; limit?: number; locale?: string },
 ): Promise<LocationData[]> {
-  const locale = options?.locale ?? 'en'
+  const locale  = options?.locale ?? 'en'
+  const siteKey = options?.siteKey
+  const query   = buildLocationsQuery(!!siteKey)
+  const vars    = { locale, ...(siteKey ? { siteKey } : {}) }
   try {
-    const data = await getClient().request(LOCATIONS_QUERY, { locale })
-    let items: any[] = (data as any)?.OT_LocationProfile?.items ?? []
-
-    // Group-tag scope — restrict to one vertical when requested.
-    if (options?.groupTag) {
-      items = items.filter(p => (p.groupTag ?? '') === options.groupTag)
-    }
+    const data  = await getClient().request(query, vars)
+    const items: any[] = (data as any)?.OT_LocationProfile?.items ?? []
 
     // Dedup by key (Graph returns one row per locale variant).
     const seen = new Set<string>()
@@ -143,7 +142,6 @@ export const getAllLocations = cache(async function getAllLocations(
 
     const mapped = unique
       .map(toLocationData)
-      // Stable, scannable directory order.
       .sort((a, b) => a.locationName.localeCompare(b.locationName))
 
     return typeof options?.limit === 'number' && options.limit > 0

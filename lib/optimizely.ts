@@ -141,6 +141,7 @@ const THEME_QUERY = `
         contentRecsApiKey
         contentRecsClientId
         contentRecsDeliveryId
+        googleAnalyticsId
         primaryNavigation {
           menuLink { text title target url { default } }
           subNavItems {
@@ -439,6 +440,18 @@ export async function getSiteSettings(domain = '', locale = DEFAULT_LOCALE): Pro
   const items = await _fetchAllThemeManagers(locale)
   if (!items.length) return null
   return items.find((i: any) => i.frontEndDomain === domain) ?? null
+}
+
+/**
+ * Returns the frontEndDomain of the ThemeManager that matches the current
+ * request host. Used as the `siteKey` filter for OT_PractitionerProfile and
+ * OT_LocationProfile records so components without a URL can still be scoped
+ * to a single site on a shared CMS instance.
+ */
+export async function getSiteKey(locale = DEFAULT_LOCALE): Promise<string | null> {
+  const domain   = await getRequestDomain()
+  const settings = await getSiteSettings(domain, locale)
+  return (settings?.frontEndDomain as string | undefined) ?? null
 }
 
 /**

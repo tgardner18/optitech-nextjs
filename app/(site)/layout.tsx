@@ -26,15 +26,21 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <TokenProvider tokens={tokens}>
         <LocaleProvider locale={locale}>
           <SearchProvider>
-            <SidebarNav />
-            <SiteSearch />
-            {/* Content shifts right of the fixed rail. The margin is driven by
-                --ot-sidebar-width (emitted by buildThemeCSS, 0px when not sidebar).
-                On mobile the rail is hidden, so no margin applies below lg. */}
-            <div className="ot-sidebar-content flex flex-col min-h-dvh">
-              <main id="main-content" className="flex-1">{children}</main>
-              <Footer />
-              <ScrollToTop />
+            {/* data-nav cascades --ot-site-header-h (globals.css) to every consumer
+                on the page — e.g. the showcase nav's sticky offset — regardless of
+                which nav style is active. display:contents keeps it out of the box
+                tree so it can't affect this branch's own layout. */}
+            <div data-nav={navbarStyle} className="contents">
+              <SidebarNav />
+              <SiteSearch />
+              {/* Content shifts right of the fixed rail. The margin is driven by
+                  --ot-sidebar-width (emitted by buildThemeCSS, 0px when not sidebar).
+                  On mobile the rail is hidden, so no margin applies below lg. */}
+              <div className="ot-sidebar-content flex flex-col min-h-dvh">
+                <main id="main-content" className="flex-1">{children}</main>
+                <Footer />
+                <ScrollToTop />
+              </div>
             </div>
           </SearchProvider>
         </LocaleProvider>
@@ -46,12 +52,17 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <TokenProvider tokens={tokens}>
       <LocaleProvider locale={locale}>
         <SearchProvider>
-          {navbarStyle === 'split-bar' ? <SplitHeader /> : <Header />}
-          <MemberWelcomeBanner />
-          <SiteSearch />
-          <main id="main-content" className="flex-1">{children}</main>
-          <Footer />
-          <ScrollToTop />
+          {/* See data-nav comment above — same cascade, needed here too since
+              split-bar's own header already sets it on itself, but top-bar and
+              anything below the header (e.g. showcase nav) need it as well. */}
+          <div data-nav={navbarStyle} className="contents">
+            {navbarStyle === 'split-bar' ? <SplitHeader /> : <Header />}
+            <MemberWelcomeBanner />
+            <SiteSearch />
+            <main id="main-content" className="flex-1">{children}</main>
+            <Footer />
+            <ScrollToTop />
+          </div>
         </SearchProvider>
       </LocaleProvider>
     </TokenProvider>

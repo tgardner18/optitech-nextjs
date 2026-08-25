@@ -12,12 +12,24 @@ const DEMO = {
 export default function QuotePlayground() {
   return (
     <BlockPlayground
-      defaults={{ color: 'brand', size: 'large', alignment: 'left' }}
+      defaults={{ treatment: 'default', color: 'brand', size: 'large', alignment: 'left' }}
       controls={[
+        {
+          type: 'buttons',
+          key: 'treatment',
+          label: 'Treatment',
+          options: [
+            { label: 'Editorial Mark', value: 'default' },
+            { label: 'Speech Bubble',  value: 'bubble'  },
+            { label: 'Ambient Glow',   value: 'glow'    },
+          ],
+        },
         {
           type: 'buttons',
           key: 'color',
           label: 'Color',
+          // Glow forces its own dark canvas; color selector still wires through
+          // for default/bubble but is less meaningful for glow.
           options: [
             { label: 'Brand',   value: 'brand'   },
             { label: 'Canvas',  value: 'canvas'  },
@@ -37,6 +49,8 @@ export default function QuotePlayground() {
           type: 'buttons',
           key: 'alignment',
           label: 'Alignment',
+          // Alignment is only meaningful for the default treatment
+          visible: s => s.treatment === 'default',
           options: [
             { label: 'Left',   value: 'left'   },
             { label: 'Center', value: 'center' },
@@ -46,7 +60,7 @@ export default function QuotePlayground() {
     >
       {s => (
         <OT_QuoteBlock
-          content={DEMO as any}
+          content={{ ...DEMO, treatment: s.treatment } as any}
           displaySettings={{ color: s.color, size: s.size, alignment: s.alignment }}
         />
       )}

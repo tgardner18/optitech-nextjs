@@ -51,17 +51,21 @@ export function SidebarNavShell({ children, defaultOpen = true }: { children: Re
       </aside>
 
       {/* Toggle tab — rides the right edge of the sidebar, always accessible.
-          Flat left edge butts against the sidebar; rounded right reads as a
-          pull-tab. Brand fill keeps it visible on any surface or theme color. */}
+          Flat left edge butts against the sidebar; the right corners follow
+          the Corner Style axis (rounded-ot-control) instead of a hardcoded
+          radius — sharp by default, like every other control in the system.
+          Brand fill keeps it visible on any surface or theme color; the
+          shadow is the same chromatic bloom used everywhere else, never grey. */}
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
         className={[
           'fixed top-14 z-51 hidden lg:flex items-center justify-center',
-          'w-6 h-12 rounded-r-xl',
+          'w-6 h-12',
+          'rounded-tr-[var(--ot-radius-control)] rounded-br-[var(--ot-radius-control)]',
           'bg-brand text-fg-on-brand',
-          'shadow-[2px_0_12px_oklch(0%_0_0/0.25)]',
+          'shadow-[2px_0_16px_var(--ot-bloom-brand-faint)]',
           'hover:bg-brand-hover',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
         ].join(' ')}

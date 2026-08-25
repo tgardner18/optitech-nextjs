@@ -6,12 +6,11 @@ import { contentType } from '@optimizely/cms-sdk'
 // compact list — plus client-side search and a dynamically-derived label
 // filter. Editors drop it onto any page in the Visual Builder.
 //
-// `groupTagFilter` restricts the listing to a vertical subset — "optimedical"
-// shows only that group's locations, "optitech-offices" only those — which is
-// how one block type serves every vertical without code changes. Leave it blank
-// to show all locations. Locations are fetched + geocoded at render time in the
-// adapter / server wrapper; search and filtering happen client-side from the
-// loaded set, with the label-filter chips derived from the data.
+// Site scoping is automatic: the adapter reads the site's frontEndDomain from
+// ThemeManager and passes it as the `siteKey` filter so only profiles belonging
+// to the current site are loaded. Locations are fetched + geocoded at render
+// time in the adapter / server wrapper; search and filtering happen client-side
+// from the loaded set, with the label-filter chips derived from the data.
 //
 // Addresses that fail geocoding still appear in the grid and list views; they
 // are silently omitted from the map only.
@@ -23,7 +22,7 @@ import { contentType } from '@optimizely/cms-sdk'
 export const OT_LocationListingBlock = contentType({
   key:         'OT_LocationListingBlock',
   displayName: 'Location Listing',
-  description: 'Searchable, filterable directory of locations pulled from Location Profiles, with a Mapbox map, card grid, and list views. Scope it to a vertical with the Group Tag Filter.',
+  description: 'Searchable, filterable directory of locations pulled from Location Profiles, with a Mapbox map, card grid, and list views. Automatically scoped to the current site via the Site Key field on each profile.',
   baseType:    '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
   properties: {
@@ -58,14 +57,6 @@ export const OT_LocationListingBlock = contentType({
       description: 'Optional supporting text below the heading.',
       group:       'OT_Content',
       sortOrder:   20,
-    },
-    groupTagFilter: {
-      type:        'string',
-      maxLength:   40,
-      displayName: 'Group Tag Filter',
-      description: 'Filters to locations whose Group Tag matches this value — e.g. "optimedical", "optitech-offices". Leave blank to show all locations.',
-      group:       'OT_Content',
-      sortOrder:   30,
     },
     maxItems: {
       type:        'integer',

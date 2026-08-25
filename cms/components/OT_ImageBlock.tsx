@@ -45,16 +45,17 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         className={`${standaloneCls} flex-1 min-h-0 flex flex-col`}
         data-stagger={staggerAttr}
       >
-        {!imageSrc ? placeholder : (
-          <ImageBlock
-            src={imageSrc}
-            alt={content.alt ?? ''}
-            caption={content.caption ?? undefined}
-            styleOptions={styleOptions}
-            previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-            fillHeight={true}
-          />
-        )}
+        <div className="mx-auto max-w-360">
+          {!imageSrc ? placeholder : (
+            <ImageBlock
+              src={imageSrc}
+              alt={content.alt ?? ''}
+              caption={content.caption ?? undefined}
+              styleOptions={styleOptions}
+              previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+            />
+          )}
+        </div>
       </div>
     )
   }

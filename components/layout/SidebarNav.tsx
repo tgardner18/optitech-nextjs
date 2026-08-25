@@ -48,8 +48,12 @@ function normalizeNavHref(rawUrl: string | null | undefined, locale: Locale, dom
  * Mobile (< lg):  rail hidden; a minimal sticky top bar (logo + hamburger) renders instead.
  *                 MobileMenu overlay is reused unchanged — no new mobile pattern.
  *
- * Active nav state: brand-tinted fill + left 2px accent edge.
- * Sub-items: accordion expansion via SidebarNavItem (client component).
+ * Active nav state: brand-tinted background fill + semibold text, driven by
+ * usePathname() in SidebarNavItem.tsx (a side-stripe accent border would
+ * violate the system's ban on colored border-left/right accents). Sections
+ * containing the active page auto-expand and stay highlighted when collapsed.
+ * Sub-items: accordion expansion via SidebarNavItem (client component), each
+ * with an icon tile matching the split-bar mega-menu's visual language.
  * Skip link: position:fixed so it always appears at viewport top on focus, not inside the rail.
  */
 export default async function SidebarNav() {
@@ -139,8 +143,16 @@ export default async function SidebarNav() {
           ))}
         </nav>
 
-        {/* Bottom: CTA anchored to rail bottom, utilities above */}
-        <div className="p-md shrink-0 border-t border-fg/8 space-y-sm">
+        {/* Bottom: CTA anchored to rail bottom, utilities above. The divider
+            is the same brand→accent horizon hairline used by the split-bar
+            header and the mega-menu dropdown, not a flat neutral border —
+            ties the rail into the same visual system as the rest of the nav. */}
+        <div
+          aria-hidden="true"
+          className="h-px shrink-0"
+          style={{ background: 'linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent)' }}
+        />
+        <div className="p-md shrink-0 space-y-sm">
           <Button href={ctaHref} size="sm" className="w-full justify-center">
             {ctaLabel}
           </Button>
