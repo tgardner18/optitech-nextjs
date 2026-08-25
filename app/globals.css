@@ -1836,6 +1836,41 @@ body {
   margin: var(--ot-space-lg) 0;
 }
 
+/* Tables — CMS authors can paste a raw <table> into the rich text editor and
+ * it ships with no padding/borders by default, so columns visually jam
+ * together. display:block lets the table scroll horizontally on narrow
+ * viewports instead of squeezing columns to fit — the table-row/table-cell
+ * children still lay out as a real table via the browser's anonymous table
+ * box generation, so this doesn't break the grid. */
+[data-rich-text] table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ot-text-body);
+  line-height: var(--ot-leading-body);
+  margin: var(--ot-space-lg) 0;
+}
+[data-rich-text] th,
+[data-rich-text] td {
+  padding: var(--ot-space-sm) var(--ot-space-md);
+  border: 1px solid oklch(from var(--ot-fg) l c h / 0.12);
+  text-align: left;
+  vertical-align: top;
+  min-width: 6rem;
+}
+[data-rich-text] th {
+  font-weight: 600;
+  color: var(--ot-fg);
+  background: oklch(from var(--ot-brand) l c h / 0.06);
+}
+[data-rich-text] td {
+  color: var(--ot-fg);
+}
+[data-rich-text] tr:nth-child(even) td {
+  background: oklch(from var(--ot-fg) l c h / 0.02);
+}
+
 /* ── Color: brand background ── */
 [data-rich-text][data-color="brand"] p,
 [data-rich-text][data-color="brand"] li {
@@ -1869,6 +1904,17 @@ body {
 [data-rich-text][data-color="brand"] hr {
   border-top-color: oklch(97% 0.005 195 / 0.2);
 }
+[data-rich-text][data-color="brand"] th,
+[data-rich-text][data-color="brand"] td {
+  color: var(--ot-fg-on-brand);
+  border-color: oklch(97% 0.005 195 / 0.25);
+}
+[data-rich-text][data-color="brand"] th {
+  background: oklch(97% 0.005 195 / 0.12);
+}
+[data-rich-text][data-color="brand"] tr:nth-child(even) td {
+  background: oklch(97% 0.005 195 / 0.05);
+}
 
 /* ── Color: glass (dark surface, white text) ── */
 [data-rich-text][data-color="glass"] p,
@@ -1895,6 +1941,18 @@ body {
 }
 [data-rich-text][data-color="glass"] hr {
   border-top-color: oklch(97% 0.005 195 / 0.2);
+}
+[data-rich-text][data-color="glass"] th,
+[data-rich-text][data-color="glass"] td {
+  color: oklch(97% 0.005 195 / 0.85);
+  border-color: oklch(97% 0.005 195 / 0.15);
+}
+[data-rich-text][data-color="glass"] th {
+  color: oklch(97% 0.005 195 / 0.95);
+  background: oklch(97% 0.005 195 / 0.1);
+}
+[data-rich-text][data-color="glass"] tr:nth-child(even) td {
+  background: oklch(97% 0.005 195 / 0.04);
 }
 
 /* ── Size: compact ── */
@@ -1924,6 +1982,11 @@ body {
 }
 [data-rich-text][data-size="compact"] blockquote p {
   font-size: 1rem;
+}
+[data-rich-text][data-size="compact"] th,
+[data-rich-text][data-size="compact"] td {
+  padding: var(--ot-space-xs) var(--ot-space-sm);
+  font-size: 0.9375rem;
 }
 
 /* ── Treatment: lead — intro section (first heading + first paragraph) ──────

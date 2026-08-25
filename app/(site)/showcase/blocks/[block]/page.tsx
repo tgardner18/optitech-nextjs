@@ -573,6 +573,18 @@ const h3   = (s: string): RTNode => ({ type: 'heading-three', children: [txt(s)]
 const ul   = (...items: string[]): RTNode => ({ type: 'bulleted-list', children: items.map(s => ({ type: 'list-item', children: [txt(s)] })) })
 const quote = (s: string): RTNode => ({ type: 'quote', children: [{ type: 'paragraph', children: [txt(s)] }] })
 const rule = (): RTNode => ({ type: 'hr', children: [txt('')] })
+const th   = (s: string): RTNode => ({ type: 'th', children: [txt(s)] })
+const td   = (s: string): RTNode => ({ type: 'td', children: [txt(s)] })
+const tr   = (...cells: RTNode[]): RTNode => ({ type: 'tr', children: cells })
+// A <tr> can't be a direct child of <table> — needs thead/tbody, same as any
+// table a WYSIWYG editor (TinyMCE, etc.) would actually emit.
+const table = (head: RTNode, ...bodyRows: RTNode[]): RTNode => ({
+  type: 'table',
+  children: [
+    { type: 'thead', children: [head] },
+    { type: 'tbody', children: bodyRows },
+  ],
+})
 const doc  = (...nodes: RTNode[]) => ({ type: 'richText', children: nodes })
 
 const RT_FULL = doc(
@@ -645,6 +657,19 @@ const RT_OFFSET_STORY = doc(
   h2('Built for teams that move fast'),
   para('Most tools slow you down at the moment that matters most. You have a signal, you need to act, and the platform you rely on puts three forms and a meeting between you and the change.'),
   para('We closed that gap. From insight to change in minutes, with a full history of every decision and the ability to reverse any of them in a single click.'),
+)
+
+// Tables have no built-in styling from the browser — a raw <table> pasted
+// into the CMS rich text editor renders with no padding/borders by default.
+const RT_TABLE = doc(
+  h2('Plan comparison'),
+  para('A table pasted directly into the rich text editor, unstyled by the CMS author — the block’s default styles carry all the spacing, borders, and header treatment.'),
+  table(
+    tr(th('Plan'), th('Price'), th('Seats'), th('Support')),
+    tr(td('Starter'), td('$29/mo'), td('5'), td('Email')),
+    tr(td('Growth'), td('$99/mo'), td('25'), td('Email + chat')),
+    tr(td('Enterprise'), td('Custom'), td('Unlimited'), td('Dedicated CSM')),
+  ),
 )
 
 function RichTextShowcase() {
@@ -794,6 +819,27 @@ function RichTextShowcase() {
         <OT_RichTextBlock
           content={{ content: { json: RT_OFFSET_STORY } } as any}
           displaySettings={{ color: 'surface', size: 'editorial', alignment: 'left', treatment: 'sidebar_accent' }}
+        />
+      </div>
+
+      <VariantGroup
+        label="Tables"
+        note="A raw &lt;table&gt; pasted into the rich text editor — default styling only, no author-applied classes."
+      />
+      {(['canvas', 'surface', 'brand'] as const).map(color => (
+        <div key={color} className="border-t border-fg/5">
+          <VariantLabel label={`color: "${color}"`} />
+          <OT_RichTextBlock
+            content={{ content: { json: RT_TABLE } } as any}
+            displaySettings={{ color, size: 'editorial', alignment: 'left', treatment: 'standard' }}
+          />
+        </div>
+      ))}
+      <div className="border-t border-fg/5">
+        <VariantLabel label='size: "compact"' />
+        <OT_RichTextBlock
+          content={{ content: { json: RT_TABLE } } as any}
+          displaySettings={{ color: 'canvas', size: 'compact', alignment: 'left', treatment: 'standard' }}
         />
       </div>
 
