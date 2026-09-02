@@ -2358,6 +2358,7 @@ const MOCK_EVENTS: EventCardData[] = [
     key: 'e-workshop-1', title: 'Hands-on Workshop: Building Audit-Ready Pipelines', url: '#',
     eventType: 'workshop', startDate: '2026-07-09T14:00:00Z', endDate: '2026-07-09T18:00:00Z',
     locationType: 'inPerson', venueName: 'Merchandise Mart', city: 'Chicago, IL',
+    creditType: 'CPE', creditHours: 4,
   },
   {
     key: 'e-screening-1', title: 'Free Community Health Screening', url: '#',
@@ -2368,11 +2369,12 @@ const MOCK_EVENTS: EventCardData[] = [
     key: 'e-seminar-1', title: 'CLE Seminar: Data Privacy in Practice', url: '#',
     eventType: 'seminar', startDate: '2026-08-05T12:00:00Z', endDate: '2026-08-05T14:30:00Z',
     locationType: 'inPerson', venueName: 'Boston Bar Association', city: 'Boston, MA',
+    creditType: 'CLE', creditHours: 1.5,
   },
   {
     key: 'e-training-1', title: 'Investor Briefing & Platform Training', url: '#',
     eventType: 'training', startDate: '2026-08-18T15:00:00Z', endDate: '2026-08-18T17:00:00Z',
-    locationType: 'virtual', venueName: 'Acme Live',
+    locationType: 'virtual', venueName: 'Acme Live', creditType: 'CE', creditHours: 2,
     imageUrl: EVENT_IMG_D,
   },
   {

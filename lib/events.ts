@@ -20,8 +20,11 @@ export type EventCardData = {
   venueName?:       string
   city?:            string
   summary?:         string
+  creditType?:      string
+  creditHours?:     number
   imageUrl?:        string | null
   registrationUrl?: string
+  restrictions?:    string | null
 }
 
 /** Full event content for the event page (components/pages/EventPage.tsx). */
@@ -40,7 +43,13 @@ export type EventPageContent = {
   locationType?:   string | null
   venueName?:      string | null
   city?:           string | null
+  creditType?:     string | null
+  creditHours?:    number | null
   registrationUrl?: { default?: string | null } | null
+  restrictions?:    string | null
+  productId?:       string | null
+  nonMemberPrice?:  string | null
+  memberPrice?:     string | null
   speakers?:       Array<{
     name?:         string | null
     title?:        string | null
@@ -96,9 +105,12 @@ const EVENTS_QUERY = `
         locationType
         venueName
         city
+        creditType
+        creditHours
         description { html }
         featuredImage { url { default } }
         registrationUrl { default }
+        restrictions
       }
     }
   }
@@ -120,8 +132,14 @@ const EVENT_PAGE_QUERY = `
         locationType
         venueName
         city
+        creditType
+        creditHours
         featuredImage { url { default } }
         registrationUrl { default }
+        restrictions
+        productId
+        nonMemberPrice
+        memberPrice
         speakers {
           name
           title
@@ -162,9 +180,12 @@ function toCardData(item: any): EventCardData {
     locationType:    item.locationType ?? undefined,
     venueName:       item.venueName ?? undefined,
     city:            item.city ?? undefined,
+    creditType:      item.creditType ?? undefined,
+    creditHours:     typeof item.creditHours === 'number' ? item.creditHours : undefined,
     summary:         stripHtml(item.description?.html) || undefined,
     imageUrl:        item.featuredImage?.url?.default ?? null,
     registrationUrl: item.registrationUrl?.default ?? undefined,
+    restrictions:    item.restrictions ?? null,
   }
 }
 
