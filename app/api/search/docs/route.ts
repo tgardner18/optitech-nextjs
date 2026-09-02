@@ -40,6 +40,36 @@ function titleScore(title: string, q: string): number {
   return hits / terms.length
 }
 
+// The Assets bucket is for downloadable documents, not photos/video that happen
+// to live in the same DAM folder — restrict to known document extensions so a
+// stray image never gets a lying "PDF" badge (the old `?? 'pdf'` fallback).
+const DOC_EXTENSIONS = new Set(['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'csv'])
+
+const EXTENSION_SUFFIX = /\.([a-z0-9]{2,5})$/i
+
+/** Strip a trailing filename extension from a display title, e.g. "Guide.pdf" -> "Guide". */
+function stripExtension(title: string): string {
+  return title.replace(EXTENSION_SUFFIX, '')
+}
+
+/** Extension from an explicit field if present, else parsed off the title's own suffix. */
+function deriveExtension(explicit: string | null | undefined, title: string): string | null {
+  const fromField = explicit?.toLowerCase() ?? null
+  if (fromField) return fromField
+  return EXTENSION_SUFFIX.exec(title)?.[1]?.toLowerCase() ?? null
+}
+
+/** De-dupe by normalized title + extension — CMP/Graph both surface real duplicate uploads as separate ids. */
+function dedupeDocs(docs: DocResult[]): DocResult[] {
+  const seen = new Set<string>()
+  return docs.filter(d => {
+    const key = `${d.title.toLowerCase()}|${d.extension ?? ''}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 async function searchCmpFolder(
   q: string,
   folderId: string,
@@ -55,18 +85,22 @@ async function searchCmpFolder(
 
   const scored = assets
     .filter(a => !a.is_archived && a.content?.value)
-    .map(a => ({ a, score: titleScore(a.title ?? '', q) }))
+    .map(a => ({ a, ext: deriveExtension(a.file_extension, a.title ?? '') }))
+    .filter((x): x is { a: CmpAsset; ext: string } => !!x.ext && DOC_EXTENSIONS.has(x.ext))
+    .map(({ a, ext }) => ({ a, ext, score: titleScore(a.title ?? '', q) }))
     .filter(({ score }) => score > 0)
     .sort((x, y) => y.score - x.score)
-    .slice(0, limit)
+    .slice(0, limit * 2) // headroom for de-dupe below
 
-  return scored.map(({ a }) => ({
-    id:        a.id,
-    title:     a.title ?? '',
-    url:       a.content!.value,
-    extension: a.file_extension ?? null,
-    fileSize:  null,
-  }))
+  return dedupeDocs(
+    scored.map(({ a, ext }) => ({
+      id:        a.id,
+      title:     stripExtension(a.title ?? ''),
+      url:       a.content!.value,
+      extension: ext,
+      fileSize:  null,
+    })),
+  ).slice(0, limit)
 }
 
 // ─── Graph fallback (no folder scope) ────────────────────────────────────────
@@ -99,15 +133,24 @@ const MIME_TO_EXT: Record<string, string> = {
 }
 
 async function searchGraphDocs(q: string, limit: number): Promise<DocResult[]> {
-  const data = await getClient().request(DOCS_GRAPH_QUERY, { query: q, limit })
+  // Unscoped — spans every asset Graph can see, so filtering to document mime
+  // types is what keeps photos/video out of a bucket meant for downloads.
+  const data = await getClient().request(DOCS_GRAPH_QUERY, { query: q, limit: limit * 2 })
   const items: any[] = (data as any)?._AssetItem?.items ?? []
-  return items.map((item: any) => ({
-    id:        item._itemMetadata?.key ?? '',
-    title:     item._itemMetadata?.displayName ?? 'Untitled',
-    url:       item._assetMetadata?.url ?? '',
-    extension: MIME_TO_EXT[item._assetMetadata?.mimeType ?? ''] ?? null,
-    fileSize:  item._assetMetadata?.fileSize ?? null,
-  }))
+  const docs = items
+    .map((item: any) => {
+      const title = item._itemMetadata?.displayName ?? 'Untitled'
+      const ext   = MIME_TO_EXT[item._assetMetadata?.mimeType ?? ''] ?? deriveExtension(null, title)
+      return {
+        id:        item._itemMetadata?.key ?? '',
+        title:     stripExtension(title),
+        url:       item._assetMetadata?.url ?? '',
+        extension: ext,
+        fileSize:  item._assetMetadata?.fileSize ?? null,
+      }
+    })
+    .filter(d => !!d.extension && DOC_EXTENSIONS.has(d.extension))
+  return dedupeDocs(docs).slice(0, limit)
 }
 
 // ─── Route ───────────────────────────────────────────────────────────────────
