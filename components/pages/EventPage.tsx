@@ -56,7 +56,7 @@ function TypeBadge({ type, onImage = false }: { type: string; onImage?: boolean 
   )
 }
 
-// ─── "Bank Members Only" badge ───────────────────────────────────────────────
+// ─── "Members Only" badge ────────────────────────────────────────────────────
 
 function MemberBadge({ onImage = false }: { onImage?: boolean }) {
   return (
@@ -67,7 +67,7 @@ function MemberBadge({ onImage = false }: { onImage?: boolean }) {
         color: onImage ? '#1a1a2e' : '#1a1a2e',
       }}
     >
-      ABA Bank Members Only
+      ABA Members Only
     </span>
   )
 }

@@ -161,12 +161,12 @@ export const OT_EventPage = contentType({
       type:        'string',
       format:      'selectOne',
       displayName: 'Restrictions',
-      description: "Content access level. 'Bank Member' gates the full event details behind the ABA member sign-in flow.",
+      description: "Content access level. 'Member' gates the full event details behind the ABA member sign-in flow.",
       group:       'OT_Content',
       sortOrder:   135,
       enum: [
         { value: 'none',       displayName: 'None' },
-        { value: 'bankMember', displayName: 'Bank Member' },
+        { value: 'bankMember', displayName: 'Member' },
       ],
     },
 

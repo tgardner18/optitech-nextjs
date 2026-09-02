@@ -101,7 +101,7 @@ export default function EventMemberGate({
           Sign in to see additional details
         </h3>
         <p className="mx-auto text-sm text-fg-muted mb-8 leading-relaxed" style={{ maxWidth: '36ch' }}>
-          Agenda, speakers, and full event details are exclusive to ABA Bank Members.
+          Agenda, speakers, and full event details are exclusive to ABA Members.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
