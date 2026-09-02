@@ -183,6 +183,7 @@ export type BannerBlockProps = {
   eyebrow?:      string
   body?:         Parameters<typeof RichText>[0]['content'] | null
   bgImageSrc?:   string
+  bgVideoSrc?:   string
   primaryCta?:   { label: string; href: string }
   secondaryCta?: { label: string; href: string }
   styleOptions?: BannerStyleOptions
@@ -195,6 +196,7 @@ export default function BannerBlock({
   eyebrow,
   body,
   bgImageSrc,
+  bgVideoSrc,
   primaryCta,
   secondaryCta,
   styleOptions = {},
@@ -212,7 +214,12 @@ export default function BannerBlock({
   const isBrand    = color === 'brand'
   const isCentered = alignment === 'center'
   const hasImage   = Boolean(bgImageSrc)
-  const scrimClass = getScrimClass(color, imageBlend, treatment, hasImage)
+  const hasVideo   = Boolean(bgVideoSrc)
+  // Video takes precedence over the image, which becomes its poster/fallback
+  // frame — but both count toward the "there is a visual behind the content"
+  // treatment (scrim, vignette, dark theme).
+  const hasVisual  = hasImage || hasVideo
+  const scrimClass = getScrimClass(color, imageBlend, treatment, hasVisual)
   const Heading    = headingLevel
 
   // ── Content elements (shared between scrim and glass layouts) ──────────────
@@ -222,7 +229,7 @@ export default function BannerBlock({
   // per-color text treatment. The outer <p> retains `banner-eyebrow` either way
   // so the entrance animation still targets it.
   const eyebrowEl = eyebrow ? (
-    hasImage ? (
+    hasVisual ? (
       <p className="banner-eyebrow" {...pa('eyebrow')}>
         <span className="inline-flex items-center rounded-ot-control px-sm py-0.75 bg-accent text-fg-on-accent text-label uppercase tracking-label font-semibold">
           {eyebrow}
@@ -285,12 +292,28 @@ export default function BannerBlock({
   return (
     <section
       className={sectionCva({ size })}
-      data-theme={isBrand || hasImage ? 'dark' : undefined}
+      data-theme={isBrand || hasVisual ? 'dark' : undefined}
     >
 
       {/* ── Background layer (z-0, absolute inset) ─────────────────────── */}
       <div className="absolute inset-0 z-0" aria-hidden="true">
-        {/* Background image */}
+        {/* Background video — takes precedence over the image, which becomes
+            its poster/fallback frame. motion-reduce:hidden defers to the
+            static poster image below for reduced-motion visitors. */}
+        {hasVideo && (
+          <video
+            src={bgVideoSrc}
+            poster={bgImageSrc}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover object-center motion-reduce:hidden"
+          />
+        )}
+
+        {/* Background image — the sole visual when there's no video, or the
+            reduced-motion fallback frame when there is one. */}
         {hasImage && (
           <Image
             src={bgImageSrc!}
@@ -302,21 +325,21 @@ export default function BannerBlock({
             // multiple banners on a page don't all preload and hurt LCP.
             priority={headingLevel === 'h1'}
             quality={85}
-            className="object-cover object-center"
+            className={cn('object-cover object-center', hasVideo && 'hidden motion-reduce:block')}
           />
         )}
 
         {/* Glass mode: extra base darkener so the panel has something to
-            contrast against even when the image is light */}
-        {isGlass && hasImage && (
+            contrast against even when the visual is light */}
+        {isGlass && hasVisual && (
           <div className="absolute inset-0 bg-canvas/35" />
         )}
 
         {/* Scrim: color identity layer (controls how brand/canvas/surface reads) */}
         <div className={cn('absolute inset-0', scrimClass)} />
 
-        {/* Vignette: subtle radial corner darkening; only with an image */}
-        {hasImage && <div className="banner-vignette absolute inset-0" />}
+        {/* Vignette: subtle radial corner darkening; only with a visual */}
+        {hasVisual && <div className="banner-vignette absolute inset-0" />}
 
         {/* Brand bloom: radial warm halo centered behind content */}
         {isBrand && <div className="banner-brand-bloom absolute inset-0" />}

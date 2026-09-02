@@ -21,6 +21,7 @@ export default function OT_BannerBlock({ content, displaySettings = {} }: Props)
         eyebrow={content.eyebrow ?? undefined}
         body={content.body?.json ?? undefined}
         bgImageSrc={src(content.backgroundImage) ?? undefined}
+        bgVideoSrc={src(content.backgroundVideo) ?? undefined}
         primaryCta={
           content.primaryCtaLabel
             ? { label: content.primaryCtaLabel, href: content.primaryCtaUrl?.default ?? '#' }

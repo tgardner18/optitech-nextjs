@@ -68,6 +68,7 @@ import { OT_EventSpeaker }      from '@/cms/content-types/OT_EventSpeaker'
 import { OT_AgendaItem }        from '@/cms/content-types/OT_AgendaItem'
 import { OT_FolderPage }        from '@/cms/content-types/OT_FolderPage'
 import { ImageMedia }           from '@/cms/content-types/ImageMedia'
+import { VideoMedia }           from '@/cms/content-types/VideoMedia'
 import { OT_BlogFeedBlock }     from '@/cms/content-types/OT_BlogFeedBlock'
 import { OT_AccordionItem }    from '@/cms/content-types/OT_AccordionItem'
 import { OT_AccordionBlock }   from '@/cms/content-types/OT_AccordionBlock'
@@ -132,6 +133,7 @@ import OT_BlogPageAdapter         from '@/cms/components/OT_BlogPage'
 import OT_EventPageAdapter        from '@/cms/components/OT_EventPage'
 import OT_FolderPageAdapter       from '@/cms/components/OT_FolderPage'
 import ImageMediaAdapter          from '@/cms/components/ImageMedia'
+import VideoMediaAdapter          from '@/cms/components/VideoMedia'
 import OT_BlogFeedBlockAdapter    from '@/cms/components/OT_BlogFeedBlock'
 import OT_AccordionBlockAdapter   from '@/cms/components/OT_AccordionBlock'
 import OT_TabsBlockAdapter        from '@/cms/components/OT_TabsBlock'
@@ -238,6 +240,7 @@ initContentTypeRegistry([
   OT_AgendaItem,
   OT_FolderPage,
   ImageMedia,
+  VideoMedia,
   OT_BlogFeedBlock,
   OT_AccordionItem,
   OT_AccordionBlock,
@@ -304,6 +307,7 @@ initReactComponentRegistry({
     OT_EventPage:        OT_EventPageAdapter,
     OT_FolderPage:       OT_FolderPageAdapter,
     ImageMedia:          ImageMediaAdapter,
+    VideoMedia:          VideoMediaAdapter,
     OT_BlogFeedBlock:    OT_BlogFeedBlockAdapter,
     OT_AccordionBlock:   OT_AccordionBlockAdapter,
     OT_TabsBlock:        OT_TabsBlockAdapter,
