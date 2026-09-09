@@ -7,16 +7,18 @@ const RATIO_MAP: Record<string, ImageStyleOptions['ratio']> = {
   r1_1:  '1:1',
 }
 
+const MEDIA_SIZES = ['small', 'medium', 'large'] as const
+
 export function getImageStyles(s: Record<string, string | boolean>): ImageStyleOptions {
   return {
     ratio:           RATIO_MAP[s.ratio as string],
     overlay:         s.overlay === 'true' || s.overlay === true,
     frame:           (s.frame === 'none' || !s.frame) ? undefined : s.frame as ImageStyleOptions['frame'],
-    animate:         s.animate === 'true' || s.animate === true,
     captionPosition: (s.captionPosition ?? 'below') as ImageStyleOptions['captionPosition'],
     shadow:          s.shadow === 'true' || s.shadow === true,
     lightbox:        s.lightbox === 'true' || s.lightbox === true,
     invertedBg:      s.bgColor === 'brand',
     objectFit:       s.fit === 'contain' ? 'contain' : 'cover',
+    mediaSize:       MEDIA_SIZES.includes(s.mediaSize as typeof MEDIA_SIZES[number]) ? s.mediaSize as ImageStyleOptions['mediaSize'] : 'fill',
   }
 }

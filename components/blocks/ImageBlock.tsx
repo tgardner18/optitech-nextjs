@@ -21,7 +21,9 @@ export type ImageStyleOptions = {
    *            image is backlit from within.
    */
   frame?: "offset" | "glow";
-  /** Scroll-triggered wipe reveal: teal bar sweeps right, image follows on its heels */
+  /** Scroll-triggered wipe reveal: teal bar sweeps right, image follows on its heels.
+   *  Not exposed as a CMS setting on OT_ImageBlock — kept for callers (e.g. CampaignPage)
+   *  that set styleOptions programmatically. */
   animate?: boolean;
   /** "inset" floats the caption over the image bottom-left; "below" places it beneath */
   captionPosition?: "inset" | "below";
@@ -44,9 +46,19 @@ export type ImageStyleOptions = {
    * "cover"   — fills the box, cropping overflow. Best for photography.
    * "contain" — fits the whole image inside the box without cropping.
    *             Use for logos, icons, or diagrams where cropping would
-   *             cut off content. Ignored when frame is "glow" (always cover).
+   *             cut off content. Ignored when frame is "glow" (always cover),
+   *             and when mediaSize is anything but "fill" (always contain).
    */
   objectFit?: "cover" | "contain";
+  /**
+   * Sizes the image to its own content instead of stretching to the column.
+   * "fill"   — (Default) stretch to the column/aspect-ratio box — see fillHeight.
+   * "small" / "medium" / "large" — render at a fixed, natural-proportioned
+   *            box that never crops. For logos, seals, and icons where the
+   *            image should sit compact above or beside text, not fill it.
+   *            Overrides fillHeight, ratio, and objectFit while active.
+   */
+  mediaSize?: "fill" | "small" | "medium" | "large";
 };
 
 export type ImageBlockProps = {
@@ -68,6 +80,14 @@ const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
   "4:3":  "aspect-4/3",
   "3:2":  "aspect-3/2",
   "1:1":  "aspect-square",
+};
+
+// ─── Media size map (compact, never-crop boxes for logos/icons) ──────────────
+
+const MEDIA_SIZE_CLASS: Record<"small" | "medium" | "large", string> = {
+  small:  "h-10 w-32",
+  medium: "h-16 w-48",
+  large:  "h-24 w-64",
 };
 
 
@@ -92,7 +112,14 @@ export default function ImageBlock({
     lightbox        = false,
     invertedBg      = false,
     objectFit       = "cover",
+    mediaSize       = "fill",
   } = styleOptions;
+
+  const isCompact = mediaSize !== "fill";
+  /* Compact sizing takes over the box entirely — it never stretches to the
+   * column, so fillHeight is meaningless while it's active. */
+  const effectiveFillHeight = fillHeight && !isCompact;
+  const effectiveObjectFit = isCompact ? "contain" : objectFit;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [revealed, setRevealed] = useState(false);
@@ -194,21 +221,25 @@ export default function ImageBlock({
 
   // ── Core image markup (shared between normal and lightbox-trigger modes) ────
 
-  /* "contain" can leave the box only partially covered (e.g. a wide logo in a
-   * tall column) — give it a neutral backing so the gap doesn't read as a
-   * transparent hole. Frame treatments already supply their own backing. */
-  const containsWithoutFrame = objectFit === "contain" && !frame;
+  /* "contain" (and compact mode, which is always contain) can leave the box
+   * only partially covered (e.g. a wide logo in a tall column) — give it a
+   * neutral backing so the gap doesn't read as a transparent hole. Frame
+   * treatments already supply their own backing. */
+  const containsWithoutFrame = (effectiveObjectFit === "contain" || isCompact) && !frame;
   const containerBgClass = frame === "offset" || frame === "glow" || containsWithoutFrame
     ? " bg-canvas"
     : "";
 
+  const sizeClass = isCompact
+    ? MEDIA_SIZE_CLASS[mediaSize as "small" | "medium" | "large"]
+    : effectiveFillHeight
+    ? `flex-1${frame !== "glow" ? " min-h-100" : ""}`
+    : aspectClass;
+
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1${frame !== "glow" ? " min-h-100" : ""}${frame === "offset" ? " z-10" : ""}${containerBgClass}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}${containerBgClass}`
-      }
+      className={`relative overflow-hidden rounded-ot-surface ${sizeClass}${frame === "offset" ? " z-10" : ""}${containerBgClass}`}
       {...(previewAttrs?.image ?? {})}
     >
       {animate && (
@@ -223,7 +254,7 @@ export default function ImageBlock({
           src={src}
           alt={alt}
           fill
-          className={frame !== "glow" && objectFit === "contain" ? "object-contain" : "object-cover"}
+          className={frame !== "glow" && effectiveObjectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
         {overlay && (
@@ -254,17 +285,17 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative${frame === "glow" ? " mx-4" : " w-full"}${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
+      <figure className={`relative${frame === "glow" ? " mx-4" : isCompact ? " inline-block" : " w-full"}${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
 
         {shadow && <div aria-hidden="true" style={shadowStyle} />}
 
         <div
           className={
             frame === "offset"
-              ? `relative overflow-hidden pr-3 pb-3${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
+              ? `relative overflow-hidden pr-3 pb-3${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
               : frame === "glow"
-              ? `p-[3px]${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
-              : `overflow-hidden${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
+              ? `p-[3px]${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
+              : `overflow-hidden${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
           }
           style={frame === "glow" ? glowStyle : undefined}
         >
@@ -277,7 +308,7 @@ export default function ImageBlock({
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className={`${fillHeight ? "flex flex-col flex-1 " : "block "}w-full text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
+              className={`${effectiveFillHeight ? "flex flex-col flex-1 w-full " : isCompact ? "inline-block " : "block w-full "}text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
             >
               {imageContainerEl}
             </button>
