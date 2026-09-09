@@ -22,6 +22,11 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
   const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
+  // "Media size" other than Fill sizes the image to its own content — the
+  // generous section-level spacing below (meant for a full-bleed hero image)
+  // would otherwise dwarf a small logo/icon in whitespace.
+  const isCompactMedia = Boolean(styleOptions.mediaSize && styleOptions.mediaSize !== 'fill')
+
   const placeholder = (
     <div
       className="w-full flex items-center justify-center bg-surface border border-fg/10"
@@ -34,10 +39,24 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   )
 
   if (!hasEditorial) {
-    // Standalone section: constrain to a "wide content" max-width so the image
-    // doesn't stretch to full-bleed on large monitors. 1440px is intentionally
-    // wider than the standard prose container (~1280px) but leaves comfortable
-    // negative space at ≥1920px. fillHeight is off so aspect-ratio governs height.
+    const standaloneImageEl = !imageSrc ? placeholder : (
+      <ImageBlock
+        src={imageSrc}
+        alt={content.alt ?? ''}
+        caption={content.caption ?? undefined}
+        styleOptions={styleOptions}
+        previewAttrs={{ image: pa('image'), caption: pa('caption') }}
+      />
+    )
+
+    if (isCompactMedia) {
+      return (
+        <div {...pa(content.__composition)} data-stagger={staggerAttr}>
+          {standaloneImageEl}
+        </div>
+      )
+    }
+
     return (
       <div
         {...pa(content.__composition)}
@@ -45,15 +64,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         data-stagger={staggerAttr}
       >
         <div className="mx-auto max-w-360">
-          {!imageSrc ? placeholder : (
-            <ImageBlock
-              src={imageSrc}
-              alt={content.alt ?? ''}
-              caption={content.caption ?? undefined}
-              styleOptions={styleOptions}
-              previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-            />
-          )}
+          {standaloneImageEl}
         </div>
       </div>
     )
@@ -111,11 +122,9 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
     </>
   )
 
-  // "Media size" other than Fill overrides the side-by-side editorial grid —
-  // a compact logo/icon reads as a masthead above the text, not a media
-  // column stretched to match it.
-  const isCompactMedia = styleOptions.mediaSize && styleOptions.mediaSize !== 'fill'
-
+  // isCompactMedia (computed above) overrides the side-by-side editorial grid
+  // below — a compact logo/icon reads as a masthead above the text, not a
+  // media column stretched to match it.
   if (isCompactMedia) {
     const compactMediaEl = !imageSrc ? placeholder : (
       <ImageBlock
@@ -133,7 +142,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
         className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
         data-stagger={staggerAttr}
       >
-        <div className="flex flex-col items-start gap-md mx-auto max-w-360 px-lg py-xl">
+        <div className="flex flex-col items-start gap-md">
           {compactMediaEl}
           {textContent}
         </div>
