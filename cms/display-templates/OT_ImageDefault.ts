@@ -28,6 +28,15 @@ export const OT_ImageDefault = displayTemplate({
         r1_1:  { displayName: 'Square',            sortOrder: 50 },
       },
     },
+    fit: {
+      displayName: 'Image fit',
+      editor: 'select',
+      sortOrder: 15,
+      choices: {
+        cover:   { displayName: 'Fill & crop (Default)',    sortOrder: 10 },
+        contain: { displayName: 'Fit whole image, no crop', sortOrder: 20 },
+      },
+    },
     overlay: {
       displayName: 'Brand overlay',
       editor: 'select',

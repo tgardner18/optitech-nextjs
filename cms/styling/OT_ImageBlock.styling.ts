@@ -17,5 +17,6 @@ export function getImageStyles(s: Record<string, string | boolean>): ImageStyleO
     shadow:          s.shadow === 'true' || s.shadow === true,
     lightbox:        s.lightbox === 'true' || s.lightbox === true,
     invertedBg:      s.bgColor === 'brand',
+    objectFit:       s.fit === 'contain' ? 'contain' : 'cover',
   }
 }

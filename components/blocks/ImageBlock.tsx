@@ -39,6 +39,14 @@ export type ImageStyleOptions = {
   lightbox?: boolean;
   /** True when rendered on a brand-colored background — inverts frame/animate accents to fg-on-brand */
   invertedBg?: boolean;
+  /**
+   * Controls how the image fills its container. Defaults to "cover".
+   * "cover"   — fills the box, cropping overflow. Best for photography.
+   * "contain" — fits the whole image inside the box without cropping.
+   *             Use for logos, icons, or diagrams where cropping would
+   *             cut off content. Ignored when frame is "glow" (always cover).
+   */
+  objectFit?: "cover" | "contain";
 };
 
 export type ImageBlockProps = {
@@ -49,13 +57,8 @@ export type ImageBlockProps = {
   previewAttrs?: Record<string, Record<string, string | undefined>>;
   /** Fill the parent column's height instead of constraining by aspect ratio.
    *  true  — standalone in a VB column: stretch to fill the column height.
-   *  false — editorial layout: use CSS aspect-ratio; object-fit is then
-   *          controlled by objectFit prop. */
+   *  false — editorial layout: use CSS aspect-ratio. */
   fillHeight?: boolean;
-  /** Controls how the image fills its container. Defaults to "cover".
-   *  Use "contain" in editorial layouts so detail images (diagrams,
-   *  screenshots) show in full without cropping. */
-  objectFit?: "cover" | "contain";
 };
 
 // ─── Aspect ratio map ─────────────────────────────────────────────────────────
@@ -78,7 +81,6 @@ export default function ImageBlock({
   styleOptions = {},
   previewAttrs,
   fillHeight = false,
-  objectFit = "cover",
 }: ImageBlockProps) {
   const {
     ratio,
@@ -89,6 +91,7 @@ export default function ImageBlock({
     shadow          = false,
     lightbox        = false,
     invertedBg      = false,
+    objectFit       = "cover",
   } = styleOptions;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -191,12 +194,20 @@ export default function ImageBlock({
 
   // ── Core image markup (shared between normal and lightbox-trigger modes) ────
 
+  /* "contain" can leave the box only partially covered (e.g. a wide logo in a
+   * tall column) — give it a neutral backing so the gap doesn't read as a
+   * transparent hole. Frame treatments already supply their own backing. */
+  const containsWithoutFrame = objectFit === "contain" && !frame;
+  const containerBgClass = frame === "offset" || frame === "glow" || containsWithoutFrame
+    ? " bg-canvas"
+    : "";
+
   const imageContainerEl = (
     <div
       ref={containerRef}
       className={fillHeight
-        ? `relative overflow-hidden rounded-ot-surface flex-1${frame !== "glow" ? " min-h-100" : ""}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
-        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10 bg-canvas" : frame === "glow" ? " bg-canvas" : ""}`
+        ? `relative overflow-hidden rounded-ot-surface flex-1${frame !== "glow" ? " min-h-100" : ""}${frame === "offset" ? " z-10" : ""}${containerBgClass}`
+        : `relative overflow-hidden rounded-ot-surface ${aspectClass}${frame === "offset" ? " z-10" : ""}${containerBgClass}`
       }
       {...(previewAttrs?.image ?? {})}
     >
