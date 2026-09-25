@@ -198,7 +198,17 @@ async function PreviewPage({ searchParams }: Props) {
     )
   }
 
-  const isExperience = Array.isArray(content?.composition?.nodes)
+  // OptiFormsContainerData is a standalone _section, not a page — but it
+  // ALSO exposes composition.nodes (its own step/row/column/field tree), so
+  // the array check below would otherwise misidentify it as a full
+  // experience. Its structure nodes carry only `nodeType` ("step"/"row"/
+  // "column"), never `type` (confirmed live), and CompositionRenderer keys
+  // off `.type` — it silently renders nothing for a node it doesn't
+  // recognize, blanking the entire form. Route it through OptimizelyComponent
+  // instead, which resolves to OptiFormsContainerDataAdapter and already
+  // knows how to walk this exact shape (steps, rules, FormWrapper, …).
+  const isExperience =
+    Array.isArray(content?.composition?.nodes) && content?.__typename !== 'OptiFormsContainerData'
 
   // Practitioner experience pages render a locked profile header OUTSIDE the
   // composition tree — the live slug route does this in its OT_PractitionerPage
