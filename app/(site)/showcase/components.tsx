@@ -21,6 +21,15 @@ export function Token({ name }: { name: string }) {
   );
 }
 
+export function VariantGroup({ label, note }: { label: string; note?: string }) {
+  return (
+    <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
+      <p className="text-label tracking-label uppercase text-fg-muted font-semibold">{label}</p>
+      {note && <p className="text-label text-fg-muted/60 mt-xs">{note}</p>}
+    </div>
+  );
+}
+
 export function Ground({
   label,
   className,

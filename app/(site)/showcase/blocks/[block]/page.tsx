@@ -1,7 +1,7 @@
 import type { Metadata }            from 'next'
 import Image                         from 'next/image'
 import { notFound }                  from 'next/navigation'
-import { SectionLabel }              from '../../components'
+import { SectionLabel, VariantGroup } from '../../components'
 import OT_HeroBlock                  from '@/cms/components/OT_HeroBlock'
 import OT_ButtonBlock                from '@/cms/components/OT_ButtonBlock'
 import OT_PrimaryTextBlock           from '@/cms/components/OT_PrimaryTextBlock'
@@ -31,7 +31,6 @@ import type { ContentRecItem }         from '@/components/blocks/ContentRecommen
 import ProductRecommendationsBlock     from '@/components/blocks/ProductRecommendationsBlock'
 import type { ProductRec }             from '@/components/blocks/ProductRecommendationsBlock'
 import OT_ComparisonTableBlock         from '@/cms/components/OT_ComparisonTableBlock'
-import OptiFormsContainerDataAdapter   from '@/cms/components/OptiFormsContainerData'
 import {
   ArrowRight, Zap, ChevronRight, Play, Download,
   Sparkles, Send, Rocket, Star, Plus,
@@ -74,7 +73,6 @@ const BLOCK_SLUGS = [
   'disclosure',
   'token-manager',
   'slider',
-  'forms',
 ] as const
 
 type BlockSlug = typeof BLOCK_SLUGS[number]
@@ -111,7 +109,6 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'disclosure':       { label: 'DisclosureBlock',      cmsKey: 'OT_DisclosureBlock',      description: 'Legal and regulatory disclosures, rate notices, and footnotes. Items are auto-numbered (¹ ² ³ or a b c) — single-item blocks suppress the marker. Two styles: Fine Print (ultra-subtle footnote treatment) and Section (slightly elevated zone). Heading and marker style are content-type properties; no display template settings to configure.' },
   'token-manager':    { label: 'TokenManager',          cmsKey: 'OT_TokenManager',          description: 'Global text-token system. Authors define key–value pairs (e.g. product-name → Advantage Checking); any CMS field that contains {{product-name}} receives the value at render time — in the CMS preview and on published pages. Token keys are language-neutral; values can be translated per locale. Singleton shared block, like ThemeManager.' },
   'slider':           { label: 'SliderBlock',           cmsKey: 'OT_SliderBlock',           description: 'Section-level slideshow with 2–8 slides. A Presentation Style (Cinematic, Editorial Split, Story Rail, Emerge) sets the composition and slide-to-slide transition — all four are fully implemented, though not every setting applies to every style, by design rather than by omission: Content Placement and Content Vertical Alignment are honored by Cinematic, Editorial Split, and Emerge but ignored by Story Rail, whose content position is fixed; Editorial Split’s Overlay tints only its media panel, never the text panel; Story Rail collapses Navigation’s Arrows/Dots/Both into a single gutter-control outcome, since it has no separate dot row; and Emerge replaces arrows/dots entirely with a bottom nav dock — clickable per-slide cards plus a chevron pair — whose reveal transition uncovers each incoming slide from the bottom edge up, identically regardless of direction. Full keyboard/ARIA carousel semantics, a mandatory pause control whenever Auto-Play is on, and a reduced-motion collapse for every transition.' },
-  'forms':            { label: 'OptiFormsContainerData', cmsKey: 'OptiFormsContainerData',  description: "Built-in Optimizely Forms. Authored entirely in the CMS's Forms editor — text/number/range/choice/selection/textarea/url fields, a submit action, and optional show/hide dependency rules — then dropped onto a page as a section. This demo renders a real form authored in the connected CMS instance, not static mock data." },
 }
 
 export function generateStaticParams() {
@@ -139,15 +136,6 @@ function BlockHeader({ slug }: { slug: BlockSlug }) {
     <div className="px-md pt-xl pb-lg lg:px-lg">
       <SectionLabel index={`Blocks · ${meta.cmsKey}`} title={meta.label} />
       <p className="text-body leading-body text-fg-muted max-w-[100ch]">{meta.description}</p>
-    </div>
-  )
-}
-
-function VariantGroup({ label, note }: { label: string; note?: string }) {
-  return (
-    <div className="px-md pb-md lg:px-lg border-t border-fg/10 pt-lg">
-      <p className="text-label tracking-label uppercase text-fg-muted font-semibold">{label}</p>
-      {note && <p className="text-label text-fg-muted/60 mt-xs">{note}</p>}
     </div>
   )
 }
@@ -2875,25 +2863,11 @@ function ComparisonTableShowcase() {
   )
 }
 
-// Real content authored in the connected CMS instance — not mock data, so
-// this demo actually proves the OptiForms adapter fetch/render/submit path
-// works end to end against a genuine Optimizely Forms container.
-const FORMS_DEMO_CONTENT_KEY = 'c8f200bda122468993b91aea1a19235f'
-
-function FormsShowcase() {
-  return (
-    <>
-      <BlockHeader slug="forms" />
-      <VariantGroup
-        label="Live form · Form UI Testing"
-        note="Fetched by content key from the connected CMS instance, exactly as it renders when placed on a real page."
-      />
-      <div className="px-md pb-xl lg:px-lg">
-        <OptiFormsContainerDataAdapter content={{ _metadata: { key: FORMS_DEMO_CONTENT_KEY } }} />
-      </div>
-    </>
-  )
-}
+// Forms has its own literal route at blocks/forms/page.tsx (which Next.js
+// routes to in preference to this dynamic [block] segment) — it needs
+// searchParams for the "render by content key" lookup, which would force
+// every other showcase block page in this file to opt out of static
+// rendering if read here instead.
 
 export default async function ShowcaseBlockPage({ params }: Props) {
   const { block } = await params
@@ -2930,7 +2904,6 @@ export default async function ShowcaseBlockPage({ params }: Props) {
     case 'disclosure':              return <><BlockHeader slug="disclosure" /><DisclosurePlayground /></>
     case 'token-manager':           return <><BlockHeader slug="token-manager" /><TokenManagerPlayground /></>
     case 'slider':                  return <><BlockHeader slug="slider" /><SliderPlayground /></>
-    case 'forms':                   return <FormsShowcase />
     default:                 return notFound()
   }
 }
