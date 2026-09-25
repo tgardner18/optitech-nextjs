@@ -188,20 +188,37 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
   }
 
   // The Forms editor (unlike a human VB page author) always authors its own
-  // rows/columns with contentSpacing: "none" — confirmed live. Left as-is,
-  // every field renders flush against the next with zero gap. Rows get a
-  // small gap between side-by-side columns (e.g. Reset next to Submit);
-  // columns get a larger gap between stacked fields.
-  const SPACING_OVERRIDE: Record<string, string> = { row: 'small', column: 'large' }
+  // rows/columns with contentSpacing: "none" and never sets a row's own
+  // verticalPadding at all — confirmed live. Left as-is, every field renders
+  // flush against the next with zero gap, and two stacked rows share only
+  // Row.tsx's own fallback padding ('small' → py-md top+bottom) — enough
+  // when every field in a row is the same height, but a tooltip or
+  // validation message under just one field eats into that shared gap and
+  // crowds the row below it (confirmed live on a two-column multi-row form:
+  // a tooltip'd field's column visibly crowds the next row, its plain
+  // sibling column doesn't). Rows get a small contentSpacing gap between
+  // side-by-side columns (e.g. Reset next to Submit) and a more generous
+  // verticalPadding so stacked rows keep a clear gap regardless of any one
+  // field's height; columns get a larger contentSpacing gap between stacked
+  // fields. Only ever replaces the Forms editor's own blank/absent defaults
+  // — an explicit non-default value (from a future Forms editor update, or
+  // hand-authored settings) is left alone.
+  const SETTINGS_OVERRIDE: Record<string, Record<string, string>> = {
+    row:    { contentSpacing: 'small', verticalPadding: 'medium' },
+    column: { contentSpacing: 'large' },
+  }
   function withFieldSpacing(nodes: any[]): any[] {
     return nodes.map(node => {
       if (!node || node.__typename !== 'CompositionStructureNode') return node
-      const override = SPACING_OVERRIDE[node.nodeType as string]
-      const settings: any[] = Array.isArray(node.displaySettings) ? node.displaySettings : []
-      const nextSettings = !override ? settings
-        : settings.some(s => s.key === 'contentSpacing')
-          ? settings.map(s => (s.key === 'contentSpacing' && s.value === 'none') ? { ...s, value: override } : s)
-          : [...settings, { key: 'contentSpacing', value: override }]
+      const overrides = SETTINGS_OVERRIDE[node.nodeType as string]
+      let nextSettings: any[] = Array.isArray(node.displaySettings) ? node.displaySettings : []
+      if (overrides) {
+        for (const [key, value] of Object.entries(overrides)) {
+          nextSettings = nextSettings.some(s => s.key === key)
+            ? nextSettings.map(s => (s.key === key && s.value === 'none') ? { ...s, value } : s)
+            : [...nextSettings, { key, value }]
+        }
+      }
       return {
         ...node,
         displaySettings: nextSettings,
