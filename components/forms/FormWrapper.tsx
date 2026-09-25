@@ -46,7 +46,23 @@ export default function FormWrapper({ steps, title, description, submitUrl, conf
     setStatus('submitting')
     try {
       if (submitUrl) {
-        const res = await fetch(submitUrl, { method: 'POST', body: new FormData(e.currentTarget) })
+        // Formspree (and most form backends built for browser-navigation
+        // submits) treats a request with no Accept header as a plain HTML
+        // form post and replies with a redirect to its own hosted "thanks"
+        // page — AFTER already accepting the submission. fetch() follows
+        // that redirect by default, lands on a page that isn't CORS-enabled
+        // for our origin, and the browser refuses to let us read it — so
+        // this threw "Submission failed" on a submission that had, in
+        // fact, already succeeded (confirmed live: both attempts were
+        // captured by Formspree; the first showed the error message, the
+        // second showed neither message at all). Accept: application/json
+        // is the documented way to ask for its real AJAX response — a
+        // same-origin-readable JSON body with no redirect involved.
+        const res = await fetch(submitUrl, {
+          method:  'POST',
+          headers: { Accept: 'application/json' },
+          body:    new FormData(e.currentTarget),
+        })
         if (!res.ok) throw new Error('Submission failed')
       }
       setStatus('submitted')
