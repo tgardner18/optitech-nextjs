@@ -20,7 +20,7 @@ type Props = {
 
 const widthClasses: Record<string, string> = {
   narrow:  'max-w-3xl w-full mx-auto',
-  default: 'max-w-4xl w-full mx-auto',
+  default: 'max-w-5xl w-full mx-auto',
   wide:    'max-w-6xl w-full mx-auto',
   full:    'w-full px-md lg:px-lg',
 }
@@ -139,7 +139,14 @@ async function fetchFormData(contentKey: string): Promise<{
 export default async function OptiFormsContainerDataAdapter({ content, displaySettings = {} }: Props) {
   const { pa } = getPreviewUtils(content)
 
-  const width   = String(displaySettings.contentWidth      ?? 'default')
+  // Confirmed live: a Forms container placed on a page has no author-facing
+  // control for its own Content Width at all (unlike a VB block's settings
+  // picker) — 'narrow' is what the CMS attaches with nothing to override
+  // it, not a deliberate choice, so it's treated the same as an absent
+  // setting rather than trusted. If a real choice other than 'narrow' ever
+  // does reach here (e.g. a future CMS UI update), it passes through as-is.
+  const rawWidth = String(displaySettings.contentWidth ?? 'default')
+  const width    = rawWidth === 'narrow' ? 'default' : rawWidth
   const spacing = String(displaySettings.verticalSpacing   ?? 'large')
   const bg      = String(displaySettings.backgroundColor   ?? 'none')
 

@@ -34,10 +34,23 @@ export function CompositionRenderer({ nodes }: { nodes: any[] }) {
 
     if (!node.type) return null
 
+    // A structure node whose own content type is registered (e.g. a
+    // `_section` that owns its own internal composition, like
+    // OptiFormsContainerData — unlike a purely-structural VB row/column,
+    // which has no `.type` at all and never reaches this branch) keeps its
+    // real properties on `node.component`, exactly like a
+    // CompositionComponentNode does above. Confirmed live: `node.key` is
+    // this placement's own composition-node key, a different value from
+    // `node.component._metadata.key` (the content item's actual key) —
+    // spreading `node` itself, not `node.component`, silently dropped
+    // OptiFormsContainerData's own Title/Description/DependencyRules and
+    // `_metadata` on every page using this renderer (home, slug, preview),
+    // even though its nested fields (step/row/column/field) still came
+    // through via `node.nodes`.
     return (
       <OptimizelyComponent
         key={node.key}
-        content={{ ...node, __typename: node.type }}
+        content={{ ...node.component, __composition: node, __typename: node.type }}
         displaySettings={displaySettings}
       />
     )
