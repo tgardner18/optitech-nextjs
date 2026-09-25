@@ -75,8 +75,15 @@ export default function FormWrapper({ steps, title, description, submitUrl, conf
         <>
           <header className="mb-lg">
             {title && (
+              // Theme's primary font (font-display is Syne, a fixed accent
+              // face reserved for headline-scale moments elsewhere — not
+              // appropriate as a form's default heading), heading weight,
+              // and a size that actually reads as a heading over the body
+              // copy below it — matches how every other heading in this
+              // codebase pairs its text-* size with font-bold (see
+              // SectionLabel).
               <h2
-                className="font-display font-normal text-title leading-title tracking-title text-fg"
+                className="font-bold text-headline leading-headline tracking-headline text-fg"
               >
                 {title}
               </h2>

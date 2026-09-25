@@ -1,3 +1,5 @@
+import FieldTooltip from './FieldTooltip'
+
 type Option = { caption: string; value: string; checked: boolean }
 
 type Props = {
@@ -16,9 +18,16 @@ export default function ChoiceField({ id, name, label, tooltip, options, allowMu
   return (
     <fieldset className="flex flex-col gap-3 w-full">
       {label && (
-        <legend className="text-label font-medium text-fg-muted tracking-label uppercase mb-xs">
-          {label}
-          {required && <span className="text-brand ml-1.5" aria-hidden="true">*</span>}
+        // The tooltip icon lives inside <legend> rather than in a wrapping
+        // <div> around it — a <legend> is only recognized as its fieldset's
+        // accessible name when it's the fieldset's direct child, so it can't
+        // be nested one level deeper just to sit next to the icon.
+        <legend className="flex items-center gap-xs text-label font-medium text-fg-muted tracking-label uppercase mb-xs">
+          <span>
+            {label}
+            {required && <span className="text-brand ml-1.5" aria-hidden="true">*</span>}
+          </span>
+          {tooltip && <FieldTooltip id={id} text={tooltip} />}
         </legend>
       )}
       <div className="flex flex-col gap-3" aria-describedby={tooltip ? `${id}-hint` : undefined}>
@@ -42,9 +51,6 @@ export default function ChoiceField({ id, name, label, tooltip, options, allowMu
           )
         })}
       </div>
-      {tooltip && (
-        <p id={`${id}-hint`} className="text-label text-fg-muted leading-snug">{tooltip}</p>
-      )}
     </fieldset>
   )
 }

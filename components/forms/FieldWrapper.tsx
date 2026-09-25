@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import FieldTooltip from './FieldTooltip'
 
 type Props = {
   id: string
@@ -12,17 +13,17 @@ export default function FieldWrapper({ id, label, tooltip, required, children }:
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label htmlFor={id} className="text-label font-medium text-fg-muted tracking-label uppercase">
-          {label}
-          {required && (
-            <span className="text-brand ml-1.5" aria-hidden="true">*</span>
-          )}
-        </label>
+        <div className="flex items-center gap-xs">
+          <label htmlFor={id} className="text-label font-medium text-fg-muted tracking-label uppercase">
+            {label}
+            {required && (
+              <span className="text-brand ml-1.5" aria-hidden="true">*</span>
+            )}
+          </label>
+          {tooltip && <FieldTooltip id={id} text={tooltip} />}
+        </div>
       )}
       {children}
-      {tooltip && (
-        <p id={`${id}-hint`} className="text-label text-fg-muted leading-snug">{tooltip}</p>
-      )}
     </div>
   )
 }
