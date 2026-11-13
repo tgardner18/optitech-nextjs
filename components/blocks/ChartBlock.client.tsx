@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { parseChartData } from './chart/parseChartData'
 import { CHART_PALETTES, getChartTheme } from './chart/chartColors'
@@ -12,6 +12,7 @@ import BarChart        from './chart/BarChart'
 import BarStackedChart from './chart/BarStackedChart'
 import RadialChart     from './chart/RadialChart'
 import ChartEmptyState from './chart/ChartEmptyState'
+import type { ChartData } from './chart/parseChartData'
 
 export type ChartBlockClientProps = {
   heading:       string
@@ -24,72 +25,28 @@ export type ChartBlockClientProps = {
   showLegend:    boolean
   showGrid:      boolean
   styleOptions:  ChartStyleOptions
+  /** True for any CMS draft / edit render: only then is the empty state shown. */
+  isPreview?:    boolean
 }
 
-// Color helpers — derived from the same patterns used by CardBlock and TabsBlock
-// brand/glass are dark-context variants; --ot-fg-on-brand is always light, so
-// deriving from it keeps the text light without a light-mode flip, and re-tints
-// under a CMS rebrand. Applied via inline style (CSS), so relative color resolves.
-function headingColor(color: ChartStyleOptions['color']): string {
-  if (color === 'brand')  return 'var(--ot-fg-on-brand)'
-  if (color === 'glass')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.95)'
-  return 'var(--ot-fg)'
-}
+function fmt(v: number, prefix = '', suffix = '') { return `${prefix}${v}${suffix}` }
 
-function subtextColor(color: ChartStyleOptions['color']): string {
-  if (color === 'brand')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.65)'
-  if (color === 'glass')  return 'oklch(from var(--ot-fg-on-brand) l c h / 0.55)'
-  return 'var(--ot-fg-muted)'
-}
-
-// Outer wrapper class and style per color variant
-function wrapperProps(color: ChartStyleOptions['color']): {
-  className: string
-  style?:    React.CSSProperties
-  'data-theme'?:   string
-  'data-surface'?: string
-} {
-  switch (color) {
-    case 'surface':
-      return { className: 'bg-surface px-lg py-xl w-full' }
-    case 'brand':
-      return {
-        className: 'bg-brand px-lg py-xl w-full',
-        'data-theme': 'dark',
-      }
-    case 'glass':
-      return {
-        className: 'px-lg py-xl w-full',
-        // Glass material — token-derived tint (matches the unified .bg-glass
-        // philosophy: --ot-fg @ low alpha; backdrop-filter does the frosting).
-        // data-surface='dark' below keeps --ot-fg light in this dark-glass context.
-        style: {
-          background:          'oklch(from var(--ot-fg) l c h / 0.08)',
-          border:              '1px solid oklch(from var(--ot-fg) l c h / 0.12)',
-          backdropFilter:      'blur(12px)',
-          WebkitBackdropFilter:'blur(12px)',
-        },
-        'data-surface': 'dark',
-      }
-    case 'canvas':
-    default:
-      return { className: 'bg-canvas px-lg py-xl w-full' }
-  }
+/** One plain-language sentence, so the chart has a text alternative. */
+function summarize(d: ChartData, type: string, prefix = '', suffix = ''): string {
+  if (type === 'radial') return `${d.series[0].name}: ${fmt(d.series[0].data[0], prefix, suffix)}, out of a maximum of ${d.max ?? 100}.`
+  const kind = ({ line: 'Line chart', area: 'Area chart', bar: 'Bar chart', barStacked: 'Stacked bar chart' } as Record<string, string>)[type] ?? 'Chart'
+  const parts = d.series.map(s => {
+    const mx = Math.max(...s.data), mn = Math.min(...s.data)
+    return `${s.name} ranges from ${fmt(mn, prefix, suffix)} (${d.labels[s.data.indexOf(mn)]}) to ${fmt(mx, prefix, suffix)} (${d.labels[s.data.indexOf(mx)]})`
+  })
+  return `${kind}, ${d.labels[0]} to ${d.labels[d.labels.length - 1]}. ${parts.join('; ')}.`
 }
 
 export default function ChartBlockClient({
-  heading,
-  subtext,
-  chartType,
-  chartData,
-  seriesColors,
-  valuePrefix,
-  valueSuffix,
-  showLegend,
-  showGrid,
-  styleOptions,
+  heading, subtext, chartType, chartData, seriesColors, valuePrefix, valueSuffix, showLegend, showGrid, styleOptions, isPreview = false,
 }: ChartBlockClientProps) {
   const { color, height: heightKey } = styleOptions
+  const uid = useId().replace(/:/g, '')
 
   // Re-key the chart area on every route change so Recharts re-fires its entrance
   // animation after client-side navigation (the App Router cache keeps this component
@@ -103,85 +60,89 @@ export default function ChartBlockClient({
   const theme   = getChartTheme(color)
   const height  = HEIGHT_MAP[heightKey]
 
-  const { className, style, ...attrs } = wrapperProps(color)
+  // Invalid data: editors get an explanation, visitors get nothing.
+  if (!parsed && !isPreview) return null
 
-  const chartProps = {
-    palette,
-    theme,
-    height,
-    valuePrefix,
-    valueSuffix,
-    showLegend,
-    showGrid,
-  }
+  const valid = parsed && ['line', 'area', 'bar', 'barStacked', 'radial'].includes(chartType)
+  const chartProps = { palette, theme, height, valuePrefix, valueSuffix, showLegend, showGrid }
 
   function renderChart() {
-    if (!parsed) {
-      return <ChartEmptyState height={heightKey} color={color} />
-    }
-
+    if (!parsed || !valid) return <ChartEmptyState height={heightKey} color={color} />
     switch (chartType) {
-      case 'line':
-        return <LineChart       data={parsed} {...chartProps} />
-      case 'area':
-        return <AreaChart       data={parsed} {...chartProps} />
-      case 'bar':
-        return <BarChart        data={parsed} {...chartProps} />
-      case 'barStacked':
-        return <BarStackedChart data={parsed} {...chartProps} />
-      case 'radial':
-        return (
-          <RadialChart
-            data={parsed}
-            palette={palette}
-            theme={theme}
-            height={height}
-            valuePrefix={valuePrefix}
-            valueSuffix={valueSuffix}
-          />
-        )
+      case 'line':       return <LineChart       data={parsed} {...chartProps} />
+      case 'area':       return <AreaChart       data={parsed} {...chartProps} />
+      case 'bar':        return <BarChart        data={parsed} {...chartProps} />
+      case 'barStacked': return <BarStackedChart data={parsed} {...chartProps} />
       default:
-        return <ChartEmptyState height={heightKey} color={color} />
+        return <RadialChart data={parsed} palette={palette} theme={theme} height={height} valuePrefix={valuePrefix} valueSuffix={valueSuffix} />
     }
   }
 
+  const showLegendList = valid && parsed && chartType !== 'radial' && (showLegend || parsed.series.length > 1)
+    && !(chartType === 'bar' && parsed.series.length === 1)
+
   return (
-    <div className={className} style={style} {...attrs}>
-      {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h3 style={{
-          color:         headingColor(color),
-          // Title type scale from tokens (not hand-copied literals); --ot-font-sans
-          // follows the ThemeManager primary-font axis, unlike the raw Poppins var.
-          fontSize:      'var(--ot-text-title)',
-          fontWeight:    'var(--ot-weight-title)',
-          lineHeight:    'var(--ot-leading-title)',
-          letterSpacing: 'var(--ot-tracking-title)',
-          fontFamily:    'var(--ot-font-sans)',
-          margin:        0,
-          textWrap:      'balance',
-        } as React.CSSProperties}>
-          {heading}
-        </h3>
-        {subtext && (
-          <p style={{
-            color:         subtextColor(color),
-            // Label type scale from tokens — incl. the system's +0.06em label
-            // tracking (was an off-token 0.04em).
-            fontSize:      'var(--ot-text-label)',
-            fontWeight:    'var(--ot-weight-label)',
-            fontFamily:    'var(--ot-font-sans)',
-            letterSpacing: 'var(--ot-tracking-label)',
-            textTransform: 'uppercase',
-            margin:        '6px 0 0',
-          } as React.CSSProperties}>
-            {subtext}
-          </p>
-        )}
+    <figure
+      data-block="chart"
+      data-color={color}
+      data-palette={seriesColors}
+      data-type={chartType}
+      data-theme={color === 'brand' ? 'dark' : undefined}
+    >
+      <figcaption data-part="head">
+        <h3 data-part="title" id={`${uid}-t`}>{heading}</h3>
+        {subtext && <p data-part="sub">{subtext}</p>}
+      </figcaption>
+
+      {showLegendList && parsed && (
+        <ul data-part="legend" data-kind={chartType === 'line' || chartType === 'area' ? 'line' : 'box'} aria-hidden="true">
+          {parsed.series.map((s, i) => (
+            <li key={s.name}><span data-part="key" style={{ '--k': `var(--ch-${(i % 4) + 1})` } as React.CSSProperties} />{s.name}</li>
+          ))}
+        </ul>
+      )}
+
+      {/* Keyed so Recharts remounts and re-animates on every navigation */}
+      <div
+        key={chartKey}
+        data-part="plot"
+        role={valid ? 'img' : undefined}
+        aria-labelledby={valid ? `${uid}-t ${uid}-s` : undefined}
+      >
+        {renderChart()}
       </div>
 
-      {/* Chart — keyed so Recharts remounts and re-animates on every navigation */}
-      <div key={chartKey}>{renderChart()}</div>
-    </div>
+      {valid && parsed && (
+        <>
+          <p className="sr-only" id={`${uid}-s`}>{summarize(parsed, chartType, valuePrefix, valueSuffix)}</p>
+          <details data-part="data">
+            <summary>Show the data</summary>
+            <div data-part="table-wrap">
+              <table>
+                <caption className="sr-only">{heading}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{chartType === 'radial' ? 'Measure' : ''}</th>
+                    {chartType === 'radial'
+                      ? <th scope="col">Value</th>
+                      : parsed.series.map(s => <th key={s.name} scope="col">{s.name}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {chartType === 'radial' ? (
+                    <tr><th scope="row">{parsed.series[0].name}</th><td>{fmt(parsed.series[0].data[0], valuePrefix, valueSuffix)}</td></tr>
+                  ) : parsed.labels.map((l, i) => (
+                    <tr key={l + i}>
+                      <th scope="row">{l}</th>
+                      {parsed.series.map(s => <td key={s.name}>{fmt(s.data[i], valuePrefix, valueSuffix)}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </>
+      )}
+    </figure>
   )
 }

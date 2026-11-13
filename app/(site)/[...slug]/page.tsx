@@ -10,6 +10,7 @@ import {
   getSiteSettings,
   setRequestContext,
 } from '@/lib/optimizely'
+import { getBlogIndexUrl } from '@/lib/blogIndexUrl'
 import { getBlogPage, getLatestBlogPosts, getAuthorName, fetchAuthorByKey } from '@/lib/blog'
 import { getCampaignPage, getCampaignPageMeta, mapCampaignPageRaw } from '@/lib/campaign'
 import { getEventPage } from '@/lib/events'
@@ -409,6 +410,7 @@ async function CmsPage({ params, searchParams }: Props) {
       }
 
       const latestPosts = await getLatestBlogPosts(contentKey, locale, baseUrl)
+      const backUrl = await getBlogIndexUrl((exp._metadata?.url?.hierarchical ?? exp._metadata?.url?.default ?? path) as string, baseUrl)
 
       if (blogContent) {
         // ── Author name for the draft banner ────────────────────────────────────
@@ -444,7 +446,7 @@ async function CmsPage({ params, searchParams }: Props) {
               authorName: draftAuthorName,
             })}
 
-            <BlogPage content={blogContent} latestPosts={latestPosts} />
+            <BlogPage content={blogContent} latestPosts={latestPosts} locale={locale} backUrl={backUrl} />
           </>
         )
       }

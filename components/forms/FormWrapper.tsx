@@ -1,9 +1,44 @@
 'use client'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
-import Button from '@/components/ui/Button'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, ArrowRight, Check, CircleAlert } from 'lucide-react'
 import FormStepTracker from './FormStepTracker'
 import { FormRulesProvider, type FormDependencyRule } from './FormRulesContext'
+
+type FieldError = { id: string; label: string; message: string }
+
+const CONTROL = 'input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea'
+
+/** Checks one field wrapper, sets/clears its invalid state in the DOM, and returns the error (or null). */
+function checkField(field: HTMLElement): FieldError | null {
+  const labelEl = field.querySelector<HTMLElement>('[data-part="label"]')
+  const label = (labelEl?.textContent ?? '').replace(/\s*\*\s*$/, '').trim() || 'This field'
+  const radios = field.querySelectorAll<HTMLInputElement>('input[type=radio]')
+  let message: string | null = null
+  let control: HTMLElement | null = null
+  if (radios.length > 0) {
+    control = radios[0]
+    if (radios[0].required && !Array.from(radios).some(r => r.checked)) message = `Choose an option for ${label}`
+  } else {
+    const el = field.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(CONTROL)
+    control = el
+    if (el && !el.checkValidity()) {
+      const v = el.validity
+      message = v.valueMissing ? `${label} is required`
+        : el.type === 'url' ? `Enter a full web address, like https://example.com`
+        : el.type === 'number' ? `Enter a valid number for ${label}`
+        : `Enter a valid value for ${label}`
+    }
+  }
+  const errText = field.querySelector('[data-part="error-text"]')
+  const invalid = !!message
+  if (invalid) field.setAttribute('data-invalid', ''); else field.removeAttribute('data-invalid')
+  if (errText) errText.textContent = message ?? ''
+  const targets: HTMLElement[] = radios.length > 0 ? [field] : control ? [control] : []
+  targets.forEach(t => { if (invalid) t.setAttribute('aria-invalid', 'true'); else t.removeAttribute('aria-invalid') })
+  const id = (control?.id) || ''
+  return invalid ? { id, label, message: message! } : null
+}
 
 type Status = 'idle' | 'submitting' | 'submitted' | 'error'
 
@@ -25,7 +60,28 @@ export default function FormWrapper({ steps, title, description, submitUrl, conf
   // rather than controlling every field, so uncontrolled inputs stay simple.
   const [values, setValues] = useState<Record<string, string>>({})
 
+  const [errors, setErrors] = useState<FieldError[]>([])
+  const [alertTick, setAlertTick] = useState(0)
+  const alertRef = useRef<HTMLDivElement>(null)
+  const doneRef = useRef<HTMLHeadingElement>(null)
+  const stepRefs = useRef<Array<HTMLDivElement | null>>([])
+
   const isLastStep = stepIndex === steps.length - 1
+
+  useEffect(() => {
+    if (alertTick > 0) alertRef.current?.focus()
+  }, [alertTick])
+  useEffect(() => {
+    if (status === 'submitted') doneRef.current?.focus()
+  }, [status])
+
+  function validateCurrentStep(): FieldError[] {
+    const root = stepRefs.current[stepIndex]
+    if (!root) return []
+    return Array.from(root.querySelectorAll<HTMLElement>('[data-part="field"]'))
+      .map(checkField)
+      .filter((e): e is FieldError => e !== null)
+  }
 
   // Keyed by the field's `id` (the composition node's own key), not its `name`
   // (which may be an author-set SubmissionFieldName) — DependencyRules
@@ -34,11 +90,23 @@ export default function FormWrapper({ steps, title, description, submitUrl, conf
   function handleFormChange(e: React.SyntheticEvent<HTMLFormElement>) {
     const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     if (!target?.id) return
+    // Re-check a field that is showing an error as soon as it changes.
+    const field = target.closest<HTMLElement>('[data-part="field"][data-invalid]')
+    if (field) {
+      const next = checkField(field)
+      setErrors(list => next ? list.map(x => (x.id === next.id ? next : x)) : list.filter(x => x.id !== target.id && !field.contains(document.getElementById(x.id))))
+    }
     setValues(v => ({ ...v, [target.id]: target.value }))
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const found = validateCurrentStep()
+    setErrors(found)
+    if (found.length > 0) {
+      setAlertTick(t => t + 1)
+      return
+    }
     if (!isLastStep) {
       setStepIndex(i => i + 1)
       return
@@ -71,88 +139,105 @@ export default function FormWrapper({ steps, title, description, submitUrl, conf
     }
   }
 
+  const header = (title || description) && (
+    <header data-part="head">
+      {title && <h2 data-part="title">{title}</h2>}
+      {description && <p data-part="desc">{description}</p>}
+    </header>
+  )
+
   if (status === 'submitted') {
     return (
-      <div data-form-card className="relative w-full bg-surface border border-fg/10 shadow-[0_4px_24px_var(--ot-bloom-brand-faint)] px-lg py-lg my-lg lg:my-xl">
-        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] bg-brand" />
-        <p className="text-body leading-body text-fg">
-          {confirmationMessage ?? 'Thank you. Your submission has been received.'}
-        </p>
-      </div>
+      <>
+        {header}
+        <div data-part="card" data-form-card="">
+          <div data-part="done" role="status">
+            <span data-part="done-icon" aria-hidden="true"><Check /></span>
+            <h3 data-part="done-title" ref={doneRef} tabIndex={-1}>Thank you</h3>
+            <p data-part="done-text">
+              {confirmationMessage ?? 'Your submission has been received.'}
+            </p>
+          </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div data-form-card className="relative w-full bg-surface border border-fg/10 shadow-[0_4px_24px_var(--ot-bloom-brand-faint)] px-lg py-lg my-lg lg:my-xl">
-      {/* 2px brand rule at the top of the form card */}
-      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] bg-brand" />
+    <>
+      {header}
+      <div data-part="card" data-form-card="">
+        <FormRulesProvider value={{ rules: rules ?? [], values }}>
+          <form onSubmit={handleSubmit} onChange={handleFormChange} noValidate>
+            <FormStepTracker total={steps.length} current={stepIndex} />
+            <p data-part="req-note"><b aria-hidden="true">*</b> marks a required field</p>
 
-      {(title || description) && (
-        <>
-          <header className="mb-lg">
-            {title && (
-              // Theme's primary font (font-display is Syne, a fixed accent
-              // face reserved for headline-scale moments elsewhere — not
-              // appropriate as a form's default heading), heading weight,
-              // and a size that actually reads as a heading over the body
-              // copy below it — matches how every other heading in this
-              // codebase pairs its text-* size with font-bold (see
-              // SectionLabel).
-              <h2
-                className="font-bold text-headline leading-headline tracking-headline text-fg"
-              >
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p className="mt-xs text-body text-fg-muted leading-body max-w-prose">{description}</p>
-            )}
-          </header>
-          <div className="mb-lg h-px bg-fg/8" />
-        </>
-      )}
-
-      <FormRulesProvider value={{ rules: rules ?? [], values }}>
-        <form onSubmit={handleSubmit} onChange={handleFormChange} noValidate>
-          <FormStepTracker total={steps.length} current={stepIndex} />
-
-          <fieldset disabled={status === 'submitting'} className="contents">
-            {/* All steps stay mounted (via `hidden`, not unmounted) so every
-                step's fields are present in FormData when the last step submits. */}
-            {steps.map((step, index) => (
-              <div key={index} hidden={index !== stepIndex}>
-                {step}
+            {errors.length > 0 && (
+              <div data-part="alert" role="alert" tabIndex={-1} ref={alertRef}>
+                <CircleAlert aria-hidden="true" />
+                <div>
+                  <strong>{errors.length === 1 ? 'Fix 1 field to continue' : `Fix ${errors.length} fields to continue`}</strong>
+                  <ul>
+                    {errors.map(er => (
+                      <li key={er.id || er.message}>
+                        <a
+                          href={`#${er.id}`}
+                          onClick={ev => {
+                            ev.preventDefault()
+                            document.getElementById(er.id)?.focus()
+                          }}
+                        >
+                          {er.message}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            ))}
-          </fieldset>
+            )}
 
-          {status === 'error' && (
-            <p
-              className="text-label tracking-label text-[oklch(65%_0.2_25)] mt-md"
-              role="alert"
-            >
-              Submission failed — please try again.
-            </p>
-          )}
+            <fieldset disabled={status === 'submitting'} className="contents">
+              {/* All steps stay mounted (via `hidden`) so every step's fields
+                  are present in FormData when the last step submits. */}
+              {steps.map((step, index) => (
+                <div
+                  key={index}
+                  hidden={index !== stepIndex}
+                  data-part="fields"
+                  ref={el => { stepRefs.current[index] = el }}
+                >
+                  {step}
+                </div>
+              ))}
+            </fieldset>
 
-          {steps.length > 1 && (
-            <div data-step-nav className="mt-lg flex items-center justify-between border-t border-fg/10 pt-lg">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={stepIndex === 0}
-                onClick={() => setStepIndex(i => Math.max(0, i - 1))}
-              >
-                Back
-              </Button>
-              <Button type="submit" variant="brand" size="sm">
-                {isLastStep ? 'Submit' : 'Next'}
-              </Button>
-            </div>
-          )}
-        </form>
-      </FormRulesProvider>
-    </div>
+            {status === 'error' && (
+              <p data-part="alert" role="alert">
+                <CircleAlert aria-hidden="true" />
+                <span>Submission failed. Please try again.</span>
+              </p>
+            )}
+
+            {steps.length > 1 && (
+              <div data-part="actions" data-step-nav="">
+                <button
+                  type="button"
+                  data-part="back"
+                  disabled={stepIndex === 0}
+                  onClick={() => { setErrors([]); setStepIndex(i => Math.max(0, i - 1)) }}
+                >
+                  <ArrowLeft aria-hidden="true" />
+                  Back
+                </button>
+                <button type="submit" data-part="submit">
+                  {isLastStep ? 'Submit' : 'Next'}
+                  <ArrowRight aria-hidden="true" />
+                </button>
+              </div>
+            )}
+          </form>
+        </FormRulesProvider>
+      </div>
+    </>
   )
 }

@@ -20,26 +20,6 @@ type Props = {
   displaySettings?: Record<string, string | boolean>
 }
 
-const widthClasses: Record<string, string> = {
-  narrow:  'max-w-3xl w-full mx-auto',
-  default: 'max-w-5xl w-full mx-auto',
-  wide:    'max-w-6xl w-full mx-auto',
-  full:    'w-full px-md lg:px-lg',
-}
-
-const spacingClasses: Record<string, string> = {
-  none:   'py-0',
-  small:  'py-md',
-  medium: 'py-lg',
-  large:  'py-xl',
-}
-
-const bgClasses: Record<string, string> = {
-  none:    '',
-  canvas:  'bg-canvas',
-  surface: 'bg-surface',
-}
-
 // Fields Optimizely Forms exposes per element type — confirmed live against the
 // connected CMS instance via cms_get_content_type_details (the field names on
 // this fragment previously didn't match: Choice had no `SingleChoice` field,
@@ -156,14 +136,7 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
   // it, not a deliberate choice, so it's treated the same as an absent
   // setting rather than trusted. If a real choice other than 'narrow' ever
   // does reach here (e.g. a future CMS UI update), it passes through as-is.
-  const rawWidth = String(displaySettings.contentWidth ?? 'default')
-  const width    = rawWidth === 'narrow' ? 'default' : rawWidth
-  const spacing = String(displaySettings.verticalSpacing   ?? 'large')
-  const bg      = String(displaySettings.backgroundColor   ?? 'none')
-
-  const widthClass   = widthClasses[width]    ?? widthClasses.default
-  const spacingClass = spacingClasses[spacing] ?? spacingClasses.large
-  const bgClass      = bgClasses[bg]           ?? ''
+  const bg = String(displaySettings.backgroundColor ?? 'none')
 
   // Always fetch this form's own composition by key rather than trusting
   // whatever the page's generic composition query happened to inline for
@@ -216,10 +189,12 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
       if (!node || node.__typename !== 'CompositionStructureNode') return node
       const override = SPACING_OVERRIDE[node.nodeType as string]
       const settings: any[] = Array.isArray(node.displaySettings) ? node.displaySettings : []
-      const nextSettings = !override ? settings
+      const spaced = !override ? settings
         : settings.some(s => s.key === 'contentSpacing')
           ? settings.map(s => (s.key === 'contentSpacing' && s.value === 'none') ? { ...s, value: override } : s)
           : [...settings, { key: 'contentSpacing', value: override }]
+      // Rows and columns inside a form render with the form's own markup (data-part="row" / "col").
+      const nextSettings = override ? [...spaced, { key: 'formLayout', value: 'true' }] : spaced
       return {
         ...node,
         displaySettings: nextSettings,
@@ -239,9 +214,17 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
       ? [{ __typename: 'CompositionStructureNode', key: 'implicit-step', nodeType: 'step', nodes: spacedNodes }]
       : []
 
+  const hasHead = !!(title || description)
+
   return (
-    <section className={`vb:section flex flex-col w-full ${bgClass}`} {...pa(content)}>
-      <div className={`flex flex-col flex-1 ${widthClass} ${spacingClass}`}>
+    <section
+      className="vb:section"
+      data-block="form"
+      data-head={hasHead ? '' : undefined}
+      style={bg === 'surface' ? { background: 'var(--ot-surface)' } : undefined}
+      {...pa(content)}
+    >
+      <div data-part="inner">
         {steps.length > 0 ? (
           <FormWrapper
             title={title}
@@ -257,14 +240,9 @@ export default async function OptiFormsContainerDataAdapter({ content, displaySe
             ))}
           />
         ) : (
-          <div className="flex flex-col gap-sm">
-            <p className="text-label font-medium text-fg-muted/40 tracking-label uppercase">
-              No form elements configured
-            </p>
-            <p className="text-[11px] text-fg-muted/30 leading-snug max-w-[30ch]">
-              Add form elements in the CMS Forms editor to display them here.
-            </p>
-          </div>
+          <p data-part="desc">
+            No form elements configured. Add form elements in the CMS Forms editor to display them here.
+          </p>
         )}
       </div>
     </section>

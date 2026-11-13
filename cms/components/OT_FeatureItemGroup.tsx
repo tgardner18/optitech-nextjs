@@ -43,7 +43,13 @@ export default function OT_FeatureItemGroupAdapter({ content, displaySettings = 
         const { pa } = getPreviewUtils(node as any)
         const feature = buildFeatureItemFromContent(node.component)
         return (
-          <div key={node.key} {...pa(node as any)}>
+          <div
+            key={node.key}
+            data-block="feature"
+            data-solo=""
+            data-color={styleOptions.color ?? 'canvas'}
+            {...pa(node as any)}
+          >
             <FeatureTile feature={feature} styleOptions={styleOptions} variant="card" />
           </div>
         )

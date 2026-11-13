@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
+import Button from '@/components/ui/Button'
 import { Calendar, Clock, MapPin, Monitor, Award, ArrowRight, User } from 'lucide-react'
 import type { EventPageContent } from '@/lib/events'
 import {
@@ -20,26 +21,9 @@ type Props = {
   pa?:     PreviewAttrs
 }
 
-// ─── Type badge ─────────────────────────────────────────────────────────────────
+// ─── Fact row (a <dl> entry in the details card) ─────────────────────────────
 
-function TypeBadge({ type, onImage = false }: { type: string; onImage?: boolean }) {
-  return (
-    <span
-      className={
-        onImage
-          ? 'inline-flex items-center rounded-ot-control px-sm py-0.75 bg-brand text-fg-on-brand text-label uppercase tracking-label font-semibold'
-          : 'inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-accent'
-      }
-    >
-      {!onImage && <span className="block w-6 h-px bg-accent flex-none" aria-hidden />}
-      {eventTypeLabel(type)}
-    </span>
-  )
-}
-
-// ─── Sidebar detail row ───────────────────────────────────────────────────────
-
-function DetailRow({
+function Fact({
   icon: Icon,
   label,
   children,
@@ -49,12 +33,10 @@ function DetailRow({
   children: ReactNode
 }) {
   return (
-    <div className="flex items-start gap-sm">
-      <Icon size={16} strokeWidth={1.75} className="flex-none mt-0.5 text-brand" aria-hidden />
-      <div className="min-w-0">
-        <p className="text-label uppercase tracking-label font-semibold text-fg-muted/70 mb-0.5">{label}</p>
-        <div className="text-body text-fg leading-snug">{children}</div>
-      </div>
+    <div data-part="fact">
+      <span data-part="fact-ic" aria-hidden="true"><Icon size={18} strokeWidth={1.75} /></span>
+      <dt>{label}</dt>
+      <dd>{children}</dd>
     </div>
   )
 }
@@ -77,9 +59,7 @@ function splitTimeRange(raw?: string | null): { start: string; end: string | nul
 
 function SectionHeading({ children }: { children: string }) {
   return (
-    <h2 className="text-headline leading-headline tracking-headline font-bold text-fg pb-sm mb-lg border-b border-fg/10">
-      {children}
-    </h2>
+    <h2 data-part="section-h">{children}</h2>
   )
 }
 
@@ -114,243 +94,166 @@ export default function EventPage({ content, pa }: Props) {
   const rows: ReactNode[] = []
 
   if (dateLabel) {
-    rows.push(<DetailRow key="date" icon={Calendar} label="Date">{dateLabel}</DetailRow>)
+    rows.push(<Fact key="date" icon={Calendar} label="Date">{dateLabel}</Fact>)
   }
   if (timeLabel) {
     rows.push(
-      <DetailRow key="time" icon={Clock} label="Time">
+      <Fact key="time" icon={Clock} label="Time">
         {timeLabel}
         {tzAbbr && (
-          <span className="block text-label uppercase tracking-label text-fg-muted/70 mt-0.5">{tzAbbr}</span>
+          <> <abbr data-part="tz">{tzAbbr}</abbr></>
         )}
-      </DetailRow>,
+      </Fact>,
     )
   }
   if (locationType || venueName || city) {
     rows.push(
-      <DetailRow key="loc" icon={isVirtual ? Monitor : MapPin} label="Location">
+      <Fact key="loc" icon={isVirtual ? Monitor : MapPin} label="Location">
         {isVirtual ? (
           venueName || 'Virtual'
         ) : venueName || city ? (
           <>
-            {venueName && <span className="block">{venueName}</span>}
-            {city && <span className="block text-fg-muted">{city}</span>}
+            {venueName}
+            {city && <span data-part="sub">{city}</span>}
           </>
         ) : (
           locationTypeLabel(locationType)
         )}
-      </DetailRow>,
+      </Fact>,
     )
   }
   if (hasCredit) {
     rows.push(
-      <DetailRow key="credit" icon={Award} label="Professional Credit">
-        <span className="block text-title font-bold text-fg leading-none">{creditHoursLabel}</span>
-        <span className="block text-label uppercase tracking-label text-fg-muted mt-0.5">{creditType}</span>
-      </DetailRow>,
+      <Fact key="credit" icon={Award} label="Professional credit">
+        <span data-part="credit"><b>{creditHoursLabel}</b> {creditType}</span>
+      </Fact>,
     )
   }
 
+  const headFacts = (
+    <p data-part="head-facts">
+      {dateLabel && <><Calendar size={16} strokeWidth={2} aria-hidden />{dateLabel}</>}
+      {dateLabel && (city || venueName) && <span aria-hidden="true">·</span>}
+      {(city || venueName) && <>{isVirtual ? <Monitor size={16} strokeWidth={2} aria-hidden /> : <MapPin size={16} strokeWidth={2} aria-hidden />}{city || venueName}</>}
+    </p>
+  )
+
   return (
-    <article>
+    <article data-block="event-page">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      {imageUrl ? (
-        <header
-          data-theme="dark"
-          className="relative overflow-hidden flex flex-col justify-end min-h-[clamp(340px,50vh,560px)]"
-          style={{ backgroundColor: 'oklch(38% 0.16 195)' }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover"
-            {...pa?.('featuredImage')}
-          />
-          <div
-            className="absolute inset-0"
-            aria-hidden
-            style={{ background: 'linear-gradient(to top, oklch(12% 0.012 195 / 0.92) 0%, oklch(12% 0.012 195 / 0.45) 45%, transparent 100%)' }}
-          />
-          <div className="relative z-10 px-md lg:px-xl pb-xl">
-            <div className="mx-auto max-w-5xl">
-              {eventType && <div className="mb-md" {...pa?.('eventType')}><TypeBadge type={eventType} onImage /></div>}
-              <h1 className="text-headline lg:text-display leading-headline lg:leading-display tracking-headline font-bold text-fg text-balance max-w-[20ch]" {...pa?.('title')}>
-                {title}
-              </h1>
-            </div>
-          </div>
-        </header>
-      ) : (
-        <header className="bg-canvas">
-          <div className="h-0.75 bg-brand" />
-          <div className="mx-auto max-w-5xl px-md lg:px-xl pt-xl pb-lg">
-            {eventType && <div className="mb-md" {...pa?.('eventType')}><TypeBadge type={eventType} /></div>}
-            <h1 className="text-headline lg:text-display leading-headline lg:leading-display tracking-headline font-bold text-fg text-balance max-w-[20ch]" {...pa?.('title')}>
-              {title}
-            </h1>
-          </div>
-        </header>
-      )}
+      <header data-part="head" data-media={imageUrl ? '' : undefined} data-theme={imageUrl ? 'dark' : undefined}>
+        {imageUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img data-part="head-img" src={imageUrl} alt="" aria-hidden {...pa?.('featuredImage')} />
+            <span data-part="scrim" aria-hidden="true" />
+          </>
+        ) : (
+          <span data-part="rule" aria-hidden="true" />
+        )}
+        <div data-part="head-in">
+          {eventType && <span data-part="badge" data-on-media={imageUrl ? '' : undefined} {...pa?.('eventType')}>{eventTypeLabel(eventType)}</span>}
+          <h1 data-part="title" {...pa?.('title')}>{title}</h1>
+          {headFacts}
+        </div>
+      </header>
 
-      {/* ── Body — 65/35 two-column. Sidebar stacks above content on mobile. ─── */}
-      <section className="bg-canvas pt-xl pb-2xl">
-        <div className="mx-auto max-w-5xl px-md lg:px-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-[65fr_35fr] gap-xl items-start">
+      {/* ── Body: main column + sticky facts rail (stacks above content on mobile) ── */}
+      <div data-part="body">
+        <div data-part="grid">
+          <div data-part="main">
+            {description?.html && (
+              <div
+                data-rich-text=""
+                data-color="canvas"
+                data-part="desc"
+                {...pa?.('description')}
+                // CMS-managed rich text — not user input
+                dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(description.html) }}
+              />
+            )}
 
-            {/* Main column */}
-            <div className="order-2 lg:order-1 min-w-0">
-              {/* Description — opening paragraph carries the editorial lead-in. */}
-              {description?.html && (
-                <div
-                  data-rich-text=""
-                  data-color="canvas"
-                  className="max-w-(--ot-measure-wide) [&>p:first-of-type]:text-title [&>p:first-of-type]:leading-title [&>p:first-of-type]:text-fg-muted [&>p:first-of-type]:text-pretty [&>p:first-of-type]:mb-lg"
-                  {...pa?.('description')}
-                  // CMS-managed rich text — not user input
-                  dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(description.html) }}
-                />
-              )}
+            {agenda && agenda.length > 0 && (
+              <section data-part="section" {...pa?.('agenda')}>
+                <SectionHeading>Agenda</SectionHeading>
+                <ol data-part="agenda">
+                  {agenda.map((item, i) => {
+                    const t = splitTimeRange(item.time)
+                    return (
+                      <li key={i} data-part="slot">
+                        <p data-part="time">
+                          {t && <><time>{t.start}</time>{t.end && <span>to {t.end}</span>}</>}
+                        </p>
+                        <span data-part="node" aria-hidden="true" />
+                        <div data-part="slot-body">
+                          {item.title && <h3>{item.title}</h3>}
+                          {item.description && <p>{item.description}</p>}
+                          {item.speaker && (
+                            <p data-part="who"><User size={14} strokeWidth={2} aria-hidden />{item.speaker}</p>
+                          )}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </section>
+            )}
 
-              {/* Agenda — vertical timeline */}
-              {agenda && agenda.length > 0 && (
-                <section className="mt-2xl" {...pa?.('agenda')}>
-                  <SectionHeading>Agenda</SectionHeading>
-                  <ol className="relative">
-                    {agenda.map((item, i) => {
-                      const isLast = i === agenda.length - 1
-                      const t = splitTimeRange(item.time)
-                      return (
-                        <li key={i} className="flex gap-md pb-xl last:pb-0">
-                          {/* Time column — intentional two-line split for ranges */}
-                          <div className="w-22 flex-none pt-0.5 text-right font-mono text-xs leading-tight whitespace-nowrap">
-                            {t && (
-                              t.end ? (
-                                <>
-                                  <span className="block text-fg font-medium">{t.start}</span>
-                                  <span className="block text-fg-muted">– {t.end}</span>
-                                </>
-                              ) : (
-                                <span className="block text-fg font-medium">{t.start}</span>
-                              )
-                            )}
-                          </div>
-                          {/* Spine + ring dot */}
-                          <div className="relative flex-none w-2.5 self-stretch">
-                            <span className="absolute left-1/2 -translate-x-1/2 top-1 block w-2.5 h-2.5 rounded-full border-2 border-brand bg-canvas" aria-hidden />
-                            {!isLast && (
-                              <span
-                                className="absolute left-1/2 -translate-x-1/2 top-4 bottom-0 block w-px"
-                                style={{ background: 'oklch(from var(--ot-brand) l c h / 0.25)' }}
-                                aria-hidden
-                              />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0 pb-1">
-                            {item.title && <p className="text-body font-semibold text-fg leading-snug">{item.title}</p>}
-                            {item.description && <p className="text-body text-fg-muted mt-xs text-pretty">{item.description}</p>}
-                            {item.speaker && (
-                              <p className="flex items-center gap-xs mt-sm text-xs italic text-brand">
-                                <User size={12} strokeWidth={1.75} className="flex-none" aria-hidden />
-                                {item.speaker}
-                              </p>
-                            )}
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </section>
-              )}
-
-              {/* Speakers — full-width horizontal cards */}
-              {speakers && speakers.length > 0 && (
-                <section className="mt-2xl" {...pa?.('speakers')}>
-                  <SectionHeading>Speakers</SectionHeading>
-                  <ul className="flex flex-col gap-3">
-                    {speakers.map((sp, i) => {
-                      const photo    = sp.headshot?.url?.default || null
-                      const profile  = sp.profileUrl?.default || null
-                      const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
-                      const initials = getInitials(sp.name)
-                      return (
-                        <li key={i} className="card-hover-lift flex flex-col items-center md:flex-row md:items-center gap-6 rounded-ot-surface overflow-hidden bg-surface border border-fg/10 px-6 py-5">
-                          {/* Headshot — 96px circle with a chromatic bloom ring */}
+            {speakers && speakers.length > 0 && (
+              <section data-part="section" {...pa?.('speakers')}>
+                <SectionHeading>Speakers</SectionHeading>
+                <ul data-part="speakers">
+                  {speakers.map((sp, i) => {
+                    const photo    = sp.headshot?.url?.default || null
+                    const profile  = sp.profileUrl?.default || null
+                    const subline  = [sp.title, sp.organization].filter(Boolean).join(' · ')
+                    const initials = getInitials(sp.name)
+                    return (
+                      <li key={i} data-part="speaker" data-linked={profile ? '' : undefined}>
+                        <span data-part="avatar">
                           {photo ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={photo}
-                              alt={sp.name ?? ''}
-                              className="flex-none w-24 h-24 rounded-full object-cover"
-                              style={{ boxShadow: '0 0 0 2px oklch(from var(--ot-brand) l c h / 0.3)' }}
-                            />
+                            <img src={photo} alt="" />
+                          ) : initials ? (
+                            <b aria-hidden="true">{initials}</b>
                           ) : (
-                            <div
-                              className="flex-none flex items-center justify-center w-24 h-24 rounded-full text-[1.5rem] font-bold text-brand"
-                              style={{
-                                background: 'oklch(from var(--ot-brand) l c h / 0.15)',
-                                border:     '1px solid oklch(from var(--ot-brand) l c h / 0.3)',
-                              }}
-                              aria-hidden
-                            >
-                              {initials || <User size={32} strokeWidth={1.75} aria-hidden />}
-                            </div>
+                            <User size={32} strokeWidth={1.75} aria-hidden />
                           )}
-                          {/* Content */}
-                          <div className="min-w-0 flex-1 text-center md:text-left">
-                            {sp.name && <p className="text-title font-bold text-fg leading-snug">{sp.name}</p>}
-                            {subline && <p className="text-sm text-fg-muted mt-0.5">{subline}</p>}
-                            {sp.bio && <p className="text-sm text-fg-muted/80 leading-snug mt-sm line-clamp-3 text-pretty">{sp.bio}</p>}
-                            {profile && (
-                              <a
-                                href={profile}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group mt-sm inline-flex items-center gap-xs text-xs font-semibold text-brand hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                              >
-                                View Profile
-                                <ArrowRight size={13} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
-                              </a>
-                            )}
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </section>
+                        </span>
+                        <div data-part="sp-body">
+                          {sp.name && (
+                            <h3>
+                              {profile
+                                ? <a href={profile} target="_blank" rel="noopener noreferrer" data-part="sp-link">{sp.name}</a>
+                                : sp.name}
+                            </h3>
+                          )}
+                          {subline && <p data-part="sp-role">{subline}</p>}
+                          {sp.bio && <p data-part="sp-bio">{sp.bio}</p>}
+                          {profile && <span data-part="sp-more" aria-hidden="true">View profile<ArrowRight size={14} strokeWidth={2} /></span>}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            )}
+          </div>
+
+          <aside data-part="aside" aria-label="Event details">
+            <div data-part="card">
+              <dl data-part="facts">{rows}</dl>
+              {regUrl && (
+                <div data-part="cta">
+                  <Button variant="brand" href={regUrl} trailingIcon={<ArrowRight size={16} strokeWidth={2} />}>
+                    {isVirtual ? 'Join' : 'Register'}
+                  </Button>
+                </div>
               )}
             </div>
-
-            {/* Event details card — sticky on desktop, above content on mobile */}
-            <aside className="order-1 lg:order-2 lg:sticky lg:top-24 min-w-0">
-              <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10">
-                <div className="p-lg flex flex-col">
-                  {rows.map((row, i) => (
-                    <div key={i} className={i > 0 ? 'mt-md pt-md border-t border-fg/10' : ''}>
-                      {row}
-                    </div>
-                  ))}
-                </div>
-                {regUrl && (
-                  <a
-                    href={regUrl}
-                    className="btn-signal group flex items-center justify-center rounded-ot-control bg-brand text-fg-on-brand px-lg py-md text-label uppercase tracking-label font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                  >
-                    {/* relative z-10: sits above .btn-signal::before's absolutely-positioned
-                        hover sweep, which otherwise paints over this static-flow text */}
-                    <span className="relative z-10 inline-flex items-center gap-xs">
-                      {isVirtual ? 'Join' : 'Register'}
-                      <ArrowRight size={16} strokeWidth={2} className="motion-safe:transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
-                    </span>
-                  </a>
-                )}
-              </div>
-            </aside>
-
-          </div>
+          </aside>
         </div>
-      </section>
+      </div>
     </article>
   )
 }

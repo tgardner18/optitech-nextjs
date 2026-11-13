@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo, useCallback, useId, useRef } from 'react'
+import { useState, useMemo, useCallback, useEffect, useId, useRef, useSyncExternalStore } from 'react'
+import { createPortal } from 'react-dom'
 import {
   LayoutGrid, List, Calendar as CalendarIcon,
-  ChevronLeft, ChevronRight, ChevronRight as ChevronGo,
-  MapPin, Video, Award, CalendarX2, ArrowRight, Layers,
+  ChevronLeft, ChevronRight, Award, MapPin, Video,
+  CalendarX2, ArrowRight, Layers, SlidersHorizontal, X,
 } from 'lucide-react'
 import type { EventCardData } from '@/lib/events'
-import { FilterTriggerButton, FilterDrawer, FilterRadioGroup } from '@/components/ui/FilterDrawer'
 import {
   eventTypeLabel,
   formatEventDate,
@@ -18,6 +18,8 @@ import {
   isUpcoming,
   startOfDay,
 } from '@/lib/eventFormat'
+
+// Presentation lives in components/blocks/event-listing.css, keyed on the data attributes below.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,191 +42,106 @@ export type EventListingClientProps = {
   isPreview?:     boolean
 }
 
-// Canonical type ordering for the filter chips.
+// Canonical type ordering for the filter.
 const TYPE_ORDER = ['webinar', 'conference', 'workshop', 'seminar', 'community', 'screening', 'training']
 
-// ─── Color helpers ──────────────────────────────────────────────────────────────
-// Cards sit one elevation off the section ground: surface-on-canvas, canvas-on-surface.
-
-function cardSurface(color: Color): string {
-  return color === 'surface' ? 'bg-canvas' : 'bg-surface'
+const noopSubscribe = () => () => {}
+function useHydrated(): boolean {
+  return useSyncExternalStore(noopSubscribe, () => true, () => false)
 }
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
 
-// Date numerals: Poppins (the body/display sans), NEVER the `font-display` role
-// — that resolves to Syne, whose slanted geometry reads as italic and is banned
-// below headline scale (DESIGN.md). Explicitly upright + tabular so single/double
-// digit days share a baseline. Size and weight are set per context.
-const DAY_NUMERAL = 'font-sans not-italic tabular-nums tracking-[-0.03em]'
-// Month abbreviation: 11px / 600 / 0.12em tracked uppercase. Colour per context.
-const MONTH_LABEL = 'font-semibold uppercase tracking-[0.12em] text-[0.6875rem] leading-none'
+function TypeTag({ type }: { type: string }) {
+  return <span data-part="type">{eventTypeLabel(type)}</span>
+}
 
-// Event type badge — one treatment for every type (accent fill signals "category
-// label"; the text says which category). Sharp corners, label scale. Position is
-// supplied by the caller (absolute overlay in cards, inline in list rows).
-function TypeBadge({ type, className = '' }: { type: string; className?: string }) {
+function DateTile({ event, weekday }: { event: EventCardData; weekday?: boolean }) {
+  const b = eventDateBlock(event.startDate)
+  if (!b) return null
   return (
-    <span className={`inline-flex items-center rounded-ot-control bg-brand text-fg-on-brand px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.08em] leading-none ${className}`}>
-      {eventTypeLabel(type)}
+    <span data-part="date-tile" aria-hidden="true">
+      <span data-part="dt-month">{b.month}</span>
+      <span data-part="dt-day">{b.day}</span>
+      {weekday && <span data-part="dt-wd">{b.weekday}</span>}
     </span>
   )
 }
 
-function CreditPill({ event }: { event: EventCardData }) {
-  const label = formatCredit(event.creditType, event.creditHours)
-  if (!label) return null
+function Meta({ event }: { event: EventCardData }) {
+  const loc    = formatEventLocation(event)
+  const credit = formatCredit(event.creditType, event.creditHours)
+  const time   = formatEventTime(event.startDate, event.endDate)
+  const LocIcon = event.locationType === 'virtual' ? Video : MapPin
   return (
-    <span className="inline-flex items-center gap-xs text-label font-semibold text-fg-muted">
-      <Award size={13} strokeWidth={2} className="text-brand" aria-hidden />
-      {label}
-    </span>
+    <ul data-part="meta">
+      <li>
+        <CalendarIcon strokeWidth={2} aria-hidden="true" />
+        <span>{formatEventDate(event.startDate, event.endDate)}{time && !isMultiDay(event) ? ` · ${time}` : ''}</span>
+      </li>
+      {loc && <li><LocIcon strokeWidth={2} aria-hidden="true" /><span>{loc}</span></li>}
+      {credit && <li data-part="credit"><Award strokeWidth={2} aria-hidden="true" /><span>{credit} credit</span></li>}
+    </ul>
   )
 }
 
-function LocationLine({ event, className = '' }: { event: EventCardData; className?: string }) {
-  const line = formatEventLocation(event)
-  if (!line) return null
-  const Icon = event.locationType === 'virtual' ? Video : MapPin
+function isPastEvent(e: EventCardData, now: Date): boolean {
+  return !isUpcoming(e.startDate, e.endDate, now)
+}
+
+// ─── Card + row ───────────────────────────────────────────────────────────────
+
+function EventCard({ event, now }: { event: EventCardData; now: Date }) {
+  const past = isPastEvent(event, now)
   return (
-    <span className={`inline-flex items-center gap-xs text-label text-fg-muted min-w-0 ${className}`}>
-      <Icon size={13} strokeWidth={2} className="flex-none text-fg-muted/70" aria-hidden />
-      <span className="truncate">{line}</span>
-    </span>
+    <li>
+      <a href={event.url ?? '#'} data-part="card" data-past={past ? '' : undefined}>
+        <div data-part="media" data-empty={event.imageUrl ? undefined : ''}>
+          {event.imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.imageUrl} alt="" loading="lazy" />
+          )}
+          {event.eventType && <TypeTag type={event.eventType} />}
+          <DateTile event={event} />
+        </div>
+        <div data-part="body">
+          {past && <span data-part="past-tag">Past event</span>}
+          <h3 data-part="title">{event.title}</h3>
+          <Meta event={event} />
+        </div>
+      </a>
+    </li>
   )
 }
 
-// ─── Card view ──────────────────────────────────────────────────────────────────
-
-function EventCard({ event, color }: { event: EventCardData; color: Color }) {
-  const href  = event.url ?? '#'
-  const block = eventDateBlock(event.startDate)
-
+function EventRow({ event, now }: { event: EventCardData; now: Date }) {
+  const past = isPastEvent(event, now)
   return (
-    <a
-      href={href}
-      className={`group flex flex-col rounded-ot-surface overflow-hidden card-hover-lift border border-fg/10 ${cardSurface(color)}
-        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
-    >
-      {/* Media / date panel */}
-      <div className="relative aspect-video overflow-hidden">
-        {event.imageUrl ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={event.imageUrl}
-              alt=""
-              aria-hidden
-              loading="lazy"
-              className="w-full h-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
-            />
-            {/* Date chip over the image */}
-            {block && (
-              <span className="absolute bottom-0 left-0 bg-canvas/85 [backdrop-filter:blur(6px)] px-sm py-xs text-label font-semibold text-fg">
-                {formatEventDate(event.startDate, event.endDate)}
-              </span>
-            )}
-          </>
-        ) : (
-          // No-image: a deliberate typographic card — the date is the anchor,
-          // floating over a soft radial brand bloom on a brand-tinted surface.
-          <div className="relative w-full h-full bg-brand/8 overflow-hidden flex flex-col items-center justify-center" aria-hidden>
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse 62% 62% at 50% 48%, var(--ot-bloom-brand-faint) 0%, transparent 70%)' }}
-            />
-            {block ? (
-              <div className="relative flex flex-col items-center">
-                <span className={`${MONTH_LABEL} text-brand/70`}>{block.month}</span>
-                <span className={`${DAY_NUMERAL} text-[clamp(2.5rem,6vw,3.5rem)] leading-none font-extrabold text-brand mt-0.5`}>{block.day}</span>
-              </div>
-            ) : (
-              <CalendarIcon size={32} strokeWidth={1.5} className="relative text-brand/50" />
-            )}
+    <li>
+      <a href={event.url ?? '#'} data-part="row" data-past={past ? '' : undefined}>
+        <DateTile event={event} weekday />
+        <div data-part="row-body">
+          <div data-part="row-top">
+            {event.eventType && <TypeTag type={event.eventType} />}
+            {past && <span data-part="past-tag">Past event</span>}
           </div>
-        )}
-        {/* Type badge — overlays the top-left of the media / placeholder area */}
-        {event.eventType && <TypeBadge type={event.eventType} className="absolute top-3 left-3" />}
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col gap-sm px-md pt-md pb-lg flex-1">
-        <h3 className="text-title leading-title font-semibold text-fg text-balance line-clamp-3">
-          {event.title}
-        </h3>
-        <div className="mt-auto flex flex-col gap-xs">
-          <LocationLine event={event} />
-          <CreditPill event={event} />
+          <h3 data-part="title">{event.title}</h3>
+          <Meta event={event} />
         </div>
-      </div>
-    </a>
+        <span data-part="go" aria-hidden="true"><ChevronRight strokeWidth={1.75} /></span>
+      </a>
+    </li>
   )
 }
 
-// ─── List view ──────────────────────────────────────────────────────────────────
-
-// Calendar tear-off: brand-bloom chromatic surface anchored by a 2px top accent
-// line (a top edge — not a banned side-stripe). The day numeral dominates; the
-// month sits above it, small and tracked. Reads identically on canvas/surface.
-const DATE_BLOCK_SURFACE =
-  'flex-none w-16 bg-brand/8 border-t-2 border-brand shadow-[0_4px_16px_var(--ot-bloom-brand-faint)]'
-
-function DateBlock({ event }: { event: EventCardData }) {
-  const block = eventDateBlock(event.startDate)
-  if (!block) {
-    return (
-      <div className={`${DATE_BLOCK_SURFACE} h-16 flex items-center justify-center text-brand/50`} aria-hidden>
-        <CalendarIcon size={20} strokeWidth={1.5} />
-      </div>
-    )
-  }
-  return (
-    <div className={`${DATE_BLOCK_SURFACE} flex flex-col items-center justify-center gap-0.5 py-sm`} aria-hidden>
-      <span className={`${MONTH_LABEL} text-fg-muted`}>{block.month}</span>
-      <span className={`${DAY_NUMERAL} text-3xl leading-none font-extrabold text-brand`}>{block.day}</span>
-    </div>
-  )
-}
-
-function EventListRow({ event }: { event: EventCardData }) {
-  const href = event.url ?? '#'
-  const time = formatEventTime(event.startDate, event.endDate)
-  return (
-    <a
-      href={href}
-      className="group flex items-stretch gap-md py-md border-b border-fg/8 last:border-b-0
-        transition-colors duration-150 ease-quick
-        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-    >
-      <DateBlock event={event} />
-      <div className="flex-1 min-w-0 flex flex-col justify-center gap-xs">
-        {event.eventType && <TypeBadge type={event.eventType} className="self-start" />}
-        <h3 className="text-title leading-title font-semibold text-fg text-balance group-hover:underline decoration-fg/20 underline-offset-2">
-          {event.title}
-        </h3>
-        <div className="flex flex-wrap items-center gap-x-md gap-y-xs">
-          <span className="text-label text-fg-muted">{formatEventDate(event.startDate, event.endDate)}{time && ` · ${time}`}</span>
-          <LocationLine event={event} />
-          <CreditPill event={event} />
-        </div>
-      </div>
-      <div className="hidden sm:flex items-center shrink-0 text-fg-muted/40 group-hover:text-brand transition-transform duration-150 group-hover:translate-x-0.5">
-        <ChevronGo size={18} strokeWidth={1.75} aria-hidden />
-      </div>
-    </a>
-  )
-}
-
-// ─── Calendar view ────────────────────────────────────────────────────────────
+// ─── Calendar ─────────────────────────────────────────────────────────────────
 
 type DayInfo = { date: Date; key: string }
 
 // Calendar layout constants (px). The numeral zone sits at the top of every cell;
 // multi-day bars stack in lanes below it; single-day pills flow below the bars.
-const NUMERAL_ZONE = 24   // h-6 — top strip holding the date numeral
-const BAR_H        = 22   // one multi-day lane (18px bar + 4px gap)
 const MAX_BARS     = 3    // visible multi-day lanes per week
-const MAX_PILLS    = 3    // visible single-day pills per day
+const MAX_PILLS    = 2    // visible single-day chips per day
 
 function ymKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -301,38 +218,30 @@ function placeMultiDay(week: (DayInfo | null)[], events: EventCardData[]): { spa
   return { spans, laneCount: Math.min(laneEnds.length, MAX_BARS) }
 }
 
-// Single-day event strip inside a calendar cell: start time (mono), type badge,
-// then the title. A brand-tinted fill + full 1px border reads as an event strip
-// (DESIGN.md prohibits side-stripe borders > 1px, so no left accent rule here).
-function CalendarPill({ event }: { event: EventCardData }) {
-  const time = formatEventTime(event.startDate)
+function Empty({ icon, title, text, children }: { icon: React.ReactNode; title: string; text?: string; children?: React.ReactNode }) {
   return (
-    <span className="block overflow-hidden rounded-ot-control bg-brand/10 border border-brand/25 px-1.5 py-1 leading-tight">
-      {time && <span className="block font-mono text-[10px] text-fg-muted leading-none">{time}</span>}
-      {event.eventType && (
-        <span className="inline-block bg-accent text-fg-on-accent text-[8px] font-bold uppercase tracking-wider px-1 leading-[1.4] mt-0.5">
-          {eventTypeLabel(event.eventType)}
-        </span>
-      )}
-      <span className="block truncate text-xs font-medium text-fg leading-tight mt-0.5">{event.title}</span>
-    </span>
+    <div data-part="empty">
+      <span data-part="empty-icon">{icon}</span>
+      <p data-part="empty-title">{title}</p>
+      {text && <p data-part="empty-text">{text}</p>}
+      {children}
+    </div>
   )
 }
 
-function CalendarView({ events, color, now }: { events: EventCardData[]; color: Color; now: Date }) {
-  const [cursor, setCursor]       = useState(() => new Date(now.getFullYear(), now.getMonth(), 1))
-  const [selected, setSelected]   = useState<string | null>(null)
-  const labelId                   = useId()
+function CalendarView({ events, now }: { events: EventCardData[]; now: Date }) {
+  const [cursor, setCursor]     = useState(() => new Date(now.getFullYear(), now.getMonth(), 1))
+  const [selected, setSelected] = useState<string | null>(null)
+  const labelId                 = useId()
 
   const monthLabel = useMemo(
     () => new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(cursor),
     [cursor],
   )
 
-  // Build the calendar matrix (leading blanks + days of the month).
   const cells = useMemo<(DayInfo | null)[]>(() => {
     const y = cursor.getFullYear(), m = cursor.getMonth()
-    const firstWeekday = new Date(y, m, 1).getDay() // 0 = Sun
+    const firstWeekday = new Date(y, m, 1).getDay()
     const daysInMonth  = new Date(y, m + 1, 0).getDate()
     const out: (DayInfo | null)[] = []
     for (let i = 0; i < firstWeekday; i++) out.push(null)
@@ -343,8 +252,6 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     return out
   }, [cursor])
 
-  // Pad to whole weeks (trailing blanks) and chunk into rows of 7 so each week
-  // can host its own multi-day strip overlay.
   const weeks = useMemo<(DayInfo | null)[][]>(() => {
     const padded = [...cells]
     while (padded.length % 7 !== 0) padded.push(null)
@@ -353,13 +260,11 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     return out
   }, [cells])
 
-  // Events visible in the current month, and a per-day index.
   const monthEvents = useMemo(
     () => events.filter(e => {
       if (!e.startDate) return false
       const s = new Date(e.startDate)
       const en = e.endDate ? new Date(e.endDate) : s
-      // overlaps the visible month
       return !(en < new Date(cursor.getFullYear(), cursor.getMonth(), 1) ||
                s > new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0))
     }).sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? '')),
@@ -372,9 +277,7 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
   )
 
   const todayKey = `${ymKey(now)}-${String(now.getDate()).padStart(2, '0')}`
-  const selectedDate = selected
-    ? cells.find(c => c?.key === selected)?.date ?? null
-    : null
+  const selectedDate = selected ? cells.find(c => c?.key === selected)?.date ?? null : null
   const agendaEvents = selectedDate ? eventsForDay(selectedDate) : []
 
   const goMonth = useCallback((delta: number) => {
@@ -382,7 +285,6 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     setSelected(null)
   }, [])
 
-  // Jump to the next month (forward, then backward) that actually has events.
   const jumpToEvents = useCallback(() => {
     const all = events
       .map(e => (e.startDate ? new Date(e.startDate) : null))
@@ -395,274 +297,223 @@ function CalendarView({ events, color, now }: { events: EventCardData[]; color: 
     setSelected(null)
   }, [events, cursor])
 
-  const navBtn = 'inline-flex items-center justify-center w-11 h-11 rounded-ot-control border border-fg/15 text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+  const dayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
+
+  const head = (
+    <div data-part="cal-head">
+      <h3 data-part="cal-month" id={labelId}>{monthLabel}</h3>
+      <div data-part="cal-nav">
+        <button type="button" data-part="cal-btn" aria-label="Previous month" onClick={() => goMonth(-1)}><ChevronLeft strokeWidth={2} /></button>
+        <button type="button" data-part="cal-btn" onClick={() => { setCursor(new Date(now.getFullYear(), now.getMonth(), 1)); setSelected(null) }}>Today</button>
+        <button type="button" data-part="cal-btn" aria-label="Next month" onClick={() => goMonth(1)}><ChevronRight strokeWidth={2} /></button>
+      </div>
+    </div>
+  )
+
+  if (monthEvents.length === 0) {
+    return (
+      <div data-part="cal">
+        {head}
+        <Empty icon={<CalendarX2 strokeWidth={1.75} />} title={`No events in ${monthLabel}`} text={events.length ? 'Events are scheduled in other months.' : undefined}>
+          {events.length > 0 && (
+            <button type="button" data-part="empty-action" onClick={jumpToEvents}>
+              Jump to the next events <ArrowRight strokeWidth={2} aria-hidden="true" />
+            </button>
+          )}
+        </Empty>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      {/* Month nav */}
-      <div className="flex items-center justify-between mb-md">
-        <h3 id={labelId} className="text-[1.75rem] leading-none tracking-[-0.02em] font-bold text-fg">{monthLabel}</h3>
-        <div className="flex items-center gap-xs">
-          <button type="button" className={navBtn} aria-label="Previous month" onClick={() => goMonth(-1)}>
-            <ChevronLeft size={16} strokeWidth={2} />
-          </button>
-          <button
-            type="button"
-            className="px-sm h-9 rounded-ot-control border border-fg/15 text-label uppercase tracking-label font-semibold text-fg-muted hover:border-fg/30 hover:text-fg transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            onClick={() => { setCursor(new Date(now.getFullYear(), now.getMonth(), 1)); setSelected(null) }}
-          >
-            Today
-          </button>
-          <button type="button" className={navBtn} aria-label="Next month" onClick={() => goMonth(1)}>
-            <ChevronRight size={16} strokeWidth={2} />
-          </button>
+    <div data-part="cal">
+      {head}
+      {/* A labelled group of day toggle buttons (no ARIA grid: we don't implement 2D arrow keys). */}
+      <div data-part="cal-grid" role="group" aria-labelledby={labelId}>
+        <div data-part="cal-dow" aria-hidden="true">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <span key={d}>{d}</span>)}
         </div>
-      </div>
-
-      {/* Desktop calendar. Presented as a labelled group of day toggle buttons
-          (natively Tab-operable) rather than role="grid" — an ARIA grid contracts
-          for 2D arrow-key navigation we don't implement, so the honest semantics
-          are a group. Each day's aria-label carries its full weekday + date, so
-          the visual weekday header is decorative (aria-hidden). */}
-      <div className="hidden sm:block" role="group" aria-labelledby={labelId}>
-        {/* Weekday header — decorative; day buttons announce the full weekday */}
-        <div className="grid grid-cols-7 border-t border-l border-fg/10" aria-hidden="true">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="border-r border-b border-fg/10 px-xs py-xs text-label uppercase tracking-label font-semibold text-fg-muted/70 text-center">
-              {d}
-            </div>
-          ))}
-        </div>
-        {/* Day cells — one grid per week, each with a multi-day strip overlay */}
-        <div className="border-l border-fg/10">
-          {weeks.map((week, wi) => {
-            const { spans, laneCount } = placeMultiDay(week, monthEvents)
-            return (
-              <div key={wi} className="relative grid grid-cols-7">
-                {week.map((cell, col) => {
-                  if (!cell) {
-                    return <div key={`b-${wi}-${col}`} aria-hidden className="border-r border-b border-fg/10 bg-fg/2 min-h-20 lg:min-h-30" />
-                  }
-                  const dayEvents = eventsForDay(cell.date)
-                  const singles   = dayEvents.filter(e => !isMultiDay(e))
-                  const shown     = singles.slice(0, MAX_PILLS)
-                  const hidden    = singles.length - shown.length
-                  const isToday   = cell.key === todayKey
-                  const isSel     = cell.key === selected
-                  const hasEvents = dayEvents.length > 0
-                  return (
-                    <button
-                      type="button"
-                      key={cell.key}
-                      aria-pressed={hasEvents ? isSel : undefined}
-                      aria-label={`${new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(cell.date)}${hasEvents ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
-                      disabled={!hasEvents}
-                      onClick={() => hasEvents && setSelected(isSel ? null : cell.key)}
-                      className={`group relative text-left border-r border-b border-fg/10 min-h-20 lg:min-h-30 flex flex-col
-                        transition-colors duration-150 ease-quick
-                        ${hasEvents ? 'cursor-pointer hover:bg-brand/8' : 'cursor-default'}
-                        ${isToday && !isSel ? 'bg-brand/4' : ''}
-                        ${isSel ? 'bg-brand/10' : ''}
-                        focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`}
-                    >
-                      {/* Numeral zone (fixed height; multi-day bars + pills sit below) */}
-                      <span className="flex items-center justify-end px-1 flex-none" style={{ height: NUMERAL_ZONE }}>
-                        <span className={`not-italic tabular-nums font-bold text-[0.8125rem] leading-none ${
-                          isToday
-                            ? 'inline-flex items-center justify-center min-w-5 h-5 px-1 bg-brand text-fg-on-brand'
-                            : 'text-fg-muted'
-                        }`}>
-                          {cell.date.getDate()}
-                        </span>
-                      </span>
-                      {/* Reserve the multi-day lane band (bars are drawn in the overlay) */}
-                      {laneCount > 0 && <span aria-hidden className="flex-none" style={{ height: laneCount * BAR_H }} />}
-                      {/* Single-day event strips */}
-                      {shown.length > 0 && (
-                        <span className="flex flex-col gap-0.5 px-0.5 pb-0.5 min-w-0">
-                          {shown.map(e => <CalendarPill key={e.key} event={e} />)}
-                          {hidden > 0 && (
-                            <span className="text-[10px] font-semibold text-fg-muted/70 px-1 leading-tight">+{hidden} more</span>
-                          )}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-                {/* Multi-day spanning overlay — shares the 7-col track with the cells */}
-                {spans.length > 0 && (
-                  <div
-                    className="pointer-events-none absolute inset-0 grid grid-cols-7"
-                    style={{ paddingTop: NUMERAL_ZONE, gridAutoRows: `${BAR_H}px` }}
-                    aria-hidden
+        {weeks.map((week, wi) => {
+          const { spans, laneCount } = placeMultiDay(week, monthEvents)
+          return (
+            <div key={wi} data-part="cal-week">
+              {week.map((cell, col) => {
+                if (!cell) return <div key={`b-${wi}-${col}`} data-part="cal-day" data-blank aria-hidden="true" />
+                const dayEvents = eventsForDay(cell.date)
+                const singles   = dayEvents.filter(e => !isMultiDay(e))
+                const shown     = singles.slice(0, MAX_PILLS)
+                const hidden    = singles.length - shown.length
+                const isToday   = cell.key === todayKey
+                const isSel     = cell.key === selected
+                const has       = dayEvents.length > 0
+                return (
+                  <button
+                    type="button"
+                    key={cell.key}
+                    data-part="cal-day"
+                    data-has={has ? '' : undefined}
+                    data-today={isToday ? '' : undefined}
+                    aria-pressed={has ? isSel : undefined}
+                    aria-label={`${dayFmt.format(cell.date)}${isToday ? ', today' : ''}${has ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
+                    disabled={!has}
+                    onClick={() => has && setSelected(isSel ? null : cell.key)}
                   >
-                    {spans.map(s => (
-                      <span
-                        key={`${s.event.key}-${s.lane}`}
-                        className="px-0.5"
-                        style={{ gridColumn: `${s.colStart + 1} / span ${s.colEnd - s.colStart + 1}`, gridRowStart: s.lane + 1 }}
-                      >
-                        <span className="flex items-center h-4.5 bg-brand text-fg-on-brand text-[11px] font-semibold leading-none px-1.5 overflow-hidden whitespace-nowrap">
-                          <span className="truncate">{s.continuesLeft ? ' ' : s.event.title}</span>
+                    <span data-part="cal-num">{cell.date.getDate()}</span>
+                    {laneCount > 0 && <span aria-hidden="true" style={{ flex: 'none', height: `calc(1.5rem * ${laneCount} - .2rem)` }} />}
+                    {shown.map(e => {
+                      const t = formatEventTime(e.startDate)
+                      return (
+                        <span key={e.key} data-part="chip">
+                          {t && <span data-part="chip-time">{t}</span>}
+                          <span data-part="chip-title">{e.title}</span>
                         </span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Selected-day agenda */}
-        {selectedDate && agendaEvents.length > 0 && (
-          <div className={`mt-md rounded-ot-surface border border-fg/10 ${cardSurface(color)} p-md`}>
-            <p className="text-label uppercase tracking-label font-semibold text-fg-muted/70 mb-sm">
-              {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(selectedDate)}
-            </p>
-            <div className="flex flex-col">
-              {agendaEvents.map(e => <EventListRow key={e.key} event={e} />)}
+                      )
+                    })}
+                    {hidden > 0 && <span data-part="more">+{hidden} more</span>}
+                  </button>
+                )
+              })}
+              {spans.length > 0 && (
+                <div data-part="spans" aria-hidden="true">
+                  {spans.map(sp => (
+                    <span
+                      key={`${sp.event.key}-${sp.lane}`}
+                      data-part="bar"
+                      data-cont-l={sp.continuesLeft ? '' : undefined}
+                      data-cont-r={sp.continuesRight ? '' : undefined}
+                      style={{ gridColumn: `${sp.colStart + 1} / span ${sp.colEnd - sp.colStart + 1}`, gridRowStart: sp.lane + 1 }}
+                    >
+                      {sp.continuesLeft ? '← ' : ''}{sp.event.title}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })}
       </div>
 
-      {/* Mobile: month agenda list (a 7-col grid is unusable at 320px) */}
-      <div className="sm:hidden">
-        {monthEvents.length > 0 ? (
-          <div className="flex flex-col">
-            {monthEvents.map(e => <EventListRow key={e.key} event={e} />)}
-          </div>
-        ) : (
-          <CalendarEmpty monthLabel={monthLabel} onJump={jumpToEvents} hasAny={events.length > 0} />
-        )}
-      </div>
-
-      {/* Desktop empty month */}
-      {monthEvents.length === 0 && (
-        <div className="hidden sm:block">
-          <CalendarEmpty monthLabel={monthLabel} onJump={jumpToEvents} hasAny={events.length > 0} />
+      {selectedDate && agendaEvents.length > 0 && (
+        <div data-part="agenda" aria-live="polite">
+          <p data-part="agenda-title">{dayFmt.format(selectedDate)}</p>
+          <ul data-part="list">{agendaEvents.map(e => <EventRow key={e.key} event={e} now={now} />)}</ul>
         </div>
       )}
+
+      {/* Narrow containers: a month agenda list (a 7-column grid is unusable at 320px) */}
+      <div data-part="cal-mobile">
+        <ul data-part="list">{monthEvents.map(e => <EventRow key={e.key} event={e} now={now} />)}</ul>
+      </div>
     </div>
   )
 }
 
-// ─── Empty states ─────────────────────────────────────────────────────────────
+// ─── Filter drawer ────────────────────────────────────────────────────────────
 
-function EmptyShell({ icon, title, children }: { icon: React.ReactNode; title: string; children?: React.ReactNode }) {
-  return (
-    <div className="flex flex-col items-center justify-center text-center py-2xl gap-sm text-fg-muted">
-      <div className="w-12 h-12 rounded-ot-surface border-2 border-fg/12 flex items-center justify-center text-fg-muted/60">{icon}</div>
-      <p className="text-title font-semibold text-fg">{title}</p>
-      {children}
-    </div>
+function EventDrawer({
+  id, open, onClose, types, active, onSelect, triggerRef,
+}: {
+  id: string
+  open: boolean
+  onClose: () => void
+  types: string[]
+  active: string | null
+  onSelect: (t: string | null) => void
+  triggerRef: React.RefObject<HTMLElement | null>
+}) {
+  const mounted  = useHydrated()
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const trigger = triggerRef.current
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    panelRef.current?.focus()
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+      trigger?.focus()
+    }
+  }, [open, onClose, triggerRef])
+
+  if (!mounted) return null
+
+  const opt = (value: string | null, label: string) => (
+    <button key={value ?? 'all'} type="button" data-part="radio-row" role="radio" aria-checked={active === value} onClick={() => onSelect(value)}>
+      <span data-part="dot" aria-hidden="true" />
+      {label}
+    </button>
+  )
+
+  return createPortal(
+    <div data-part="ev-drawer" aria-hidden={!open}>
+      <div data-part="scrim" onClick={onClose} aria-hidden="true" />
+      <div ref={panelRef} id={id} data-part="sheet" role="dialog" aria-modal="true" aria-label="Refine" tabIndex={-1}>
+        <div data-part="sheet-head">
+          <h2 data-part="sheet-title"><SlidersHorizontal strokeWidth={2} aria-hidden="true" />Refine</h2>
+          <button type="button" data-part="close" onClick={onClose} aria-label="Close filters"><X strokeWidth={1.75} /></button>
+        </div>
+        <div data-part="sheet-body">
+          <h3 data-part="group-title"><Layers strokeWidth={2} aria-hidden="true" />Type</h3>
+          <div role="radiogroup" aria-label="Filter by event type">
+            {opt(null, 'All types')}
+            {types.map(t => opt(t, eventTypeLabel(t)))}
+          </div>
+        </div>
+        <div data-part="sheet-foot">
+          <button type="button" data-part="clear" onClick={() => onSelect(null)} disabled={!active}>Clear filters</button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
-function CalendarEmpty({ monthLabel, onJump, hasAny }: { monthLabel: string; onJump: () => void; hasAny: boolean }) {
-  return (
-    <div className="rounded-ot-surface border border-fg/10 border-dashed">
-      <EmptyShell icon={<CalendarX2 size={20} strokeWidth={1.5} />} title={`No events in ${monthLabel}`}>
-        {hasAny && (
-          <button
-            type="button"
-            onClick={onJump}
-            className="mt-xs inline-flex items-center gap-xs text-label uppercase tracking-label font-semibold text-brand hover:text-brand-hover transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            Jump to next events <ArrowRight size={14} strokeWidth={2} aria-hidden />
-          </button>
-        )}
-      </EmptyShell>
-    </div>
-  )
-}
-
-// ─── Controls ─────────────────────────────────────────────────────────────────
-
-function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => void }) {
-  const items: { v: View; label: string; Icon: typeof LayoutGrid }[] = [
-    { v: 'card',     label: 'Cards',    Icon: LayoutGrid },
-    { v: 'list',     label: 'List',     Icon: List },
-    { v: 'calendar', label: 'Calendar', Icon: CalendarIcon },
-  ]
-  return (
-    <div className="inline-flex rounded-ot-control overflow-hidden border border-fg/15" role="group" aria-label="View mode">
-      {items.map(({ v, label, Icon }, i) => {
-        const active = view === v
-        return (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onChange(v)}
-            className={`inline-flex items-center gap-xs px-sm py-xs text-label uppercase tracking-label font-semibold
-              transition-colors duration-150 ease-quick cursor-pointer
-              ${i > 0 ? 'border-l border-fg/15' : ''}
-              ${active ? 'bg-brand text-fg-on-brand' : 'text-fg-muted hover:text-fg hover:bg-fg/[0.04]'}
-              focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`}
-          >
-            <Icon size={16} strokeWidth={1.75} aria-hidden />
-            <span className="hidden sm:inline">{label}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// ─── Listing grid (card/list with optional past divider) ────────────────────────
+// ─── Listing body ─────────────────────────────────────────────────────────────
 
 function ListingBody({
-  view, upcoming, past, color, showPast, pastMode,
+  view, upcoming, past, showPast, pastMode, now,
 }: {
   view: View
   upcoming: EventCardData[]
   past: EventCardData[]
-  color: Color
   showPast: boolean
   pastMode: 'hide' | 'show' | 'toggle'
+  now: Date
 }) {
-  const renderGroup = (items: EventCardData[], dim = false) =>
+  const renderGroup = (items: EventCardData[]) =>
     view === 'card' ? (
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg ${dim ? 'opacity-70' : ''}`}>
-        {items.map(e => <EventCard key={e.key} event={e} color={color} />)}
-      </div>
+      <ul data-part="cards">{items.map(e => <EventCard key={e.key} event={e} now={now} />)}</ul>
     ) : (
-      <div className={dim ? 'opacity-70' : ''}>
-        {items.map(e => <EventListRow key={e.key} event={e} />)}
-      </div>
+      <ul data-part="list">{items.map(e => <EventRow key={e.key} event={e} now={now} />)}</ul>
     )
 
-  // 'show' mode merges everything chronologically into one stream.
-  const mergedShowAll = pastMode === 'show'
+  const merged = pastMode === 'show'
+  const main = merged
+    ? [...upcoming, ...past].sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? ''))
+    : upcoming
 
   return (
-    <div className="flex flex-col gap-lg">
-      {mergedShowAll
-        ? renderGroup([...upcoming, ...past].sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? '')))
-        : renderGroup(upcoming)}
-
-      {!mergedShowAll && showPast && past.length > 0 && (
+    <>
+      {main.length > 0 && renderGroup(main)}
+      {!merged && showPast && past.length > 0 && (
         <>
-          <div className="flex items-center gap-md">
-            <span className="text-label uppercase tracking-label font-semibold text-fg-muted/70">Past events</span>
-            <span className="flex-1 h-px bg-fg/10" aria-hidden />
-          </div>
-          {renderGroup(past, true)}
+          <div data-part="divider">Past events</div>
+          {renderGroup(past)}
         </>
       )}
-    </div>
+    </>
   )
 }
 
-// ─── EventListingClient ─────────────────────────────────────────────────────────
+// ─── EventListingClient ───────────────────────────────────────────────────────
 
 export default function EventListingClient({
   events,
   maxItems,
   defaultView,
-  color,
   showViewToggle,
   showTypeFilter,
   pastMode,
@@ -672,156 +523,141 @@ export default function EventListingClient({
 }: EventListingClientProps) {
   const now = useMemo(() => new Date(nowIso), [nowIso])
 
-  const [view,       setView]       = useState<View>(defaultView)
-  const [activeType, setActiveType] = useState<string | null>(null)
-  const [showPast,   setShowPast]   = useState(pastMode === 'show')
+  const [view,        setView]        = useState<View>(defaultView)
+  const [activeType,  setActiveType]  = useState<string | null>(null)
+  const [showPast,    setShowPast]    = useState(pastMode === 'show')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const filterTriggerRef = useRef<HTMLButtonElement>(null)
   const filterPanelId    = useId()
 
-  // Lock the view when the editor disabled the toggle.
   const effectiveView: View = showViewToggle ? view : defaultView
 
-  // Types present across all loaded events (for the chips), in canonical order.
   const availableTypes = useMemo(() => {
     const present = new Set(events.map(e => e.eventType).filter(Boolean) as string[])
     return TYPE_ORDER.filter(t => present.has(t))
   }, [events])
 
-  // Type-filtered set (chips).
   const typeFiltered = useMemo(
     () => activeType ? events.filter(e => e.eventType === activeType) : events,
     [events, activeType],
   )
 
-  // Upcoming / past split (day-granular).
   const { upcoming, past } = useMemo(() => {
     const up: EventCardData[] = []
     const pa: EventCardData[] = []
-    for (const e of typeFiltered) {
-      (isUpcoming(e.startDate, e.endDate, now) ? up : pa).push(e)
-    }
+    for (const e of typeFiltered) (isUpcoming(e.startDate, e.endDate, now) ? up : pa).push(e)
     up.sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? ''))
-    pa.sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? '')) // most recent past first
+    pa.sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? ''))
     return { upcoming: up, past: pa }
   }, [typeFiltered, now])
 
-  // maxItems caps the card/list streams (not the calendar).
   const capUpcoming = maxItems ? upcoming.slice(0, maxItems) : upcoming
   const capPast     = maxItems ? past.slice(0, maxItems)     : past
 
-  const changeType = useCallback((t: string | null) => setActiveType(t), [])
+  const closeFilters = useCallback(() => setFiltersOpen(false), [])
 
   // Hidden entirely in CMS preview/edit renders — live-front-end feature only.
   const showChips    = showTypeFilter && !typeLocked && availableTypes.length > 0 && !isPreview
   const showPastCtrl = pastMode === 'toggle' && past.length > 0 && effectiveView !== 'calendar'
+  const n = activeType ? 1 : 0
 
-  // ── Empty states for card/list ────────────────────────────────────────────
   const listEmpty = effectiveView !== 'calendar' && capUpcoming.length === 0 &&
-    (pastMode !== 'show' || past.length === 0)
+    (pastMode !== 'show' || past.length === 0) && !(showPast && capPast.length > 0)
 
-  // Polite announcement for SR users — the visible body swaps silently when the
-  // view, type filter, or past-toggle changes.
-  const resultAnnouncement = effectiveView === 'calendar'
+  const announcement = effectiveView === 'calendar'
     ? `Calendar view, ${typeFiltered.length} event${typeFiltered.length === 1 ? '' : 's'}`
     : `${capUpcoming.length} upcoming event${capUpcoming.length === 1 ? '' : 's'}${showPast && capPast.length ? `, ${capPast.length} past` : ''}, ${effectiveView === 'list' ? 'list' : 'card'} view`
 
-  return (
-    <div>
-      {/* ── Controls bar ─────────────────────────────────────────────────────── */}
-      {(showChips || showViewToggle || showPastCtrl) && (
-        <div className="flex flex-wrap items-center justify-between gap-md pb-md mb-lg border-b border-fg/8">
-          <div className="flex flex-wrap items-center gap-sm">
-            {showChips && (
-              <FilterTriggerButton
-                ref={filterTriggerRef}
-                open={filtersOpen}
-                onClick={() => setFiltersOpen(v => !v)}
-                activeCount={activeType ? 1 : 0}
-                panelId={filterPanelId}
-              />
-            )}
-          </div>
+  const views: { v: View; label: string; Icon: typeof LayoutGrid }[] = [
+    { v: 'card', label: 'Cards', Icon: LayoutGrid },
+    { v: 'list', label: 'List', Icon: List },
+    { v: 'calendar', label: 'Calendar', Icon: CalendarIcon },
+  ]
 
-          <div className="flex items-center gap-md">
+  let body: React.ReactNode
+  if (effectiveView === 'calendar') {
+    body = <CalendarView events={typeFiltered} now={now} />
+  } else if (listEmpty) {
+    if (activeType !== null) {
+      body = (
+        <Empty icon={<CalendarX2 strokeWidth={1.75} />} title={`No ${eventTypeLabel(activeType).toLowerCase()} events coming up`} text="Try another type, or clear the filter.">
+          <button type="button" data-part="empty-action" onClick={() => setActiveType(null)}>Clear filter</button>
+        </Empty>
+      )
+    } else if (pastMode === 'toggle' && past.length > 0) {
+      body = (
+        <Empty icon={<CalendarX2 strokeWidth={1.75} />} title="No upcoming events right now" text={`There ${past.length === 1 ? 'is 1 past event' : `are ${past.length} past events`} you can still look back on.`}>
+          <button type="button" data-part="empty-action" onClick={() => setShowPast(true)}>
+            Show past events <ArrowRight strokeWidth={2} aria-hidden="true" />
+          </button>
+        </Empty>
+      )
+    } else {
+      body = <Empty icon={<CalendarX2 strokeWidth={1.75} />} title="No upcoming events right now" text="Check back soon for new events." />
+    }
+  } else {
+    body = <ListingBody view={effectiveView} upcoming={capUpcoming} past={capPast} showPast={showPast} pastMode={pastMode} now={now} />
+  }
+
+  return (
+    <>
+      {(showChips || showViewToggle || showPastCtrl) && (
+        <div data-part="toolbar">
+          {showChips ? (
+            <button
+              ref={filterTriggerRef}
+              type="button"
+              data-part="filter"
+              onClick={() => setFiltersOpen(v => !v)}
+              aria-expanded={filtersOpen}
+              aria-controls={filterPanelId}
+              aria-haspopup="dialog"
+            >
+              <SlidersHorizontal aria-hidden="true" />
+              <span>Filters</span>
+              {n > 0 && <span data-part="badge" aria-hidden="true">{n}</span>}
+              <span data-part="filter-note">{activeType ? eventTypeLabel(activeType) : 'Filter by event type'}</span>
+            </button>
+          ) : <span />}
+
+          <div data-part="tools">
             {showPastCtrl && (
-              <label className="inline-flex items-center gap-xs min-h-[44px] text-label uppercase tracking-label font-semibold text-fg-muted cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={showPast}
-                  onChange={e => setShowPast(e.target.checked)}
-                  className="accent-[var(--ot-brand)] w-4 h-4"
-                />
-                Show past events
+              <label data-part="past">
+                <input type="checkbox" role="switch" checked={showPast} onChange={e => setShowPast(e.target.checked)} />
+                <span data-part="switch" aria-hidden="true" />
+                Show past events ({past.length})
               </label>
             )}
-            {showViewToggle && <ViewToggle view={effectiveView} onChange={setView} />}
+            {showViewToggle && (
+              <div data-part="views" role="group" aria-label="View">
+                {views.map(({ v, label, Icon }) => (
+                  <button key={v} type="button" data-part="view" aria-pressed={effectiveView === v} onClick={() => setView(v)}>
+                    <Icon aria-hidden="true" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {showChips && (
-        <FilterDrawer
+        <EventDrawer
           id={filterPanelId}
           open={filtersOpen}
-          onClose={() => setFiltersOpen(false)}
-          activeCount={activeType ? 1 : 0}
-          onClearAll={() => changeType(null)}
+          onClose={closeFilters}
+          types={availableTypes}
+          active={activeType}
+          onSelect={setActiveType}
           triggerRef={filterTriggerRef}
-        >
-          <FilterRadioGroup
-            icon={Layers}
-            heading="Type"
-            ariaLabel="Filter by event type"
-            value={activeType}
-            onSelect={changeType}
-            options={[
-              { value: null as string | null, label: 'All' },
-              ...availableTypes.map(t => ({ value: t as string | null, label: eventTypeLabel(t) })),
-            ]}
-          />
-        </FilterDrawer>
+        />
       )}
 
-      {/* SR-only result announcement — the visible body below swaps silently */}
-      <p className="sr-only" aria-live="polite" aria-atomic="true">{resultAnnouncement}</p>
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
 
-      {/* ── Views ────────────────────────────────────────────────────────────── */}
-      {effectiveView === 'calendar' ? (
-        <CalendarView events={typeFiltered} color={color} now={now} />
-      ) : (
-        // Keyed on the active type so a filter change fades the swapped-in set
-        // in. Calendar is excluded above — it owns its own month-navigation
-        // state, which a remount would silently reset.
-        <div key={activeType ?? 'all'} className="animate-filter-swap">
-          {listEmpty ? (
-            activeType !== null ? (
-              <EmptyShell icon={<CalendarX2 size={20} strokeWidth={1.5} />} title={`No ${eventTypeLabel(activeType).toLowerCase()} events`}>
-                <button
-                  type="button"
-                  onClick={() => changeType(null)}
-                  className="mt-xs text-label uppercase tracking-label font-semibold text-brand hover:text-brand-hover transition-colors duration-150 ease-quick focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  Clear filter
-                </button>
-              </EmptyShell>
-            ) : (
-              <EmptyShell icon={<CalendarX2 size={20} strokeWidth={1.5} />} title="No upcoming events">
-                <p className="text-body text-fg-muted">Check back soon for new events.</p>
-              </EmptyShell>
-            )
-          ) : (
-            <ListingBody
-              view={effectiveView}
-              upcoming={capUpcoming}
-              past={capPast}
-              color={color}
-              showPast={showPast}
-              pastMode={pastMode}
-            />
-          )}
-        </div>
-      )}
-    </div>
+      {/* Keyed on the type so a filter change fades the swapped-in set in; the calendar owns its own month state. */}
+      {effectiveView === 'calendar' ? body : <div key={activeType ?? 'all'} className="animate-filter-swap">{body}</div>}
+    </>
   )
 }

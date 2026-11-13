@@ -38,6 +38,7 @@ export default function CalloutPlayground() {
             { label: 'Filled',   value: 'filled'   },
             { label: 'Bordered', value: 'bordered' },
             { label: 'Bar',      value: 'bar'      },
+            { label: 'Split',    value: 'split'    },
           ],
         },
         {
@@ -64,7 +65,6 @@ export default function CalloutPlayground() {
                 intent:      s.intent as any,
                 variant:     s.variant as any,
                 dismissible: s.dismissible === 'yes',
-                icon:        c.icon,
               }}
             />
           </div>

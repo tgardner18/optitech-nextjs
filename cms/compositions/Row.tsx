@@ -119,6 +119,15 @@ export default function Row({ node, displaySettings = {}, children }: Props) {
     )
   }
 
+  if (displaySettings.formLayout === true || displaySettings.formLayout === 'true') {
+    const cols = Array.isArray(node?.nodes) ? node.nodes.length : 1
+    return (
+      <div data-part="row" data-cols={Math.min(Math.max(cols, 1), 6)} {...pa(node)}>
+        {children}
+      </div>
+    )
+  }
+
   return (
     <div
       className={`vb:row flex ${wrap ? 'flex-wrap' : ''} ${breakpointClass} ${spacingClass} ${vPaddingClass} ${bgColorClass} ${justifyClass} ${alignClass}`}

@@ -55,7 +55,7 @@ const BASE_SLIDES = [
 export default function SliderPlayground() {
   return (
     <BlockPlayground
-      defaults={{ style: 'cinematic', height: 'standard', autoPlay: 'off', loop: 'loop', navigation: 'both', align: 'center', overlay: 'leftFade', color: 'canvas' }}
+      defaults={{ style: 'cinematic', height: 'standard', autoPlay: 'off', loop: 'loop', navigation: 'both', overlay: 'leftFade', color: 'canvas' }}
       controls={[
         {
           type: 'buttons',
@@ -137,16 +137,6 @@ export default function SliderPlayground() {
             { label: 'None',          value: 'none'   },
           ],
         },
-        {
-          type: 'buttons',
-          key: 'align',
-          label: 'Content Vertical Align',
-          options: [
-            { label: 'Top',    value: 'top'    },
-            { label: 'Center', value: 'center' },
-            { label: 'Bottom', value: 'bottom' },
-          ],
-        },
       ]}
     >
       {s => (
@@ -158,7 +148,6 @@ export default function SliderPlayground() {
           displaySettings={{
             width: 'fullBleed',
             height: s.height,
-            contentVerticalAlign: s.align,
             autoPlay: s.autoPlay,
             loop: s.loop,
             navigation: s.navigation,

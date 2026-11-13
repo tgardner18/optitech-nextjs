@@ -34,6 +34,8 @@ export type SliderEngine = {
   /** Whether the persistent pause/play control should render at all (Auto-Play ≠ Off and motion isn't reduced). */
   showPlayToggle: boolean
   isPlaying: boolean
+  /** True while auto-play is held (visitor paused, hovering, focus inside, or tab hidden) — pause any progress animation off it. */
+  paused: boolean
   togglePlay: () => void
   reducedMotion: boolean
   /** Headline of the slide just navigated to — set on manual nav only, per WCAG carousel guidance (never on autoplay ticks). Consumed by a visually-hidden aria-live region. */
@@ -80,6 +82,8 @@ export function useSliderEngine({ slideCount, loop, autoPlayMs, ariaLabel, headl
   const [isHover, setIsHover]         = useState(false)
   const [isFocusWithin, setIsFocusWithin] = useState(false)
   const [isTabHidden, setIsTabHidden] = useState(false)
+  // Pressing Play is explicit: it wins over the hover and focus the press itself caused, until the pointer and focus leave.
+  const [forcePlay, setForcePlay] = useState(false)
   const bounceDir = useRef<1 | -1>(1)
 
   const clamp = useCallback((n: number) => Math.max(0, Math.min(n, slideCount - 1)), [slideCount])
@@ -128,7 +132,7 @@ export function useSliderEngine({ slideCount, loop, autoPlayMs, ariaLabel, headl
     scrollToIndex(nextIndex, false)
   }, [loop, activeIndex, slideCount, clamp, wrap, scrollToIndex])
 
-  const effectivelyPaused = userPaused || isHover || isFocusWithin || isTabHidden
+  const effectivelyPaused = userPaused || (!forcePlay && (isHover || isFocusWithin)) || isTabHidden
   const autoplayActive    = autoPlayMs !== null && !reducedMotion && slideCount > 1
 
   useEffect(() => {
@@ -164,7 +168,8 @@ export function useSliderEngine({ slideCount, loop, autoPlayMs, ariaLabel, headl
     prev,
     showPlayToggle: autoplayActive,
     isPlaying: autoplayActive && !userPaused,
-    togglePlay: () => setUserPaused(p => !p),
+    paused: effectivelyPaused,
+    togglePlay: () => { if (userPaused) setForcePlay(true); else setForcePlay(false); setUserPaused(p => !p) },
     reducedMotion,
     announcement,
     regionProps: {
@@ -174,9 +179,9 @@ export function useSliderEngine({ slideCount, loop, autoPlayMs, ariaLabel, headl
       tabIndex: 0,
       onKeyDown,
       onMouseEnter: () => setIsHover(true),
-      onMouseLeave: () => setIsHover(false),
+      onMouseLeave: () => { setIsHover(false); if (!isFocusWithin) setForcePlay(false) },
       onFocus: () => setIsFocusWithin(true),
-      onBlur: () => setIsFocusWithin(false),
+      onBlur: () => { setIsFocusWithin(false); if (!isHover) setForcePlay(false) },
     },
   }
 }

@@ -1,18 +1,17 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map, { Marker, Popup, NavigationControl, type MapRef } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { MapPin, ArrowUpRight, ExternalLink, X } from 'lucide-react'
+import { ChevronLeft, ExternalLink, MapPin, X } from 'lucide-react'
 import type { LocationData } from '@/lib/locations'
-import { hasCoordinates } from '@/lib/locationFormat'
+import { directionsUrl, hasCoordinates } from '@/lib/locationFormat'
 import LocationLabelBadge from './LocationLabelBadge'
-import LocationPlate from './LocationPlate'
 
 type MappableLocation = LocationData & { coordinates: { lat: number; lon: number } }
 
 type Props = {
-  /** Already filtered to mappable locations by the caller, but re-guarded here. */
+  /** Already filtered by the caller; re-guarded here. The pin number is the location's position in this list (matches the rail). */
   locations:     LocationData[]
   selectedKey:   string | null
   onSelectKey:   (key: string | null) => void
@@ -21,209 +20,155 @@ type Props = {
   mapHeight:     number
 }
 
-const DARK_STYLE = 'mapbox://styles/mapbox/dark-v11'
+const DARK_STYLE  = 'mapbox://styles/mapbox/dark-v11'
+const LIGHT_STYLE = 'mapbox://styles/mapbox/light-v11'
 // Continental-US default when there is nothing to frame.
 const DEFAULT_VIEW = { longitude: -98.5, latitude: 39.8, zoom: 2.6 }
+// Pins closer than this on screen merge into one numbered cluster.
+const CLUSTER_PX = 34
 
-function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
+const reduce = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-// ─── Beacon marker ──────────────────────────────────────────────────────────────
-// A brand-filled disc with an fg-on-brand core and a chromatic brand-bloom halo.
-// The active marker grows, gains an accent ring, and a motion-safe pulse. Not a
-// skeuomorphic pin — consistent with the system's sharp, token-derived identity.
-
-function Beacon({ active }: { active: boolean }) {
-  return (
-    <span className="location-beacon" data-active={active || undefined} aria-hidden>
-      {active && <span className="location-beacon__pulse" />}
-      <span className="location-beacon__dot" />
-    </span>
-  )
+/** The page's own light/dark mode, read from the nearest [data-theme] (or the root) and kept in step when it flips. */
+function useIsDark(ref: React.RefObject<HTMLElement | null>) {
+  const [dark, setDark] = useState(true)
+  useEffect(() => {
+    const read = () => {
+      const el = ref.current?.closest<HTMLElement>('[data-theme]') ?? document.documentElement
+      const t = el.dataset.theme ?? document.documentElement.dataset.theme
+      setDark(t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches)
+    }
+    read()
+    const mo = new MutationObserver(read)
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'], subtree: true })
+    return () => mo.disconnect()
+  }, [ref])
+  return dark
 }
 
 export default function LocationMap({ locations, selectedKey, onSelectKey, onViewDetails, token, mapHeight }: Props) {
   const mapRef = useRef<MapRef | null>(null)
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const dark = useIsDark(wrapRef)
+  const [zoomedFor, setZoomedFor] = useState<string | null>(null) // the pin set a cluster zoom applied to
+  // A fresh projector after every map move, so the clusters re-group from event handlers (never by reading the map ref during render).
+  const [project, setProject] = useState<((lon: number, lat: number) => { x: number; y: number }) | null>(null)
+  const syncProjector = useCallback(() => { const m = mapRef.current; if (m) setProject(() => (lon: number, lat: number) => m.project([lon, lat])) }, [])
 
-  const mappable = useMemo<MappableLocation[]>(
-    () => locations.filter(hasCoordinates) as MappableLocation[],
-    [locations],
-  )
+  const numbered = useMemo(() => locations.map((l, i) => ({ l, n: i + 1 })).filter(o => hasCoordinates(o.l)) as { l: MappableLocation; n: number }[], [locations])
+  const mappable = useMemo(() => numbered.map(o => o.l), [numbered])
+  const selected = useMemo(() => mappable.find(l => l.key === selectedKey) ?? null, [mappable, selectedKey])
 
-  const selected = useMemo(
-    () => mappable.find(l => l.key === selectedKey) ?? null,
-    [mappable, selectedKey],
-  )
-
-  // Frame all markers. 0 → default view; 1 → center at zoom 14; >1 → fit bounds.
-  const fitToMarkers = useCallback(() => {
+  const fit = useCallback((list: MappableLocation[]) => {
     const map = mapRef.current
-    if (!map || mappable.length === 0) return
-    const reduce = prefersReducedMotion()
-
-    if (mappable.length === 1) {
-      const { lat, lon } = mappable[0].coordinates
-      map.easeTo({ center: [lon, lat], zoom: 14, duration: reduce ? 0 : 800 })
-      return
-    }
-
+    if (!map || list.length === 0) return
+    const dur = reduce() ? 0 : 800
+    if (list.length === 1) { map.easeTo({ center: [list[0].coordinates.lon, list[0].coordinates.lat], zoom: 14, duration: dur }); return }
     let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity
-    for (const l of mappable) {
+    for (const l of list) {
       const { lat, lon } = l.coordinates
-      minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon)
-      minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat)
+      minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon); minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat)
     }
-    map.fitBounds(
-      [[minLon, minLat], [maxLon, maxLat]],
-      { padding: { top: 64, bottom: 64, left: 64, right: 64 }, maxZoom: 14, duration: reduce ? 0 : 800 },
-    )
-  }, [mappable])
+    map.fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: { top: 64, bottom: 64, left: 64, right: 64 }, maxZoom: 14, duration: dur })
+  }, [])
 
-  // Refit whenever the mappable set changes (search / filter / initial load),
-  // unless a specific location is selected (that drives its own fly-to below).
-  const mappableKeys = mappable.map(l => l.key).join('|')
-  useEffect(() => {
-    if (!selectedKey) fitToMarkers()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mappableKeys])
+  const keys = mappable.map(l => l.key).join('|')
+  const zoomedToCluster = zoomedFor === keys
+  const fitAll = useCallback(() => { setZoomedFor(null); fit(mappable) }, [fit, mappable])
+
+  // Refit whenever the mappable set changes (search / filter / initial load), unless a location is selected.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!selectedKey) fit(mappable) }, [keys])
 
   // Fly to the selected location.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !selected) return
-    const { lat, lon } = selected.coordinates
-    map.flyTo({
-      center: [lon, lat],
-      zoom: Math.max(map.getZoom(), 12),
-      duration: prefersReducedMotion() ? 0 : 900,
-      essential: true,
-    })
+    map.flyTo({ center: [selected.coordinates.lon, selected.coordinates.lat], zoom: Math.max(map.getZoom(), 12), duration: reduce() ? 0 : 900, essential: true })
   }, [selected])
 
   const initialViewState = useMemo(() => {
-    if (mappable.length === 1) {
-      const { lat, lon } = mappable[0].coordinates
-      return { longitude: lon, latitude: lat, zoom: 12 }
-    }
+    if (mappable.length === 1) return { longitude: mappable[0].coordinates.lon, latitude: mappable[0].coordinates.lat, zoom: 12 }
     if (mappable.length > 1) {
-      // A reasonable opening frame; onLoad fitToMarkers tightens it precisely.
-      const lons = mappable.map(l => l.coordinates.lon)
-      const lats = mappable.map(l => l.coordinates.lat)
-      return {
-        longitude: (Math.min(...lons) + Math.max(...lons)) / 2,
-        latitude:  (Math.min(...lats) + Math.max(...lats)) / 2,
-        zoom: 3.4,
-      }
+      const lons = mappable.map(l => l.coordinates.lon), lats = mappable.map(l => l.coordinates.lat)
+      return { longitude: (Math.min(...lons) + Math.max(...lons)) / 2, latitude: (Math.min(...lats) + Math.max(...lats)) / 2, zoom: 3.4 }
     }
     return DEFAULT_VIEW
   }, [mappable])
 
+  // Group pins that overlap on screen into numbered clusters. Recomputed after every map move.
+  const groups = useMemo(() => {
+    const out: { x: number; y: number; items: { l: MappableLocation; n: number }[] }[] = []
+    for (const o of numbered) {
+      const p = project ? project(o.l.coordinates.lon, o.l.coordinates.lat) : { x: 0, y: 0 }
+      const g = project ? out.find(c => Math.hypot(c.x - p.x, c.y - p.y) < CLUSTER_PX) : undefined
+      if (g) g.items.push(o); else out.push({ x: p.x, y: p.y, items: [o] })
+    }
+    return out
+  }, [numbered, project])
+
+  const zoomTo = (items: { l: MappableLocation }[]) => { setZoomedFor(keys); fit(items.map(i => i.l)) }
+  const offset = { top: [0, 8], 'top-left': [0, 8], 'top-right': [0, 8], bottom: [0, -44], 'bottom-left': [0, -44], 'bottom-right': [0, -44], left: [16, -20], right: [-16, -20], center: [0, 0] } as never
+
   return (
-    <div className="relative w-full overflow-hidden rounded-ot-surface border border-fg/10" style={{ height: mapHeight }}>
+    <div ref={wrapRef} data-part="map" data-map-theme={dark ? 'dark' : 'light'} style={{ height: mapHeight }} role="region" aria-label={`Map of ${mappable.length} locations`}>
       <Map
         ref={mapRef}
         mapboxAccessToken={token}
-        mapStyle={DARK_STYLE}
+        mapStyle={dark ? DARK_STYLE : LIGHT_STYLE}
         initialViewState={initialViewState}
-        onLoad={fitToMarkers}
+        onLoad={() => { fitAll(); syncProjector() }}
+        onMoveEnd={syncProjector}
         style={{ width: '100%', height: '100%' }}
         attributionControl={false}
         reuseMaps
       >
         <NavigationControl position="top-right" showCompass={false} />
 
-        {mappable.map(l => {
-          const active = l.key === selectedKey
+        {groups.map(g => g.items.length === 1 ? (() => {
+          const { l, n } = g.items[0], active = l.key === selectedKey
           return (
-            <Marker
-              key={l.key}
-              longitude={l.coordinates.lon}
-              latitude={l.coordinates.lat}
-              anchor="center"
-              style={{ zIndex: active ? 2 : 1 }}
-              onClick={e => {
-                // Keep the map's own click handlers from also firing.
-                e.originalEvent.stopPropagation()
-                onSelectKey(l.key)
-              }}
-            >
-              <button
-                type="button"
-                className="block cursor-pointer border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                aria-label={`${l.locationName || 'Location'}${l.locationLabel ? ` — ${l.locationLabel}` : ''}`}
-                aria-pressed={active}
-              >
-                <Beacon active={active} />
+            <Marker key={l.key} longitude={l.coordinates.lon} latitude={l.coordinates.lat} anchor="bottom" style={{ zIndex: active ? 2 : 1 }}
+              onClick={e => { e.originalEvent.stopPropagation(); onSelectKey(l.key) }}>
+              <button type="button" data-part="pin" aria-pressed={active} aria-label={`${n}. ${l.locationName || 'Location'}${l.locationLabel ? `, ${l.locationLabel}` : ''}`}>
+                <span aria-hidden="true">{n}</span>
               </button>
             </Marker>
           )
-        })}
+        })() : (
+          <Marker key={g.items.map(i => i.l.key).join('+')} longitude={g.items[0].l.coordinates.lon} latitude={g.items[0].l.coordinates.lat} anchor="center" style={{ zIndex: 1 }}
+            onClick={e => { e.originalEvent.stopPropagation(); zoomTo(g.items) }}>
+            <button type="button" data-part="cluster" aria-label={`${g.items.length} locations: ${g.items.map(i => i.l.locationName).join(', ')}. Zoom in`}>
+              <span aria-hidden="true">{g.items.map(i => i.n).join(' · ')}</span>
+            </button>
+          </Marker>
+        ))}
 
         {selected && (
-          <Popup
-            longitude={selected.coordinates.lon}
-            latitude={selected.coordinates.lat}
-            offset={16}
-            closeButton={false}
-            closeOnClick={false}
-            className="location-popup"
-            maxWidth="400px"
-            onClose={() => onSelectKey(null)}
-          >
-            {/* Horizontal card — image left, details right — so it reads wide and
-                short and stays inside the map. No fixed anchor: Mapbox auto-flips
-                it (above / below / beside the marker) to keep it in view. */}
-            <article className="relative flex w-90 max-w-[78vw] overflow-hidden rounded-ot-surface">
-              <button
-                type="button"
-                onClick={() => onSelectKey(null)}
-                aria-label="Close"
-                className="absolute right-1.5 top-1.5 z-10 inline-flex h-7 w-7 items-center justify-center bg-canvas/70 text-fg-muted backdrop-blur-sm transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-              >
-                <X size={15} strokeWidth={2} aria-hidden />
-              </button>
-
-              {/* Shared plate: image or the same designed brand fallback used on the
-                  cards, rail, and rows, so every no-image surface reads identically. */}
-              <div className="relative w-30 flex-none self-stretch bg-canvas">
-                <LocationPlate shape="fill" src={selected.imageUrl} name={selected.locationName || 'Location'} />
-              </div>
-
-              <div className="flex min-w-0 flex-1 flex-col gap-1 p-3 pr-9">
-                {selected.locationLabel && (
-                  <span><LocationLabelBadge label={selected.locationLabel} tone="soft" /></span>
-                )}
-                <h3 className="text-balance text-[0.95rem] font-bold leading-tight text-fg">
-                  {selected.locationName || 'Location'}
-                </h3>
-                {selected.address && (
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${selected.coordinates.lat},${selected.coordinates.lon}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-1.5 text-xs leading-snug text-fg-muted underline decoration-fg-muted/40 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                  >
-                    <MapPin size={12} strokeWidth={2} className="mt-0.5 flex-none text-brand" aria-hidden />
-                    <span>{selected.address}</span>
-                    <ExternalLink size={10} strokeWidth={2.5} className="mt-0.5 flex-none opacity-60" aria-hidden />
+          <Popup longitude={selected.coordinates.lon} latitude={selected.coordinates.lat} offset={offset} closeButton={false} closeOnClick={false} className="location-popup" maxWidth="320px" onClose={() => onSelectKey(null)}>
+            <div data-part="pop" role="group" aria-label={selected.locationName}>
+              <p data-part="pop-head">
+                {selected.locationLabel ? <LocationLabelBadge label={selected.locationLabel} /> : <span />}
+                <button type="button" data-part="pop-x" onClick={() => onSelectKey(null)} aria-label="Close"><X aria-hidden strokeWidth={2} /></button>
+              </p>
+              <p data-part="name">{selected.locationName || 'Location'}</p>
+              {selected.address && <p data-part="addr"><MapPin aria-hidden strokeWidth={2} /><span>{selected.address}</span></p>}
+              <p data-part="actions">
+                {selected.details?.html && <button type="button" data-part="more" onClick={() => onViewDetails(selected)}>Details</button>}
+                {directionsUrl(selected) && (
+                  <a href={directionsUrl(selected)!} target="_blank" rel="noopener noreferrer" data-part="dir">
+                    Directions<ExternalLink aria-hidden strokeWidth={2} />
+                    <span className="sr-only"> to {selected.locationName} (opens Google Maps in a new tab)</span>
                   </a>
                 )}
-                {selected.details?.html && (
-                  <button
-                    type="button"
-                    onClick={() => onViewDetails(selected)}
-                    className="mt-1 inline-flex w-fit items-center gap-1 rounded-ot-control bg-brand px-sm py-1.5 text-label font-semibold uppercase tracking-label text-fg-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                  >
-                    View details
-                    <ArrowUpRight size={13} strokeWidth={2.5} aria-hidden />
-                  </button>
-                )}
-              </div>
-            </article>
+              </p>
+            </div>
           </Popup>
         )}
       </Map>
+      {zoomedToCluster && (
+        <button type="button" data-part="show-all" onClick={fitAll}><ChevronLeft aria-hidden strokeWidth={2} />Show all locations</button>
+      )}
     </div>
   )
 }

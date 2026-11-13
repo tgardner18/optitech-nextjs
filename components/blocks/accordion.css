@@ -1,0 +1,108 @@
+/* accordion.css: OT_AccordionBlock refresh
+   CSS and markup hooks only. Color, border style, open mode, and default-open keep their meaning. */
+[data-block="accordion"] {
+  position: relative; isolation: isolate; overflow: clip; container: acc / inline-size;
+  font-family: var(--ot-font-sans); color: var(--ac-fg);
+  padding: clamp(3rem, 7cqi, 5.5rem) clamp(1.25rem, 4cqi, 3rem);
+  --ac-fg: var(--ot-fg); --ac-muted: var(--ot-fg-muted);
+  --ac-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --ac-on-ink: var(--ot-fg-on-brand);
+  --ac-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+  --ac-line: color-mix(in oklch, var(--ot-fg) 17%, transparent);
+  --ac-soft: color-mix(in oklch, var(--ot-fg) 6%, transparent);
+  --ac-card: var(--ot-surface);
+  --ac-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --ac-fill-hi: oklch(from var(--ot-brand) min(calc(min(l, .46) + .06), .5) c h);
+  --ac-fill-lo: oklch(from var(--ot-brand) calc(min(l, .46) - .1) c h);
+  --ac-dur: calc(.34s * var(--ot-motion-scale, 1)); --ot-dur-accordion: var(--ac-dur);
+  --ac-ease: cubic-bezier(.32, .72, 0, 1);
+}
+[data-theme="dark"] [data-block="accordion"]:not([data-color="brand"]) {
+  --ac-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --ac-on-ink: oklch(from var(--ot-brand) .18 .03 h);
+  --ac-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+  --ac-line: color-mix(in oklch, var(--ot-fg) 20%, transparent);
+  --ac-soft: color-mix(in oklch, var(--ot-fg) 9%, transparent);
+}
+[data-block="accordion"][data-color="canvas"] { background: var(--ot-canvas); --ac-card: var(--ot-surface); }
+[data-block="accordion"][data-color="surface"] { background: var(--ot-surface); --ac-card: var(--ot-canvas); }
+[data-block="accordion"][data-color="brand"] {
+  background: radial-gradient(70% 90% at 100% 0%, var(--ac-fill-hi), transparent 70%), linear-gradient(160deg, var(--ac-fill) 0%, var(--ac-fill-lo) 100%);
+  --ac-fg: var(--ot-fg-on-brand); --ac-muted: color-mix(in srgb, var(--ot-fg-on-brand) 94%, transparent); --ac-ink: var(--ot-fg-on-brand);
+  --ac-on-ink: oklch(from var(--ot-brand) min(l, .36) c h);
+  --ac-rule: color-mix(in oklch, var(--ot-accent) 62%, var(--ot-fg-on-brand));
+  --ac-line: color-mix(in oklch, var(--ot-fg-on-brand) 32%, transparent); --ac-soft: color-mix(in oklch, var(--ot-fg-on-brand) 12%, transparent);
+  --ac-card: color-mix(in oklch, var(--ot-fg-on-brand) 9%, transparent);
+}
+
+/* Layout: headline on the left and the list on the right once there's room; one column below */
+[data-block="accordion"] [data-part="inner"] { max-width: 80rem; margin-inline: auto; display: grid; gap: clamp(1.75rem, 4cqi, 2.75rem); }
+[data-block="accordion"]:not([data-head]) [data-part="inner"] { max-width: 52rem; }
+@container acc (min-width: 56rem) {
+  [data-block="accordion"][data-head] [data-part="inner"] { grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr); column-gap: clamp(3rem, 7cqi, 6rem); align-items: start; }
+  [data-block="accordion"][data-head] [data-part="head"] { position: sticky; top: calc(var(--ot-site-header-h, 5rem) + 1.5rem); }
+}
+[data-block="accordion"] [data-part="head"] { display: flex; flex-direction: column; gap: .875rem; max-width: 36rem; }
+[data-block="accordion"] [data-part="eyebrow"] { display: inline-flex; align-items: center; gap: .75rem; margin: 0; font-size: .75rem; line-height: 1; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--ac-ink); }
+[data-block="accordion"] [data-part="eyebrow"]::before { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--ac-rule); }
+[data-block="accordion"] [data-part="headline"] { margin: 0; font-size: clamp(1.875rem, 1.1rem + 3.2cqi, 3rem); line-height: 1.08; letter-spacing: -.025em; font-weight: 700; text-wrap: balance; color: var(--ac-fg); }
+
+/* Items */
+/* overflow-anchor: none stops the browser re-scrolling the page when a panel above the click closes while another opens */
+[data-block="accordion"] [data-part="list"] { min-width: 0; overflow-anchor: none; }
+[data-block="accordion"] [data-part="item"] { transition: border-color .2s, background-color .2s, box-shadow .2s; }
+[data-block="accordion"][data-border="ruled"] [data-part="item"] { border-top: 1px solid var(--ac-line); }
+[data-block="accordion"][data-border="ruled"] [data-part="item"]:last-child { border-bottom: 1px solid var(--ac-line); }
+[data-block="accordion"][data-border="boxed"] [data-part="item"] { margin-bottom: .75rem; border: 1px solid var(--ac-line); border-radius: var(--ot-radius-surface); background: var(--ac-card); }
+[data-block="accordion"][data-border="boxed"] [data-part="item"]:last-child, [data-block="accordion"][data-border="clean"] [data-part="item"]:last-child { margin-bottom: 0; }
+[data-block="accordion"][data-border="boxed"] [data-part="item"][data-state="open"] { border-color: color-mix(in oklch, var(--ac-ink) 55%, transparent); box-shadow: 0 12px 28px -18px rgb(0 0 0 / .28); }
+[data-block="accordion"][data-border="clean"] [data-part="item"] { margin-bottom: .375rem; border-radius: var(--ot-radius-surface); }
+[data-block="accordion"][data-border="clean"] [data-part="item"][data-state="open"] { background: var(--ac-soft); }
+
+[data-block="accordion"] [data-part="item"] > h3 { margin: 0; font: inherit; }
+[data-block="accordion"] [data-part="trigger"] { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.25rem; width: 100%; padding: 1.375rem 0; margin: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; background: none; border: 0; border-radius: var(--ot-radius-control); }
+[data-block="accordion"][data-border="boxed"] [data-part="trigger"] { padding: 1.25rem 1.375rem; border-radius: var(--ot-radius-surface); }
+[data-block="accordion"][data-border="clean"] [data-part="trigger"] { padding: 1.125rem 1.25rem; border-radius: var(--ot-radius-surface); }
+[data-block="accordion"][data-border="clean"] [data-part="trigger"]:hover { background: var(--ac-soft); }
+[data-block="accordion"] [data-part="trigger"]:focus-visible { outline: 2px solid var(--ac-ink); outline-offset: 2px; }
+[data-block="accordion"][data-border="boxed"] [data-part="trigger"]:focus-visible { outline-offset: -3px; }
+[data-block="accordion"] [data-part="question"] { flex: 1; min-width: 0; font-size: clamp(1.0625rem, .98rem + .45cqi, 1.3125rem); line-height: 1.35; font-weight: 600; letter-spacing: -.012em; text-wrap: balance; color: var(--ac-fg); transition: color .15s; }
+[data-block="accordion"] [data-part="trigger"]:hover [data-part="question"], [data-block="accordion"] [data-part="item"][data-state="open"] [data-part="question"] { color: var(--ac-ink); }
+[data-block="accordion"][data-color="brand"] [data-part="trigger"]:hover [data-part="question"] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
+
+/* The plus becomes a button-sized badge that fills when open */
+[data-block="accordion"] [data-part="icon"] { flex: none; display: grid; place-items: center; width: 2.125rem; height: 2.125rem; margin-top: -.1rem; border: 1px solid var(--ac-line); border-radius: 999px; color: var(--ac-fg);
+  transition: transform var(--ac-dur) var(--ac-ease), background-color .2s, border-color .2s, color .2s; }
+[data-block="accordion"][data-border="clean"] [data-part="icon"] { background: var(--ac-soft); border-color: transparent; }
+[data-block="accordion"] [data-part="icon"] svg { width: 1rem; height: 1rem; }
+[data-block="accordion"] [data-part="trigger"]:hover [data-part="icon"] { border-color: var(--ac-ink); color: var(--ac-ink); }
+[data-block="accordion"] [data-part="item"][data-state="open"] [data-part="icon"] { transform: rotate(45deg); background: var(--ac-ink); border-color: var(--ac-ink); color: var(--ac-on-ink); }
+
+/* Answers. A wrapper inside the panel is a one-row grid that goes from 0fr to 1fr, so the browser animates to the
+   answer's natural height itself. (The old height keyframes depended on a height Radix measures after the panel
+   opens, so opening snapped to full height in one frame while closing animated. The transition sits on the
+   wrapper, not the panel, because Radix briefly zeroes the panel's transition while it measures.) Open and close
+   run the same curve for the same time, so when one item closes as another opens the page height changes smoothly. */
+[data-block="accordion"] [data-part="answer-wrap"] { display: grid; grid-template-rows: 0fr; visibility: hidden; }
+[data-block="accordion"] [data-part="panel"][data-state="open"] > [data-part="answer-wrap"] { grid-template-rows: 1fr; visibility: visible; }
+[data-block="accordion"] [data-part="answer-clip"] { min-height: 0; overflow: hidden; }
+[data-block="accordion"] [data-part="answer"] { opacity: 0; transform: translateY(-.375rem); }
+[data-block="accordion"] [data-part="panel"][data-state="open"] [data-part="answer"] { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="accordion"] [data-part="answer-wrap"] { transition: grid-template-rows var(--ac-dur) var(--ac-ease), visibility 0s linear var(--ac-dur); }
+  [data-block="accordion"] [data-part="panel"][data-state="open"] > [data-part="answer-wrap"] { transition-delay: 0s; }
+  [data-block="accordion"] [data-part="answer"] { transition: opacity calc(var(--ac-dur) * .7) ease-out, transform var(--ac-dur) var(--ac-ease); }
+  [data-block="accordion"] [data-part="panel"][data-state="open"] [data-part="answer"] { transition-delay: calc(var(--ac-dur) * .15); }
+}
+[data-block="accordion"] [data-part="answer"] { margin: 0; max-width: 68ch; padding: 0 3.5rem 1.5rem 0; font-size: 1.0625rem; line-height: 1.7; color: var(--ac-muted); text-wrap: pretty; }
+[data-block="accordion"][data-border="boxed"] [data-part="answer"] { padding: 0 4.5rem 1.5rem 1.375rem; }
+[data-block="accordion"][data-border="clean"] [data-part="answer"] { padding: 0 4.5rem 1.375rem 1.25rem; }
+@container acc (max-width: 32rem) {
+  [data-block="accordion"] [data-part="answer"] { padding-right: 0; }
+  [data-block="accordion"][data-border="boxed"] [data-part="answer"], [data-block="accordion"][data-border="clean"] [data-part="answer"] { padding-right: 1.25rem; }
+}
+
+/* Editor empty state */
+[data-block="accordion"] [data-part="empty"] { margin: 0; padding: 3rem 0; text-align: center; color: var(--ac-muted); }
+/* Pointer cursor on the trigger (the site reset sets none) */
+[data-block="accordion"] [data-part="trigger"] { cursor: pointer; }

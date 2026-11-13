@@ -26,7 +26,7 @@
  * currency too ("UK · £").
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useId } from 'react'
 import { SUPPORTED_LOCALES, getLocaleMeta, localizedHref, isSupportedLocale } from '@/lib/i18n/config'
 import type { Locale } from '@/lib/i18n/config'
 import { useLocale } from '@/lib/i18n/LocaleProvider'
@@ -79,12 +79,15 @@ function getBrowserPathname(): string {
 type LocaleSelectorProps = {
   /** Locale codes to show in the picker. Omit or pass [] to show all SUPPORTED_LOCALES. */
   enabledLocales?: string[]
+  /** Inside the primary navigation: site-nav.css owns the look (data-part hooks, no utility classes). */
+  scoped?: boolean
 }
 
 // ── Desktop trigger + dropdown ────────────────────────────────────────────────
 
-export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
+export function LocaleSelector({ enabledLocales, scoped = false }: LocaleSelectorProps) {
   const { t }    = useTranslation()
+  const popId    = useId()
   const [open, setOpen] = useState(false)
   const containerRef    = useRef<HTMLDivElement>(null)
   const triggerRef      = useRef<HTMLButtonElement>(null)
@@ -144,6 +147,45 @@ export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
 
   // If the site only has one choice, don't render the selector at all
   if (options.length <= 1) return null
+
+  if (scoped) {
+    return (
+      <div ref={containerRef} data-part="locale">
+        <button
+          ref={triggerRef}
+          type="button"
+          data-part="tool"
+          data-wide=""
+          aria-expanded={open}
+          aria-controls={open ? popId : undefined}
+          aria-label={`${t('locale.selector')}: ${active.native}`}
+          onClick={() => setOpen(v => !v)}
+        >
+          <GlobeIcon size={18} />
+          <span data-part="tool-code">{active.code}{storefront && currencySymbol ? ` · ${currencySymbol}` : ''}</span>
+          <ChevronIcon open={false} size={12} />
+        </button>
+        {open && (
+          <div data-part="locale-pop" id={popId} role="listbox" aria-label={t('locale.selector')}>
+            {options.map((opt, i) => (
+              <button
+                key={opt.id}
+                ref={i === 0 ? firstItemRef : undefined}
+                type="button"
+                role="option"
+                data-part="locale-opt"
+                aria-selected={opt.id === activeId}
+                onClick={() => select(opt)}
+              >
+                <span>{opt.native}</span>
+                <small>{opt.code}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -222,9 +264,11 @@ export function LocaleSelector({ enabledLocales }: LocaleSelectorProps) {
 export function LocaleSelectorMobile({
   onSelect,
   enabledLocales,
+  scoped = false,
 }: {
   onSelect?: () => void
   enabledLocales?: string[]
+  scoped?: boolean
 }) {
   const { t }  = useTranslation()
 
@@ -241,6 +285,22 @@ export function LocaleSelectorMobile({
     onSelect?.()
     if (opt.id === activeId) return
     goTo(opt) // writes NEXT_LOCALE first — see the desktop select() note
+  }
+
+  if (scoped) {
+    return (
+      <div data-part="sheet-lang">
+        <p>{t('locale.selector')}</p>
+        <div role="group" aria-label={t('locale.selector')}>
+          {options.map(opt => (
+            <button key={opt.id} type="button" aria-pressed={opt.id === activeId} onClick={() => select(opt)}>
+              <b>{opt.native}</b>
+              <small>{opt.code}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -277,10 +337,10 @@ export function LocaleSelectorMobile({
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
-function GlobeIcon() {
+function GlobeIcon({ size = 15 }: { size?: number }) {
   return (
     <svg
-      width="15" height="15" viewBox="0 0 24 24"
+      width={size} height={size} viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2"
       strokeLinecap="round" strokeLinejoin="round"
       aria-hidden="true" className="shrink-0"
@@ -292,10 +352,10 @@ function GlobeIcon() {
   )
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
+function ChevronIcon({ open, size = 11 }: { open: boolean; size?: number }) {
   return (
     <svg
-      width="11" height="11" viewBox="0 0 12 12"
+      width={size} height={size} viewBox="0 0 12 12"
       fill="none" aria-hidden="true"
       className={`shrink-0 transition-transform duration-150 ease-quick ${open ? 'rotate-180' : ''}`}
     >

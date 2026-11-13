@@ -1,7 +1,6 @@
 export type SliderStyleOptions = {
   width:                'fullBleed' | 'contained'
   height:               'compact' | 'standard' | 'large' | 'fullScreen' | 'fitContent'
-  contentVerticalAlign: 'top' | 'center' | 'bottom'
   autoPlay:             'off' | 'slow' | 'medium' | 'fast'
   /** Dwell time in ms per slide, or null when Auto-Play is off. */
   autoPlayMs:           number | null
@@ -21,7 +20,6 @@ export function getSliderStyles(s: Record<string, string | boolean>): SliderStyl
   return {
     width:                (s.width                ?? 'fullBleed') as SliderStyleOptions['width'],
     height:               (s.height               ?? 'standard')  as SliderStyleOptions['height'],
-    contentVerticalAlign: (s.contentVerticalAlign  ?? 'center')    as SliderStyleOptions['contentVerticalAlign'],
     autoPlay,
     autoPlayMs:           AUTOPLAY_MS[autoPlay] ?? null,
     loop:                 (s.loop                 ?? 'loop')       as SliderStyleOptions['loop'],

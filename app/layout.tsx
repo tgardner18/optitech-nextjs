@@ -220,6 +220,7 @@ export default async function RootLayout({
       // toggle). No client-side init script needed — the correct theme is baked into
       // the SSR HTML so there is no FOUC even on first paint.
       data-theme={resolvedTheme}
+      data-scroll-behavior="smooth"
       className={`${poppins.variable} ${geistMono.variable} ${syne.variable} ${sourceSerif.variable} ${sora.variable} ${plusJakarta.variable} ${manrope.variable} ${hankenGrotesk.variable} ${fraunces.variable} ${caveat.variable} ${orbitron.variable} h-full antialiased`}
       suppressHydrationWarning
     >

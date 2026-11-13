@@ -1,0 +1,121 @@
+/* feature.css: OT_FeatureGridBlock + OT_FeatureItem refresh
+   CSS and markup hooks only. No content type or display template changes.
+   Color, layout, columns, icon style and animate keep their meaning. */
+[data-block="feature"] {
+  container: feature / inline-size; position: relative; isolation: isolate; box-sizing: border-box; width: 100%;
+  padding: clamp(3rem, 8cqi, 7rem) clamp(1.25rem, 4cqi, 3rem); font-family: var(--ot-font-sans); color: var(--ot-fg);
+  --f-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --f-fg: var(--ot-fg); --f-muted: var(--ot-fg-muted);
+  --f-line: oklch(from var(--ot-fg) l c h / .1);
+  --f-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+  --f-card: var(--ot-surface); --f-card-line: oklch(from var(--ot-fg) l c h / .1);
+  --f-gap: clamp(1rem, 2.4cqi, 2rem);
+  --f-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --f-fill-hi: oklch(from var(--ot-brand) min(calc(min(l, .46) + .06), .5) c h);
+  --f-fill-lo: oklch(from var(--ot-brand) calc(min(l, .46) - .1) c h);
+}
+[data-theme="dark"] [data-block="feature"]:not([data-color="brand"]) {
+  --f-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --f-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+}
+[data-block="feature"][data-color="canvas"] { background: var(--ot-canvas); }
+[data-block="feature"][data-color="surface"] { background: var(--ot-surface); --f-card: oklch(from var(--ot-fg) l c h / .035); --f-card-line: oklch(from var(--ot-fg) l c h / .09); }
+[data-block="feature"][data-color="brand"] {
+  background: radial-gradient(70% 90% at 100% 0%, var(--f-fill-hi), transparent 70%), linear-gradient(160deg, var(--f-fill) 0%, var(--f-fill-lo) 100%);
+  --f-ink: var(--ot-fg-on-brand); --f-fg: var(--ot-fg-on-brand);
+  --f-muted: color-mix(in srgb, var(--ot-fg-on-brand) 88%, transparent);
+  --f-line: color-mix(in srgb, var(--ot-fg-on-brand) 18%, transparent);
+  --f-rule: color-mix(in oklch, var(--ot-accent) 60%, var(--ot-fg-on-brand));
+  --f-card: color-mix(in srgb, var(--ot-fg-on-brand) 8%, transparent); --f-card-line: color-mix(in srgb, var(--ot-fg-on-brand) 16%, transparent);
+}
+
+/* Same content width as the Stat block, so stacked sections line up */
+[data-block="feature"] > * { max-width: 80rem; margin-inline: auto; }
+
+/* Header */
+[data-block="feature"] [data-part="header"] { margin-bottom: clamp(2rem, 5cqi, 3.5rem); }
+[data-block="feature"] [data-part="eyebrow"] { display: flex; align-items: center; gap: .75rem; margin: 0 0 .875rem; font-size: .75rem; line-height: 1; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--f-ink); }
+[data-block="feature"] [data-part="eyebrow"]::before { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--f-rule); flex: none; }
+[data-block="feature"] [data-part="heading"] { margin: 0; max-width: 24ch; font-weight: 700; font-size: clamp(1.75rem, 1.1rem + 2.6cqi, 2.75rem); line-height: 1.08; letter-spacing: -.024em; text-wrap: balance; color: var(--f-fg); }
+[data-block="feature"] [data-part="sub"] { margin: .875rem 0 0; max-width: 60ch; font-size: clamp(1rem, .95rem + .3cqi, 1.125rem); line-height: 1.6; color: var(--f-muted); text-wrap: pretty; }
+
+/* Grid: "up to N columns", but never narrower than a readable card. No breakpoints needed. */
+[data-block="feature"] [data-part="list"] {
+  --f-n: 3; --f-min: 16rem;
+  display: grid; gap: var(--f-gap);
+  grid-template-columns: repeat(auto-fill, minmax(max(var(--f-min), (100% - (var(--f-n) - 1) * var(--f-gap)) / var(--f-n)), 1fr));
+}
+[data-block="feature"][data-cols="2"] [data-part="list"] { --f-n: 2; --f-min: 20rem; }
+[data-block="feature"][data-cols="4"] [data-part="list"] { --f-n: 4; --f-min: 14rem; }
+[data-block="feature"] [data-part="list"] > li { container: fcard / inline-size; min-width: 0; }
+
+/* Card: quiet at rest. Only a card with a link lifts, and then the whole card is the link. */
+[data-block="feature"] [data-part="card"] {
+  position: relative; height: 100%; box-sizing: border-box; border-radius: var(--ot-radius-surface);
+  padding: clamp(1.25rem, 9cqi, 2rem); background: var(--f-card); border: 1px solid var(--f-card-line);
+  box-shadow: 0 1px 2px oklch(from var(--ot-fg) l c h / .04);
+  transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s cubic-bezier(.16,1,.3,1), border-color .2s ease;
+}
+[data-block="feature"] [data-part="card"]:has([data-part="link"]) { cursor: pointer; }
+[data-block="feature"] [data-part="link"]::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+[data-block="feature"] [data-part="card"] [data-part="link"]::after { border-radius: var(--ot-radius-surface); }
+[data-block="feature"] [data-part="card"]:has([data-part="link"]:focus-visible) { outline: 2px solid var(--f-ink); outline-offset: 3px; }
+[data-block="feature"] [data-part="link"]:focus-visible { outline: none; }
+@media (hover: hover) {
+  [data-block="feature"] [data-part="card"]:has([data-part="link"]):hover { transform: translateY(-3px); border-color: oklch(from var(--f-ink) l c h / .35); box-shadow: 0 2px 4px oklch(0 0 0 / .04), 0 20px 40px -22px oklch(from var(--f-ink) l c h / .55); }
+  [data-block="feature"] :is([data-part="card"], [data-part="ruled-row"]):has([data-part="link"]):hover :is([data-part="icon"], [data-part="tile"]) svg { transform: scale(1.08); }
+  [data-block="feature"] :is([data-part="card"], [data-part="ruled-row"]):has([data-part="link"]):hover [data-part="link"] { text-decoration-color: currentColor; }
+  [data-block="feature"] :is([data-part="card"], [data-part="ruled-row"]):has([data-part="link"]):hover [data-part="link"] svg { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) { [data-block="feature"] [data-part="card"]:hover { transform: none !important; } }
+
+/* Icons */
+[data-block="feature"] :is([data-part="icon"], [data-part="tile"]) svg { display: block; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+[data-block="feature"] [data-part="tile"] { display: inline-flex; align-items: center; justify-content: center; width: 3.25rem; height: 3.25rem; margin-bottom: 1.125rem; border-radius: var(--ot-radius-control); background: oklch(from var(--f-ink) l c h / .12); color: var(--f-ink); }
+[data-block="feature"] [data-part="tile"] svg { width: 1.75rem; height: 1.75rem; stroke-width: 1.75; }
+/* Accent icon lines up with the title, not the middle of the paragraph */
+[data-block="feature"] [data-part="row"] { display: flex; align-items: flex-start; gap: .875rem; }
+[data-block="feature"] [data-part="row"] > [data-part="icon"] { flex: none; color: var(--f-ink); margin-top: .05rem; }
+[data-block="feature"] [data-part="row"] > [data-part="icon"] svg { width: 1.75rem; height: 1.75rem; stroke-width: 2; }
+[data-block="feature"] [data-part="row"] > [data-part="body"] { min-width: 0; flex: 1; }
+@container fcard (max-width: 17rem) { [data-block="feature"] [data-part="row"] { flex-direction: column; gap: .75rem; } }
+
+/* Type */
+[data-block="feature"] [data-part="title"] { margin: 0; font-size: clamp(1.125rem, 1rem + 1.2cqi, 1.3125rem); line-height: 1.3; letter-spacing: -.012em; font-weight: 600; text-wrap: balance; color: var(--f-fg); }
+[data-block="feature"] [data-part="desc"] { margin: .5rem 0 0; font-size: clamp(.9375rem, .9rem + .4cqi, 1rem); line-height: 1.6; color: var(--f-muted); text-wrap: pretty; }
+[data-block="feature"] [data-part="link"] {
+  display: inline-flex; align-items: center; gap: .375rem; margin-top: .875rem; min-height: 2.75rem;
+  font-size: .8125rem; letter-spacing: .08em; font-weight: 700; text-transform: uppercase; color: var(--f-ink);
+  text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: text-decoration-color .2s ease;
+}
+[data-block="feature"] [data-part="link"] svg { width: .875rem; height: .875rem; stroke-width: 2.5; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+
+/* Ruled layout: theme-safe rules, a center line only where a row has two items */
+[data-block="feature"] [data-part="ruled"] { display: flex; flex-direction: column; border-bottom: 1px solid var(--f-line); }
+[data-block="feature"] [data-part="ruled-row"] {
+  position: relative; display: grid; grid-template-columns: 1fr; column-gap: clamp(1.5rem, 5cqi, 4rem); row-gap: 1.5rem;
+  padding: clamp(1.25rem, 3cqi, 1.75rem) 1rem; margin: 0 -1rem;
+  border-top: 1px solid transparent; border-image: linear-gradient(to right, transparent, var(--f-ink) 12%, var(--f-rule) 88%, transparent) 1;
+  transition: background-color .2s ease;
+}
+[data-block="feature"][data-color="brand"] [data-part="ruled-row"] { border-image: none; border-top-color: var(--f-line); }
+[data-block="feature"] [data-part="ruled-row"] > [data-part="item"] { position: relative; min-width: 0; }
+[data-block="feature"] [data-part="ruled-row"][data-zebra] { background: oklch(from var(--ot-fg) l c h / .03); }
+[data-theme="dark"] [data-block="feature"] [data-part="ruled-row"][data-zebra] { background: oklch(from var(--ot-fg) l c h / .04); }
+[data-block="feature"][data-color="brand"] [data-part="ruled-row"][data-zebra] { background: color-mix(in srgb, var(--ot-fg-on-brand) 5%, transparent); }
+@media (hover: hover) { [data-block="feature"] [data-part="ruled-row"]:has([data-part="link"]):hover { background: oklch(from var(--f-ink) l c h / .07); } }
+@container feature (min-width: 44rem) {
+  [data-block="feature"] [data-part="ruled-row"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-block="feature"] [data-part="ruled-row"]:has(> :nth-child(2))::after { content: ""; position: absolute; left: 50%; top: clamp(1.25rem, 3cqi, 1.75rem); bottom: clamp(1.25rem, 3cqi, 1.75rem); width: 1px; background: var(--f-line); }
+}
+
+/* Section CTA */
+[data-block="feature"] [data-part="cta"] { margin-top: clamp(2rem, 5cqi, 3.5rem); }
+[data-block="feature"] [data-part="cta"] a { display: inline-flex; align-items: center; gap: .375rem; min-height: 2.75rem; font-size: .8125rem; letter-spacing: .08em; font-weight: 700; text-transform: uppercase; color: var(--f-ink); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+[data-block="feature"] [data-part="cta"] a:hover { text-decoration-color: currentColor; }
+[data-block="feature"] [data-part="cta"] svg { width: .875rem; height: .875rem; stroke-width: 2.5; }
+[data-block="feature"] a:focus-visible { outline: 2px solid var(--f-ink); outline-offset: 3px; }
+
+/* Standalone feature tiles (Feature Item block / groups): the wrapper supplies its own fill and padding. */
+[data-block="feature"][data-solo]:is([data-color]) { background: revert-layer; padding: revert-layer; }
+[data-block="feature"] [data-part="tilewrap"] { height: 100%; }

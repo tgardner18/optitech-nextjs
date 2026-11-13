@@ -51,7 +51,16 @@ export default function OT_StatItemGroupAdapter({ content, displaySettings = {} 
         const { pa } = getPreviewUtils(node as any)
         const { stat, effect } = buildStatItemFromContent(node.component)
         return (
-          <div key={node.key} {...pa(node as any)}>
+          <div
+            key={node.key}
+            data-block="stat"
+            data-solo=""
+            data-color={styleOptions.color ?? 'brand'}
+            data-glass={styleOptions.glass ? 'yes' : 'no'}
+            data-effect={effect}
+            data-place={styleOptions.iconPlacement ?? 'inline'}
+            {...pa(node as any)}
+          >
             <StatTile
               stat={stat}
               styleOptions={styleOptions}

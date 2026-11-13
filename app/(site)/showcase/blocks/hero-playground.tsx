@@ -38,6 +38,7 @@ export default function HeroPlayground() {
           key: 'direction',
           label: 'Direction',
           options: [
+            { label: 'Editorial Split', value: 'editorialSplit' },
             { label: 'Spotlight', value: 'spotlight' },
             { label: 'Overlap',   value: 'overlap'   },
             { label: 'Diagonal',  value: 'diagonal'  },

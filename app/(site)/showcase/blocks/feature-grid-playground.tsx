@@ -26,7 +26,7 @@ const bodyDoc = (text: string) => ({
 const FEATURES = [
   { headline: 'Fast by default',            body: bodyDoc('Every experience loads quickly for your audience, wherever they are. Speed is built in, not bolted on.') },
   { headline: 'Always up to date',          body: bodyDoc('Changes go live the moment you publish them, with no waiting and no technical help required.') },
-  { headline: 'Reach the right people',     body: bodyDoc('Tailor what each audience sees in a few clicks. Target by location, behaviour, or any detail you already know.') },
+  { headline: 'Reach the right people',     body: bodyDoc('Tailor what each audience sees in a few clicks. Target by location, behavior, or any detail you already know.') },
   { headline: 'Test several ideas at once', body: bodyDoc('Run multiple tests side by side and the platform keeps the results clean, with no overlap to untangle.') },
   { headline: 'Confidence built in',        body: bodyDoc('Clear measurement and sensible defaults tell you when a result is ready to act on, with no spreadsheet needed.') },
   { headline: 'Easy to undo',               body: bodyDoc('One click reverts any change in seconds, with a full history of who changed what and when.') },

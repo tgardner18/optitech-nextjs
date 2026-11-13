@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
-import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
 
 // ─── Icon lookup ──────────────────────────────────────────────────────────────
@@ -71,62 +69,17 @@ function easeOutQuart(t: number): number {
   return 1 - (1 - t) ** 4
 }
 
-// ─── CVA variants ─────────────────────────────────────────────────────────────
+// Visual styling lives in stat.css (imported from app/globals.css). This component only sets
+// data attributes and markup; the surrounding Stat block (or a standalone wrapper) supplies the
+// color / glass / effect / placement attributes the stylesheet reads.
 
-function glassCardClass(color: 'brand' | 'canvas' | 'surface'): string {
-  if (color === 'surface') return 'banner-glass-surface'
-  if (color === 'canvas')  return 'banner-glass'
-  return 'bg-glass'
+/**
+ * Values that aren't quantities (24/7, 1 in 3, a year like 1938) show as written instead of
+ * counting up from 0.
+ */
+function isCountable(raw: string): boolean {
+  return !/[\/:]|\bin\b/.test(raw) && !/^(1[89]|20)\d\d$/.test(raw)
 }
-
-const valueCva = cva('font-light leading-none tabular-nums', {
-  variants: {
-    color: {
-      brand:   'text-fg-on-brand',
-      canvas:  'text-fg',
-      surface: 'text-fg',
-    },
-    size: {
-      lg: 'text-[clamp(4rem,9vw,7.5rem)] tracking-[-0.035em]',
-      md: 'text-display tracking-[-0.035em]',
-      sm: 'text-[clamp(2.5rem,5.5vw,4.75rem)] tracking-[-0.035em]',
-    },
-  },
-  defaultVariants: { color: 'brand', size: 'sm' },
-})
-
-const labelCva = cva('text-label tracking-label uppercase font-semibold', {
-  variants: {
-    color: {
-      brand:   'text-fg-on-brand/85',
-      canvas:  'text-fg-muted',
-      surface: 'text-fg-muted',
-    },
-  },
-  defaultVariants: { color: 'brand' },
-})
-
-const contextCva = cva('text-label font-normal', {
-  variants: {
-    color: {
-      brand:   'text-fg-on-brand/70',
-      canvas:  'text-fg-muted',
-      surface: 'text-fg-muted',
-    },
-  },
-  defaultVariants: { color: 'brand' },
-})
-
-const iconBadgeCva = cva('shrink-0', {
-  variants: {
-    color: {
-      brand:   'text-fg-on-brand/70',
-      canvas:  'text-brand/80',
-      surface: 'text-brand/80',
-    },
-  },
-  defaultVariants: { color: 'brand' },
-})
 
 // ─── Animation constants ──────────────────────────────────────────────────────
 
@@ -156,8 +109,6 @@ export type StatTileProps = {
    */
   variant?:      'card' | 'row'
   className?:    string
-  /** Numeral type scale. StatBlock's grid maps this from its column count; standalone use defaults to 'sm'. */
-  size?:         'lg' | 'md' | 'sm'
   /**
    * 'left' (default) — matches StatBlock's continuous row. 'center' — value,
    * rule, and label/context all centered; used for the standalone/grouped
@@ -175,11 +126,9 @@ export default function StatTile({
   staggerMs = 0,
   variant = 'card',
   className,
-  size = 'sm',
   align = 'left',
 }: StatTileProps) {
   const {
-    color         = 'brand',
     glass         = false,
     iconPlacement = 'inline',
     animate       = true,
@@ -189,6 +138,7 @@ export default function StatTile({
   const centered  = iconAbove || align === 'center'
   const ref       = useRef<HTMLDivElement>(null)
   const p         = parseValue(stat.value)
+  const countable = isCountable(stat.value)
 
   const prefersReducedMotion = usePrefersReducedMotion()
 
@@ -211,7 +161,7 @@ export default function StatTile({
       return
     }
 
-    setProgress(0)
+    if (countable) setProgress(0)
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -224,19 +174,19 @@ export default function StatTile({
     )
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [animate, prefersReducedMotion, isControlled])
+  }, [animate, prefersReducedMotion, isControlled, countable])
 
   // When controlled and animating, start count progress at 0 until entry.
   useEffect(() => {
-    if (isControlled && shouldAnim) setProgress(0)
-  }, [isControlled, shouldAnim])
+    if (isControlled && shouldAnim && countable) setProgress(0)
+  }, [isControlled, shouldAnim, countable])
 
   // ── Step 2: after entry, schedule the count-up start ─────────────────────
   useEffect(() => {
-    if (!entered || !shouldAnim) return
+    if (!entered || !shouldAnim || !countable) return
     const t = setTimeout(() => setCountOn(true), COUNT_LAG + staggerMs)
     return () => clearTimeout(t)
-  }, [entered, shouldAnim, staggerMs])
+  }, [entered, shouldAnim, countable, staggerMs])
 
   // ── Step 3: RAF count-up loop, owned entirely by this tile ───────────────
   useEffect(() => {
@@ -263,7 +213,10 @@ export default function StatTile({
     }
   }, [countOn])
 
-  const disp = shouldAnim && !countOn ? 0 : p.number * progress
+  const counting = shouldAnim && countable
+  const disp     = counting && !countOn ? 0 : p.number * progress
+  // Marks the end of the count-up (stat.css warms the Glow halo and lights the bar from this).
+  const counted  = !counting || (countOn && progress >= 1)
 
   const Icon = stat.icon ? ICONS[stat.icon] : null
 
@@ -292,7 +245,8 @@ export default function StatTile({
       }
     : {}
 
-  const ruleStyle: React.CSSProperties = shouldAnim
+  // The gradient effect fills its bar in with CSS (stat.css), so it skips the inline draw-in.
+  const ruleStyle: React.CSSProperties = shouldAnim && effect !== 'gradient'
     ? {
         transform:       entered ? 'scaleX(1)' : 'scaleX(0)',
         transformOrigin: centered ? 'center' : 'left',
@@ -303,72 +257,33 @@ export default function StatTile({
   return (
     <div
       ref={ref}
-      className={cn(
-        'relative overflow-hidden flex flex-col',
-        centered && 'items-center',
-        variant === 'card' && (glass ? cn(glassCardClass(color), 'p-md md:p-lg') : 'p-md md:p-lg'),
-        className,
-      )}
+      data-part="stat"
+      data-panel={variant === 'card' && glass ? '' : undefined}
+      data-align={centered ? 'center' : undefined}
+      data-counted={counted ? '' : undefined}
+      className={className}
       style={itemStyle}
     >
       {iconAbove && Icon && (
-        <Icon
-          aria-hidden="true"
-          className={cn(iconBadgeCva({ color }), 'mb-sm')}
-          size={38}
-          strokeWidth={1.5}
-          style={labelStyle}
-        />
+        <Icon data-part="icon-above" aria-hidden="true" strokeWidth={1.5} style={labelStyle} />
       )}
 
-      <p
-        className={cn(
-          valueCva({ color, size }),
-          centered && 'text-center',
-          pulse && shouldAnim && 'animate-stat-pulse',
-          effect === 'gradient' && 'ot-fx-gradient font-semibold',
-          effect === 'glow'     && 'stat-effect-glow',
-        )}
-        aria-hidden="true"
-      >
-        {p.prefix && <span className="stat-affix mr-[0.05em]">{p.prefix}</span>}
+      <p data-part="num" data-pulse={pulse && shouldAnim ? '' : undefined} aria-hidden="true">
+        {p.prefix && <span data-part="affix">{p.prefix}</span>}
         {fmtNumber(disp, p.decimals)}
-        {p.suffix && <span className="stat-affix ml-[0.05em]">{p.suffix}</span>}
+        {p.suffix && <span data-part="affix">{p.suffix}</span>}
       </p>
       <span className="sr-only">{stat.value}</span>
 
-      <span
-        aria-hidden="true"
-        className={cn(
-          'block h-px w-8 mt-sm shrink-0',
-          centered && 'mx-auto',
-          color === 'brand' ? 'bg-fg-on-brand/20' : 'bg-brand/25',
-        )}
-        style={ruleStyle}
-      />
+      <span data-part="rule" aria-hidden="true" style={ruleStyle} />
 
-      <div
-        className={cn(
-          'mt-sm flex',
-          iconAbove
-            ? 'flex-col items-center text-center gap-xs'
-            : cn(Icon && 'items-center gap-sm', align === 'center' && 'justify-center text-center'),
-        )}
-        style={labelStyle}
-      >
+      <div data-part="meta" style={labelStyle}>
         {!iconAbove && Icon && (
-          <Icon
-            aria-hidden="true"
-            className={iconBadgeCva({ color })}
-            size={34}
-            strokeWidth={1.5}
-          />
+          <Icon data-part="icon-inline" aria-hidden="true" strokeWidth={1.5} />
         )}
-        <div className={cn('flex flex-col gap-xs', centered && 'items-center')}>
-          <p className={labelCva({ color })}>{stat.label}</p>
-          {stat.context && (
-            <p className={contextCva({ color })}>{stat.context}</p>
-          )}
+        <div data-part="text">
+          <p data-part="label">{stat.label}</p>
+          {stat.context && <p data-part="context">{stat.context}</p>}
         </div>
       </div>
     </div>

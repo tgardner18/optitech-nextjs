@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, startTransition } from 'react'
+import { useState, useEffect, useRef, useId, startTransition } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { ChevronDown } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { LocaleSelectorMobile } from '@/components/layout/LocaleSelector'
 import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
@@ -28,18 +29,31 @@ type Props = {
   ctaLabel:        string
   ctaHref:         string
   enabledLocales?: string[]
+  /** Which Navbar Style this menu belongs to: site-nav.css hides it at that style's desktop breakpoint. */
+  navStyle?:       'top-bar' | 'split-bar' | 'sidebar'
 }
 
-export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales }: Props) {
+/**
+ * The menu button plus its full-screen sheet. While closed, the sheet is `inert`,
+ * so Tab never lands on links nobody can see. While open it is a labeled modal
+ * dialog: focus moves to the close button, the page behind goes inert, Escape
+ * closes it, and focus returns to the menu button.
+ */
+export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales, navStyle = 'top-bar' }: Props) {
   const [open,        setOpen]        = useState(false)
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
   const [mounted,     setMounted]     = useState(false)
-  const pathname = usePathname()
-  const { t } = useTranslation()
+  const pathname  = usePathname()
+  const { t }     = useTranslation()
+  const baseId    = useId()
+  const burgerRef = useRef<HTMLButtonElement>(null)
+  const closeRef  = useRef<HTMLButtonElement>(null)
+  const rootRef   = useRef<HTMLDivElement>(null)
+  const wasOpen   = useRef(false)
 
   useEffect(() => { startTransition(() => setMounted(true)) }, [])
 
-  // Lock body scroll and handle ESC while menu is open
+  // Lock body scroll and handle ESC while the menu is open
   useEffect(() => {
     if (!open) return
     const handleKey = (e: KeyboardEvent) => {
@@ -53,160 +67,139 @@ export default function MobileMenu({ navItems, ctaLabel, ctaHref, enabledLocales
     }
   }, [open])
 
-  function close() { setOpen(false); setExpandedIdx(null) }
+  // Dialog focus: in on open, back to the menu button on close. The rest of the page is inert while open.
+  useEffect(() => {
+    if (!open) {
+      if (wasOpen.current) burgerRef.current?.focus()
+      wasOpen.current = false
+      return
+    }
+    wasOpen.current = true
+    const root = rootRef.current
+    const blocked: HTMLElement[] = []
+    Array.from(document.body.children).forEach(el => {
+      if (el === root || !(el instanceof HTMLElement) || el.inert) return
+      if (['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName)) return
+      el.inert = true
+      blocked.push(el)
+    })
+    closeRef.current?.focus()
+    return () => { blocked.forEach(el => { el.inert = false }) }
+  }, [open, mounted])
 
-  function toggleExpanded(i: number) {
-    setExpandedIdx(v => (v === i ? null : i))
-  }
+  function close() { setOpen(false); setExpandedIdx(null) }
 
   return (
     <>
-      {/* Hamburger trigger — stays inside header */}
+      {/* Menu button: stays inside the header */}
       <button
+        ref={burgerRef}
         type="button"
-        className="lg:hidden flex flex-col justify-center gap-1.5 p-sm"
+        data-part="burger"
         aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
         aria-expanded={open}
+        aria-controls={`${baseId}-sheet`}
         onClick={() => { setOpen(v => !v); setExpandedIdx(null) }}
       >
-        <span className={`block w-5 h-px bg-fg origin-center transition-transform duration-200 ease-quick ${open ? 'translate-y-[7px] rotate-45' : ''}`} />
-        <span className={`block w-5 h-px bg-fg transition-opacity duration-150 ${open ? 'opacity-0' : ''}`} />
-        <span className={`block w-5 h-px bg-fg origin-center transition-transform duration-200 ease-quick ${open ? '-translate-y-[7px] -rotate-45' : ''}`} />
+        <span /><span /><span />
       </button>
 
-      {/* Overlay via portal — renders at document.body, outside header stacking context */}
+      {/* Sheet via portal: renders at document.body, outside the header's stacking context */}
       {mounted && createPortal(
-        <div
-          aria-hidden={!open}
-          className={`fixed inset-0 z-[200] bg-canvas flex flex-col overflow-y-auto transition-opacity duration-200 ease-quick ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        >
-          {/* Header row — close button mirrors hamburger position */}
-          <div className="flex items-center justify-end px-sm h-20 shrink-0">
-            <button
-              type="button"
-              aria-label={t('nav.closeMenu')}
-              onClick={close}
-              className="flex flex-col justify-center gap-1.5 p-sm text-fg hover:text-fg-muted transition-colors duration-150 ease-quick"
-            >
-              <span className="block w-5 h-px bg-current origin-center translate-y-1.75 rotate-45" />
-              <span className="block w-5 h-px bg-current opacity-0" />
-              <span className="block w-5 h-px bg-current origin-center -translate-y-1.75 -rotate-45" />
-            </button>
-          </div>
-
-          <nav aria-label={t('nav.openMenu')} className="px-md">
-            {navItems.map((item, i) => {
-              const hasChildren   = !!item.children?.length
-              const isExpanded    = expandedIdx === i
-              const self          = matchHref(pathname, item.href)
-              const childMatches  = hasChildren ? item.children!.map(c => matchHref(pathname, c.href)) : []
-              const childActive   = childMatches.some(m => m.section)
-              const sectionActive = self.section || childActive
-
-              if (!hasChildren) {
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    aria-current={self.exact ? 'page' : undefined}
-                    className={[
-                      'flex items-center justify-between py-md border-b border-fg/10 text-title font-semibold transition-colors duration-150 ease-quick',
-                      sectionActive ? 'text-fg' : 'text-fg hover:text-fg-muted',
-                    ].join(' ')}
-                    onClick={close}
-                  >
-                    <span className={[
-                      'inline-flex items-center gap-sm',
-                      sectionActive ? 'px-sm py-0.5 rounded-ot-control bg-brand/10' : '',
-                    ].join(' ')}>
-                      {sectionActive && <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
-                      {item.label}
-                    </span>
-                  </Link>
-                )
-              }
-
-              return (
-                <div key={item.label} className="border-b border-fg/10">
-                  <button
-                    type="button"
-                    aria-expanded={isExpanded}
-                    onClick={() => toggleExpanded(i)}
-                    className={[
-                      'w-full flex items-center justify-between text-title font-semibold py-md transition-colors duration-150 ease-quick',
-                      sectionActive ? 'text-fg' : 'text-fg hover:text-fg-muted',
-                    ].join(' ')}
-                  >
-                    <span className={[
-                      'inline-flex items-center gap-sm',
-                      sectionActive ? 'px-sm py-0.5 rounded-ot-control bg-brand/10' : '',
-                    ].join(' ')}>
-                      {sectionActive && <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
-                      {item.label}
-                    </span>
-                    <svg
-                      aria-hidden="true"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className={`shrink-0 transition-transform duration-200 ease-quick ${isExpanded ? 'rotate-180' : ''}`}
-                    >
-                      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="pb-md flex flex-col gap-xs">
-                      {item.children!.map((sub, j) => {
-                        const Icon      = sub.icon ? ICON_REGISTRY[sub.icon] : null
-                        const subActive = childMatches[j]?.section ?? false
-                        return (
-                          <Link
-                            key={sub.label}
-                            href={sub.href}
-                            aria-current={childMatches[j]?.exact ? 'page' : undefined}
-                            onClick={close}
-                            className={[
-                              'group/sub flex items-center gap-sm rounded-ot-control px-sm py-sm transition-colors duration-150 ease-quick',
-                              subActive ? 'bg-brand/10' : 'hover:bg-fg/5 active:bg-fg/8',
-                            ].join(' ')}
-                          >
-                            {Icon && (
-                              <span
-                                aria-hidden="true"
-                                className={[
-                                  'flex items-center justify-center w-10 h-10 shrink-0 rounded-ot-surface transition-colors duration-150 ease-quick',
-                                  subActive ? 'bg-brand text-fg-on-brand' : 'bg-brand/10 text-fg',
-                                ].join(' ')}
-                              >
-                                <Icon size={18} strokeWidth={1.75} />
-                              </span>
-                            )}
-                            <span className="min-w-0">
-                              <span className={['block text-body', subActive ? 'font-semibold text-fg' : 'font-medium text-fg'].join(' ')}>{sub.label}</span>
-                              {sub.description && (
-                                <span className="block text-label text-fg-muted mt-0.5 leading-snug">{sub.description}</span>
-                              )}
-                            </span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-
-            {/* Locale selector — below nav links, above CTA */}
-            <LocaleSelectorMobile onSelect={close} enabledLocales={enabledLocales} />
-          </nav>
-
-          {ctaLabel && (
-            <div className="mt-lg px-md">
-              <Button href={ctaHref} onClick={close}>{ctaLabel}</Button>
+        <div ref={rootRef} data-block="site-nav">
+          <div
+            id={`${baseId}-sheet`}
+            data-part="sheet"
+            data-for={navStyle}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('nav.openMenu')}
+            data-open={open ? '' : undefined}
+            inert={!open}
+          >
+            <div data-part="sheet-head">
+              <span aria-hidden="true" />
+              <button ref={closeRef} type="button" data-part="burger" data-open="" aria-label={t('nav.closeMenu')} onClick={close}>
+                <span /><span /><span />
+              </button>
             </div>
-          )}
+
+            <nav aria-label={t('nav.openMenu')} data-part="sheet-nav">
+              {navItems.map((item, i) => {
+                const children      = item.children ?? []
+                const self          = matchHref(pathname, item.href)
+                const childMatches  = children.map(c => matchHref(pathname, c.href))
+                const sectionActive = self.section || childMatches.some(m => m.section)
+
+                if (children.length === 0) {
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      data-part="sheet-link"
+                      data-section={sectionActive ? '' : undefined}
+                      aria-current={self.exact ? 'page' : undefined}
+                      onClick={close}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                }
+
+                const isExpanded = expandedIdx === i
+                const listId     = `${baseId}-g${i}`
+                return (
+                  <div key={item.label} data-part="sheet-group">
+                    <button
+                      type="button"
+                      data-part="sheet-link"
+                      data-section={sectionActive ? '' : undefined}
+                      aria-expanded={isExpanded}
+                      aria-controls={listId}
+                      onClick={() => setExpandedIdx(v => (v === i ? null : i))}
+                    >
+                      {item.label}
+                      <ChevronDown aria-hidden size={18} strokeWidth={1.75} />
+                    </button>
+
+                    {isExpanded && (
+                      <ul id={listId}>
+                        {children.map((sub, j) => {
+                          const Icon = sub.icon ? ICON_REGISTRY[sub.icon] : null
+                          return (
+                            <li key={sub.label}>
+                              <Link
+                                href={sub.href}
+                                data-part="sheet-sub"
+                                data-section={childMatches[j].section ? '' : undefined}
+                                aria-current={childMatches[j].exact ? 'page' : undefined}
+                                onClick={close}
+                              >
+                                <span data-part="sub-ic" aria-hidden="true">{Icon && <Icon size={18} strokeWidth={1.75} />}</span>
+                                <span data-part="sub-t">
+                                  <b>{sub.label}</b>
+                                  {sub.description && <small>{sub.description}</small>}
+                                </span>
+                              </Link>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Locale selector: below the links, above the CTA */}
+              <LocaleSelectorMobile onSelect={close} enabledLocales={enabledLocales} scoped />
+            </nav>
+
+            {ctaLabel && (
+              <div data-part="sheet-cta">
+                <Button href={ctaHref} onClick={close} className="w-full justify-center">{ctaLabel}</Button>
+              </div>
+            )}
+          </div>
         </div>,
         document.body
       )}

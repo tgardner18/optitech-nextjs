@@ -56,3 +56,10 @@ export function hasCoordinates(
     typeof l.coordinates.lon === 'number'
   )
 }
+
+/** Google Maps directions link: exact coordinates when geocoded, otherwise the address text. */
+export function directionsUrl(l: Pick<LocationData, 'coordinates' | 'address'>): string | null {
+  if (hasCoordinates(l)) return `https://www.google.com/maps/dir/?api=1&destination=${l.coordinates.lat},${l.coordinates.lon}`
+  if (l.address?.trim()) return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(l.address.trim())}`
+  return null
+}

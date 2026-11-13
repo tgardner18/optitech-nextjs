@@ -1,0 +1,103 @@
+/* trust-rail.css: OT_TrustRail refresh
+   CSS and markup hooks only. Motion, color, treatment, density, and size keep their meaning. */
+[data-block="trust-rail"] {
+  position: relative; container: tr / inline-size;
+  font-family: var(--ot-font-sans); color: var(--ot-fg);
+  --tr-ground: var(--ot-canvas);
+  --tr-ink: var(--ot-fg-muted);
+  --tr-line: color-mix(in oklch, var(--ot-fg) 10%, transparent);
+  --tr-h: clamp(1.75rem, 1.1rem + 2.4cqi, 2.5rem);
+  --tr-gap: clamp(2rem, 1rem + 4.5cqi, 4.5rem);
+  --tr-pad: clamp(1.25rem, .75rem + 2cqi, 2rem);
+  background: var(--tr-ground);
+  border-block: 1px solid var(--tr-line);
+  padding-block: var(--tr-pad);
+}
+[data-block="trust-rail"][data-color="surface"] { --tr-ground: var(--ot-surface); }
+/* Brand uses the same contrast-safe fill as the other refreshed blocks, so the headline and logos stay readable on any brand color */
+[data-block="trust-rail"][data-color="brand"] {
+  --tr-ground: oklch(from var(--ot-brand) min(l, .46) c h);
+  --tr-ink: color-mix(in oklch, var(--ot-fg-on-brand) 86%, transparent);
+  --tr-line: transparent;
+  background: radial-gradient(ellipse at 30% 40%, oklch(from var(--tr-ground) calc(l + .06) c h) 0%, var(--tr-ground) 55%, oklch(from var(--tr-ground) calc(l - .06) c h) 100%);
+}
+[data-block="trust-rail"][data-density="comfortable"] { --tr-pad: clamp(2rem, 1.25rem + 3cqi, 3rem); }
+[data-block="trust-rail"][data-density="spacious"] { --tr-pad: clamp(2.75rem, 1.5rem + 5cqi, 4.5rem); --tr-gap: clamp(2.5rem, 1.25rem + 5.5cqi, 5.5rem); }
+
+/* headline: full-strength muted ink (it was 55% opacity) */
+[data-block="trust-rail"] [data-part="headline"] {
+  margin: 0 0 clamp(1rem, .6rem + 1.5cqi, 1.5rem); padding-inline: var(--tr-pad); text-align: center;
+  font-size: .8125rem; line-height: 1.4; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--tr-ink);
+}
+[data-block="trust-rail"] [data-part="rail"] { position: relative; }
+
+/* logos: an inline or <img> SVG, sized by height; never wider than its slot */
+[data-block="trust-rail"] [data-part="logo"] { display: inline-flex; align-items: center; justify-content: center; min-width: 0; max-width: 100%; color: inherit; text-decoration: none; border-radius: var(--ot-radius-control); }
+[data-block="trust-rail"] [data-part="mark"] { display: block; height: var(--tr-h); width: auto; aspect-ratio: var(--ar, 4); max-width: min(100%, calc(var(--tr-h) * 5)); object-fit: contain;
+  transition: opacity .24s var(--ot-ease-quick, ease), filter .24s var(--ot-ease-quick, ease), transform .3s var(--ot-ease-quick, ease); }
+[data-block="trust-rail"] a[data-part="logo"]:focus-visible { outline: 2px solid currentColor; outline-offset: 6px; color: var(--ot-fg); }
+[data-block="trust-rail"][data-color="brand"] a[data-part="logo"]:focus-visible { color: var(--ot-fg-on-brand); }
+/* treatments
+   Auto: one ink, the same as the headline, so a set of mismatched logos reads as a calm row.
+   Mono: grayscale, full color on hover or focus (Today, Mono renders full color: the component only checks for "auto").
+   Color: as supplied. */
+[data-block="trust-rail"][data-treatment="auto"] [data-part="mark"] { filter: brightness(0); opacity: .66; }
+:where([data-theme="dark"]) [data-block="trust-rail"][data-treatment="auto"] [data-part="mark"], [data-block="trust-rail"][data-theme="dark"][data-treatment="auto"] [data-part="mark"] { filter: brightness(0) invert(1); opacity: .74; }
+[data-block="trust-rail"][data-treatment="mono"] [data-part="mark"] { filter: grayscale(1) contrast(1.15); opacity: .78; }
+:where([data-theme="dark"]) [data-block="trust-rail"][data-treatment="mono"] [data-part="mark"] { filter: grayscale(1) brightness(1.9) contrast(.9); opacity: .82; }
+[data-block="trust-rail"] [data-part="logo"]:is(:hover, :focus-visible) [data-part="mark"] { opacity: 1; }
+[data-block="trust-rail"][data-treatment="mono"] [data-part="logo"]:is(:hover, :focus-visible) [data-part="mark"] { filter: none; }
+@media (prefers-reduced-motion: no-preference) { [data-block="trust-rail"] [data-part="logo"]:hover [data-part="mark"] { transform: scale(1.06); } }
+
+/* Scroll: the edges fade with a mask, so it matches any ground (Brand, Surface, glass) instead of painting canvas-colored strips */
+[data-block="trust-rail"] [data-part="viewport"] {
+  overflow: hidden;
+  --tr-fade: clamp(2rem, 9cqi, 7rem);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--tr-fade), #000 calc(100% - var(--tr-fade) - 3rem), transparent calc(100% - 3.5rem));
+          mask-image: linear-gradient(to right, transparent, #000 var(--tr-fade), #000 calc(100% - var(--tr-fade) - 3rem), transparent calc(100% - 3.5rem));
+}
+[data-block="trust-rail"] [data-part="track"] { display: flex; width: max-content; }
+[data-block="trust-rail"] [data-part="set"] { display: flex; flex: none; align-items: center; gap: var(--tr-gap); margin: 0; padding: .5rem var(--tr-gap) .5rem 0; list-style: none; }
+[data-block="trust-rail"] [data-part="set"] > li { flex: none; display: flex; }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="trust-rail"] [data-part="track"] { animation: tr-scroll var(--dur, 35s) linear infinite; }
+  /* hovering, focusing a logo, or pressing Pause stops the rail (WCAG 2.2.2) */
+  [data-block="trust-rail"] [data-part="viewport"]:is(:hover, :focus-within) [data-part="track"], [data-block="trust-rail"][data-paused] [data-part="track"] { animation-play-state: paused; }
+}
+@keyframes tr-scroll { to { transform: translateX(calc(-100% / var(--copies, 2))); } }
+/* with reduced motion the rail doesn't move at all: one centered, wrapping set and no Pause button */
+@media (prefers-reduced-motion: reduce) {
+  [data-block="trust-rail"] [data-part="viewport"] { -webkit-mask-image: none; mask-image: none; }
+  [data-block="trust-rail"] [data-part="track"] { width: auto; justify-content: center; }
+  [data-block="trust-rail"] [data-part="set"] { flex-wrap: wrap; justify-content: center; row-gap: 1.25rem; padding-inline: var(--tr-pad); }
+  [data-block="trust-rail"] [data-part="set"][aria-hidden], [data-block="trust-rail"] [data-part="toggle"] { display: none; }
+}
+[data-block="trust-rail"] [data-part="toggle"] {
+  position: absolute; z-index: 2; top: 50%; right: clamp(.5rem, 2cqi, 1.5rem); translate: 0 -50%;
+  display: grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; border-radius: 999px; cursor: pointer;
+  color: var(--ot-fg); background: var(--tr-ground); border: 1px solid color-mix(in oklch, var(--ot-fg) 30%, transparent);
+  box-shadow: 0 2px 10px rgb(0 0 0 / .12);
+}
+[data-block="trust-rail"][data-color="brand"] [data-part="toggle"] { color: var(--ot-fg-on-brand); border-color: color-mix(in oklch, var(--ot-fg-on-brand) 45%, transparent); }
+[data-block="trust-rail"] [data-part="toggle"] svg { width: .875rem; height: .875rem; }
+[data-block="trust-rail"] [data-part="toggle"]:hover { border-color: currentColor; }
+[data-block="trust-rail"] [data-part="toggle"]:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Fade and Static: one centered, wrapping row that balances itself, so seven logos never leave one alone on a row
+   and nothing pushes past the edge on a phone */
+[data-block="trust-rail"] [data-part="grid"] {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: clamp(1.25rem, .75rem + 2.5cqi, 2.5rem) var(--tr-gap);
+  margin: 0 auto; padding: .25rem var(--tr-pad); list-style: none; max-width: 80rem;
+}
+[data-block="trust-rail"] [data-part="grid"] > li { display: flex; min-width: 0; max-width: calc(50% - var(--tr-gap) / 2); }
+@container tr (min-width: 40rem) { [data-block="trust-rail"] [data-part="grid"] > li { max-width: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="trust-rail"][data-motion="fade"] [data-part="grid"] > li { animation: tr-in .5s var(--ot-ease-kinetic, ease-out) both; animation-delay: calc(var(--i, 0) * 75ms); }
+}
+@keyframes tr-in { from { opacity: 0; transform: translateY(.5rem); } }
+
+/* Logos come from the CMS as <img>, so the aspect ratio is the image's own */
+[data-block="trust-rail"] img[data-part="mark"] { aspect-ratio: auto; max-width: min(100%, calc(var(--tr-h) * 5)); }
+/* Glass: a frosted panel over the ground */
+[data-block="trust-rail"][data-glass] [data-part="rail"] { margin-inline: clamp(.75rem, 2cqi, 2rem); border-radius: var(--ot-radius-surface); background: color-mix(in oklch, var(--ot-fg) 7%, transparent); border: 1px solid color-mix(in oklch, var(--ot-fg) 18%, transparent); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); }

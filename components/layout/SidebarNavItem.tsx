@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
@@ -53,17 +53,15 @@ export function SidebarNavItem({ label, href, children }: Props) {
   const [manualOpen, setManualOpen] = useState(false)
   const open = childActive || manualOpen
 
+  const listId = useId()
+
   if (!hasChildren) {
     return (
       <Link
         href={href}
+        data-part="s-link"
+        data-section={sectionActive ? '' : undefined}
         aria-current={self.exact ? 'page' : undefined}
-        className={[
-          'flex items-center px-sm py-[7px] rounded-ot-control text-sm transition-colors duration-150 ease-quick',
-          sectionActive
-            ? 'bg-brand/15 text-fg font-semibold'
-            : 'font-medium text-fg-muted hover:text-fg hover:bg-fg/[0.05]',
-        ].join(' ')}
       >
         {label}
       </Link>
@@ -71,68 +69,38 @@ export function SidebarNavItem({ label, href, children }: Props) {
   }
 
   return (
-    <div>
+    <div data-part="s-group">
       <button
         type="button"
+        data-part="s-link"
+        data-section={sectionActive ? '' : undefined}
         aria-expanded={open}
+        aria-controls={listId}
         onClick={() => setManualOpen(v => !v)}
-        className={[
-          'w-full flex items-center justify-between gap-xs px-sm py-[7px] rounded-ot-control',
-          'text-sm transition-colors duration-150 ease-quick',
-          // Three tiers: contains the current page (tinted fill + bold) >
-          // merely expanded to browse (bold only — the "focus" state) >
-          // collapsed and not current (muted).
-          sectionActive
-            ? 'bg-brand/15 text-fg font-semibold'
-            : open
-              ? 'text-fg font-semibold hover:bg-fg/[0.05]'
-              : 'text-fg-muted font-medium hover:text-fg hover:bg-fg/[0.05]',
-        ].join(' ')}
       >
         {label}
-        <ChevronDown
-          aria-hidden
-          size={13}
-          strokeWidth={2}
-          className={`shrink-0 transition-transform duration-200 ease-quick ${open ? 'rotate-180' : ''}`}
-        />
+        <ChevronDown aria-hidden size={16} strokeWidth={2} />
       </button>
 
       {open && (
-        <div className="ml-sm pl-xs border-l border-fg/10 my-xs flex flex-col gap-0.5">
+        <ul id={listId}>
           {children!.map((sub, i) => {
             const Icon = sub.icon ? ICON_REGISTRY[sub.icon] : null
-            const subActive = childMatches[i].section
             return (
-              <Link
-                key={sub.label}
-                href={sub.href}
-                aria-current={childMatches[i].exact ? 'page' : undefined}
-                className={[
-                  'group/sub flex items-center gap-xs px-sm py-[5px] rounded-ot-control text-label transition-colors duration-150 ease-quick',
-                  subActive
-                    ? 'bg-brand/15 text-fg font-semibold'
-                    : 'font-medium text-fg-muted hover:text-fg hover:bg-fg/[0.05]',
-                ].join(' ')}
-              >
-                {Icon && (
-                  <span
-                    aria-hidden="true"
-                    className={[
-                      'flex items-center justify-center w-6 h-6 shrink-0 rounded-ot-control transition-colors duration-150 ease-quick',
-                      subActive
-                        ? 'bg-brand text-fg-on-brand'
-                        : 'bg-fg/[0.06] text-fg-muted group-hover/sub:bg-brand/15 group-hover/sub:text-fg',
-                    ].join(' ')}
-                  >
-                    <Icon size={12} strokeWidth={1.75} />
-                  </span>
-                )}
-                {sub.label}
-              </Link>
+              <li key={sub.label}>
+                <Link
+                  href={sub.href}
+                  data-part="s-sub"
+                  data-section={childMatches[i].section ? '' : undefined}
+                  aria-current={childMatches[i].exact ? 'page' : undefined}
+                >
+                  {Icon && <span data-part="s-ic" aria-hidden="true"><Icon size={16} strokeWidth={1.75} /></span>}
+                  {sub.label}
+                </Link>
+              </li>
             )
           })}
-        </div>
+        </ul>
       )}
     </div>
   )

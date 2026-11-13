@@ -1,6 +1,7 @@
 import LocationListingClient from './LocationListingBlock.client'
 import { geocodeAddress } from '@/lib/geocode'
 import { hasCoordinates } from '@/lib/locationFormat'
+import { stableId } from '@/lib/stableId'
 import type { LocationData } from '@/lib/locations'
 import type { LocationListingStyleOptions } from '@/cms/styling/OT_LocationListingBlock.styling'
 
@@ -48,30 +49,15 @@ export default async function LocationListingBlock({
   isPreview = false,
   pa = () => ({}),
 }: LocationListingBlockProps) {
-  const sectionBg = styleOptions.color === 'surface' ? 'bg-surface' : 'bg-canvas'
   const geocoded  = await geocodeMissing(locations)
   const token     = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''
+  const hid       = stableId('loc-h', heading ?? '')
 
   return (
-    <section className={`${sectionBg} px-md py-xl lg:px-xl`}>
-      {/* Full-bleed within the section gutters — the map + rail and the card grid
-          use the whole page width; only the heading stays at a reading measure. */}
-      <div className="w-full">
-        {(heading || subtext) && (
-          <header className="mb-lg max-w-(--ot-measure)">
-            {heading && (
-              <h2 className="text-headline leading-headline tracking-headline font-bold text-fg text-balance" {...pa('heading')}>
-                {heading}
-              </h2>
-            )}
-            {subtext && (
-              <p className="mt-sm text-title leading-title text-fg-muted text-pretty" {...pa('subtext')}>
-                {subtext}
-              </p>
-            )}
-          </header>
-        )}
-
+    <section data-block="locations" data-color={styleOptions.color} data-density={styleOptions.density} aria-labelledby={heading ? hid : undefined} aria-label={heading ? undefined : 'Locations'}>
+      <div data-part="inner">
+        {heading && <h2 data-part="title" id={hid} {...pa('heading')}>{heading}</h2>}
+        {subtext && <p data-part="subtext" {...pa('subtext')}>{subtext}</p>}
         <LocationListingClient
           locations={geocoded}
           styleOptions={styleOptions}

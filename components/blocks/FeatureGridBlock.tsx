@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
-import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import FeatureTile, { type FeatureItem } from './FeatureTile'
 
 export type { FeatureItem }
@@ -23,68 +21,8 @@ export type FeatureGridStyleOptions = {
   animate?:   boolean
 }
 
-// ─── CVA variants ─────────────────────────────────────────────────────────────
-
-const sectionCva = cva('w-full px-md lg:px-lg py-xl lg:py-2xl', {
-  variants: {
-    color: {
-      canvas:  'bg-canvas',
-      surface: 'bg-surface',
-      brand:   'bg-brand-fill',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const eyebrowCva = cva('text-label tracking-label uppercase font-semibold mb-sm', {
-  variants: {
-    color: {
-      canvas:  'text-brand',
-      surface: 'text-brand',
-      brand:   'text-fg-on-brand/70',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const headingCva = cva(
-  'font-bold text-headline leading-headline tracking-headline',
-  {
-    variants: {
-      color: {
-        canvas:  'text-fg',
-        surface: 'text-fg',
-        brand:   'text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-const subheadingCva = cva('mt-sm text-body leading-body max-w-(--ot-measure)', {
-  variants: {
-    color: {
-      canvas:  'text-fg-muted',
-      surface: 'text-fg-muted',
-      brand:   'text-fg-on-brand/70',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const sectionCtaCva = cva(
-  'inline-flex items-center gap-xs min-h-[44px] text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
-  {
-    variants: {
-      color: {
-        canvas:  'text-brand',
-        surface: 'text-brand',
-        brand:   'text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
+// Visual styling lives in feature.css (imported from app/globals.css). This component only sets
+// data attributes and markup.
 
 // ─── Animation constants ──────────────────────────────────────────────────────
 
@@ -143,14 +81,6 @@ export default function FeatureGridBlock({
     return () => observer.disconnect()
   }, [animate, prefersReducedMotion])
 
-  // ── Grid column class ─────────────────────────────────────────────────────
-  const gridColsClass =
-    columns === 2
-      ? 'grid-cols-1 md:grid-cols-2'
-      : columns === 4
-        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-
   // Ruled rows are paired up front (rather than left to the grid's own
   // auto-flow) so the zebra tint and hover highlight can be applied to one
   // element — a single <li> spanning both columns — and read correctly at
@@ -163,62 +93,62 @@ export default function FeatureGridBlock({
     }
   }
 
+  const headingId     = useId()
   const hasHeader     = eyebrow || heading || subheading
   const hasSectionCta = ctaLabel && ctaUrl
 
   return (
     <section
       ref={ref}
-      className={sectionCva({ color })}
-      aria-label={heading ?? 'Features'}
       data-block="feature"
+      data-color={color}
+      data-layout={layout}
+      data-cols={columns}
+      // brand fill is always dark: assert dark theme so nested tokens (links, focus rings) resolve correctly.
+      data-theme={color === 'brand' ? 'dark' : undefined}
+      {...(heading ? { 'aria-labelledby': headingId } : { 'aria-label': 'Features' })}
     >
       {/* ── Section header ──────────────────────────────────────────────── */}
       {hasHeader && (
-        <div className="mb-xl">
-          {eyebrow && (
-            <p className={eyebrowCva({ color })}>{eyebrow}</p>
-          )}
-          {heading && (
-            <h2 className={headingCva({ color })}>{heading}</h2>
-          )}
-          {subheading && (
-            <p className={subheadingCva({ color })}>{subheading}</p>
-          )}
+        <div data-part="header">
+          {eyebrow && <p data-part="eyebrow">{eyebrow}</p>}
+          {heading && <h2 data-part="heading" id={headingId}>{heading}</h2>}
+          {subheading && <p data-part="sub">{subheading}</p>}
         </div>
       )}
 
       {/* ── Feature grid ────────────────────────────────────────────────── */}
       {layout === 'ruled' ? (
-        <ul className="flex flex-col" role="list" data-ruled-grid="" data-color={color}>
+        <ul data-part="ruled" role="list" data-ruled-grid="" data-color={color}>
           {ruledRows.map((rowFeatures, rowIndex) => (
             <li
               key={rowIndex}
-              className="group grid grid-cols-1 md:grid-cols-2 gap-x-xl px-sm -mx-sm pt-md pb-lg"
+              data-part="ruled-row"
               data-ruled-row=""
               data-color={color}
               data-zebra={rowIndex % 2 === 1 ? '' : undefined}
             >
               {rowFeatures.map((feature, colIndex) => (
-                <FeatureTile
-                  key={colIndex}
-                  feature={feature}
-                  styleOptions={{ color, iconStyle, animate }}
-                  entered={entered}
-                  staggerMs={(rowIndex * 2 + colIndex) * STAGGER_MS}
-                  variant="bare"
-                />
+                <div key={colIndex} data-part="item">
+                  <FeatureTile
+                    feature={feature}
+                    styleOptions={{ iconStyle, animate }}
+                    entered={entered}
+                    staggerMs={(rowIndex * 2 + colIndex) * STAGGER_MS}
+                    variant="bare"
+                  />
+                </div>
               ))}
             </li>
           ))}
         </ul>
       ) : (
-        <ul className={cn('grid', gridColsClass, 'gap-x-xl gap-y-lg')} role="list">
+        <ul data-part="list" role="list">
           {features.map((feature, i) => (
             <li key={i}>
               <FeatureTile
                 feature={feature}
-                styleOptions={{ color, iconStyle, animate }}
+                styleOptions={{ iconStyle, animate }}
                 entered={entered}
                 staggerMs={i * STAGGER_MS}
                 variant="card"
@@ -230,10 +160,10 @@ export default function FeatureGridBlock({
 
       {/* ── Section CTA ─────────────────────────────────────────────────── */}
       {hasSectionCta && (
-        <div className="mt-xl">
-          <a href={ctaUrl} className={sectionCtaCva({ color })}>
+        <div data-part="cta">
+          <a href={ctaUrl}>
             {ctaLabel}
-            <ArrowUpRight size={14} strokeWidth={2.5} aria-hidden="true" />
+            <ArrowRight aria-hidden="true" />
           </a>
         </div>
       )}

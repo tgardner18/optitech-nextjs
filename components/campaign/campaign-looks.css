@@ -37,6 +37,8 @@
 /* Blocks that paint the canvas turn transparent so the atmosphere shows through. */
 .ot-campaign-body .bg-canvas { background-color: transparent; }
 .ot-campaign-body .hero-atmos { display: none; }
+.ot-campaign-body [data-block="hero"] [data-part="atmos"] { display: none; }
+.ot-campaign-body [data-block="hero"]:not([data-direction="diagonal"]) { background: transparent; }
 
 .ot-campaign-stage { position: relative; isolation: isolate; flex: 1 1 auto; }
 .ot-cl-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
@@ -176,7 +178,7 @@
 /* Cartoon / sticker direction: ink outlines, hard offset shadows, flat color. The hero is
    a headline-as-sticker beside a framed picture, with no floating props. */
 .ot-campaign[data-look="comic"] [data-block="hero"][class*="lg:flex-row"] > div:first-child { background: transparent; }
-.ot-campaign[data-look="comic"] [data-block="hero"] :is(h1, p) { color: var(--cl-ink); }
+.ot-campaign[data-look="comic"] [data-block="hero"][data-direction="editorialSplit"] :is(h1, p) { color: var(--cl-ink); }
 .ot-campaign[data-look="comic"] [data-block="hero"][class*="lg:flex-row"] > div:first-child > div > p:first-child { color: var(--cl-brand); }
 /* Hero picture: framed, sticker-like. */
 .ot-campaign[data-look="comic"] [data-block="hero"][class*="lg:flex-row"] > div:nth-child(2) {
@@ -195,12 +197,13 @@
 
 .ot-campaign[data-look="comic"] [data-block="hero"] h1 {
   font-size: clamp(2.6rem, 12cqi, 7rem); line-height: 1; letter-spacing: 0; font-weight: 900; text-wrap: balance;
-  color: var(--cl-ink);
   /* Sharpie sticker: ink letters, a thick paper-white die-cut outline, then a hard ink shadow. */
   -webkit-text-stroke: 0.1em oklch(from var(--cl-seed) 0.995 0.004 h);
   paint-order: stroke fill;
   text-shadow: 0.06em 0.08em 0 var(--cl-b), 0.06em 0.08em 0 var(--cl-ink);
 }
+.ot-campaign[data-look="comic"] [data-block="hero"] h1 { color: var(--ot-fg-on-brand); -webkit-text-stroke-color: var(--cl-ink); text-shadow: 0.06em 0.08em 0 var(--cl-ink); }
+.ot-campaign[data-look="comic"] [data-block="hero"][data-direction="editorialSplit"] h1 { text-shadow: 0.06em 0.08em 0 var(--cl-b), 0.06em 0.08em 0 var(--cl-ink); -webkit-text-stroke-color: oklch(from var(--cl-seed) 0.995 0.004 h); }
 .ot-campaign[data-look="comic"] [data-block="stat"] ul > li {
   border: 2px solid var(--cl-ink); box-shadow: 5px 5px 0 var(--cl-ink); color: var(--cl-ink);
   transition: transform var(--ot-dur-base) var(--ot-ease-quick), box-shadow var(--ot-dur-base) var(--ot-ease-quick);
@@ -277,8 +280,8 @@
 }
 .ot-campaign[data-look="stage"] [data-block="stat"] ul > li { border-top: 1px solid var(--ot-accent); }
 .ot-campaign[data-look="stage"] [data-block="stat"] li p[aria-hidden="true"] { font-size: clamp(3.4rem, 9vw, 7.25rem); font-weight: 700; letter-spacing: -0.045em; line-height: 0.9; }
-.ot-campaign[data-look="stage"] [data-block="cta"] h2,
-.ot-campaign[data-look="stage"] [data-block="cta"] h1 { font-size: clamp(2.4rem, 8vw, 6.5rem); line-height: 0.92; letter-spacing: -0.04em; font-weight: 700; text-wrap: balance; }
+.ot-campaign[data-look="stage"] [data-block="banner"] h2,
+.ot-campaign[data-look="stage"] [data-block="banner"] h1 { font-size: clamp(2.4rem, 8vw, 6.5rem); line-height: 0.92; letter-spacing: -0.04em; font-weight: 700; text-wrap: balance; }
 
 @media (min-width: 1024px) {
   .ot-campaign[data-look="comic"] [data-block="hero"] h1 { font-size: clamp(3rem, 6.4cqi, 7rem); }
@@ -291,7 +294,7 @@
 @keyframes cl-rise { from { opacity: 0; transform: translateY(2.25rem); } to { opacity: 1; transform: none; } }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .ot-campaign[data-look="stage"][data-motion="full"] :is([data-block="stat"] h2, [data-block="cta"] h2, [data-block="quote"] blockquote) {
+    .ot-campaign[data-look="stage"][data-motion="full"] :is([data-block="stat"] h2, [data-block="banner"] h2, [data-block="quote"] blockquote) {
       animation: cl-wipe linear both; animation-timeline: view(); animation-range: entry 0% entry 70%;
     }
     .ot-campaign[data-look="stage"][data-motion="full"] [data-block="stat"] ul > li {
@@ -335,12 +338,13 @@
   background: var(--cl-b); border: 2px solid var(--cl-ink); border-radius: 1.1rem; box-shadow: 6px 6px 0 var(--cl-ink);
   --ot-fg-on-brand: var(--cl-ink); --ot-intent-brand-fg: var(--cl-ink);
 }
-.ot-campaign[data-look="comic"] [data-block="callout"] > div :is(h2, h3, h4, p, a) { color: var(--cl-ink); }
+.ot-campaign[data-look="comic"] [data-block="callout"] > div :is(h2, h3, h4, p, a:not([data-part="cta"])) { color: var(--cl-ink); }
+.ot-campaign[data-look="comic"] [data-block="callout"] { --i-ink: var(--cl-ink); --i-ink-soft: var(--cl-ink); --i-btn-fg: var(--ot-canvas); }
 
 .ot-campaign[data-look="comic"] [data-block="image"] figure {
   border: 3px solid var(--cl-ink); border-radius: 1.25rem; box-shadow: 8px 8px 0 var(--cl-ink); overflow: hidden; rotate: -0.8deg;
 }
-.ot-campaign[data-look="comic"] [data-block="cta"] {
+.ot-campaign[data-look="comic"] [data-block="banner"] {
   margin: var(--ot-space-lg) var(--ot-space-md); border: 3px solid var(--cl-ink); border-radius: 1.5rem; overflow: hidden;
   box-shadow: 8px 8px 0 var(--cl-ink);
 }
@@ -350,10 +354,10 @@
   box-shadow: 8px 8px 0 var(--cl-ink);
   --ot-fg: var(--cl-ink); --ot-fg-muted: var(--cl-ink);
 }
-.ot-campaign[data-look="comic"] [data-form-card] .ot-field {
+.ot-campaign[data-look="comic"] [data-form-card] :is(.ot-field, [data-block="form"] [data-part="input"]) {
   background: var(--ot-canvas); border: 2px solid var(--cl-ink); border-radius: 0.75rem; color: var(--cl-ink);
 }
-.ot-campaign[data-look="comic"] [data-form-card] .ot-field:focus-visible { outline: 3px solid var(--cl-b); outline-offset: 1px; }
+.ot-campaign[data-look="comic"] [data-form-card] :is(.ot-field, [data-block="form"] [data-part="input"]):focus-visible { outline: 3px solid var(--cl-b); outline-offset: 1px; }
 .ot-campaign[data-look="comic"] :is([data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"]) {
   border: 2px solid var(--cl-ink); border-radius: 999px; color: var(--cl-ink); background: var(--cl-a); box-shadow: 3px 3px 0 var(--cl-ink); font-weight: 800;
 }
@@ -401,7 +405,7 @@
 /* A lit edge: the element sets --nc (its tube color); border + outer glow + inner glow. */
 .ot-campaign[data-look="neon"] :is(
   [data-block="feature"] ul:not([data-ruled-grid]) li > *, [data-block="stat"] ul > li, [data-block="quote"] figure,
-  [data-block="callout"] > div, [data-block="image"] figure, [data-block="cta"],
+  [data-block="callout"] > div, [data-block="image"] figure, [data-block="banner"],
   [data-block="accordion"] .border-t[data-state][data-orientation], [data-form-card],
   [data-block="hero"] > div:nth-child(2)
 ) {
@@ -464,9 +468,9 @@
   font-size: clamp(1.9rem, 7cqi, 4.25rem); line-height: 1.08; letter-spacing: 0.02em; text-transform: uppercase;
 }
 @media (min-width: 1024px) { .ot-campaign[data-look="neon"] [data-block="hero"] h1 { font-size: clamp(2.2rem, 3.9cqi, 4.25rem); } }
-.ot-campaign[data-look="neon"] [data-block="cta"] h2,
-.ot-campaign[data-look="neon"] [data-block="cta"] h1 { text-transform: uppercase; letter-spacing: 0.02em; text-shadow: 0 0 0.04em oklch(from var(--ot-fg) l c h / 0.95), 0 0 0.12em oklch(from var(--cl-n3) l c h / 0.95), 0 0 0.30em oklch(from var(--cl-n3) l c h / 0.8), 0 0 0.60em oklch(from var(--cl-n3) l c h / 0.5); }
-.ot-campaign[data-look="neon"] [data-block="cta"] { --nc: var(--cl-n3); margin: var(--ot-space-lg) var(--ot-space-md); overflow: hidden; }
+.ot-campaign[data-look="neon"] [data-block="banner"] h2,
+.ot-campaign[data-look="neon"] [data-block="banner"] h1 { text-transform: uppercase; letter-spacing: 0.02em; text-shadow: 0 0 0.04em oklch(from var(--ot-fg) l c h / 0.95), 0 0 0.12em oklch(from var(--cl-n3) l c h / 0.95), 0 0 0.30em oklch(from var(--cl-n3) l c h / 0.8), 0 0 0.60em oklch(from var(--cl-n3) l c h / 0.5); }
+.ot-campaign[data-look="neon"] [data-block="banner"] { --nc: var(--cl-n3); margin: var(--ot-space-lg) var(--ot-space-md); overflow: hidden; }
 @keyframes cl-flicker { 0%, 18%, 22%, 62%, 66%, 100% { opacity: 1; } 20% { opacity: 0.82; } 64% { opacity: 0.88; } }
 @media (prefers-reduced-motion: no-preference) {
   .ot-campaign[data-look="neon"]:not([data-motion="still"]) [data-block="hero"] h1 { animation: cl-flicker calc(8s * var(--cl-dur)) linear infinite; }
@@ -487,19 +491,19 @@
 .ot-campaign[data-look="neon"] [data-block="quote"] figure { --nc: var(--cl-n3); padding: clamp(1.25rem, 3vw, 2.25rem); }
 .ot-campaign[data-look="neon"] [data-block="quote"] .ls-wrap { --ls-settled-color: var(--cl-n2); }
 .ot-campaign[data-look="neon"] [data-block="callout"] > div { --nc: var(--cl-n2); --ot-fg-on-brand: var(--ot-fg); --ot-intent-brand-fg: var(--ot-fg); }
-.ot-campaign[data-look="neon"] [data-block="callout"] > div a { color: var(--cl-n2); }
+.ot-campaign[data-look="neon"] [data-block="callout"] > div a:not([data-part="cta"]) { color: var(--cl-n2); }
 .ot-campaign[data-look="neon"] [data-block="image"] figure { --nc: var(--cl-n1); overflow: hidden; }
 .ot-campaign[data-look="neon"] [data-block="accordion"] .border-t[data-state][data-orientation] { --nc: var(--cl-n1); margin-bottom: var(--ot-space-sm); overflow: hidden; }
 .ot-campaign[data-look="neon"] [data-block="accordion"] .border-t[data-state="open"][data-orientation] { --nc: var(--cl-n2); }
 .ot-campaign[data-look="neon"] [data-block="accordion"] .border-t[data-state] :is(h3, button) { padding-inline: var(--ot-space-md); }
 .ot-campaign[data-look="neon"] [data-form-card] { --nc: var(--cl-n1); background: oklch(from var(--cl-wall-2) l c h / 0.92); }
-.ot-campaign[data-look="neon"] .ot-field {
+.ot-campaign[data-look="neon"] :is(.ot-field, [data-block="form"] [data-part="input"]) {
   background: oklch(from var(--cl-wall) l c h / 0.9); color: var(--ot-fg); border: 2px solid oklch(from var(--cl-n1) l c h / 0.5); border-radius: 0.75rem;
 }
-.ot-campaign[data-look="neon"] .ot-field:focus-visible { border-color: var(--cl-n2); box-shadow: 0 0 12px oklch(from var(--cl-n2) l c h / 0.6); outline: none; }
+.ot-campaign[data-look="neon"] :is(.ot-field, [data-block="form"] [data-part="input"]):focus-visible { border-color: var(--cl-n2); box-shadow: 0 0 12px oklch(from var(--cl-n2) l c h / 0.6); outline: none; }
 
 /* Neon pills: filled primary, outlined secondary */
-.ot-campaign[data-look="neon"] :is([data-block="hero"] > div:first-child a, [data-block="cta"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"]) {
+.ot-campaign[data-look="neon"] :is([data-block="hero"] > div:first-child a, [data-block="banner"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"]) {
   border: 2px solid var(--cl-n1); border-radius: 999px; font-weight: 800; transform: none;
   background: var(--cl-n1); color: var(--cl-ink);
   box-shadow: 0 0 8px oklch(from var(--cl-n1) l c h / 0.8), 0 0 26px oklch(from var(--cl-n1) l c h / 0.4);
@@ -508,8 +512,8 @@
   background: transparent; color: var(--cl-n2); border-color: var(--cl-n2);
   box-shadow: 0 0 8px oklch(from var(--cl-n2) l c h / 0.7), inset 0 0 8px oklch(from var(--cl-n2) l c h / 0.3);
 }
-.ot-campaign[data-look="neon"] [data-block="cta"] a { background: var(--cl-n3); border-color: var(--cl-n3); box-shadow: 0 0 8px oklch(from var(--cl-n3) l c h / 0.8), 0 0 26px oklch(from var(--cl-n3) l c h / 0.4); }
-.ot-campaign[data-look="neon"] :is([data-block="hero"] > div:first-child a, [data-block="cta"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"]):hover {
+.ot-campaign[data-look="neon"] [data-block="banner"] a { background: var(--cl-n3); border-color: var(--cl-n3); box-shadow: 0 0 8px oklch(from var(--cl-n3) l c h / 0.8), 0 0 26px oklch(from var(--cl-n3) l c h / 0.4); }
+.ot-campaign[data-look="neon"] :is([data-block="hero"] > div:first-child a, [data-block="banner"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"]):hover {
   background: var(--cl-n2); color: var(--cl-ink); border-color: var(--cl-n2); transform: none;
   box-shadow: 0 0 12px oklch(from var(--cl-n2) l c h / 0.9), 0 0 36px oklch(from var(--cl-n2) l c h / 0.5);
 }
@@ -529,8 +533,8 @@
  * colour and vanishes against the floor. Keep it full-strength; the hot accent marks the icon. */
 .ot-campaign[data-look="stage"] [data-block="accordion"] .border-t[data-state] :is(h3, button, h3 *, button *):not(svg):not(svg *) { color: var(--ot-fg); opacity: 1; }
 .ot-campaign[data-look="stage"] [data-block="accordion"] .border-t[data-state="open"] svg { color: var(--ot-accent); }
-.ot-campaign[data-look="neon"] .ot-field::placeholder { color: var(--ot-fg-muted); opacity: 0.85; }
-.ot-campaign[data-look="comic"] .ot-field::placeholder { color: var(--cl-ink); opacity: 0.6; }
+.ot-campaign[data-look="neon"] :is(.ot-field, [data-block="form"] [data-part="input"])::placeholder { color: var(--ot-fg-muted); opacity: 0.85; }
+.ot-campaign[data-look="comic"] :is(.ot-field, [data-block="form"] [data-part="input"])::placeholder { color: var(--cl-ink); opacity: 0.6; }
 
 /* Shared .btn-signal links (Image, Video and similar blocks) follow each look's button style. */
 .ot-campaign[data-look="neon"] .btn-signal {
@@ -549,7 +553,7 @@
 .ot-campaign[data-look="comic"] .btn-signal:hover { background: var(--cl-b); color: var(--cl-ink); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--cl-ink); }
 
 /* Form placeholders: the form's default is fg at 25%; every dark look needs a readable one. */
-.ot-campaign[data-look="stage"] .ot-field::placeholder { color: var(--ot-fg-muted); opacity: 0.85; }
+.ot-campaign[data-look="stage"] :is(.ot-field, [data-block="form"] [data-part="input"])::placeholder { color: var(--ot-fg-muted); opacity: 0.85; }
 
 /* ════════════════════════════════════════════════════════════════════════════
  * BLUEPRINT: light, Restrained. A drafting sheet: fine grid paper, hairline linework,
@@ -611,16 +615,16 @@
 /* Hero */
 .ot-campaign[data-look="blueprint"] [data-block="hero"] { padding-bottom: 2.25rem; }
 .ot-campaign[data-look="blueprint"] [data-block="hero"]::after {
-  content: "SCALE 1:1"; position: absolute; z-index: 3; left: var(--ot-space-md); right: var(--ot-space-md); bottom: 0.6rem;
+  content: "SCALE 1:1" / ""; position: absolute; z-index: 3; left: var(--ot-space-md); right: var(--ot-space-md); bottom: 0.6rem;
   padding-top: 0.45rem; border-top: 1px dashed oklch(from var(--cl-ink) l c h / 0.45);
   font: 500 0.64rem/1 var(--cl-mono); letter-spacing: 0.16em; text-align: right; color: var(--cl-ink-2);
 }
 .ot-campaign[data-look="blueprint"] [data-block="hero"][class*="lg:flex-row"] > div:first-child { background: transparent; --ot-fg-on-brand: var(--ot-fg); }
 .ot-campaign[data-look="blueprint"] [data-block="hero"] h1 {
-  font-size: clamp(2.5rem, 9.5cqi, 6rem); line-height: 0.97; letter-spacing: -0.03em; font-weight: 800; text-wrap: balance; color: var(--ot-fg);
+  font-size: clamp(2.5rem, 9.5cqi, 6rem); line-height: 0.97; letter-spacing: -0.03em; font-weight: 800; text-wrap: balance;
 }
 @media (min-width: 1024px) { .ot-campaign[data-look="blueprint"] [data-block="hero"] h1 { font-size: clamp(2.6rem, 4.3cqi, 5rem); } }
-.ot-campaign[data-look="blueprint"] [data-block="hero"] :is(h1, p) { color: var(--ot-fg); }
+.ot-campaign[data-look="blueprint"] [data-block="hero"][data-direction="editorialSplit"] :is(h1, p) { color: var(--ot-fg); }
 .ot-campaign[data-look="blueprint"] [data-block="hero"][class*="lg:flex-row"] > div:nth-child(2) {
   margin: var(--ot-space-lg) var(--ot-space-md) var(--ot-space-md); border: var(--cl-line); background: var(--cl-sheet);
   box-shadow: 10px 10px 0 oklch(from var(--cl-ink) l c h / 0.14);
@@ -650,18 +654,6 @@
 .ot-campaign[data-look="blueprint"] [data-block="image"] figure::after { content: none; }
 .ot-campaign[data-look="blueprint"] [data-block="quote"] .ls-wrap { --ls-settled-color: var(--cl-ink); }
 
-/* Callout: a hatched note with a tab */
-.ot-campaign[data-look="blueprint"] [data-block="callout"] > div {
-  position: relative; border: 1.5px dashed var(--cl-ink); border-radius: 0; margin-top: var(--ot-space-md);
-  background: repeating-linear-gradient(135deg, oklch(from var(--cl-ink) l c h / 0.06) 0 1px, transparent 1px 9px), var(--cl-sheet);
-  --ot-fg-on-brand: var(--ot-fg); --ot-intent-brand-fg: var(--ot-fg);
-}
-.ot-campaign[data-look="blueprint"] [data-block="callout"] > div::before {
-  content: "NOTE"; position: absolute; top: -0.75rem; left: var(--ot-space-md); padding: 0.3rem 0.6rem;
-  background: var(--cl-ink); color: var(--cl-paper); font: 600 0.66rem/1 var(--cl-mono); letter-spacing: 0.16em;
-}
-.ot-campaign[data-look="blueprint"] [data-block="callout"] > div :is(h2, h3, h4, p, a) { color: var(--ot-fg); }
-
 /* Accordion: ruled rows with a mono index */
 .ot-campaign[data-look="blueprint"] [data-block="accordion"] { counter-reset: acc; }
 .ot-campaign[data-look="blueprint"] [data-block="accordion"] .border-t[data-state][data-orientation] {
@@ -677,17 +669,17 @@
 .ot-campaign[data-look="blueprint"] [data-block="accordion"] .border-t[data-state] [role="region"] { padding-inline: 3rem var(--ot-space-md); padding-bottom: var(--ot-space-sm); }
 
 /* Banner */
-.ot-campaign[data-look="blueprint"] [data-block="cta"] { margin: var(--ot-space-lg) var(--ot-space-md); border: var(--cl-line); box-shadow: 10px 10px 0 oklch(from var(--cl-ink) l c h / 0.14); }
-.ot-campaign[data-look="blueprint"] [data-block="cta"] h2,
-.ot-campaign[data-look="blueprint"] [data-block="cta"] h1 { letter-spacing: -0.03em; font-weight: 800; }
+.ot-campaign[data-look="blueprint"] [data-block="banner"] { margin: var(--ot-space-lg) var(--ot-space-md); border: var(--cl-line); box-shadow: 10px 10px 0 oklch(from var(--cl-ink) l c h / 0.14); }
+.ot-campaign[data-look="blueprint"] [data-block="banner"] h2,
+.ot-campaign[data-look="blueprint"] [data-block="banner"] h1 { letter-spacing: -0.03em; font-weight: 800; }
 
 /* Fields */
-.ot-campaign[data-look="blueprint"] .ot-field { background: var(--cl-paper); color: var(--ot-fg); border: var(--cl-line); border-radius: 0; }
-.ot-campaign[data-look="blueprint"] .ot-field::placeholder { color: var(--cl-ink-2); opacity: 0.8; }
-.ot-campaign[data-look="blueprint"] .ot-field:focus-visible { outline: 3px solid var(--cl-mark); outline-offset: 2px; }
+.ot-campaign[data-look="blueprint"] :is(.ot-field, [data-block="form"] [data-part="input"]) { background: var(--cl-paper); color: var(--ot-fg); border: var(--cl-line); border-radius: 0; }
+.ot-campaign[data-look="blueprint"] :is(.ot-field, [data-block="form"] [data-part="input"])::placeholder { color: var(--cl-ink-2); opacity: 0.8; }
+.ot-campaign[data-look="blueprint"] :is(.ot-field, [data-block="form"] [data-part="input"]):focus-visible { outline: 3px solid var(--cl-mark); outline-offset: 2px; }
 
 /* Square controls: solid ink primary, outlined secondary, highlighter on hover */
-.ot-campaign[data-look="blueprint"] :is([data-block="hero"] > div:first-child a, [data-block="cta"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"], .btn-signal) {
+.ot-campaign[data-look="blueprint"] :is([data-block="hero"] > div:first-child a, [data-block="banner"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"], .btn-signal) {
   background: var(--cl-mark); color: var(--cl-ink); border: var(--cl-line); border-radius: 0; font-weight: 700; transform: none;
   box-shadow: 4px 4px 0 var(--cl-ink);
   transition: transform var(--ot-dur-fast, 150ms) var(--ot-ease-quick), box-shadow var(--ot-dur-fast, 150ms) var(--ot-ease-quick), background-color var(--ot-dur-fast, 150ms) var(--ot-ease-quick);
@@ -695,10 +687,10 @@
 .ot-campaign[data-look="blueprint"] :is([data-block="hero"] > div:first-child a:nth-of-type(2), [data-form-card] [data-step-nav] button:first-child) {
   background: transparent; color: var(--cl-ink); box-shadow: none;
 }
-.ot-campaign[data-look="blueprint"] :is([data-block="hero"] > div:first-child a, [data-block="cta"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"], .btn-signal):hover {
+.ot-campaign[data-look="blueprint"] :is([data-block="hero"] > div:first-child a, [data-block="banner"] a, [data-form-card] button[type="submit"], [data-form-card] [data-step-nav] button, .ot-cl-strip a[class*="bg-accent"], .btn-signal):hover {
   background: var(--ot-brand); color: var(--cl-paper); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--cl-ink);
 }
-.ot-campaign[data-look="blueprint"] [data-block="cta"] a:hover { background: var(--cl-paper); color: var(--cl-ink); }
+.ot-campaign[data-look="blueprint"] [data-block="banner"] a:hover { background: var(--cl-paper); color: var(--cl-ink); }
 .ot-campaign[data-look="blueprint"] :is(a, button):focus-visible { outline: 3px solid var(--cl-mark); outline-offset: 2px; }
 
 
@@ -783,7 +775,6 @@
 .ot-campaign[data-look="blueprint"] [data-block="hero"]:not([class*="lg:flex-row"]) .bg-brand-fill a.inline-block:not(:first-of-type):hover { color: var(--cl-ink); }
 
 /* Callout bar variant (own hook): a full-width band; text and link follow the band. */
-.ot-campaign[data-look="blueprint"] [data-block="callout-bar"] > div { border-radius: 0; border-block: var(--cl-line); }
 .ot-campaign[data-look="comic"]     [data-block="callout-bar"] > div { border-radius: 0; border-block: 2px solid var(--cl-ink); background: var(--cl-b); }
 .ot-campaign[data-look="comic"]     [data-block="callout-bar"] :is(p, a, div) { color: var(--cl-ink); }
 .ot-campaign:is([data-look="neon"], [data-look="stage"]) [data-block="callout-bar"] > div { border-radius: 0; background: oklch(from var(--cl-wall, var(--ot-canvas)) l c h / 0.9); border-block: 1px solid var(--cl-n1, var(--ot-accent)); }
@@ -791,6 +782,76 @@
 
 /* Banners: the compact size must stay compact. Display-size type is capped, and glass or
    accent banners on dark looks read in the look's foreground, not ink on a photo. */
-.ot-campaign:is([data-look="stage"], [data-look="neon"], [data-look="comic"]) [data-block="cta"] :is(h1, h2) { font-size: clamp(2.2rem, 5.5vw, 4.5rem); }
-.ot-campaign:is([data-look="stage"], [data-look="neon"]) [data-block="cta"] .banner-heading.text-fg-on-accent,
-.ot-campaign:is([data-look="stage"], [data-look="neon"]) [data-block="cta"] .banner-body p { color: var(--ot-fg); }
+.ot-campaign:is([data-look="stage"], [data-look="neon"], [data-look="comic"]) [data-block="banner"] :is(h1, h2) { font-size: clamp(2.2rem, 5.5vw, 4.5rem); }
+.ot-campaign:is([data-look="stage"], [data-look="neon"]) [data-block="banner"] [data-part="heading"],
+.ot-campaign:is([data-look="stage"], [data-look="neon"]) [data-block="banner"] [data-part="body"] p { color: var(--ot-fg); }
+
+/* The hero's accent seam is part of the default look; each campaign look draws its own frame. */
+.ot-campaign [data-block="hero"] [data-part="media"]::before { display: none; }
+
+/* Neon: the callout CTA is a white button, so its label must be dark, not the neon intent colour */
+.ot-campaign[data-look="neon"] [data-block="callout"] { --i-btn-fg: var(--ot-canvas); }
+
+/* ── Stat + Feature Grid inside look panels ────────────────────────────────────
+ * Blueprint, Comic and Neon turn each stat and feature item into its own panel, so the blocks' own
+ * dividers, glass and card chrome step back (the look draws the edge) and the item keeps its padding.
+ * Blueprint and Comic panels are light even when the section is brand-filled, so the text tokens the
+ * blocks read (--s-* for Stat, --f-* for Feature Grid) are re-pointed at the look's ink there rather
+ * than inheriting the section's fg-on-brand. Stage keeps the blocks' own ruled / glass treatment. */
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"], [data-look="neon"]) [data-block="stat"] [data-part="item"]::before,
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"], [data-look="neon"]) [data-block="stat"] [data-part="item"]::after { display: none; }
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"], [data-look="neon"]) [data-block="stat"] [data-part="item"] { padding: var(--ot-space-md); }
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"], [data-look="neon"]) [data-block="stat"] [data-part="stat"][data-panel] {
+  background: none; border: 0; box-shadow: none; padding: 0; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"], [data-look="neon"]) [data-block="feature"] [data-part="card"] {
+  background: transparent; border-color: transparent; box-shadow: none;
+}
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"]) [data-block="stat"] [data-part="item"] {
+  --s-fg: var(--cl-ink); --s-muted: var(--cl-ink-2, var(--cl-ink)); --s-ink: var(--cl-ink); --s-rule: var(--cl-ink);
+  --g-a: var(--cl-ink); --g-b: var(--cl-brand);
+}
+.ot-campaign:is([data-look="blueprint"], [data-look="comic"]) [data-block="feature"] ul:not([data-ruled-grid]) li > * {
+  --f-fg: var(--cl-ink); --f-muted: var(--cl-ink-2, var(--cl-ink)); --f-ink: var(--cl-ink); --f-rule: var(--cl-ink);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+ * Primary Text effects, Image and Video inside looks
+ * The Neon look's tube glow and every look's heading color must not flatten the effects that
+ * depend on clipped or transparent text, or wash out the Highlight ink.
+ * ════════════════════════════════════════════════════════════════════════════ */
+.ot-campaign[data-look] [data-block="text"]:is([data-effect="gradient"], [data-effect="animatedGradient"]) [data-part="headline"] { color: transparent; text-shadow: none; }
+.ot-campaign[data-look] [data-block="text"][data-effect="highlight"] [data-part="headline"] { text-shadow: none; }
+/* Blueprint's marker eyebrow also covers the new eyebrow part, without the accent rule */
+.ot-campaign[data-look="blueprint"] :is([data-block="text"], [data-block="image"], [data-block="video"]) [data-part="eyebrow"] {
+  display: block; width: fit-content; font-family: var(--cl-mono); font-weight: 600; color: var(--cl-ink);
+  padding: 0.2em 0.7em 0.16em 0.55em; margin-inline-start: -0.55em;
+  border-radius: 0.3em 0.7em 0.4em 0.8em / 0.9em 0.4em 0.8em 0.35em; rotate: -1deg;
+  background: linear-gradient(98deg, transparent 0, oklch(from var(--cl-mark) l c h / 0.92) 0.55em, oklch(from var(--cl-mark) l c h / 0.92) calc(100% - 0.9em), transparent 100%);
+  box-shadow: 0.1em 0.16em 0 -0.03em oklch(from var(--cl-mark) l c h / 0.5);
+  mix-blend-mode: multiply;
+}
+.ot-campaign[data-look="blueprint"] :is([data-block="text"], [data-block="image"], [data-block="video"]) [data-part="eyebrow"]::before { display: none; }
+.ot-campaign[data-look="blueprint"] [data-block="text"][data-align="center"] [data-part="eyebrow"] { margin-inline: auto; }
+.ot-campaign[data-look="blueprint"] [data-block="text"][data-align="center"] [data-part="eyebrow"]::after { display: none; }
+/* Dark and drenched looks: body copy stays full strength */
+.ot-campaign[data-look="comic"] :is([data-block="text"], [data-block="image"], [data-block="video"]):not([data-color="brand"]) { --t-muted: var(--cl-ink); --m-muted: var(--cl-ink); }
+
+/* Stage's submit takes the spotlight accent like the rest of its buttons. */
+.ot-campaign[data-look="stage"] .ot-cl-form [data-part="submit"] { background: var(--ot-accent); color: var(--ot-fg-on-accent); }
+
+/* Pause motion: Neon flickers and Stage scrolls a marquee and follows the pointer for as long as the page is open.
+   The strip toggle sets the page to the existing "still" setting (data-motion), and hides the spotlight. */
+.ot-campaign [data-part="motion-toggle"] {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 0.9rem; border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--ot-fg) 35%, transparent); background: transparent; color: var(--ot-fg);
+  font: inherit; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer;
+}
+.ot-campaign [data-part="motion-toggle"] svg { width: 0.8rem; height: 0.8rem; }
+.ot-campaign [data-part="motion-toggle"]:focus-visible { outline: 2px solid var(--ot-accent); outline-offset: 3px; }
+.ot-campaign[data-paused] .ot-cl-spot { display: none; }
+@media (max-width: 30rem) { .ot-campaign [data-part="motion-toggle"] span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .ot-campaign [data-part="motion-toggle"] { padding: 0; width: 2.75rem; justify-content: center; } }
+
+/* The form block's own page padding and background would double up inside the locked form section. */
+.ot-cl-form [data-block="form"] { padding: 0; background: none; }
+.ot-cl-form [data-block="form"] [data-part="inner"] { max-width: 48rem; }

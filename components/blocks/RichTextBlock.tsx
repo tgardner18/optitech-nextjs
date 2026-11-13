@@ -1,4 +1,3 @@
-import { cva } from "class-variance-authority";
 import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { ArrowUp } from 'lucide-react'
 
@@ -26,15 +25,12 @@ export type RichTextStyleOptions = {
    * - standard: faithful prose rendering
    * - lead: first paragraph promoted to deck size
    * - toc: auto-generated section navigator from h2 headings
-   * - glow_frame: gradient-bordered premium frame with ambient glow
-   * - layered_depth: brand depth panel offset lower-right behind the content card
-   * - float_elevation: compound multi-layer chromatic elevation shadow
-   * - sidebar_accent: brand top rule + tinted wash (not a left/right stripe — see the
-   *   ban on side-stripe borders in DESIGN.md's absolute-bans list)
-   * - layers_3d: hard multi-layer 45° box-shadow extrude — same depth as the text effect
+   * - glow_frame / layered_depth / float_elevation / sidebar_accent / layers_3d: framed cards
    */
   treatment?: "standard" | "lead" | "toc" | "glow_frame" | "layered_depth" | "float_elevation" | "sidebar_accent" | "layers_3d";
 };
+
+const FRAMED = ["layers_3d", "glow_frame", "layered_depth", "float_elevation", "sidebar_accent"];
 
 // ─── TOC utilities ────────────────────────────────────────────────────────────
 
@@ -49,14 +45,15 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractNodeText(node: any): string {
   if (typeof node.text === 'string') return node.text;
   if (Array.isArray(node.children)) return node.children.map(extractNodeText).join('');
   return '';
 }
 
-function extractHeadings(content: any): HeadingEntry[] {
-  const nodes: any[] = content?.children ?? [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractHeadings(nodes: any[]): HeadingEntry[] {
   // De-duplicate ids: two headings with the same text would otherwise share an
   // anchor and every TOC link would jump to the first. Suffix repeats (-2, -3…).
   const seen = new Map<string, number>();
@@ -71,68 +68,28 @@ function extractHeadings(content: any): HeadingEntry[] {
     });
 }
 
-// ─── ArticleToc panel ─────────────────────────────────────────────────────────
-
+/**
+ * Contents panel: its own list markup (one set of numerals), rendered after the
+ * opening paragraph. From 60rem the CSS turns it into a sticky rail.
+ */
 function ArticleToc({ headings }: { headings: HeadingEntry[] }) {
   if (headings.length === 0) return null;
   return (
-    <nav id="article-toc" aria-label="Article contents" className="my-lg">
-      <div className="rounded-ot-surface overflow-hidden border border-(--ot-bloom-brand-border) bg-surface">
-        <div className="px-md pt-md pb-sm border-b border-(--ot-bloom-brand-border)">
-          <span className="text-label tracking-label uppercase text-fg-muted font-semibold">
-            Contents
-          </span>
-        </div>
-        <ol className="px-md py-sm">
-          {headings.map((heading, i) => (
-            <li key={heading.id} className="list-none">
-              <a href={`#${heading.id}`} className="group/entry flex items-baseline gap-3 py-1">
-                <span className="font-mono text-brand text-xs tabular-nums flex-shrink-0 transition-colors duration-150">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="text-sm text-fg-muted leading-snug group-hover/entry:text-fg group-hover/entry:translate-x-[3px] transition-all duration-150 ease-out">
-                  {heading.text}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </div>
+    <nav id="article-toc" data-part="toc" aria-label="Article contents">
+      <p data-part="toc-label">Contents</p>
+      <ol data-part="toc-list">
+        {headings.map((heading, i) => (
+          <li key={heading.id}>
+            <a data-part="toc-link" href={`#${heading.id}`}>
+              <span data-part="toc-n">{String(i + 1).padStart(2, '0')}</span>
+              <span data-part="toc-t">{heading.text}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
     </nav>
   );
 }
-
-// ─── CVA variant configs ──────────────────────────────────────────────────────
-
-const sectionCva = cva("px-md lg:px-lg", {
-  variants: {
-    color: {
-      none:    "",
-      brand:   "bg-brand-fill",
-      canvas:  "bg-canvas",
-      surface: "bg-surface",
-    },
-    size: {
-      editorial: "py-lg",
-      compact:   "py-md",
-    },
-  },
-  defaultVariants: { color: "canvas", size: "editorial" },
-});
-
-const innerCva = cva("w-full", {
-  variants: {
-    alignment: {
-      left:   "",
-      center: "mx-auto",
-    },
-    size: {
-      editorial: "",
-      compact:   "",
-    },
-  },
-  defaultVariants: { alignment: "left", size: "editorial" },
-});
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -154,26 +111,29 @@ export default function RichTextBlock({
     treatment = "standard",
   } = styleOptions;
 
-  // Build element map for toc treatment. The nav panel itself is rendered above
-  // the whole RichText so it sits at the very top of the block, regardless of
-  // whether the first node is a heading or a paragraph. The map here only adds
-  // anchor ids + a back-to-contents arrow to each h2.
-  const headings = treatment === 'toc' ? extractHeadings(content) : [];
+  const framed = FRAMED.includes(treatment);
+  // Framed cards sit on canvas or surface (a brand ground would put a card on brand).
+  const groundColor = framed && color === 'brand' ? 'canvas' : color;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allNodes: any[] = (content as any)?.children ?? [];
+  const isToc = treatment === 'toc';
+  const headings = isToc ? extractHeadings(allNodes) : [];
 
   // Headings render in document order, exactly as extractHeadings collected
-  // them, so walk the same array by index. This guarantees each rendered h2 id
-  // matches its TOC link's href (and inherits the same de-dup).
+  // them, so walk the same array by index (shared across the split render below).
   let headingIndex = 0;
-  const elements = treatment === 'toc' ? {
+  const elements = isToc ? {
     ...baseElements,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     'heading-two': ({ children }: any) => {
       const id = headings[headingIndex++]?.id;
       return (
         <h2 id={id}>
           <span>{children}</span>
           {headings.length > 0 && (
-            <a href="#article-toc" aria-label="Back to contents">
-              <ArrowUp size={12} strokeWidth={2} aria-hidden="true" />
+            <a data-part="back" href="#article-toc" aria-label="Back to contents">
+              <ArrowUp aria-hidden="true" strokeWidth={2} />
             </a>
           )}
         </h2>
@@ -181,142 +141,62 @@ export default function RichTextBlock({
     },
   } : baseElements;
 
-  // ── Gradient Border Glow Frame ──────────────────────────────────────────────
-  if (treatment === 'glow_frame') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} rte-glow-frame rounded-ot-surface p-1`}>
-          <div
-            data-rich-text=""
-            data-color={color}
-            data-size={size}
-            data-treatment="glow_frame"
-            className="bg-canvas rounded-[inherit] px-8 py-7"
-            {...pa('content')}
-          >
-            <RichText content={content ?? undefined} elements={elements} />
-          </div>
-        </div>
-      </section>
+  // For Contents the panel follows the opening paragraph (title → intro → panel → body).
+  // Split the node list at the first paragraph, only when it opens the article.
+  let body;
+  if (isToc && headings.length > 0) {
+    const firstP = allNodes.findIndex(n => n.type === 'paragraph');
+    const cut = firstP >= 0 && firstP <= 1 ? firstP + 1 : 0;
+    const head = allNodes.slice(0, cut);
+    const rest = allNodes.slice(cut);
+    body = (
+      <>
+        {head.length > 0 && <RichText content={{ ...(content as object), children: head } as never} elements={elements} />}
+        <ArticleToc headings={headings} />
+        <RichText content={{ ...(content as object), children: rest } as never} elements={elements} />
+      </>
     );
+  } else {
+    body = <RichText content={content ?? undefined} elements={elements} />;
   }
 
-  // ── Layered Depth Offset ────────────────────────────────────────────────────
-  if (treatment === 'layered_depth') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        <div className={`${innerCva({ alignment, size })} relative pb-3`}>
-          {/* Brand depth panel — same size as the container, offset lower-right so
-              it peeks out from behind the content card on the right and bottom */}
-          <div
-            aria-hidden
-            className="absolute top-3 left-3 right-0 bottom-0 rte-depth-bg hidden md:block"
-          />
-          <div
-            data-rich-text=""
-            data-color={color}
-            data-size={size}
-            data-treatment="layered_depth"
-            className="relative mr-3 bg-surface rounded-ot-surface px-8 py-8 rte-depth-card"
-            {...pa('content')}
-          >
-            <RichText content={content ?? undefined} elements={elements} />
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const prose = (
+    <div data-part="prose" data-rich-text="" {...pa('content')}>
+      {body}
+    </div>
+  );
 
-  // ── Premium Float Elevation ─────────────────────────────────────────────────
-  if (treatment === 'float_elevation') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        <div className={innerCva({ alignment, size })}>
-          <div
-            data-rich-text=""
-            data-color={color}
-            data-size={size}
-            data-treatment="float_elevation"
-            className="bg-surface rounded-ot-surface px-8 py-8 rte-float-elevation"
-            {...pa('content')}
-          >
-            <RichText content={content ?? undefined} elements={elements} />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // ── Accent Rail ──────────────────────────────────────────────────────────────
-  // A brand top rule + tinted wash on the card. Earlier versions of this treatment
-  // used a full-height brand-colored bar flush to the card's left edge — visually
-  // identical to the banned "side-stripe border" pattern (DESIGN.md absolute bans:
-  // no border-left/border-right > 1px as a decorative accent) even though it was a
-  // positioned div rather than a literal `border-left`. Rewritten per the design
-  // system's own suggested alternative: a full border edge (here, the top rule) plus
-  // a background tint, instead of a side stripe.
-  if (treatment === 'sidebar_accent') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        <div className={innerCva({ alignment, size })}>
-          <div
-            data-rich-text=""
-            data-color={color}
-            data-size={size}
-            data-treatment="sidebar_accent"
-            className="bg-brand/5 rounded-ot-surface border-t-[3px] border-brand px-8 py-8 rte-depth-card"
-            {...pa('content')}
-          >
-            <RichText content={content ?? undefined} elements={elements} />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // ── 3D Layers Extrude ───────────────────────────────────────────────────────
+  let inner;
   if (treatment === 'layers_3d') {
-    return (
-      <section className={sectionCva({ color, size })}>
-        {/* pb-10/pr-10 (40px) gives the 4 × 10px depth layers room to show */}
-        <div className={`${innerCva({ alignment, size })} relative pb-10 pr-10`}>
-          {/* Full-size layer rectangles — ordered back-to-front in DOM so each
-              later sibling paints on top. Each is inset 10px from the outer
-              container right/bottom so it matches the card face width/height,
-              then translated to its offset position. */}
-          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-10 translate-y-10 rounded-ot-surface rte-3d-l4 hidden md:block" />
-          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-7.5 translate-y-7.5 rounded-ot-surface rte-3d-l3 hidden md:block" />
-          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-5 translate-y-5 rounded-ot-surface rte-3d-l2 hidden md:block" />
-          <div aria-hidden className="absolute top-0 left-0 right-10 bottom-10 translate-x-2.5 translate-y-2.5 rounded-ot-surface rte-3d-l1 hidden md:block" />
-          <div
-            data-rich-text=""
-            data-color={color}
-            data-size={size}
-            data-treatment="layers_3d"
-            className="relative bg-surface rounded-ot-surface px-8 py-8 rte-3d-face"
-            {...pa('content')}
-          >
-            <RichText content={content ?? undefined} elements={elements} />
-          </div>
-        </div>
-      </section>
+    inner = (
+      <div data-part="stage">
+        {[4, 3, 2, 1].map(n => <span key={n} data-part="plate" data-n={n} aria-hidden="true" />)}
+        {prose}
+      </div>
     );
+  } else if (treatment === 'layered_depth') {
+    inner = (
+      <div data-part="stage">
+        <span data-part="back-panel" aria-hidden="true" />
+        {prose}
+      </div>
+    );
+  } else if (framed) {
+    inner = <div data-part="stage">{prose}</div>;
+  } else {
+    inner = prose;
   }
 
-  // ── Standard / Lead / TOC ───────────────────────────────────────────────────
   return (
-    <section className={sectionCva({ color, size })}>
-      <div
-        data-rich-text=""
-        data-color={color}
-        data-size={size}
-        data-treatment={treatment !== "standard" ? treatment : undefined}
-        className={innerCva({ alignment, size })}
-        {...pa('content')}
-      >
-        {treatment === 'toc' && <ArticleToc headings={headings} />}
-        <RichText content={content ?? undefined} elements={elements} />
-      </div>
+    <section
+      data-block="rich-text"
+      data-treatment={treatment}
+      data-color={groundColor}
+      data-size={size}
+      data-align={alignment}
+      data-theme={groundColor === 'brand' ? 'dark' : undefined}
+    >
+      <div data-part="inner">{inner}</div>
     </section>
   );
 }

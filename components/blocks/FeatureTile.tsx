@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
-import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
 import { ICON_REGISTRY, type LucideIcon } from '@/components/icons/iconRegistry'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { RichText } from '@optimizely/cms-sdk/react/richText'
 
 const ICONS: Record<string, LucideIcon> = { ...ICON_REGISTRY }
@@ -32,73 +30,9 @@ export type FeatureTileStyleOptions = {
   animate?:   boolean
 }
 
-// ─── CVA variants ─────────────────────────────────────────────────────────────
-
-const featureHeadlineCva = cva(
-  'text-title leading-title tracking-title font-semibold',
-  {
-    variants: {
-      color: {
-        canvas:  'text-fg',
-        surface: 'text-fg',
-        brand:   'text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-const featureBodyCva = cva('mt-xs text-body leading-body [&>p]:m-0 [&>p+p]:mt-xs', {
-  variants: {
-    color: {
-      canvas:  'text-fg-muted',
-      surface: 'text-fg-muted',
-      brand:   'text-fg-on-brand/70',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const featureCtaCva = cva(
-  'inline-flex items-center gap-xs mt-sm min-h-[44px] text-label tracking-label font-semibold uppercase transition-opacity duration-150 hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
-  {
-    variants: {
-      color: {
-        canvas:  'text-brand',
-        surface: 'text-brand',
-        brand:   'text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-const featureCardCva = cva(
-  // feature-card-lift (globals.css) owns resting shadow + transition for transform,
-  // box-shadow, and border-color — so hover:border-* here gets animated for free.
-  'feature-card-lift rounded-ot-surface border p-lg',
-  {
-    variants: {
-      color: {
-        canvas:  'bg-surface border-fg/10 hover:border-fg/22',
-        surface: 'bg-fg/6 border-fg/10 hover:border-fg/22',
-        brand:   'bg-fg-on-brand/10 border-fg-on-brand/15 hover:border-fg-on-brand/30',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-const iconCva = cva('flex-shrink-0', {
-  variants: {
-    color: {
-      canvas:  'text-brand',
-      surface: 'text-brand',
-      brand:   'text-fg-on-brand/80',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
+// Visual styling lives in feature.css (imported from app/globals.css). This component only sets
+// data attributes and markup; the surrounding Feature Grid (or a standalone wrapper) supplies the
+// data-color attribute the stylesheet reads.
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -131,7 +65,6 @@ export default function FeatureTile({
   className,
 }: FeatureTileProps) {
   const {
-    color     = 'canvas',
     iconStyle = 'none',
     animate   = true,
   } = styleOptions
@@ -186,68 +119,47 @@ export default function FeatureTile({
 
   const textBlock = (
     <>
-      <h3 className={featureHeadlineCva({ color })}>{feature.headline}</h3>
+      <h3 data-part="title">{feature.headline}</h3>
 
       {feature.body && (
-        <div className={featureBodyCva({ color })}>
+        <div data-part="desc">
           <RichText content={feature.body} />
         </div>
       )}
 
       {feature.ctaLabel && feature.ctaUrl && (
-        <a href={feature.ctaUrl} className={featureCtaCva({ color })}>
+        <a href={feature.ctaUrl} data-part="link">
           {feature.ctaLabel}
-          <ArrowUpRight
-            size={12}
-            strokeWidth={2.5}
-            aria-hidden="true"
-            className="motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-quick motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5"
-          />
+          <ArrowRight aria-hidden="true" />
         </a>
       )}
     </>
   )
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        // A grid item's own box stretches to the row height by default, but a
-        // block child (this div) doesn't inherit that — without h-full here,
-        // two same-row cards with different text lengths render as visibly
-        // uneven boxes even though their row track is already equal height.
-        variant === 'card' && 'h-full',
-        variant === 'card' && featureCardCva({ color }),
-        className,
-      )}
-      style={itemStyle}
-    >
+  const content = (
+    <>
       {showIcon && iconStyle === 'structural' && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            'inline-flex items-center justify-center w-16 h-16 mb-md rounded-ot-control motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-quick motion-safe:group-hover:scale-110',
-            color === 'brand' ? 'bg-fg-on-brand/10' : 'bg-fg/8',
-            iconCva({ color }),
-          )}
-        >
-          <Icon size={36} strokeWidth={1.75} />
+        <span data-part="tile" aria-hidden="true">
+          <Icon />
         </span>
       )}
 
       {showAccentIcon ? (
-        <div className="flex items-center gap-md">
-          <span
-            aria-hidden="true"
-            className={cn('inline-flex motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-quick motion-safe:group-hover:scale-110', iconCva({ color }))}
-          >
-            <Icon size={32} strokeWidth={2.25} />
+        <div data-part="row">
+          <span data-part="icon" aria-hidden="true">
+            <Icon />
           </span>
-          <div className="min-w-0 flex-1">{textBlock}</div>
+          <div data-part="body">{textBlock}</div>
         </div>
       ) : (
         textBlock
       )}
+    </>
+  )
+
+  return (
+    <div ref={ref} data-part="tilewrap" className={className} style={itemStyle}>
+      {variant === 'card' ? <div data-part="card">{content}</div> : content}
     </div>
   )
 }

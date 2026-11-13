@@ -19,6 +19,7 @@ export const OT_CalloutDefault = displayTemplate({
         filled:   { displayName: 'Filled (Default)',              sortOrder: 10 },
         bordered: { displayName: 'Bordered',                      sortOrder: 20 },
         bar:      { displayName: 'Bar — Full width recommended',  sortOrder: 30 },
+        split:    { displayName: 'Split — color column + message', sortOrder: 40 },
       },
     },
 
@@ -74,13 +75,25 @@ export const OT_CalloutDefault = displayTemplate({
       choices:     ICON_CHOICES_WITH_NONE,
     },
 
+    // ── Intent label ─────────────────────────────────────────────────────────
+    label: {
+      displayName: 'Intent label',
+      editor:      'select',
+      sortOrder:   75,
+      choices: {
+        on:  { displayName: 'On (Default)', sortOrder: 10 },
+        off: { displayName: 'Off',           sortOrder: 20 },
+      },
+    },
+
     // ── Entrance animation ───────────────────────────────────────────────────
     entranceAnimation: {
       displayName: 'Entrance animation',
       editor:      'select',
       sortOrder:   80,
       choices: {
-        none:     { displayName: 'None (Default)', sortOrder: 10 },
+        none:     { displayName: 'Built-in per variant (Default)', sortOrder: 10 },
+        off:      { displayName: 'None',          sortOrder: 15 },
         fade:     { displayName: 'Fade in',        sortOrder: 20 },
         slide:    { displayName: 'Slide up',       sortOrder: 30 },
         parallax: { displayName: 'Parallax',       sortOrder: 40 },

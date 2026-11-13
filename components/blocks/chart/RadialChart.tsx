@@ -62,63 +62,26 @@ export default function RadialChart({
   const fillColor  = palette[0]
 
   return (
-    <div style={{ position: 'relative', width: '100%', height }}>
+    <div data-part="gauge" style={{ position: 'relative', width: '100%', height }}>
       <ResponsiveContainer width="100%" height={height}>
-        <RadialBarChart
-          data={radialData}
-          startAngle={230}
-          endAngle={-50}
-          innerRadius="62%"
-          outerRadius="88%"
-          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        >
+        <RadialBarChart data={radialData} startAngle={230} endAngle={-50} innerRadius="62%" outerRadius="88%" margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <RadialBar
             dataKey="value"
             cornerRadius={6}
             fill={fillColor}
-            // background acts as the track ring — rendered behind the fill arc
-            background={{ fill: fillColor, opacity: 0.15 }}
+            // the track ring, drawn behind the fill arc
+            background={{ fill: 'var(--ch-track)' }}
             animationDuration={800}
             animationEasing="ease-out"
           />
         </RadialBarChart>
       </ResponsiveContainer>
 
-      {/* Center label — absolutely positioned over the chart */}
-      <div style={{
-        position:       'absolute',
-        inset:           0,
-        display:        'flex',
-        flexDirection:  'column',
-        alignItems:     'center',
-        justifyContent: 'center',
-        pointerEvents:  'none',
-        paddingBottom:  Math.round(height * 0.04),
-      }}>
-        <span style={{
-          color:         theme.tooltipText,
-          fontSize:      `${Math.max(Math.round(height * 0.14), 28)}px`,
-          fontWeight:    800,
-          fontFamily:    'var(--ot-font-sans)',
-          letterSpacing: '-0.03em',
-          lineHeight:    1,
-        }}>
-          {valuePrefix}{displayValue}{valueSuffix}
+      <div data-part="gauge-text" aria-hidden="true">
+        <span data-part="gauge-value" style={{ fontSize: `${Math.max(Math.round(height * 0.14), 28)}px` }}>
+          {valuePrefix}{displayValue}<small>{valueSuffix}</small>
         </span>
-        <span style={{
-          color:         theme.legendColor,
-          fontSize:      '0.75rem',
-          fontWeight:    600,
-          fontFamily:    'var(--ot-font-sans)',
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          marginTop:     6,
-          maxWidth:      120,
-          textAlign:     'center',
-          lineHeight:    1.3,
-        }}>
-          {name}
-        </span>
+        <span data-part="gauge-label">{name}</span>
       </div>
     </div>
   )

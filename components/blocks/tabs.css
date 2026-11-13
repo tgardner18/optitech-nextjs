@@ -1,0 +1,162 @@
+/* tabs.css: OT_TabsBlock refresh
+   CSS and markup hooks only. Tab style, color, position, content layout, alignment, and auto-play keep their meaning. */
+[data-block="tabs"] {
+  position: relative; isolation: isolate; overflow: clip;
+  font-family: var(--ot-font-sans); color: var(--tb-fg);
+  padding: clamp(3rem, 7cqi, 5.5rem) clamp(1.25rem, 4cqi, 3rem);
+  --tb-fg: var(--ot-fg); --tb-muted: var(--ot-fg-muted);
+  --tb-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --tb-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+  /* indicator: the active underline, pill, segment, progress, and focus ring */
+  --tb-ind: oklch(from var(--ot-brand) min(l, .46) c h);
+  --tb-on-ind: var(--ot-fg-on-brand);
+  --tb-track: color-mix(in oklch, var(--ot-fg) 11%, transparent);
+  --tb-hover: color-mix(in oklch, var(--ot-fg) 6%, transparent);
+  --tb-panel: var(--ot-surface);
+  --tb-line: color-mix(in oklch, var(--ot-fg) 9%, transparent);
+  --tb-elev: 0 1px 2px rgb(0 0 0 / .04), 0 18px 40px -24px rgb(0 0 0 / .18);
+  --tb-seg: color-mix(in oklch, var(--ot-fg) 6%, transparent);
+  --tb-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --tb-fill-hi: oklch(from var(--ot-brand) min(calc(min(l, .46) + .06), .5) c h);
+  --tb-fill-lo: oklch(from var(--ot-brand) calc(min(l, .46) - .1) c h);
+}
+[data-theme="dark"] [data-block="tabs"]:is([data-color="canvas"], [data-color="surface"]) {
+  --tb-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --tb-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+  --tb-ind: oklch(from var(--ot-brand) max(l, .74) calc(c * .9) h);
+  --tb-on-ind: oklch(from var(--ot-brand) .18 .03 h);
+  --tb-track: color-mix(in oklch, var(--ot-fg) 14%, transparent);
+  --tb-line: color-mix(in oklch, var(--ot-fg) 11%, transparent);
+  --tb-elev: none;
+}
+[data-block="tabs"][data-color="canvas"] { background: var(--ot-canvas); --tb-panel: var(--ot-surface); }
+[data-block="tabs"][data-color="surface"] { background: var(--ot-surface); --tb-panel: var(--ot-canvas); }
+/* Brand: contrast-safe fill. Glass: its own deep, tinted ground, so white type always has something to sit on. */
+[data-block="tabs"]:is([data-color="brand"], [data-color="glass"]) {
+  --tb-fg: var(--ot-fg-on-brand); --tb-muted: color-mix(in srgb, var(--ot-fg-on-brand) 94%, transparent);
+  --tb-ink: var(--ot-fg-on-brand); --tb-rule: color-mix(in oklch, var(--ot-accent) 60%, var(--ot-fg-on-brand));
+  --tb-ind: var(--ot-fg-on-brand); --tb-on-ind: oklch(from var(--ot-brand) min(l, .36) c h);
+  --tb-track: color-mix(in oklch, var(--ot-fg-on-brand) 22%, transparent);
+  --tb-hover: color-mix(in oklch, var(--ot-fg-on-brand) 10%, transparent);
+  --tb-panel: color-mix(in oklch, var(--ot-fg-on-brand) 8%, transparent);
+  --tb-line: color-mix(in oklch, var(--ot-fg-on-brand) 16%, transparent);
+  --tb-seg: rgb(0 0 0 / .22);
+  --tb-elev: inset 0 1px 0 color-mix(in oklch, var(--ot-fg-on-brand) 14%, transparent);
+}
+[data-block="tabs"][data-color="brand"] { background: radial-gradient(70% 90% at 100% 0%, var(--tb-fill-hi), transparent 70%), linear-gradient(160deg, var(--tb-fill) 0%, var(--tb-fill-lo) 100%); }
+[data-block="tabs"][data-color="glass"] {
+  background:
+    radial-gradient(55% 75% at 12% 18%, oklch(from var(--ot-accent) .58 calc(c * .85) h / .38), transparent 62%),
+    radial-gradient(65% 85% at 92% 95%, oklch(from var(--ot-brand) .48 c h / .55), transparent 66%),
+    linear-gradient(160deg, oklch(from var(--ot-brand) .27 calc(c * .8) h), oklch(from var(--ot-brand) .16 calc(c * .7) h));
+  --tb-panel: color-mix(in oklch, var(--ot-fg-on-brand) 9%, transparent);
+}
+[data-block="tabs"] [data-part="inner"] { max-width: 80rem; margin-inline: auto; container: tabs / inline-size; }
+
+/* Optional block header: the shared accent-rule eyebrow */
+[data-block="tabs"] [data-part="head"] { margin-bottom: clamp(1.75rem, 4cqi, 2.75rem); max-width: 48rem; display: flex; flex-direction: column; gap: .875rem; }
+[data-block="tabs"] [data-part="h-eyebrow"] { display: inline-flex; align-items: center; gap: .75rem; margin: 0; font-size: .75rem; line-height: 1; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--tb-ink); }
+[data-block="tabs"] [data-part="h-eyebrow"]::before { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--tb-rule); }
+[data-block="tabs"] [data-part="h-title"] { margin: 0; font-size: clamp(1.875rem, 1.1rem + 3.2cqi, 3rem); line-height: 1.08; letter-spacing: -.025em; font-weight: 700; text-wrap: balance; color: var(--tb-fg); }
+
+/* Layout */
+[data-block="tabs"] [data-part="cols"] { display: flex; flex-direction: column; gap: 1.25rem; }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-position="side"] [data-part="cols"] { flex-direction: row; gap: clamp(1.5rem, 3cqi, 2.5rem); align-items: flex-start; } }
+[data-block="tabs"] [data-part="bar"] { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+[data-block="tabs"][data-align="center"] [data-part="bar"] { justify-content: center; }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-position="side"] [data-part="bar"] { flex-direction: column; align-items: stretch; width: 15rem; flex: none; } }
+
+/* Tab list (keeps the existing scroller with edge fades on small screens) */
+[data-block="tabs"] [data-part="list"] { position: relative; display: flex; min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+[data-block="tabs"] [data-part="list"]::-webkit-scrollbar { display: none; }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-position="side"] [data-part="list"] { flex-direction: column; overflow: visible; } }
+[data-block="tabs"][data-style="underline"] [data-part="list"] { flex: 1; box-shadow: inset 0 -1px 0 var(--tb-track); }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-style="underline"][data-position="side"] [data-part="list"] { box-shadow: inset 1px 0 0 var(--tb-track); } }
+[data-block="tabs"][data-style="pill"] [data-part="list"] { gap: .375rem; }
+[data-block="tabs"][data-style="buttonGroup"] [data-part="list"] { gap: .25rem; padding: .25rem; width: fit-content; border-radius: calc(var(--ot-radius-control) + .25rem); background: var(--tb-seg); box-shadow: inset 0 0 0 1px var(--tb-line); }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-style="buttonGroup"][data-position="side"] [data-part="list"] { width: 100%; } }
+[data-block="tabs"][data-color="glass"]:not([data-style="underline"]) [data-part="list"] { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
+/* The component's sliding indicator, in ink that reads on every ground */
+[data-block="tabs"] [data-part="indicator"] { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; background: var(--tb-ind); transition: clip-path .38s cubic-bezier(.16, 1, .3, 1); }
+[data-block="tabs"]:not([data-style="underline"]) [data-part="indicator"] { box-shadow: 0 1px 2px rgb(0 0 0 / .18), 0 6px 16px -6px oklch(from var(--tb-ind) l c h / .55); }
+
+/* Tabs: one label style for all three: sentence case, 15px, semibold */
+[data-block="tabs"] [data-part="tab"] {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; flex: none;
+  scroll-snap-align: start; cursor: pointer; border: 0; background: none; margin: 0;
+  font: 600 .9375rem/1.2 var(--ot-font-sans); letter-spacing: -.005em; white-space: nowrap;
+  color: var(--tb-muted); transition: color .2s, background-color .2s;
+}
+[data-block="tabs"] [data-part="tab"]:hover { color: var(--tb-fg); }
+[data-block="tabs"] [data-part="tab"][aria-selected="true"] { color: var(--tb-fg); }
+[data-block="tabs"] [data-part="tab"]:focus-visible { outline: 2px solid var(--tb-ind); outline-offset: 2px; }
+[data-block="tabs"][data-style="underline"] [data-part="tab"] { padding: 1rem clamp(.875rem, 2cqi, 1.375rem); border-radius: var(--ot-radius-control) var(--ot-radius-control) 0 0; }
+[data-block="tabs"][data-style="underline"] [data-part="tab"]:focus-visible { outline-offset: -2px; }
+[data-block="tabs"][data-style="underline"] [data-part="tab"]:not([aria-selected="true"])::after { content: ""; position: absolute; left: clamp(.875rem, 2cqi, 1.375rem); right: clamp(.875rem, 2cqi, 1.375rem); bottom: 0; height: 2px; border-radius: 2px; background: currentColor; opacity: 0; transform: scaleX(.4); transition: transform .25s cubic-bezier(.16, 1, .3, 1), opacity .25s; }
+[data-block="tabs"][data-style="underline"] [data-part="tab"]:not([aria-selected="true"]):hover::after { opacity: .35; transform: none; }
+@container tabs (min-width: 48rem) {
+  [data-block="tabs"][data-style="underline"][data-position="side"] [data-part="tab"] { justify-content: flex-start; padding: .75rem 1rem .75rem 1.25rem; border-radius: 0 var(--ot-radius-control) var(--ot-radius-control) 0; text-align: left; }
+  [data-block="tabs"][data-style="underline"][data-position="side"] [data-part="tab"]::after { display: none; }
+  [data-block="tabs"][data-style="underline"][data-position="side"] [data-part="tab"]:not([aria-selected="true"]):hover { background: var(--tb-hover); }
+}
+[data-block="tabs"]:is([data-style="pill"], [data-style="buttonGroup"]) [data-part="tab"] { padding: .6875rem 1.125rem; border-radius: var(--ot-radius-control); min-width: 6.5rem; }
+[data-block="tabs"]:is([data-style="pill"], [data-style="buttonGroup"]) [data-part="tab"]:not([aria-selected="true"]):hover { background: var(--tb-hover); }
+[data-block="tabs"]:is([data-style="pill"], [data-style="buttonGroup"]) [data-part="tab"][aria-selected="true"] { color: var(--tb-on-ind); }
+@container tabs (min-width: 48rem) { [data-block="tabs"]:is([data-style="pill"], [data-style="buttonGroup"])[data-position="side"] [data-part="tab"] { justify-content: flex-start; } }
+
+/* Auto-play: progress in the indicator ink, plus a pause control (pauses on hover and focus as well) */
+[data-block="tabs"] [data-part="progress"] { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; border-radius: 3px; background: var(--tb-ind); animation: tb2-progress var(--tab-dur, 5s) linear forwards; animation-play-state: var(--tab-play, running); }
+[data-block="tabs"]:is([data-style="pill"], [data-style="buttonGroup"]) [data-part="progress"] { left: .75rem; bottom: .3125rem; height: 2px; background: currentColor; opacity: .55; --tb-pmax: calc(100% - 1.5rem); animation-name: tb2-progress-in; }
+[data-block="tabs"][data-paused] [data-part="progress"] { animation-play-state: paused; }
+@keyframes tb2-progress { from { width: 0; } to { width: 100%; } }
+@keyframes tb2-progress-in { from { width: 0; } to { width: var(--tb-pmax); } }
+[data-block="tabs"] [data-part="pause"] { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 0; cursor: pointer; background: var(--tb-hover); color: var(--tb-fg); transition: background-color .2s; }
+[data-block="tabs"] [data-part="pause"]:hover { background: var(--tb-track); }
+[data-block="tabs"] [data-part="pause"]:focus-visible { outline: 2px solid var(--tb-ind); outline-offset: 2px; }
+[data-block="tabs"] [data-part="pause"] svg { width: 1rem; height: 1rem; }
+@container tabs (min-width: 48rem) { [data-block="tabs"][data-position="side"] [data-part="pause"] { align-self: flex-start; margin-top: .5rem; } }
+
+/* Panel: theme corners, neutral elevation (no brand haze), hairline in dark mode */
+[data-block="tabs"] [data-part="panel"] {
+  flex: 1; min-width: 0; padding: clamp(1.5rem, 4cqi, 2.75rem);
+  background: var(--tb-panel); border-radius: var(--ot-radius-surface);
+  box-shadow: inset 0 0 0 1px var(--tb-line), var(--tb-elev);
+}
+[data-block="tabs"][data-color="glass"] [data-part="panel"] { -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); }
+[data-block="tabs"] [data-part="panel"]:focus-visible { outline: 2px solid var(--tb-ind); outline-offset: 3px; }
+[data-block="tabs"] [data-part="content"] { display: grid; gap: clamp(1.5rem, 4cqi, 3rem); align-items: center; }
+@container tabs (min-width: 48rem) {
+  [data-block="tabs"] [data-part="content"][data-layout="imageRight"] { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  [data-block="tabs"] [data-part="content"][data-layout="imageLeft"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+  [data-block="tabs"] [data-part="content"][data-layout="imageLeft"] [data-part="media"] { order: -1; }
+}
+[data-block="tabs"] [data-part="text"] { display: flex; flex-direction: column; gap: .875rem; max-width: 60ch; }
+/* The label repeats the selected tab directly above it; the panel is already labelled by that tab */
+[data-block="tabs"] [data-part="kicker"] { display: none; }
+[data-block="tabs"] [data-part="heading"] { margin: 0; font-size: clamp(1.375rem, 1rem + 1.6cqi, 2rem); line-height: 1.15; letter-spacing: -.022em; font-weight: 700; text-wrap: balance; color: var(--tb-fg); }
+[data-block="tabs"] [data-part="body"] p { margin: 0; font-size: clamp(1rem, .95rem + .2cqi, 1.0625rem); line-height: 1.65; text-wrap: pretty; color: var(--tb-muted); }
+[data-block="tabs"] [data-part="media"] { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: max(0px, calc(var(--ot-radius-surface) - .375rem)); background: var(--tb-hover); }
+[data-block="tabs"] [data-part="media"] :is(img, canvas) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Panel change: a short directional slide; the photo settles in behind it */
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="tabs"] [data-part="enter"] { animation: tb2-in .42s cubic-bezier(.16, 1, .3, 1) both; }
+  [data-block="tabs"] [data-part="enter"][data-dir="right"] { animation-name: tb2-in-right; }
+  [data-block="tabs"] [data-part="enter"][data-dir="left"] { animation-name: tb2-in-left; }
+  [data-block="tabs"] [data-part="enter"] [data-part="media"] :is(img, canvas) { animation: tb2-settle .9s cubic-bezier(.16, 1, .3, 1) both; }
+  [data-block="tabs"][data-animate]:not([data-in]) :is([data-part="head"], [data-part="bar"], [data-part="panel"]) { opacity: 0; }
+  [data-block="tabs"][data-in] [data-part="head"] { animation: tb2-rise .7s cubic-bezier(.16, 1, .3, 1) both; }
+  [data-block="tabs"][data-in] [data-part="bar"] { animation: tb2-rise .7s .06s cubic-bezier(.16, 1, .3, 1) both; }
+  [data-block="tabs"][data-in] [data-part="panel"] { animation: tb2-rise .7s .12s cubic-bezier(.16, 1, .3, 1) both; }
+}
+@keyframes tb2-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes tb2-in-right { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes tb2-in-left { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes tb2-settle { from { transform: scale(1.06); } to { transform: none; } }
+@keyframes tb2-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Static active state: the sliding indicator mounts after measuring; until then (and with reduced motion) the tab carries it */
+[data-block="tabs"] [data-part="list"]:not(:has([data-part="indicator"])) [data-part="tab"][aria-selected="true"] { background: var(--tb-ind); }
+[data-block="tabs"][data-style="underline"] [data-part="list"]:not(:has([data-part="indicator"])) [data-part="tab"][aria-selected="true"] { background: none; box-shadow: inset 0 -3px 0 var(--tb-ind); }
+[data-block="tabs"][data-style="underline"][data-position="side"] [data-part="list"]:not(:has([data-part="indicator"])) [data-part="tab"][aria-selected="true"] { box-shadow: inset 3px 0 0 var(--tb-ind); }

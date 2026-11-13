@@ -11,6 +11,8 @@
  */
 import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server'
 import { DisplayTemplates } from '@optimizely/cms-sdk'
+import { Fragment } from 'react'
+import { anchorIdFor } from '@/lib/anchors'
 
 const { parseDisplaySettings } = DisplayTemplates
 
@@ -19,13 +21,27 @@ function isComponentNode(node: any): boolean {
 }
 
 export function CompositionRenderer({ nodes }: { nodes: any[] }) {
+  const taken = new Set<string>()
   return nodes.map((node) => {
+    const rendered = renderNode(node)
+    if (!rendered) return null
+    // Invisible in-page anchor target (see lib/anchors.ts); zero height, so it never affects layout.
+    const anchor = anchorIdFor(node.displayName, taken)
+    return (
+      <Fragment key={node.key}>
+        {anchor && <span id={anchor} className="ot-anchor" aria-hidden="true" />}
+        {rendered}
+      </Fragment>
+    )
+  })
+}
+
+function renderNode(node: any) {
     const displaySettings = parseDisplaySettings(node.displaySettings)
 
     if (isComponentNode(node)) {
       return (
         <OptimizelyComponent
-          key={node.key}
           content={{ ...node.component, __composition: node }}
           displaySettings={displaySettings}
         />
@@ -49,10 +65,8 @@ export function CompositionRenderer({ nodes }: { nodes: any[] }) {
     // through via `node.nodes`.
     return (
       <OptimizelyComponent
-        key={node.key}
         content={{ ...node.component, nodes: node.nodes, __composition: node, __typename: node.type }}
         displaySettings={displaySettings}
       />
     )
-  })
 }

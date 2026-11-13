@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import FieldWrapper from './FieldWrapper'
+import { useState, type CSSProperties } from 'react'
+import FieldWrapper, { describedBy } from './FieldWrapper'
 
 type Props = {
   id: string
@@ -17,10 +17,11 @@ type Props = {
 export default function RangeField({ id, name, label, tooltip, defaultValue, min = 0, max = 100, step = 1, required }: Props) {
   const initial = defaultValue !== undefined && defaultValue !== '' ? Number(defaultValue) : min
   const [value, setValue] = useState(initial)
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0
 
   return (
     <FieldWrapper id={id} label={label} tooltip={tooltip} required={required}>
-      <div className="flex items-center gap-md pt-1.5">
+      <div data-part="range-row">
         <input
           type="range"
           id={id}
@@ -31,15 +32,15 @@ export default function RangeField({ id, name, label, tooltip, defaultValue, min
           value={value}
           onChange={e => setValue(Number(e.target.value))}
           required={required}
-          aria-describedby={tooltip ? `${id}-hint` : undefined}
-          className="flex-1 h-[2px] cursor-pointer rounded-none accent-[var(--ot-brand)] disabled:opacity-50"
+          aria-describedby={describedBy(id, tooltip)}
+          data-part="range"
+          style={{ '--pct': `${pct}%` } as CSSProperties}
         />
-        <output
-          htmlFor={id}
-          className="text-label font-medium tabular-nums text-brand min-w-[3rem] text-right shrink-0"
-        >
-          {value}
-        </output>
+        <output htmlFor={id} data-part="range-out">{value}</output>
+      </div>
+      <div data-part="range-scale" aria-hidden="true">
+        <span>{min}</span>
+        <span>{max}</span>
       </div>
     </FieldWrapper>
   )

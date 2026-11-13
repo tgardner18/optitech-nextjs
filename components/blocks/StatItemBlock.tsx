@@ -51,6 +51,12 @@ export default function StatItemBlock({
     <div
       className={cn('rounded-ot-surface', glass ? glassPanelClass(color) : panelCva({ color }))}
       data-theme={isDarkSurface ? 'dark' : undefined}
+      data-block="stat"
+      data-solo=""
+      data-color={color}
+      data-glass={glass ? 'yes' : 'no'}
+      data-effect={effect}
+      data-place={styleOptions.iconPlacement ?? 'inline'}
     >
       <StatTile
         stat={stat}

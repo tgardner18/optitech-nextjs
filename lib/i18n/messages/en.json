@@ -34,7 +34,15 @@
     "siteSearch": "Site search",
     "searchResults": "Search results",
     "contentTypeFilter": "Content type filter",
-    "clearFilter": "Clear"
+    "clearFilter": "Clear",
+    "suggestions": "Suggestions",
+    "refine": "Refine",
+    "showResults": "Show results",
+    "clearFilters": "Clear filters",
+    "forQuery": "for “{query}”",
+    "viewAll": "View all {type} results",
+    "semanticTitle": "AI semantic search",
+    "semanticHint": "Finds related ideas, not just matching words"
   },
   "forms": {
     "submit": "Submit",
@@ -203,6 +211,8 @@
     "strip": "Campaign navigation",
     "minimalFooter": "All rights reserved.",
     "returnShort": "Main site",
+    "pauseMotion": "Pause motion",
+    "playMotion": "Play motion",
     "formHeading": "Request information"
   }
 }

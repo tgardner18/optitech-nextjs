@@ -1,6 +1,7 @@
-import { MapPin, ChevronRight } from 'lucide-react'
+import { ExternalLink, MapPin } from 'lucide-react'
+import Link from 'next/link'
 import type { LocationData } from '@/lib/locations'
-import { detailsPreview } from '@/lib/locationFormat'
+import { detailsPreview, directionsUrl } from '@/lib/locationFormat'
 import LocationPlate from './LocationPlate'
 import LocationLabelBadge from './LocationLabelBadge'
 
@@ -8,97 +9,33 @@ type Props = {
   location: LocationData
   onSurface?: boolean
   density?: 'comfortable' | 'compact'
-  /** Opens the shared location details modal. Omitted → row renders inert
-      (used by the showcase where no modal host exists). */
   onOpenDetails?: (location: LocationData) => void
 }
 
-// Compact directory row. A full-height square plate sits flush against the left
-// edge and anchors the row; the name + soft label badge read as one unit, with
-// the address and a short details line beneath. The whole row links to the
-// location page when one exists. On hover the full border goes brand and a faint
-// brand wash fills the row, the chevron sliding right — a strong reading anchor
-// without a decorative side-stripe (banned by DESIGN.md).
-
-export default function LocationListRow({ location, onSurface = false, density = 'comfortable', onOpenDetails }: Props) {
-  const l       = location
-  const name    = l.locationName || 'Location'
-  const details = detailsPreview(l.details, 120)
-  const compact = density === 'compact'
-  const canOpen = !l.url && !!onOpenDetails
-
-  const rowBg = onSurface ? 'bg-canvas' : 'bg-surface'
-  const textPad = compact ? 'py-sm pl-sm pr-sm' : 'py-md pl-md pr-md'
-
-  const body = (
-    <>
-      {/* Square plate, flush left, borderless. A definite WIDTH (numeric scale,
-          not a named token) keeps the square from collapsing in a flex row;
-          aspect-square derives the height from it. */}
-      <div className={`relative flex-none aspect-square overflow-hidden ${compact ? 'w-24' : 'w-32'}`}>
-        <LocationPlate shape="fill" src={l.imageUrl} name={name} size="sm" />
+export default function LocationListRow({ location: l, density = 'comfortable', onOpenDetails }: Props) {
+  const name = l.locationName || 'Location'
+  const dir = directionsUrl(l)
+  return (
+    <article data-part="row" aria-labelledby={`locr-${l.key}`}>
+      <div data-part="row-media"><LocationPlate src={l.imageUrl} name={name} alt="" size="sm" /></div>
+      <div data-part="row-body">
+        <p data-part="row-head"><span data-part="name" id={`locr-${l.key}`}>{name}</span>{l.locationLabel && <LocationLabelBadge label={l.locationLabel} />}</p>
+        {l.address && <p data-part="addr"><MapPin aria-hidden strokeWidth={2} /><span>{l.address}</span></p>}
+        {density !== 'compact' && l.details?.html && <p data-part="details">{detailsPreview(l.details, 120)}</p>}
       </div>
-
-      <div className={`min-w-0 flex-1 self-center ${textPad}`}>
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="text-base font-bold leading-tight text-fg">{name}</span>
-          {l.locationLabel && <LocationLabelBadge label={l.locationLabel} tone="soft" />}
-        </p>
-
-        {l.address && (
-          <p className="mt-1 flex items-start gap-1.5 text-pretty text-sm leading-snug text-fg-muted">
-            <MapPin size={13} strokeWidth={2} className="mt-0.5 flex-none text-brand" aria-hidden />
-            <span>{l.address}</span>
-          </p>
+      <p data-part="row-actions">
+        {l.url ? (
+          <Link href={l.url} data-part="more">View location<span className="sr-only"> {name}</span></Link>
+        ) : onOpenDetails ? (
+          <button type="button" data-part="more" onClick={() => onOpenDetails(l)}>Details<span className="sr-only"> for {name}</span></button>
+        ) : null}
+        {dir && (
+          <a href={dir} target="_blank" rel="noopener noreferrer" data-part="dir">
+            Directions<ExternalLink aria-hidden strokeWidth={2} />
+            <span className="sr-only"> to {name} (opens Google Maps in a new tab)</span>
+          </a>
         )}
-
-        {details && !compact && (
-          <p className="mt-1 text-pretty text-xs leading-relaxed text-fg-muted/80 line-clamp-1">
-            {details}
-          </p>
-        )}
-      </div>
-
-      {(l.url || canOpen) && (
-        <ChevronRight
-          size={16}
-          strokeWidth={2}
-          aria-hidden
-          className="mr-md flex-none self-center text-fg-muted motion-safe:transition-transform motion-safe:duration-150 group-hover:translate-x-1 group-hover:text-brand"
-        />
-      )}
-    </>
+      </p>
+    </article>
   )
-
-  const className =
-    `group flex w-full items-stretch overflow-hidden rounded-ot-surface text-left ${rowBg} border border-fg/10 ` +
-    'transition-[background-color,border-color] duration-150 ease-[var(--ot-ease-quick)] ' +
-    'hover:border-brand/60 hover:bg-brand/4'
-
-  if (l.url) {
-    return (
-      <a
-        href={l.url}
-        className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
-        aria-label={`View ${name}`}
-      >
-        {body}
-      </a>
-    )
-  }
-
-  if (canOpen) {
-    return (
-      <button
-        type="button"
-        onClick={() => onOpenDetails!(location)}
-        className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
-        aria-label={`View details for ${name}`}
-      >
-        {body}
-      </button>
-    )
-  }
-
-  return <div className={className}>{body}</div>
 }

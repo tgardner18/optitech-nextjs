@@ -1,5 +1,4 @@
-import FieldWrapper from './FieldWrapper'
-import { inputBase } from './fieldStyles'
+import FieldWrapper, { describedBy } from './FieldWrapper'
 
 type Props = {
   id: string
@@ -18,11 +17,11 @@ export default function UrlField({ id, name, label, placeholder, tooltip, defaul
         type="url"
         id={id}
         name={name}
-        className={inputBase}
+        data-part="input"
         placeholder={placeholder ?? 'https://'}
         defaultValue={defaultValue}
         required={required}
-        aria-describedby={tooltip ? `${id}-hint` : undefined}
+        aria-describedby={describedBy(id, tooltip)}
       />
     </FieldWrapper>
   )

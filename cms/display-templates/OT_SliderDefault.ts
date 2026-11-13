@@ -4,8 +4,8 @@ import { displayTemplate } from '@optimizely/cms-sdk'
 // (only content-type properties can) — it fails `config push` with an
 // InvalidModel error. Guidance that would otherwise live in a setting's
 // description is folded into its `displayName` or documented here instead:
-//   - contentVerticalAlign: applies to Cinematic, Editorial Split, and
-//     Emerge; ignored by Story Rail (its content position is fixed).
+//   - Content Vertical Alignment was removed: heights are minimum heights
+//     that grow to fit the text, so content always centers in the room there is.
 //   - navigation: resolves differently per Presentation Style — see
 //     OT_SliderBlock-requirements.md §5 for the per-style mapping. Emerge's
 //     own dock: `arrows`/`both` show the chevron pair, `dots` has no
@@ -36,14 +36,6 @@ export const OT_SliderDefault = displayTemplate({
         large:      { displayName: 'Large',                sortOrder: 30 },
         fullScreen: { displayName: 'Full Screen',           sortOrder: 40 },
         fitContent: { displayName: 'Fit Content',           sortOrder: 50 },
-      },
-    },
-    contentVerticalAlign: {
-      displayName: 'Content Vertical Alignment (Cinematic / Editorial Split / Emerge)', editor: 'select', sortOrder: 30,
-      choices: {
-        top:    { displayName: 'Top',            sortOrder: 10 },
-        center: { displayName: 'Center (Default)', sortOrder: 20 },
-        bottom: { displayName: 'Bottom',          sortOrder: 30 },
       },
     },
     autoPlay: {

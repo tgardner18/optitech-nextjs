@@ -24,23 +24,14 @@ export default function PractitionerListingBlock({
   pa = () => ({}),
 }: PractitionerListingBlockProps) {
   const { color } = styleOptions
-  const sectionBg = color === 'surface' ? 'bg-surface' : 'bg-canvas'
 
   return (
-    <section className={`${sectionBg} px-md py-xl lg:px-lg`}>
-      <div className="mx-auto max-w-7xl">
+    <section data-block="practitioners" data-color={color} data-density={styleOptions.density}>
+      <div data-part="in">
         {(heading || subtext) && (
-          <header className="mb-lg max-w-(--ot-measure)">
-            {heading && (
-              <h2 className="text-headline leading-headline tracking-headline font-bold text-fg text-balance" {...pa('heading')}>
-                {heading}
-              </h2>
-            )}
-            {subtext && (
-              <p className="mt-sm text-title leading-title text-fg-muted text-pretty" {...pa('subtext')}>
-                {subtext}
-              </p>
-            )}
+          <header data-part="head">
+            {heading && <h2 {...pa('heading')}>{heading}</h2>}
+            {subtext && <p {...pa('subtext')}>{subtext}</p>}
           </header>
         )}
 

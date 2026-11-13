@@ -1,0 +1,320 @@
+/* hero.css: OT_HeroBlock
+   Styling lives here; HeroBlock.tsx only sets data attributes and markup.
+   Hooks: [data-block="hero"] with data-direction, data-color, data-side, data-image,
+   data-entrance, and [data-part] children (eyebrow, rule, headline, body, ctas, primary,
+   secondary, arrow, panel, content, atmos, media, frame, img, aura, offset, shade,
+   shape-wrap, shape, inner).
+   Selectors stay at low specificity on purpose: components/campaign/campaign-looks.css
+   overrides the hero per look and must keep winning.
+   Breakpoint: 64rem (the old `lg:`), written as media queries because the section itself
+   cannot query its own container. */
+
+[data-block="hero"] {
+  position: relative; overflow: hidden; isolation: isolate;
+  font-family: var(--ot-font-sans); color: var(--ot-fg); background: var(--ot-canvas);
+  /* Contrast-safe brand fill: white text stays at 4.5:1 or better on every theme */
+  --h-fill:    oklch(from var(--ot-brand) min(l, .5) c h);
+  --h-fill-hi: oklch(from var(--ot-brand) min(calc(l + .06), .56) c h);
+  --h-fill-lo: oklch(from var(--ot-brand) calc(min(l, .5) - .12) c h);
+  --h-ink:     oklch(from var(--ot-brand) min(l, .42) c h);
+  --h-pad:     clamp(2rem, 1rem + 3.5vw, 4.5rem);
+  --h-gutter:  clamp(1.25rem, 3vw, 3rem);
+  --h-ease:    cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ---------- Fills ---------- */
+[data-block="hero"] [data-fill="brand"], [data-block="hero"][data-fill="brand"] {
+  background:
+    radial-gradient(70% 90% at 100% 100%, var(--h-fill-hi), transparent 70%),
+    linear-gradient(155deg, var(--h-fill) 0%, var(--h-fill-lo) 100%);
+  --tx:  var(--ot-fg-on-brand);
+  --tx2: color-mix(in srgb, var(--ot-fg-on-brand) 90%, transparent);
+  --tx3: color-mix(in srgb, var(--ot-fg-on-brand) 92%, transparent);
+  color: var(--tx);
+}
+[data-block="hero"] [data-fill="canvas"], [data-block="hero"][data-fill="canvas"] {
+  background: var(--ot-canvas); --tx: var(--ot-fg); --tx2: var(--ot-fg-muted); --tx3: var(--h-fill);
+}
+[data-block="hero"] [data-fill="surface"], [data-block="hero"][data-fill="surface"] {
+  background: var(--ot-surface); --tx: var(--ot-fg); --tx2: var(--ot-fg-muted); --tx3: var(--h-fill);
+}
+[data-theme="dark"] [data-block="hero"] :is([data-fill="canvas"], [data-fill="surface"]),
+[data-theme="dark"] [data-block="hero"]:is([data-fill="canvas"], [data-fill="surface"]) {
+  --tx3: oklch(from var(--ot-brand) max(l, .78) c h);
+}
+/* Direction wrappers without their own fill read the section palette */
+[data-block="hero"] { --tx: var(--ot-fg); --tx2: var(--ot-fg-muted); --tx3: var(--h-fill); }
+[data-theme="dark"] [data-block="hero"] { --tx3: oklch(from var(--ot-brand) max(l, .78) c h); }
+
+/* ---------- One type system for every direction ---------- */
+[data-block="hero"] [data-part="eyebrow"] {
+  display: inline-flex; align-items: center; gap: .75rem; margin: 0 0 1.25rem;
+  font-size: .75rem; line-height: 1; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--tx3);
+}
+[data-block="hero"] [data-part="rule"] {
+  display: block; flex: none; width: 1.75rem; height: 2px; border-radius: 2px;
+  background: var(--ot-accent); transform-origin: left center;
+}
+[data-block="hero"] [data-part="headline"] {
+  margin: 0; max-inline-size: 20ch; color: var(--tx);
+  font-size: clamp(2.25rem, 1.1rem + 4.4vw, 4.5rem); line-height: 1.04; letter-spacing: -.028em; font-weight: 700; text-wrap: balance;
+}
+[data-block="hero"] [data-part="body"] {
+  margin: 1.25rem 0 0; max-inline-size: 46ch; color: var(--tx2);
+  font-size: clamp(1.0625rem, .95rem + .4vw, 1.25rem); line-height: 1.6; font-weight: 400; text-wrap: pretty;
+}
+[data-block="hero"] [data-part="ctas"] { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+[data-block="hero"] :is([data-part="primary"], [data-part="secondary"]) {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem; box-sizing: border-box;
+  min-height: 3.25rem; padding: 0 1.5rem; border-radius: var(--ot-radius-control);
+  font-size: .9375rem; line-height: 1.2; font-weight: 600; letter-spacing: 0; text-transform: none; text-decoration: none;
+  transition: transform .2s var(--h-ease), box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+}
+[data-block="hero"] [data-part="primary"] { background: var(--h-fill); color: #fff; box-shadow: 0 10px 24px -12px var(--h-fill); }
+[data-block="hero"] [data-fill="brand"] [data-part="primary"],
+[data-block="hero"][data-fill="brand"] [data-part="primary"] {
+  background: var(--ot-fg-on-brand); color: var(--h-ink); box-shadow: 0 10px 24px -12px rgb(0 0 0 / .5);
+}
+[data-block="hero"] [data-part="primary"]:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -14px rgb(0 0 0 / .45); }
+[data-block="hero"] [data-part="arrow"] { width: 1.125rem; height: 1.125rem; flex: none; transition: transform .25s var(--h-ease); }
+[data-block="hero"] [data-part="primary"]:hover [data-part="arrow"] { transform: translateX(3px); }
+[data-block="hero"] [data-part="secondary"] {
+  border: 1.5px solid color-mix(in srgb, var(--tx) 24%, transparent); color: var(--tx); background: transparent;
+}
+[data-block="hero"] [data-fill="brand"] [data-part="secondary"],
+[data-block="hero"][data-fill="brand"] [data-part="secondary"] { border-color: rgb(255 255 255 / .55); }
+[data-block="hero"] [data-part="secondary"]:hover {
+  background: color-mix(in srgb, var(--tx) 8%, transparent); border-color: color-mix(in srgb, var(--tx) 60%, transparent);
+}
+[data-block="hero"] :focus-visible { outline: 2px solid var(--ot-accent); outline-offset: 3px; }
+
+/* ---------- Images: crop toward faces, add depth ---------- */
+[data-block="hero"] [data-part="frame"] { position: absolute; inset: 0; overflow: hidden; }
+[data-block="hero"] [data-part="frame"]::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgb(0 0 0 / .16), transparent 45%);
+}
+[data-block="hero"] [data-part="img"] {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 30%;
+}
+
+/* ---------- Editorial split (default) ---------- */
+[data-block="hero"][data-direction="editorialSplit"] { display: flex; flex-direction: column; background: transparent; }
+[data-block="hero"][data-direction="editorialSplit"] [data-part="panel"] {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center;
+  padding: var(--h-pad) var(--h-gutter); box-sizing: border-box;
+}
+[data-block="hero"] [data-part="atmos"] {
+  position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 70% at 100% 0%, rgb(255 255 255 / .08), transparent 60%);
+}
+[data-block="hero"]:is([data-color="canvas"], [data-color="surface"]) [data-part="atmos"] {
+  background: radial-gradient(70% 75% at 105% 10%, oklch(from var(--ot-brand) l c h / .1), transparent 62%);
+}
+[data-block="hero"] [data-part="content"] { position: relative; }
+[data-block="hero"][data-direction="editorialSplit"] [data-part="media"] { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+[data-block="hero"][data-direction="editorialSplit"] [data-part="media"]::before {
+  content: ""; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 4px; background: var(--ot-accent);
+}
+
+/* ---------- Spotlight: pointer light and chromatic bloom ----------
+   The panel and photo cast a soft bloom in three hues (brand, accent, and a hue-shifted brand)
+   that falls away from the pointer. HeroPointerLight sets --sp-* on the section; without it,
+   and on touch screens, the bloom rests just below the panel. */
+@property --sp-dx    { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --sp-dy    { syntax: "<number>"; inherits: true; initial-value: -0.45; }
+@property --sp-x     { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
+@property --sp-y     { syntax: "<percentage>"; inherits: true; initial-value: 30%; }
+@property --sp-px    { syntax: "<percentage>"; inherits: true; initial-value: 70%; }
+@property --sp-py    { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+@property --sp-bloom { syntax: "<number>"; inherits: true; initial-value: 1; }
+@keyframes sp-bloom-in { from { --sp-bloom: 0; --sp-dy: -1.2; } }
+
+[data-block="hero"][data-direction="spotlight"] {
+  --sp-c1: var(--ot-brand);
+  --sp-c2: var(--ot-accent);
+  --sp-c3: oklch(from var(--ot-brand) max(l, .6) max(c, .14) calc(h + 70));
+  --sp-sx: calc(var(--sp-dx) * -1);
+  --sp-sy: calc(var(--sp-dy) * -1);
+  padding: clamp(2rem, 5vw, 5rem) var(--h-gutter) clamp(2.5rem, 6vw, 6rem);
+  transition: --sp-dx .6s cubic-bezier(.2,.8,.2,1), --sp-dy .6s cubic-bezier(.2,.8,.2,1), --sp-x .6s cubic-bezier(.2,.8,.2,1), --sp-y .6s cubic-bezier(.2,.8,.2,1), --sp-px .35s ease-out, --sp-py .35s ease-out;
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="aura"] {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(38% 55% at var(--sp-x) var(--sp-y), color-mix(in oklch, var(--ot-brand) 9%, transparent), transparent 70%);
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="inner"] {
+  position: relative; max-width: 90rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem;
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="panel"] {
+  order: 1; position: relative; z-index: 2; isolation: isolate; border-radius: var(--ot-radius-surface); padding: var(--h-pad);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .18),
+    0 0 0 1px oklch(from var(--ot-fg) l c h / .08),
+    calc(var(--sp-sx) * 26px) calc(var(--sp-sy) * 26px + 18px) 60px -18px color-mix(in oklch, var(--sp-c1) calc(52% * var(--sp-bloom)), transparent),
+    calc(var(--sp-sx) * 44px - 26px) calc(var(--sp-sy) * 40px + 28px) 90px -26px color-mix(in oklch, var(--sp-c3) calc(40% * var(--sp-bloom)), transparent),
+    calc(var(--sp-sx) * 44px + 26px) calc(var(--sp-sy) * 40px + 28px) 90px -26px color-mix(in oklch, var(--sp-c2) calc(34% * var(--sp-bloom)), transparent);
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="panel"]::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(55% 75% at var(--sp-px) var(--sp-py), rgb(255 255 255 / .13), transparent 70%);
+  opacity: .55; transition: opacity .4s ease;
+}
+[data-block="hero"][data-direction="spotlight"]:is([data-color="canvas"], [data-color="surface"]) [data-part="panel"]::before {
+  background: radial-gradient(55% 75% at var(--sp-px) var(--sp-py), color-mix(in oklch, var(--ot-brand) 9%, transparent), transparent 70%);
+}
+[data-block="hero"][data-direction="spotlight"][data-pointer] [data-part="panel"]::before { opacity: 1; }
+[data-block="hero"][data-direction="spotlight"][data-image="no"] [data-part="panel"] {
+  width: 100%; max-width: 60rem; margin: 0 auto; box-sizing: border-box;
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="media"] { order: 2; position: relative; aspect-ratio: 16 / 10; }
+[data-block="hero"][data-direction="spotlight"] [data-part="frame"] {
+  border-radius: var(--ot-radius-surface);
+  box-shadow:
+    0 0 0 1px oklch(from var(--ot-fg) l c h / .06),
+    calc(var(--sp-sx) * 18px) calc(var(--sp-sy) * 18px + 14px) 48px -18px color-mix(in oklch, var(--sp-c1) calc(40% * var(--sp-bloom)), transparent),
+    calc(var(--sp-sx) * 30px - 20px) calc(var(--sp-sy) * 28px + 22px) 70px -26px color-mix(in oklch, var(--sp-c3) calc(30% * var(--sp-bloom)), transparent),
+    calc(var(--sp-sx) * 30px + 20px) calc(var(--sp-sy) * 28px + 22px) 70px -26px color-mix(in oklch, var(--sp-c2) calc(26% * var(--sp-bloom)), transparent);
+}
+[data-block="hero"][data-direction="spotlight"] [data-part="offset"] { display: none; }
+
+/* ---------- Overlap ---------- */
+[data-block="hero"][data-direction="overlap"] { padding: clamp(1.5rem, 4vw, 4rem) var(--h-gutter); }
+[data-block="hero"][data-direction="overlap"] [data-part="inner"] {
+  max-width: 90rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem;
+}
+[data-block="hero"][data-direction="overlap"] [data-part="panel"] {
+  order: 1; position: relative; z-index: 2; border-radius: var(--ot-radius-surface); padding: var(--h-pad);
+  box-shadow: 0 0 0 1px oklch(from var(--ot-fg) l c h / .08), 0 30px 60px -30px oklch(from var(--ot-brand) l c h / .55);
+}
+[data-block="hero"][data-direction="overlap"][data-color="brand"] [data-part="panel"] {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), 0 30px 60px -26px oklch(from var(--ot-brand) l c h / .65);
+}
+[data-block="hero"] [data-part="shade"] { display: none; }
+[data-block="hero"][data-color="brand"] [data-part="shade"] {
+  display: block; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(transparent 55%, rgb(0 0 0 / .12));
+}
+[data-block="hero"][data-direction="overlap"] [data-part="media"] {
+  order: 2; position: relative; aspect-ratio: 16 / 10; border-radius: var(--ot-radius-surface); overflow: hidden;
+}
+/* Phones: the panel rides up over the bottom of the photo instead of simply stacking */
+[data-block="hero"][data-direction="overlap"][data-image="yes"] [data-part="inner"] { gap: 0; }
+[data-block="hero"][data-direction="overlap"][data-image="yes"] [data-part="panel"] { margin: 0 1rem; }
+[data-block="hero"][data-direction="overlap"][data-image="yes"] [data-part="media"] { margin-top: -2.5rem; padding-bottom: 0; }
+[data-block="hero"][data-direction="overlap"][data-image="no"] [data-part="panel"] {
+  width: 100%; max-width: 56rem; margin: 0 auto; box-sizing: border-box;
+}
+
+/* ---------- Diagonal ---------- */
+[data-block="hero"][data-direction="diagonal"] { display: flex; flex-direction: column; }
+[data-block="hero"][data-direction="diagonal"] [data-part="inner"] {
+  order: 1; position: relative; z-index: 2; display: flex; align-items: center; padding: var(--h-pad) var(--h-gutter);
+}
+[data-block="hero"][data-direction="diagonal"] [data-part="media"] {
+  order: 2; position: relative; aspect-ratio: 16 / 9; margin: 0 var(--h-gutter) var(--h-gutter);
+  border-radius: var(--ot-radius-surface); overflow: hidden;
+}
+[data-block="hero"][data-direction="diagonal"] [data-part="shape-wrap"] { display: none; }
+[data-block="hero"][data-direction="diagonal"][data-image="no"] [data-part="panel"] { max-width: 65ch; }
+
+/* ---------- Large screens ---------- */
+@media (min-width: 64rem) {
+  /* Overlap, Diagonal and Spotlight text columns are narrower than Editorial Split, so the headline scales down a step */
+  [data-block="hero"]:is([data-direction="overlap"], [data-direction="diagonal"], [data-direction="spotlight"]) [data-part="headline"] {
+    font-size: clamp(2.25rem, 1rem + 2.8vw, 3.25rem);
+  }
+  /* Spotlight: the panel overlaps the photo, and its bloom spills onto it */
+  [data-block="hero"][data-direction="spotlight"] [data-part="inner"] { flex-direction: row; align-items: center; gap: 0; }
+  [data-block="hero"][data-direction="spotlight"] [data-part="panel"] { flex: 1 1 0; }
+  [data-block="hero"][data-direction="spotlight"] [data-part="media"] {
+    flex: 1.1 1 0; align-self: stretch; aspect-ratio: auto; min-height: 30rem; margin-left: -3.5rem;
+  }
+  [data-block="hero"][data-direction="spotlight"][data-side="left"] [data-part="media"] { order: 0; margin-left: 0; margin-right: -3.5rem; }
+
+  [data-block="hero"][data-direction="overlap"] [data-part="inner"] {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: center; gap: 0;
+  }
+  /* The photo runs from column 3 to the edge, so about four columns sit under the panel */
+  [data-block="hero"][data-direction="overlap"][data-image="yes"] [data-part="panel"] { margin: 0; }
+  [data-block="hero"][data-direction="overlap"][data-image="yes"] [data-part="media"] {
+    grid-column: 3 / 13; grid-row: 1; aspect-ratio: auto; height: clamp(26rem, 38vw, 36rem); margin: 0; width: 100%;
+    --h-pos: 85%;
+  }
+  [data-block="hero"][data-direction="overlap"] [data-part="media"] [data-part="img"] { object-position: var(--h-pos, 50%) 30%; }
+  [data-block="hero"][data-direction="overlap"] [data-part="panel"] { grid-column: 1 / 7; grid-row: 1; }
+  [data-block="hero"][data-direction="overlap"][data-side="left"] [data-part="media"] { grid-column: 1 / 11; --h-pos: 15%; }
+  [data-block="hero"][data-direction="overlap"][data-side="left"] [data-part="panel"] { grid-column: 7 / 13; }
+  [data-block="hero"][data-direction="overlap"][data-image="no"] [data-part="panel"] { grid-column: 3 / 11; max-width: none; }
+
+  [data-block="hero"][data-direction="diagonal"] { display: block; }
+  [data-block="hero"][data-direction="diagonal"] [data-part="inner"] { min-height: 34rem; box-sizing: border-box; }
+  [data-block="hero"][data-direction="diagonal"] [data-part="panel"] { max-width: 46%; }
+  [data-block="hero"][data-direction="diagonal"][data-side="left"] [data-part="panel"] { margin-left: auto; }
+  [data-block="hero"][data-direction="diagonal"] [data-part="media"] {
+    position: absolute; top: 0; bottom: 0; right: 0; width: 50%; margin: 0; aspect-ratio: auto; border-radius: 0;
+  }
+  [data-block="hero"][data-direction="diagonal"][data-side="left"] [data-part="media"] { right: auto; left: 0; }
+  [data-block="hero"][data-direction="diagonal"] [data-part="media"]::after {
+    content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, oklch(from var(--ot-brand) l c h / .28), transparent 40%); mix-blend-mode: multiply;
+  }
+  [data-block="hero"][data-direction="diagonal"][data-side="left"] [data-part="media"]::after {
+    background: linear-gradient(270deg, oklch(from var(--ot-brand) l c h / .28), transparent 40%);
+  }
+  /* The filter lives on the wrapper so clip-path on the shape no longer cuts off the accent edge */
+  [data-block="hero"][data-direction="diagonal"] [data-part="shape-wrap"] {
+    display: block; position: absolute; top: 0; bottom: 0; left: 0; width: 58%; z-index: 1;
+    filter: drop-shadow(4px 0 0 var(--ot-accent)) drop-shadow(18px 0 36px rgb(0 0 0 / .18));
+  }
+  [data-block="hero"][data-direction="diagonal"][data-side="left"] [data-part="shape-wrap"] {
+    left: auto; right: 0; filter: drop-shadow(-4px 0 0 var(--ot-accent)) drop-shadow(-18px 0 36px rgb(0 0 0 / .18));
+  }
+  [data-block="hero"][data-direction="diagonal"] [data-part="shape"] { position: absolute; inset: 0; clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%); }
+  [data-block="hero"][data-direction="diagonal"][data-side="left"] [data-part="shape"] { clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%); }
+
+  [data-block="hero"][data-direction="editorialSplit"] { flex-direction: row; min-height: 34rem; }
+  [data-block="hero"][data-direction="editorialSplit"][data-side="left"] { flex-direction: row-reverse; }
+  [data-block="hero"][data-direction="editorialSplit"] [data-part="panel"] { width: 56%; }
+  [data-block="hero"][data-direction="editorialSplit"][data-image="no"] [data-part="panel"] { width: 100%; }
+  [data-block="hero"][data-direction="editorialSplit"] [data-part="media"] { flex: 1; aspect-ratio: auto; }
+  [data-block="hero"][data-direction="editorialSplit"] [data-part="media"]::before { right: auto; bottom: 0; width: 4px; height: auto; }
+  [data-block="hero"][data-direction="editorialSplit"][data-side="left"] [data-part="media"]::before { left: auto; right: 0; }
+}
+
+/* ---------- Phones: full-width, stacked buttons ---------- */
+@media (max-width: 30rem) {
+  [data-block="hero"] [data-part="ctas"] { flex-direction: column; }
+  [data-block="hero"] :is([data-part="primary"], [data-part="secondary"]) { width: 100%; }
+}
+
+/* ---------- Entrance (existing animation setting: fade | slide | parallax) ----------
+   Runs once on load. Elements start hidden through the animation's backwards fill, so
+   nothing flashes and nothing stays hidden when motion is reduced or CSS animation is off. */
+@keyframes hv-rise     { from { opacity: 0; transform: translateY(16px); } }
+@keyframes hv-fade     { from { opacity: 0; } }
+@keyframes hv-rule     { from { transform: scaleX(0); } }
+@keyframes hv-reveal-r { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
+@keyframes hv-reveal-l { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes hv-settle   { from { transform: scale(1.08); } }
+@keyframes hv-zoom     { from { transform: scale(1.16); } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="hero"][data-entrance="slide"] [data-part="eyebrow"]  { animation: hv-rise .7s var(--h-ease) backwards; }
+  [data-block="hero"][data-entrance="slide"] [data-part="rule"]     { animation: hv-rule .6s var(--h-ease) .3s backwards; }
+  [data-block="hero"][data-entrance="slide"] [data-part="headline"] { animation: hv-rise .8s var(--h-ease) .08s backwards; }
+  [data-block="hero"][data-entrance="slide"] [data-part="body"]     { animation: hv-rise .8s var(--h-ease) .18s backwards; }
+  [data-block="hero"][data-entrance="slide"] [data-part="ctas"]     { animation: hv-rise .8s var(--h-ease) .28s backwards; }
+  [data-block="hero"][data-entrance="slide"] [data-part="frame"]    { animation: hv-reveal-r 1.1s var(--h-ease) .12s backwards; }
+  [data-block="hero"][data-entrance="slide"][data-side="left"] [data-part="frame"] { animation-name: hv-reveal-l; }
+  [data-block="hero"][data-entrance="slide"] [data-part="img"]      { animation: hv-settle 1.8s var(--h-ease) .12s both; }
+  [data-block="hero"][data-entrance="fade"] :is([data-part="eyebrow"], [data-part="headline"], [data-part="body"], [data-part="ctas"]) {
+    animation: hv-fade .9s ease backwards;
+  }
+  [data-block="hero"][data-entrance="fade"] [data-part="headline"] { animation-delay: .1s; }
+  [data-block="hero"][data-entrance="fade"] [data-part="body"]     { animation-delay: .2s; }
+  [data-block="hero"][data-entrance="fade"] [data-part="ctas"]     { animation-delay: .3s; }
+  [data-block="hero"][data-entrance="fade"] [data-part="frame"]    { animation: hv-fade 1.1s ease .15s backwards; }
+  [data-block="hero"][data-entrance="parallax"] :is([data-part="eyebrow"], [data-part="headline"], [data-part="body"], [data-part="ctas"]) {
+    animation: hv-rise .9s var(--h-ease) backwards;
+  }
+  [data-block="hero"][data-entrance="parallax"] [data-part="frame"] { animation: hv-fade .8s ease backwards; }
+  [data-block="hero"][data-entrance="parallax"] [data-part="img"]   { animation: hv-zoom 2.2s var(--h-ease) both; }
+  /* Spotlight entrance: the bloom rises in under the panel */
+  [data-block="hero"][data-direction="spotlight"]:not([data-entrance="none"]) { animation: sp-bloom-in 1.6s var(--h-ease) .25s backwards; }
+}

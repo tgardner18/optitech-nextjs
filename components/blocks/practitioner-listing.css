@@ -1,0 +1,146 @@
+/* Practitioner Listing block: scoped styles keyed on data-block / data-part. */
+@layer components {
+  /* practitioner-listing.css: OT_PractitionerListingBlock refresh
+     CSS plus markup hooks. Layout, columns, color, density, search, the three facets, and the portrait-first card keep their meaning. */
+  [data-block="practitioners"] {
+    container: pr / inline-size; display: block; font-family: var(--ot-font-sans); color: var(--ot-fg); background: var(--ot-canvas);
+    padding: clamp(2.5rem, 2rem + 3cqi, 4.5rem) clamp(1rem, .5rem + 3cqi, 3rem);
+    --pr-ink: oklch(from var(--ot-brand) min(l, .45) c h);
+    --pr-on-ink: var(--ot-fg-on-brand);
+    --pr-line: color-mix(in oklch, var(--ot-fg) 12%, transparent);
+    --pr-edge: color-mix(in oklch, var(--ot-fg) 52%, transparent);
+    --pr-tint: color-mix(in oklch, var(--pr-ink) 8%, transparent);
+    --pr-field: var(--ot-surface);
+    --pr-gap: clamp(.875rem, .6rem + 1cqi, 1.5rem);
+  }
+  [data-block="practitioners"][data-color="surface"] { background: var(--ot-surface); --pr-field: var(--ot-canvas); }
+  [data-block="practitioners"][data-density="compact"] { --pr-gap: .625rem; }
+  :where([data-theme="dark"]) [data-block="practitioners"] { --pr-ink: oklch(from var(--ot-brand) max(l, .8) min(c, .12) h); --pr-on-ink: oklch(.18 .02 300); --pr-line: color-mix(in oklch, var(--ot-fg) 14%, transparent); --pr-edge: color-mix(in oklch, var(--ot-fg) 48%, transparent); }
+  [data-block="practitioners"] :where(h2, h3, p, ul) { margin: 0; }
+  [data-block="practitioners"] :where(ul) { list-style: none; padding: 0; }
+  [data-block="practitioners"] :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  [data-block="practitioners"] :where(a) { color: inherit; text-decoration: none; }
+  [data-block="practitioners"] :is(a, button, [role="option"]):focus-visible { outline: 2px solid var(--pr-ink); outline-offset: 2px; }
+  [data-block="practitioners"] [data-part="in"] { max-width: 80rem; margin-inline: auto; }
+  [data-block="practitioners"] [data-part="head"] { max-width: var(--ot-measure, 65ch); margin-bottom: clamp(1.5rem, 1rem + 1.5cqi, 2.25rem); }
+  [data-block="practitioners"] [data-part="head"] h2 { font-size: var(--ot-text-headline, clamp(1.75rem, 4vw, 2.75rem)); font-weight: 700; line-height: 1.1; letter-spacing: -.02em; text-wrap: balance; }
+  [data-block="practitioners"] [data-part="head"] p { margin-top: .625rem; color: var(--ot-fg-muted); font-size: 1.1875rem; line-height: 1.45; text-wrap: pretty; }
+
+  /* ---- Controls ---- */
+  [data-block="practitioners"] [data-part="controls"] { display: grid; gap: .875rem; margin-bottom: clamp(1.25rem, 1rem + 1cqi, 2rem); padding-bottom: 1rem; border-bottom: 1px solid var(--pr-line); }
+  [data-block="practitioners"] [data-part="controls"][data-min] { border: 0; padding: 0; margin-bottom: 1rem; }
+  [data-block="practitioners"] [data-part="bar"] { display: flex; align-items: center; gap: .75rem; }
+  [data-block="practitioners"] [data-part="field"] { flex: 1; max-width: 34rem; display: flex; align-items: center; gap: .625rem; height: 3rem; padding: 0 .25rem 0 .875rem; border: 1px solid var(--pr-edge); border-radius: var(--ot-radius-input); background: var(--pr-field); transition: border-color .15s, box-shadow .15s; }
+  [data-block="practitioners"] [data-part="field"]:focus-within { border-color: var(--pr-ink); box-shadow: 0 0 0 3px color-mix(in oklch, var(--pr-ink) 24%, transparent); }
+  [data-block="practitioners"] [data-part="field-ic"] { flex: none; color: var(--ot-fg-muted); }
+  [data-block="practitioners"] [data-part="field"] input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--ot-fg); font: inherit; font-size: 1rem; outline: none; }
+  [data-block="practitioners"] [data-part="field"] input::placeholder { color: var(--ot-fg-muted); opacity: 1; }
+  [data-block="practitioners"] [data-part="field"] input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+  [data-block="practitioners"] [data-part="icon-btn"] { display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: var(--ot-radius-control); color: var(--ot-fg-muted); }
+  [data-block="practitioners"] [data-part="icon-btn"]:hover { color: var(--ot-fg); background: var(--pr-tint); }
+  [data-block="practitioners"] [data-part="toggle"] { margin-left: auto; display: inline-flex; padding: 3px; border: 1px solid var(--pr-edge); border-radius: calc(var(--ot-radius-control) + 3px); }
+  [data-block="practitioners"] [data-part="toggle"] button { display: inline-grid; place-items: center; width: 2.75rem; height: 2.5rem; border-radius: var(--ot-radius-control); color: var(--ot-fg-muted); }
+  [data-block="practitioners"] [data-part="toggle"] button:hover { color: var(--ot-fg); }
+  [data-block="practitioners"] [data-part="toggle"] button[aria-pressed="true"] { background: var(--pr-ink); color: var(--pr-on-ink); }
+  [data-block="practitioners"] [data-part="facets"] { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; }
+  [data-block="practitioners"] [data-part="facet-row"] { display: flex; flex-wrap: wrap; gap: .5rem; }
+  [data-block="practitioners"] [data-part="facet"] { position: relative; }
+  [data-block="practitioners"] [data-part="trigger"] { display: inline-flex; align-items: center; gap: .5rem; height: 2.75rem; padding: 0 .875rem 0 1rem; border: 1px solid var(--pr-edge); border-radius: var(--ot-radius-control); background: var(--pr-field); color: var(--ot-fg); font-size: .875rem; font-weight: 600; transition: border-color .15s, box-shadow .15s; }
+  [data-block="practitioners"] [data-part="trigger"]:hover { border-color: var(--ot-fg); }
+  [data-block="practitioners"] [data-part="trigger"][data-has] { border-color: var(--pr-ink); box-shadow: inset 0 0 0 1px var(--pr-ink); }
+  [data-block="practitioners"] [data-part="trigger"] svg[data-open="true"] { transform: rotate(180deg); }
+  [data-block="practitioners"] [data-part="badge"] { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 .25rem; border-radius: 999px; background: var(--pr-ink); color: var(--pr-on-ink); font-size: .6875rem; font-weight: 700; }
+  [data-block="practitioners"] [data-part="pop"] { position: absolute; z-index: 40; left: 0; top: calc(100% + .5rem); width: min(20rem, calc(100cqi - 2rem)); overflow: hidden; border: 1px solid var(--pr-line); border-radius: var(--ot-radius-surface); background: var(--ot-surface); box-shadow: 0 18px 48px -12px oklch(0 0 0 / .3); }
+  [data-block="practitioners"] [data-part="pop"] ul { max-height: 18rem; overflow-y: auto; padding: .375rem 0; }
+  [data-block="practitioners"] [data-part="pop"] [role="option"] { display: flex; align-items: center; gap: .625rem; min-height: 2.5rem; padding: 0 1rem; color: var(--ot-fg); font-size: .9375rem; cursor: pointer; }
+  [data-block="practitioners"] [data-part="pop"] [role="option"]:is(:hover, :focus) { background: var(--pr-tint); outline: none; }
+  [data-block="practitioners"] [data-part="pop"] [role="option"]:focus-visible { box-shadow: inset 3px 0 0 var(--pr-ink); }
+  [data-block="practitioners"] [data-part="box"] { display: inline-grid; place-items: center; flex: none; width: 1.125rem; height: 1.125rem; border: 1.5px solid var(--pr-edge); border-radius: 4px; }
+  [data-block="practitioners"] [aria-selected="true"] [data-part="box"] { border-color: var(--pr-ink); background: var(--pr-ink); color: var(--pr-on-ink); }
+  [data-block="practitioners"] [data-part="opt-n"] { margin-left: auto; color: var(--ot-fg-muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+  [data-block="practitioners"] [data-part="pop-foot"] { padding: .375rem .5rem; border-top: 1px solid var(--pr-line); }
+  [data-block="practitioners"] [data-part="count"] { color: var(--ot-fg-muted); font-size: .9375rem; }
+  [data-block="practitioners"] [data-part="count"] b { color: var(--ot-fg); font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* applied filters: each one visible and removable in one tap */
+  [data-block="practitioners"] [data-part="applied"] { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+  [data-block="practitioners"] [data-part="pill"] { display: inline-flex; align-items: center; gap: .375rem; min-height: 2rem; padding: .25rem .5rem .25rem .75rem; border-radius: 999px; background: var(--pr-tint); color: var(--ot-fg); font-size: .875rem; font-weight: 600; }
+  [data-block="practitioners"] [data-part="pill"]:hover { background: color-mix(in oklch, var(--pr-ink) 16%, transparent); }
+  [data-block="practitioners"] [data-part="pill"] svg { color: var(--ot-fg-muted); }
+  [data-block="practitioners"] [data-part="text-btn"] { min-height: 2rem; padding: 0 .5rem; color: var(--ot-fg-muted); font-size: .8125rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  [data-block="practitioners"] [data-part="text-btn"]:hover { color: var(--ot-fg); text-decoration: underline; text-underline-offset: .25em; }
+
+  /* ---- Portrait cards: same editorial plate; the bio shows on hover, keyboard focus, and touch ---- */
+  [data-block="practitioners"] [data-part="cards"] { display: grid; gap: var(--pr-gap); grid-template-columns: 1fr; }
+  @container pr (min-width: 36rem) { [data-block="practitioners"] [data-part="cards"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @container pr (min-width: 58rem) { [data-block="practitioners"] [data-part="cards"]:is([data-cols="3"], [data-cols="4"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @container pr (min-width: 76rem) { [data-block="practitioners"] [data-part="cards"][data-cols="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  [data-block="practitioners"] [data-part="card"] { --pr-area: oklch(from var(--ot-accent) max(l, .8) min(c, .14) h); position: relative; isolation: isolate; aspect-ratio: 3 / 4; overflow: hidden; border-radius: var(--ot-radius-surface); background: var(--ot-surface); color: var(--ot-fg); box-shadow: 0 6px 24px -10px oklch(0 0 0 / .35); transition: box-shadow .2s, transform .2s; }
+  [data-block="practitioners"] [data-part="card"]:has(:focus-visible) { outline: 3px solid var(--pr-ink); outline-offset: 3px; }
+  :where([data-theme="dark"]) [data-block="practitioners"] [data-part="card"]:has(:focus-visible) { outline-color: oklch(from var(--ot-brand) max(l, .8) min(c, .12) h); }
+  [data-block="practitioners"] [data-part="portrait"] { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+  [data-block="practitioners"] [data-part="portrait"] :is(img, canvas) { width: 100%; height: 100%; object-fit: cover; }
+  [data-block="practitioners"] [data-part="initials"] { position: absolute; inset: 0; display: grid; place-items: center; padding-bottom: 22%; color: #fff; font-size: clamp(2.5rem, 7cqi, 4rem); font-weight: 800; letter-spacing: -.03em;
+    background: radial-gradient(ellipse at 40% 30%, oklch(from var(--ot-brand) min(calc(l + .08), .52) c h), oklch(from var(--ot-brand) min(l, .4) c h) 55%, oklch(from var(--ot-brand) min(calc(l - .1), .28) c h)); }
+  [data-block="practitioners"] [data-part="vignette"] { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(to top, oklch(.12 .015 280 / .55), transparent 45%); }
+  [data-block="practitioners"] [data-part="foot"] { position: absolute; inset: auto 0 0; display: grid; gap: .25rem; padding: 1rem 1.125rem 1.125rem; transform: translateY(var(--pr-hide, 4.25rem));
+    background: linear-gradient(to top, oklch(from var(--ot-canvas) l c h / .94), oklch(from var(--ot-canvas) l c h / .82) 70%, oklch(from var(--ot-canvas) l c h / .55)); -webkit-backdrop-filter: blur(10px) saturate(120%); backdrop-filter: blur(10px) saturate(120%); }
+  [data-block="practitioners"][data-density="compact"] [data-part="foot"] { padding: .75rem .875rem .875rem; --pr-hide: 3.75rem; }
+  [data-block="practitioners"] [data-part="name"] { font-size: clamp(1.15rem, 1rem + .6cqi, 1.375rem); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; text-wrap: balance; }
+  [data-block="practitioners"] [data-part="card"] [data-part="link"]::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  [data-block="practitioners"] [data-part="link"]:focus-visible { outline: none; }
+  [data-block="practitioners"] [data-part="cred"] { color: color-mix(in oklch, var(--ot-fg) 80%, transparent); font-size: .9em; font-weight: 600; }
+  [data-block="practitioners"] [data-part="role"] { font-size: .9375rem; font-weight: 600; line-height: 1.35; }
+  [data-block="practitioners"] [data-part="area"] { color: var(--pr-area); font-size: .8125rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  [data-block="practitioners"] [data-part="bio"] { margin-top: .375rem; color: color-mix(in oklch, var(--ot-fg) 88%, transparent); font-size: .875rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; opacity: 0; }
+  [data-block="practitioners"] [data-part="card"]:is(:hover, :focus-within) [data-part="foot"] { transform: none; }
+  [data-block="practitioners"] [data-part="card"]:is(:hover, :focus-within) [data-part="bio"] { opacity: 1; }
+  @media (hover: none) { [data-block="practitioners"] [data-part="foot"] { transform: none; } [data-block="practitioners"] [data-part="bio"] { opacity: 1; -webkit-line-clamp: 2; } }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-block="practitioners"] [data-part="foot"] { transition: transform .45s var(--ot-ease-kinetic, cubic-bezier(.16, 1, .3, 1)); }
+    [data-block="practitioners"] [data-part="bio"] { transition: opacity .3s .05s; }
+    [data-block="practitioners"] [data-part="card"]:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -16px oklch(0 0 0 / .45); }
+    [data-block="practitioners"] [data-part="portrait"] :is(img, canvas) { transition: transform .7s var(--ot-ease-kinetic, cubic-bezier(.16, 1, .3, 1)); }
+    [data-block="practitioners"] [data-part="card"]:hover [data-part="portrait"] :is(img, canvas) { transform: scale(1.04); }
+  }
+
+  /* ---- List rows: the name is the link (the whole row stays clickable); phone and email are real links ---- */
+  [data-block="practitioners"] [data-part="rows"] { display: grid; gap: var(--pr-gap); }
+  [data-block="practitioners"] [data-part="row"] { position: relative; display: flex; align-items: stretch; overflow: hidden; border: 1px solid var(--pr-line); border-radius: var(--ot-radius-surface); background: var(--ot-surface); transition: border-color .15s, background-color .15s; }
+  [data-block="practitioners"][data-color="surface"] [data-part="row"] { background: var(--ot-canvas); }
+  [data-block="practitioners"] [data-part="row"]:hover { border-color: var(--pr-ink); background: color-mix(in oklch, var(--pr-ink) 4%, var(--ot-surface)); }
+  [data-block="practitioners"] [data-part="row"]:has([data-part="link"]:focus-visible) { outline: 3px solid var(--pr-ink); outline-offset: 2px; }
+  [data-block="practitioners"] [data-part="row"] [data-part="portrait"] { position: relative; inset: auto; z-index: 0; flex: none; width: 8rem; aspect-ratio: 1; }
+  [data-block="practitioners"][data-density="compact"] [data-part="row"] [data-part="portrait"] { width: 6rem; }
+  [data-block="practitioners"] [data-part="row"] [data-part="initials"] { padding: 0; font-size: 1.75rem; }
+  [data-block="practitioners"] [data-part="row-body"] { flex: 1; min-width: 0; align-self: center; padding: 1rem 1.25rem; }
+  [data-block="practitioners"][data-density="compact"] [data-part="row-body"] { padding: .625rem .875rem; }
+  [data-block="practitioners"] [data-part="row"] [data-part="name"] { display: flex; flex-wrap: wrap; align-items: baseline; gap: .125rem .5rem; font-size: 1.125rem; font-weight: 700; }
+  [data-block="practitioners"] [data-part="row"] [data-part="link"]::after { content: ""; position: absolute; inset: 0; }
+  [data-block="practitioners"] [data-part="row"]:hover [data-part="link"] { color: var(--pr-ink); text-decoration: underline; text-underline-offset: .2em; }
+  [data-block="practitioners"] [data-part="row"] [data-part="cred"] { color: var(--ot-fg-muted); font-size: .875rem; font-weight: 600; }
+  [data-block="practitioners"] [data-part="row"] [data-part="role"] { margin-top: .125rem; }
+  [data-block="practitioners"] [data-part="area-line"] { margin-top: .125rem; color: var(--ot-fg-muted); font-size: .9375rem; }
+  [data-block="practitioners"] [data-part="area-line"] span { margin-inline: .5rem; }
+  [data-block="practitioners"] [data-part="contact"] { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin-top: .5rem; }
+  [data-block="practitioners"] [data-part="contact-link"] { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: .375rem; min-height: 1.75rem; min-width: 0; color: var(--ot-fg); font-size: .875rem; font-weight: 500; }
+  [data-block="practitioners"] [data-part="contact-link"] svg { flex: none; color: var(--pr-ink); }
+  [data-block="practitioners"] [data-part="contact-link"] span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-block="practitioners"] [data-part="contact-link"]:hover { color: var(--pr-ink); text-decoration: underline; text-underline-offset: .2em; }
+  [data-block="practitioners"] [data-part="chev"] { flex: none; align-self: center; padding-right: 1rem; color: var(--ot-fg-muted); transition: transform .15s, color .15s; }
+  [data-block="practitioners"] [data-part="row"]:hover [data-part="chev"] { color: var(--pr-ink); transform: translateX(4px); }
+  @container pr (max-width: 32rem) { [data-block="practitioners"] [data-part="row"] [data-part="portrait"] { width: 5.5rem; } [data-block="practitioners"] [data-part="chev"] { display: none; } }
+
+  /* ---- Empty ---- */
+  [data-block="practitioners"] [data-part="empty"] { display: grid; justify-items: center; gap: .5rem; padding: clamp(2.5rem, 2rem + 3cqi, 4.5rem) 1rem; text-align: center; }
+  [data-block="practitioners"] [data-part="empty-ic"] { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; margin-bottom: .5rem; border-radius: 50%; background: var(--pr-tint); color: var(--pr-ink); }
+  [data-block="practitioners"] [data-part="empty-t"] { font-size: 1.25rem; font-weight: 650; }
+  [data-block="practitioners"] [data-part="empty-d"] { color: var(--ot-fg-muted); margin-bottom: .75rem; }
+
+  /* in-popover filter (long lists) and the empty "no matches" line */
+  [data-block="practitioners"] [data-part="pop-filter"] { position: relative; padding: .5rem; border-bottom: 1px solid var(--pr-line); }
+  [data-block="practitioners"] [data-part="pop-filter"] svg { position: absolute; left: 1.25rem; top: 50%; translate: 0 -50%; color: var(--ot-fg-muted); pointer-events: none; }
+  [data-block="practitioners"] [data-part="pop-filter"] input { width: 100%; height: 2.25rem; padding: 0 .5rem 0 1.75rem; border: 0; background: transparent; color: var(--ot-fg); font: inherit; font-size: .9375rem; outline: none; }
+  [data-block="practitioners"] [data-part="pop-filter"] input::placeholder { color: var(--ot-fg-muted); opacity: 1; }
+  [data-block="practitioners"] [data-part="no-match"] { padding: .5rem 1rem; color: var(--ot-fg-muted); font-size: .9375rem; }
+  [data-block="practitioners"] [data-part="text-btn"] { display: inline-flex; align-items: center; gap: .375rem; }
+}

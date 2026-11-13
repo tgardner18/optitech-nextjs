@@ -3,7 +3,9 @@ import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
 import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_ImageBlock as OT_ImageBlockContentType } from '@/cms/content-types/OT_ImageBlock'
 import { getImageStyles } from '@/cms/styling/OT_ImageBlock.styling'
+import { stableId } from '@/lib/stableId'
 import ImageBlock from '@/components/blocks/ImageBlock'
+import MediaEditorial from '@/components/blocks/MediaEditorial'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import { resolveCmsUrl } from '@/lib/resolveCmsUrl'
 
@@ -27,6 +29,9 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
   // generous section-level spacing below (meant for a full-bleed hero image)
   // would otherwise dwarf a small logo/icon in whitespace.
   const isCompactMedia = Boolean(styleOptions.mediaSize && styleOptions.mediaSize !== 'fill')
+
+  const bgColor = String(displaySettings?.bgColor ?? 'canvas')
+  const headingId = stableId('image', `${content.heading ?? ''}|${content.eyebrow ?? ''}|${content.alt ?? ''}`)
 
   const placeholder = (
     <div
@@ -59,68 +64,30 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
     }
 
     return (
-      <div
-        {...pa(content.__composition)}
-        className="w-full py-xl px-md lg:px-lg"
-        data-stagger={staggerAttr}
-      >
-        <div className="mx-auto max-w-360">
-          {standaloneImageEl}
-        </div>
+      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+        <section data-block="image" data-layout="full" data-color={bgColor} data-theme={bgColor === 'brand' ? 'dark' : undefined} aria-label={content.alt || 'Image'}>
+          <div data-part="wrap">{standaloneImageEl}</div>
+        </section>
       </div>
     )
   }
 
-  const bgColor  = String(displaySettings?.bgColor ?? 'canvas')
   const bgClass  = ({ surface: 'bg-surface', brand: 'bg-brand' } as Record<string,string>)[bgColor] ?? ''
-  const hasBg    = Boolean(bgClass)
-  const onBrand  = bgColor === 'brand'
 
   const textContent = (
-    <>
-      {content.eyebrow && (
-        <span
-          {...pa('eyebrow')}
-          className={`text-label uppercase tracking-wide font-semibold ${onBrand ? 'text-fg-on-brand/70' : 'text-brand'}`}
-        >
-          {content.eyebrow}
-        </span>
-      )}
-
-      {content.heading && (
-        <h2
-          {...pa('heading')}
-          className={`text-headline font-bold text-wrap-balance leading-tight ${onBrand ? 'text-fg-on-brand' : 'text-fg'}`}
-        >
-          {content.heading}
-        </h2>
-      )}
-
-      {content.body && (
-        <div
-          {...pa('body')}
-          data-rich-text=""
-          data-color={onBrand ? 'brand' : undefined}
-          className={`text-body leading-relaxed max-w-[60ch] ${onBrand ? 'text-fg-on-brand/80' : 'text-fg-muted'}`}
-        >
-          {content.body.json
+    <MediaEditorial
+      eyebrow={content.eyebrow}
+      heading={content.heading}
+      headingId={headingId}
+      ctaHref={content.ctaUrl?.default ? resolveCmsUrl(content.ctaUrl) : undefined}
+      ctaLabel={content.ctaLabel}
+      attrs={{ eyebrow: pa('eyebrow'), heading: pa('heading'), body: pa('body') }}
+      body={content.body
+        ? (content.body.json
             ? <RichText content={content.body.json} />
-            : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
-          }
-        </div>
-      )}
-
-      {content.ctaUrl?.default && (
-        <div className="mt-sm">
-          <a
-            href={resolveCmsUrl(content.ctaUrl)}
-            className={`btn-signal inline-flex items-center gap-sm px-lg py-sm text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick ${onBrand ? 'bg-fg-on-brand text-brand' : 'bg-brand text-fg-on-brand'}`}
-          >
-            {content.ctaLabel || 'Learn more'}
-          </a>
-        </div>
-      )}
-    </>
+            : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />)
+        : undefined}
+    />
   )
 
   // isCompactMedia (computed above) overrides the side-by-side editorial grid
@@ -151,8 +118,7 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
     )
   }
 
-  // Editorial 2-column layout: image fills the column height so it matches
-  // the text column regardless of the text's length.
+  // Editorial 2-column layout: the media keeps its aspect ratio and centers against the text.
   const mediaEl = !imageSrc ? placeholder : (
     <ImageBlock
       src={imageSrc}
@@ -160,38 +126,24 @@ export default function OT_ImageBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ image: pa('image'), caption: pa('caption') }}
-      fillHeight={true}
     />
   )
 
-  const gridCols =
-    mediaSide === 'right'
-      ? 'md:grid-cols-[45fr_55fr]'
-      : 'md:grid-cols-[55fr_45fr]'
-
-  const mediaOrder =
-    mediaSide === 'right' ? 'order-2' : 'order-2 md:order-1'
-  const textOrder =
-    mediaSide === 'right' ? 'order-1' : 'order-1 md:order-2'
-
-  const textEdgePadding =
-    mediaSide === 'right' ? 'pl-lg' : 'pr-lg'
-
   return (
-    <div
-      {...pa(content.__composition)}
-      className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
-      data-stagger={staggerAttr}
-    >
-      <div data-block="image" className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch md:min-h-[max(31.25rem,30vw)] mx-auto max-w-360 px-lg py-xl`}>
-        <div className={`min-w-0 flex flex-col min-h-125 ${mediaOrder}`}>
-          {mediaEl}
-        </div>
-
-        <div className={`min-w-0 flex flex-col gap-md justify-center ${textOrder} ${textEdgePadding}`}>
+    <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+      <section
+        data-block="image"
+        data-layout="editorial"
+        data-side={mediaSide}
+        data-color={bgColor}
+        data-theme={bgColor === 'brand' ? 'dark' : undefined}
+        {...(content.heading ? { 'aria-labelledby': headingId } : { 'aria-label': content.alt || 'Image' })}
+      >
+        <div data-part="grid">
           {textContent}
+          <div data-part="media">{mediaEl}</div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

@@ -1,6 +1,15 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+/**
+ * ComparisonTableBlock
+ *
+ * A native <table> on wide containers and a plan picker + definition list on narrow ones.
+ * Presentation lives in components/blocks/comparison-table.css, keyed on the data attributes
+ * below. The featured column is styled cell by cell from [data-featured]; there is no
+ * measuring script and no overlay.
+ */
+
+import { useId, useRef, useState } from 'react'
 import {
   Check, Minus, X, CircleCheck, CircleMinus,
   Star, Zap, Shield, Lock, Unlock, Clock,
@@ -8,8 +17,6 @@ import {
   Users, Globe, Database, Info,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import Button               from '@/components/ui/Button'
-import { cn }               from '@/lib/utils'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,176 +53,76 @@ interface Props {
   tableStyle?: TableStyle
 }
 
-// ── Icon registry ─────────────────────────────────────────────────────────────
+// ── Icons ─────────────────────────────────────────────────────────────────────
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  'check':          Check,
-  'minus':          Minus,
-  'xmark':          X,
-  'circle-check':   CircleCheck,
-  'circle-minus':   CircleMinus,
-  'star':           Star,
-  'zap':            Zap,
-  'shield':         Shield,
-  'lock':           Lock,
-  'unlock':         Unlock,
-  'clock':          Clock,
-  'infinity':       InfinityIcon,
-  'message-circle': MessageCircle,
-  'users':          Users,
-  'globe':          Globe,
-  'database':       Database,
+  'check': Check, 'minus': Minus, 'xmark': X, 'circle-check': CircleCheck, 'circle-minus': CircleMinus,
+  'star': Star, 'zap': Zap, 'shield': Shield, 'lock': Lock, 'unlock': Unlock, 'clock': Clock,
+  'infinity': InfinityIcon, 'message-circle': MessageCircle, 'users': Users, 'globe': Globe, 'database': Database,
 }
 
-// ── Style system ──────────────────────────────────────────────────────────────
+const YES = new Set(['check', 'circle-check'])
+const NO  = new Set(['minus', 'circle-minus', 'xmark'])
 
-type CellVariant = 'default' | 'inverted'
-
-interface StyleConfig {
-  groupBg:             string
-  groupText:           string
-  rowLabelClass:       string
-  rowDivider:          string
-  rowHover:            string
-  // Featured body cells in elevated are transparent — the overlay provides color
-  featuredBodyCell:    string
-  featuredCellVariant: CellVariant
-  featuredGradient:    string
-  featuredShadow:      string
-  tableBorder:         string
+/** Text alternatives, so icon-only cells aren't silent to screen readers. */
+const SR_TEXT: Record<string, string> = {
+  'check': 'Included', 'circle-check': 'Included', 'minus': 'Not included', 'circle-minus': 'Not included',
+  'xmark': 'Not included', 'infinity': 'Unlimited',
 }
 
-const STYLE_CONFIG: Record<TableStyle, StyleConfig> = {
-  clean: {
-    groupBg:             'bg-brand',
-    groupText:           'text-fg-on-brand font-semibold tracking-label uppercase text-label',
-    rowLabelClass:       'text-sm font-semibold text-fg',
-    rowDivider:          'border-t border-fg/6',
-    rowHover:            'hover:bg-fg/2',
-    featuredBodyCell:    'bg-brand/10',
-    featuredCellVariant: 'default',
-    featuredGradient:    'linear-gradient(to bottom, var(--ot-brand) 0%, oklch(from var(--ot-brand) calc(l * 0.85) c h) 100%)',
-    featuredShadow:      'shadow-[0_4px_32px_var(--ot-bloom-brand-faint),0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.25)]',
-    tableBorder:         'border border-fg/10 rounded-b-ot-surface overflow-hidden',
-  },
-  elevated: {
-    groupBg:             'bg-brand/10',
-    groupText:           'text-brand font-bold tracking-label uppercase text-label',
-    rowLabelClass:       'text-sm font-semibold text-fg',
-    rowDivider:          'border-t border-fg/6',
-    rowHover:            'hover:bg-fg/[0.03]',
-    featuredBodyCell:    'relative z-10 bg-transparent',
-    featuredCellVariant: 'default',
-    featuredGradient:    'linear-gradient(to bottom, oklch(from var(--ot-brand) calc(l * 1.08) c h) 0%, var(--ot-brand) 100%)',
-    featuredShadow:      'shadow-[0_0_0_1px_oklch(from_var(--ot-brand)_l_c_h/0.4),-6px_0_28px_var(--ot-bloom-brand-faint),6px_0_28px_var(--ot-bloom-brand-faint)]',
-    tableBorder:         'border-x border-b border-fg/10 relative rounded-b-ot-surface',
-  },
-  bold: {
-    // Group row uses brand-hover for the full-width header — richer than accent and
-    // keeps the column reading as one cohesive brand band from header to footer.
-    groupBg:             'bg-brand-hover',
-    groupText:           'text-fg-on-brand font-bold tracking-label uppercase text-label',
-    rowLabelClass:       'text-sm font-bold text-fg',
-    rowDivider:          'border-t border-fg/8',
-    rowHover:            'hover:bg-fg/3',
-    featuredBodyCell:    'bg-brand',
-    featuredCellVariant: 'inverted',
-    // Steeper angle gradient — more drama, clearly distinct from elevated's flat drop
-    featuredGradient:    'linear-gradient(160deg, oklch(from var(--ot-brand) calc(l * 1.10) c h) 0%, oklch(from var(--ot-brand) calc(l * 0.72) c h) 100%)',
-    featuredShadow:      'shadow-[0_16px_64px_var(--ot-bloom-brand),0_0_0_2px_oklch(from_var(--ot-brand)_l_c_h/0.5)]',
-    tableBorder:         'border border-fg/12 rounded-b-ot-surface overflow-hidden',
-  },
-}
+// ── Cell + tooltip ────────────────────────────────────────────────────────────
 
-// ── Icon color helper ─────────────────────────────────────────────────────────
-
-function iconColor(key: string, variant: CellVariant): string {
-  if (variant === 'inverted') {
-    if (key === 'check' || key === 'circle-check') return 'text-fg-on-brand'
-    if (key === 'minus' || key === 'circle-minus' || key === 'xmark') return 'text-fg-on-brand/40'
-    return 'text-fg-on-brand/80'
-  }
-  if (key === 'check' || key === 'circle-check') return 'text-brand'
-  if (key === 'minus' || key === 'circle-minus' || key === 'xmark') return 'text-fg-muted/50'
-  return 'text-fg-muted'
-}
-
-// ── Cell content renderer ─────────────────────────────────────────────────────
-
-function CellContent({ cell, variant = 'default' }: { cell: ComparisonCell | undefined; variant?: CellVariant }) {
+function CellContent({ cell }: { cell: ComparisonCell | undefined }) {
   if (!cell || cell.isEmpty || (!cell.icon && !cell.text)) {
     return (
-      <span className={cn(
-        'text-body font-mono select-none',
-        variant === 'inverted' ? 'text-fg-on-brand/30' : 'text-fg-muted/50',
-      )}>
-        —
-      </span>
+      <>
+        <span data-part="dash" aria-hidden="true">—</span>
+        <span className="sr-only">Not applicable</span>
+      </>
     )
   }
-
   const Icon = cell.icon ? ICON_MAP[cell.icon] : undefined
-
+  const kind = cell.icon && YES.has(cell.icon) ? 'yes' : cell.icon && NO.has(cell.icon) ? 'no' : 'info'
+  const sr   = cell.icon && !cell.text ? SR_TEXT[cell.icon] : undefined
   return (
-    <span className="flex items-center gap-xs">
+    <span data-part="val">
       {Icon && (
-        <Icon
-          size={16}
-          className={cn('shrink-0', cell.icon ? iconColor(cell.icon, variant) : '')}
-          aria-hidden="true"
-        />
-      )}
-      {cell.text && (
-        <span className={cn(
-          'text-sm font-medium',
-          variant === 'inverted' ? 'text-fg-on-brand' : 'text-fg',
-        )}>
-          {cell.text}
+        <span data-part="mark" data-kind={kind} aria-hidden="true">
+          <Icon strokeWidth={kind === 'yes' ? 2.75 : 2.25} />
         </span>
       )}
+      {sr && <span className="sr-only">{sr}</span>}
+      {cell.text && <span>{cell.text}</span>}
     </span>
   )
 }
 
-// ── Tooltip wrapper ───────────────────────────────────────────────────────────
-
-function TooltipLabel({ label, tooltip, labelClass }: {
-  label:       string
-  tooltip?:    string
-  labelClass?: string
-}) {
+function Tip({ id, text }: { id: string; text: string }) {
   return (
-    <span className="flex items-center gap-xs min-w-0">
-      <span className={cn(labelClass ?? 'text-sm font-semibold text-fg', 'truncate')}>{label}</span>
-      {tooltip && (
-        <span className="relative group/tip shrink-0">
-          <button
-            type="button"
-            className="flex items-center text-fg-muted/40 hover:text-fg-muted focus-visible:text-fg-muted transition-colors duration-150"
-            aria-label={`More information: ${tooltip}`}
-          >
-            <Info size={12} />
-          </button>
-          <span
-            role="tooltip"
-            className={cn(
-              'absolute bottom-full left-0 mb-2 w-52 z-10',
-              'bg-surface border border-fg/10 rounded-ot-surface px-sm py-xs',
-              'text-xs text-fg-muted leading-relaxed shadow-lg',
-              'opacity-0 pointer-events-none',
-              'group-hover/tip:opacity-100 group-focus-within/tip:opacity-100',
-              'transition-opacity duration-150 ease-out',
-            )}
-          >
-            {tooltip}
-          </span>
-        </span>
+    <span data-part="tip">
+      <button type="button" data-part="info" aria-describedby={id}>
+        <span className="sr-only">More information</span>
+        <Info strokeWidth={2} aria-hidden="true" />
+      </button>
+      <span data-part="tooltip" role="tooltip" id={id}>{text}</span>
+    </span>
+  )
+}
+
+function PlanInner({ col, featured }: { col: ComparisonColumn; featured: boolean }) {
+  return (
+    <span data-part="plan-in">
+      {col.badgeText && <span data-part="badge">{col.badgeText}</span>}
+      <span data-part="plan-name">{col.label}</span>
+      {col.subLabel && <span data-part="price">{col.subLabel}</span>}
+      {col.ctaLabel && (
+        <a href={col.ctaHref ?? '#'} data-part="cta" data-kind={featured ? 'primary' : 'secondary'}>{col.ctaLabel}</a>
       )}
     </span>
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ComparisonTableBlock({
   eyebrow,
@@ -226,465 +133,131 @@ export default function ComparisonTableBlock({
   color = 'canvas',
   tableStyle = 'clean',
 }: Props) {
-  const style       = STYLE_CONFIG[tableStyle]
+  const uid         = useId().replace(/:/g, '')
+  const headingId   = `ct-${uid}-h`
   const featuredIdx = columns.findIndex(c => !!c.badgeText)
-  const [activeCol, setActiveCol] = useState(() => featuredIdx >= 0 ? featuredIdx : 0)
-  const [animDir, setAnimDir]     = useState<'left' | 'right' | null>(null)
-  const [animKey, setAnimKey]     = useState(0)
-  const touchStartX               = useRef(0)
-  const touchStartTime            = useRef(0)
+  const [active, setActive] = useState(() => (featuredIdx >= 0 ? featuredIdx : 0))
+  const touchX = useRef(0)
+  const n = columns.length
+  const sel = columns[Math.min(active, n - 1)]
+  const hasHead = Boolean(eyebrow || headline || subHeadline)
 
-  // Elevated card overlay: measured from the featured column header
-  const featuredHeaderRef = useRef<HTMLDivElement>(null)
-  const tableBodyRef      = useRef<HTMLDivElement>(null)
-  const [overlayLeft, setOverlayLeft] = useState<number | null>(null)
-  const [overlayWidth, setOverlayWidth] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (tableStyle !== 'elevated' || featuredIdx < 0) return
-
-    function measure() {
-      if (!featuredHeaderRef.current || !tableBodyRef.current) return
-      const hRect = featuredHeaderRef.current.getBoundingClientRect()
-      const bRect = tableBodyRef.current.getBoundingClientRect()
-      setOverlayLeft(hRect.left - bRect.left)
-      setOverlayWidth(hRect.width)
-    }
-
-    measure()
-    const ro = new ResizeObserver(measure)
-    if (featuredHeaderRef.current) ro.observe(featuredHeaderRef.current)
-    if (tableBodyRef.current)      ro.observe(tableBodyRef.current)
-    return () => ro.disconnect()
-  }, [tableStyle, featuredIdx, columns.length])
-
-  const colCount  = columns.length
-  const gridStyle = {
-    gridTemplateColumns: `minmax(140px, 210px) repeat(${colCount}, minmax(120px, 1fr))`,
+  function onKey(e: React.KeyboardEvent) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return
+    e.preventDefault()
+    const k = e.key === 'ArrowRight' ? (active + 1) % n : e.key === 'ArrowLeft' ? (active - 1 + n) % n : e.key === 'Home' ? 0 : n - 1
+    setActive(k)
+    document.getElementById(`ct-${uid}-p${k}`)?.focus()
   }
-  const bgClass = color === 'surface' ? 'bg-surface' : 'bg-canvas'
-
-  const lastDataRowIdx = rows.reduceRight(
-    (acc, row, i) => acc === -1 && row.rowType === 'row' ? i : acc,
-    -1,
-  )
-
-  // ── Mobile swipe ──────────────────────────────────────────────────────────
-  function handleTouchStart(e: React.TouchEvent) {
-    touchStartX.current    = e.touches[0].clientX
-    touchStartTime.current = Date.now()
+  function onTouchEnd(e: React.TouchEvent) {
+    const dx = e.changedTouches[0].clientX - touchX.current
+    if (Math.abs(dx) > 64) setActive(p => (dx < 0 ? Math.min(p + 1, n - 1) : Math.max(p - 1, 0)))
   }
-  function handleTouchEnd(e: React.TouchEvent) {
-    const dx       = e.changedTouches[0].clientX - touchStartX.current
-    const absDx    = Math.abs(dx)
-    const velocity = absDx / Math.max(Date.now() - touchStartTime.current, 1)
-    if (absDx > 64 || (absDx > 40 && velocity > 0.35)) {
-      const dir = dx < 0 ? 'left' : 'right'
-      setAnimDir(dir)
-      setAnimKey(k => k + 1)
-      setActiveCol(prev =>
-        dx < 0
-          ? Math.min(prev + 1, colCount - 1)
-          : Math.max(prev - 1, 0)
-      )
-    }
-  }
-
-  const mobileIsFeatured         = activeCol === featuredIdx
-  // Bold: solid brand fill + inverted text. Elevated: glass tint + default text.
-  const mobileInverted           = tableStyle === 'bold'     && mobileIsFeatured
-  const mobileElevatedFeatured   = tableStyle === 'elevated' && mobileIsFeatured
 
   return (
-    <section className={cn('py-xl px-md lg:px-lg', bgClass)}>
+    <section data-block="comparison" data-color={color} data-style={tableStyle} data-cols={n}>
+      <div data-part="inner">
 
-      {/* ── Above-table header ─────────────────────────────────────────────── */}
-      {(eyebrow || headline || subHeadline) && (
-        <div className="mb-2xl">
-          {eyebrow && (
-            <p className="text-label tracking-label uppercase font-semibold mb-sm accent-ink">
-              {eyebrow}
-            </p>
-          )}
-          <h2 className="text-headline font-bold leading-headline text-fg">
-            {headline}
-          </h2>
-          {subHeadline && (
-            <p className="text-body leading-body text-fg-muted mt-md max-w-[65ch]">
-              {subHeadline}
-            </p>
-          )}
+        {hasHead && (
+          <header data-part="head">
+            {eyebrow && <p data-part="eyebrow">{eyebrow}</p>}
+            {headline && <h2 data-part="headline" id={headingId}>{headline}</h2>}
+            {subHeadline && <p data-part="sub">{subHeadline}</p>}
+          </header>
+        )}
+
+        {/* ── Wide: a real table ──────────────────────────────────────────── */}
+        <div data-part="wide">
+          <table data-part="table" aria-labelledby={headline ? headingId : undefined}>
+            <colgroup>
+              <col data-part="col-label" />
+              {columns.map((_, i) => <col key={i} />)}
+            </colgroup>
+            <thead>
+              <tr>
+                <td aria-hidden="true" />
+                {columns.map((col, i) => (
+                  <th key={i} scope="col" data-part="plan" data-featured={i === featuredIdx ? '' : undefined}>
+                    <PlanInner col={col} featured={i === featuredIdx} />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) =>
+                row.rowType === 'group' ? (
+                  <tr key={ri} data-part="group">
+                    <th scope="colgroup">{row.label}</th>
+                    {columns.map((_, ci) => <td key={ci} aria-hidden="true" data-featured={ci === featuredIdx ? '' : undefined} />)}
+                  </tr>
+                ) : (
+                  <tr key={ri} data-part="row">
+                    <th scope="row">
+                      <span data-part="feature">
+                        {row.label}
+                        {row.tooltip && <Tip id={`ct-${uid}-t${ri}`} text={row.tooltip} />}
+                      </span>
+                    </th>
+                    {columns.map((_, ci) => (
+                      <td key={ci} data-featured={ci === featuredIdx ? '' : undefined}>
+                        <CellContent cell={row.cells[ci]} />
+                      </td>
+                    ))}
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
 
-      {/* ── Mobile column selector ─────────────────────────────────────────── */}
-      <div
-        className="sm:hidden mb-lg"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div
-          className="relative flex rounded-ot-control border border-fg/10 overflow-hidden"
-          role="tablist"
-          aria-label="Select column"
-        >
-          {/* Sliding underline — glides between tabs to confirm which column is active */}
-          <div
-            aria-hidden="true"
-            className="absolute bottom-0 h-0.5 bg-brand pointer-events-none transition-[left] duration-200 ease-out"
-            style={{ left: `${(activeCol / colCount) * 100}%`, width: `${100 / colCount}%` }}
-          />
-          {columns.map((col, i) => {
-            const isFeat   = i === featuredIdx
-            const isActive = i === activeCol
-            return (
-              <button
-                key={i}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveCol(i)}
-                className={cn(
-                  'flex-1 px-sm py-sm text-center transition-colors duration-150',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand',
-                  isActive && isFeat  && 'bg-brand text-fg-on-brand',
-                  isActive && !isFeat && 'bg-surface text-fg',
-                  !isActive           && 'text-fg-muted hover:text-fg hover:bg-fg/4',
-                )}
-              >
-                <span className="block text-sm font-semibold leading-tight">{col.label}</span>
-                {col.badgeText && (
-                  <span className={cn(
-                    'block text-[10px] font-medium mt-0.5',
-                    isActive && isFeat ? 'text-fg-on-brand/70' : 'text-brand',
-                  )}>
-                    {col.badgeText}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-        <p className="text-[10px] text-fg-muted/40 text-center mt-xs">Swipe to compare</p>
-      </div>
-
-      {/* ── Desktop: full grid table ───────────────────────────────────────── */}
-      <div
-        className="hidden sm:block"
-        role="table"
-        aria-label={headline}
-      >
-        {/* Column headers — pt-8 gives clearance for the badge pill to overflow above the card */}
-        <div role="rowgroup" className="pt-8">
-          <div role="row" className="grid" style={gridStyle}>
-
-            {/* Row label header spacer */}
-            <div role="columnheader" aria-label="Feature" />
-
-            {/* Data column headers */}
-            {columns.map((col, i) => {
-              const featured = i === featuredIdx
-              return (
-                <div
+        {/* ── Narrow: plan picker, the plan's price and button, then its rows ── */}
+        {sel && (
+          <div data-part="narrow" onTouchStart={e => { touchX.current = e.touches[0].clientX }} onTouchEnd={onTouchEnd}>
+            <div data-part="picker" role="tablist" aria-label="Choose a plan to see its details" onKeyDown={onKey}>
+              {columns.map((col, i) => (
+                <button
                   key={i}
-                  role="columnheader"
-                  ref={featured && tableStyle === 'elevated' ? featuredHeaderRef : undefined}
-                  style={featured ? { background: style.featuredGradient } : undefined}
-                  className={cn(
-                    'flex flex-col gap-sm px-md pt-md pb-lg items-center text-center',
-                    featured && [
-                      'rounded-t-ot-surface',
-                      'relative overflow-visible',
-                      'text-fg-on-brand',
-                      style.featuredShadow,
-                    ],
-                    !featured && i > 0 && 'border-l border-fg/8',
-                  )}
+                  type="button"
+                  role="tab"
+                  id={`ct-${uid}-p${i}`}
+                  data-part="pick"
+                  data-featured={i === featuredIdx ? '' : undefined}
+                  aria-selected={i === active}
+                  aria-controls={`ct-${uid}-panel`}
+                  tabIndex={i === active ? 0 : -1}
+                  onClick={() => setActive(i)}
                 >
-                  {/* Fixed-height badge zone — all columns share the same h-5 reservation
-                      so title/price/CTA stay vertically aligned. The featured pill floats
-                      absolutely (zero layout impact); non-featured badge renders in-flow
-                      inside the same zone height. */}
-                  <div className="relative h-5 flex items-center justify-center w-full">
-                    {col.badgeText && featured && (
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 whitespace-nowrap text-[10px] tracking-widest uppercase font-bold px-sm py-0.5 rounded-full bg-canvas text-brand ring-1 ring-inset ring-brand/20 shadow-[0_2px_8px_oklch(from_var(--ot-brand)_l_c_h/0.3)]">
-                        {col.badgeText}
-                      </span>
-                    )}
-                    {col.badgeText && !featured && (
-                      <span className="text-[10px] tracking-widest uppercase font-bold px-sm py-0.5 rounded-full bg-canvas/80 text-brand ring-1 ring-inset ring-brand/20">
-                        {col.badgeText}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Column name */}
-                  <p className={cn(
-                    'text-title font-black leading-tight',
-                    featured ? 'text-fg-on-brand' : 'text-fg'
-                  )}>
-                    {col.label}
-                  </p>
-
-                  {/* Sub-label / price */}
-                  {col.subLabel && (
-                    <p className={cn(
-                      'text-sm',
-                      featured ? 'text-fg-on-brand/70' : 'text-fg-muted'
-                    )}>
-                      {col.subLabel}
-                    </p>
-                  )}
-
-                  {/* CTA */}
-                  {col.ctaLabel && (
-                    <div className="mt-sm">
-                      {featured ? (
-                        <a
-                          href={col.ctaHref ?? '#'}
-                          className={cn(
-                            'flex items-center justify-center',
-                            'rounded-ot-control bg-fg-on-brand text-brand',
-                            'text-label font-semibold tracking-label uppercase px-md py-sm',
-                            'hover:bg-fg-on-brand/90 transition-colors duration-150 ease-out',
-                            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
-                          )}
-                        >
-                          {col.ctaLabel}
-                        </a>
-                      ) : (
-                        <Button href={col.ctaHref ?? '#'} size="sm" variant="brand">
-                          {col.ctaLabel}
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Table body rows */}
-        <div
-          ref={tableBodyRef}
-          role="rowgroup"
-          className={style.tableBorder}
-        >
-          {/* ── Elevated card overlay ─────────────────────────────────────────
-              Absolutely positioned brand-fill panel spanning the full featured
-              column height. Cells above it (z-10) are transparent so this
-              provides the consistent brand bg. Bloom + ring give the 3D lift.  */}
-          {tableStyle === 'elevated' && featuredIdx >= 0 && overlayLeft !== null && (
-            <div
-              aria-hidden="true"
-              className="absolute top-0 bottom-0 rounded-b-ot-surface pointer-events-none z-0"
-              style={{
-                left:       overlayLeft,
-                width:      overlayWidth ?? 0,
-                // Gradient tint — fades from stronger brand presence at the top
-                // (where it meets the header card) to a lighter wash at the bottom.
-                // Higher alpha values (vs the old flat 9%) make the column clearly
-                // legible in dark mode while remaining glass-like in light mode.
-                background: 'linear-gradient(to bottom, oklch(from var(--ot-brand) l c h / 0.22) 0%, oklch(from var(--ot-brand) l c h / 0.13) 100%)',
-                borderLeft:   '1px solid oklch(from var(--ot-brand) l c h / 0.35)',
-                borderRight:  '1px solid oklch(from var(--ot-brand) l c h / 0.35)',
-                borderBottom: '1px solid oklch(from var(--ot-brand) l c h / 0.35)',
-                // All-sides bloom — creates the card-hover-style glow around the column
-                boxShadow: [
-                  '0 20px 64px var(--ot-bloom-brand)',
-                  '0 4px 16px var(--ot-bloom-brand-faint)',
-                  '-8px 0 32px var(--ot-bloom-brand-faint)',
-                  '8px 0 32px var(--ot-bloom-brand-faint)',
-                ].join(', '),
-              }}
-            />
-          )}
-
-          {rows.map((row, rowIdx) => {
-
-            // ── Group header row ──────────────────────────────────────────
-            if (row.rowType === 'group') {
-              // Elevated: individual cells so the featured card runs through unbroken
-              if (tableStyle === 'elevated' && featuredIdx >= 0) {
-                return (
-                  <div
-                    key={rowIdx}
-                    role="row"
-                    className={cn('grid border-t border-fg/10', rowIdx === 0 && 'border-t-0')}
-                    style={gridStyle}
-                  >
-                    {/* Label cell: same bg-brand/10 as the rest so the group row reads
-                        as one uniform band across the full width */}
-                    <div role="rowheader" className={cn('px-md py-sm', style.groupBg)}>
-                      <span className={style.groupText}>{row.label}</span>
-                    </div>
-                    {columns.map((col, ci) => {
-                      const isFeat = ci === featuredIdx
-                      return (
-                        <div
-                          key={ci}
-                          aria-hidden="true"
-                          className={cn(
-                            'py-sm',
-                            isFeat ? 'relative z-10 bg-brand/10' : 'bg-brand/10',
-                          )}
-                        />
-                      )
-                    })}
-                  </div>
-                )
-              }
-
-              // Clean / bold: full-width spanning cell
-              return (
-                <div
-                  key={rowIdx}
-                  role="row"
-                  className={cn('grid border-t border-fg/10', rowIdx === 0 && 'border-t-0')}
-                  style={gridStyle}
-                >
-                  <div
-                    role="rowheader"
-                    className={cn('col-span-full px-md py-sm', style.groupBg)}
-                    style={{ gridColumn: `1 / ${colCount + 2}` }}
-                  >
-                    <span className={style.groupText}>{row.label}</span>
-                  </div>
-                </div>
-              )
-            }
-
-            // ── Data row ──────────────────────────────────────────────────
-            const isLastData = rowIdx === lastDataRowIdx
-
-            return (
-              <div
-                key={rowIdx}
-                role="row"
-                className={cn(
-                  'grid transition-colors duration-100',
-                  style.rowDivider,
-                  style.rowHover,
-                  rowIdx === 0 && 'border-t-0',
-                )}
-                style={gridStyle}
-              >
-                {/* Row label */}
-                <div role="rowheader" className="px-md py-md flex items-center">
-                  <TooltipLabel
-                    label={row.label}
-                    tooltip={row.tooltip}
-                    labelClass={style.rowLabelClass}
-                  />
-                </div>
-
-                {/* Cells */}
-                {columns.map((col, colIdx) => {
-                  const featured      = colIdx === featuredIdx
-                  const cellVariant   = featured ? style.featuredCellVariant : 'default'
-                  // Bold gets rounded bottom; elevated rounding comes from the overlay
-                  const roundedBottom = featured && isLastData && tableStyle === 'bold'
-
-                  return (
-                    <div
-                      key={colIdx}
-                      role="cell"
-                      className={cn(
-                        'px-md py-md flex items-center justify-center',
-                        colIdx > 0 && !featured && 'border-l border-fg/8',
-                        featured && style.featuredBodyCell,
-                        // Cell-level dividers for the featured column — the row's border-t sits
-                        // behind the overlay (z-0), so we apply it on the cell (z-10).
-                        // Elevated uses a brand-tinted line visible through the glass;
-                        // bold uses a brighter inverted line on the solid brand fill.
-                        featured && tableStyle === 'elevated' && rowIdx > 0 && 'border-t border-brand/30',
-                        featured && tableStyle === 'bold'     && rowIdx > 0 && 'border-t border-fg-on-brand/20',
-                        roundedBottom && 'rounded-b-ot-surface',
-                      )}
-                    >
-                      <CellContent cell={row.cells[colIdx]} variant={cellVariant} />
-                    </div>
-                  )
-                })}
+                  {col.label}
+                  {col.badgeText && <small>{col.badgeText}</small>}
+                </button>
+              ))}
+            </div>
+            <div role="tabpanel" id={`ct-${uid}-panel`} aria-labelledby={`ct-${uid}-p${active}`}>
+              <div data-part="plan-card" data-featured={active === featuredIdx ? '' : undefined}>
+                <PlanInner col={sel} featured={active === featuredIdx} />
               </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── Mobile: single-column view ────────────────────────────────────── */}
-      {/* Outer div holds touch handlers stably; inner keyed div replays the
-          slide-in animation on each column switch without losing touch state. */}
-      <div
-        className="sm:hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div
-          key={animKey}
-          role="table"
-          aria-label={headline}
-          style={animDir ? {
-            animation: `${animDir === 'left' ? 'swipe-col-from-right' : 'swipe-col-from-left'} var(--ot-dur-quick) var(--ot-ease-kinetic) both`,
-          } : undefined}
-        >
-          <div role="rowgroup">
-          {rows.map((row, rowIdx) => {
-
-            if (row.rowType === 'group') {
-              return (
-                <div key={rowIdx} role="row">
-                  <div
-                    role="cell"
-                    className={cn(
-                      'px-md py-sm',
-                      style.groupBg,
-                      'border-t border-fg/10',
-                      rowIdx === 0 && 'border-t-0',
-                    )}
-                  >
-                    <span className={style.groupText}>{row.label}</span>
-                  </div>
-                </div>
-              )
-            }
-
-            const cell        = row.cells[activeCol]
-            const cellVariant = mobileInverted ? 'inverted' : 'default'
-
-            return (
-              <div
-                key={rowIdx}
-                role="row"
-                className={cn(
-                  'flex items-center justify-between px-md py-md gap-md',
-                  'border-t border-fg/6',
-                  rowIdx === 0 && 'border-t-0',
-                  mobileInverted          ? 'bg-brand' :
-                  mobileElevatedFeatured  ? 'bg-brand/8' :
-                  mobileIsFeatured        ? 'bg-brand/5' : '',
+              <dl data-part="mrows">
+                {rows.map((row, ri) =>
+                  row.rowType === 'group' ? (
+                    <div key={ri} role="heading" aria-level={3} data-part="mgroup">{row.label}</div>
+                  ) : (
+                    <div key={ri} data-part="mrow">
+                      <dt>
+                        <span data-part="feature">
+                          {row.label}
+                          {row.tooltip && <Tip id={`ct-${uid}-m${ri}`} text={row.tooltip} />}
+                        </span>
+                      </dt>
+                      <dd><CellContent cell={row.cells[active]} /></dd>
+                    </div>
+                  ),
                 )}
-              >
-                <div role="rowheader" className="min-w-0 flex-1">
-                  <TooltipLabel
-                    label={row.label}
-                    tooltip={row.tooltip}
-                    labelClass={mobileInverted
-                      ? 'text-sm font-semibold text-fg-on-brand'
-                      : style.rowLabelClass
-                    }
-                  />
-                </div>
-                <div role="cell" className="shrink-0">
-                  <CellContent cell={cell} variant={cellVariant} />
-                </div>
-              </div>
-            )
-          })}
+              </dl>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
 
+      </div>
     </section>
   )
 }

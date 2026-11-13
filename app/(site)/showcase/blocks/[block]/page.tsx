@@ -93,7 +93,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'rich-text':    { label: 'RichTextBlock',      cmsKey: 'OT_RichTextBlock',    description: 'Full-width prose section rendering TinyMCE WYSIWYG HTML output: headings, paragraphs, lists, blockquotes, and inline elements.' },
   'image':        { label: 'ImageBlock',         cmsKey: 'OT_ImageBlock',       description: 'Flexible image block with two frame modes, teal brand overlay, inset or below caption, chromatic shadow bloom, and a scroll-triggered wipe reveal. Populate any editorial field (eyebrow, heading, body, CTA) to auto-enable a 55/45 two-column editorial layout with configurable media side.' },
   'video':        { label: 'VideoBlock',         cmsKey: 'OT_VideoBlock',       description: 'YouTube and Vimeo embeds with a branded poster state. Platform thumbnails are auto-fetched; a teal play button replaces the iframe until clicked. Populate any editorial field to auto-enable a 55/45 two-column editorial layout with configurable media side.' },
-  'stat':         { label: 'StatBlock',          cmsKey: 'OT_StatBlock',        description: 'Horizontal row of metric callouts. Numbers animate on scroll with a staggered entrance and easeOutQuart count-up. Three color schemes (brand/canvas/surface), glass panel mode, 2–4 columns, optional icons with inline or above placement, and four numeral effects: none, gradient (brand-to-accent diagonal fill), glow (ambient bloom), and shimmer (one-shot highlight sweep on count-up). Effect is a content-type property; all others are display settings.' },
+  'stat':         { label: 'StatBlock',          cmsKey: 'OT_StatBlock',        description: 'Horizontal row of metric callouts. Numbers animate on scroll with a staggered entrance and easeOutQuart count-up. Three color schemes (brand/canvas/surface), glass panel mode, 2–4 columns, optional icons with inline or above placement, and three numeral effects: none, gradient (each numeral steps from brand to accent across the row, with a gradient bar that fills in during the count-up), and glow (a backlit halo that warms up when the count finishes). Effect is a content-type property; all others are display settings.' },
   'stat-item':    { label: 'StatItemBlock',      cmsKey: 'OT_StatItemBlock',    description: 'A single metric callout as a Visual Builder element — placeable directly in a column (e.g. beside a Card), not just as a full-width section. Element-enabled only, so it never appears alongside Stat Block in the same picker. Value, label, context, icon, and numeral effect are content properties; color/glass/icon placement/animation are display settings.' },
   'feature-grid': { label: 'FeatureGridBlock',   cmsKey: 'OT_FeatureGridBlock', description: 'Grid of feature tiles with optional eyebrow, heading, and CTA. Supports grid and ruled layouts, 2–4 columns, optional icon slots, and stagger entrance animation.' },
   'feature-item': { label: 'FeatureItemBlock',   cmsKey: 'OT_FeatureItemBlock', description: 'A single feature tile as a Visual Builder element — placeable directly in a column. Element-enabled only, so it never appears alongside Feature Grid Block in the same picker. Headline, body, CTA, and icon are content properties.' },
@@ -106,7 +106,7 @@ const BLOCK_META: Record<BlockSlug, { label: string; cmsKey: string; description
   'chart':        { label: 'ChartBlock',          cmsKey: 'OT_ChartBlock',       description: 'CMS-driven data visualization block. Five chart types: line, area, bar, bar stacked, and radial gauge. Four color variants, five series color palettes, fully responsive via Recharts.' },
   'banner':           { label: 'BannerBlock',          cmsKey: 'OT_BannerBlock',          description: 'Full-bleed background image with layered content: eyebrow, headline, optional body, and up to two CTAs. Two overlay modes: scrim (color overlay over the image) and glass (content inside a frosted panel). Three color variants, two alignment options, two height sizes, and two image blend modes.' },
   'resource-library': { label: 'ResourceLibraryBlock', cmsKey: 'OT_ResourceLibraryBlock', description: 'DAM-connected asset download list. The editor pastes a DAM Folder ID (ParentFolderGuid); the block fetches all assets in that folder via Optimizely Graph and renders them as a dense list or card grid with Lucide file-type iconography and native download links.' },
-  'callout':          { label: 'CalloutBlock',          cmsKey: 'OT_CalloutBlock',          description: 'Compact semantic inline notification. Six intent types: neutral, info, success, warning, danger, brand. Three variants: filled, bordered, bar. Dismissible with a two-phase kinetic exit — content sweeps right and fades, then the container height collapses.' },
+  'callout':          { label: 'CalloutBlock',          cmsKey: 'OT_CalloutBlock',          description: 'Compact semantic inline notification. Six intent types: neutral, info, success, warning, danger, brand. Four variants: filled (gradient card with watermark), bordered (full border + animated left rail), bar (strip with intent tag), split (color column + message). Each has its own entrance animation, plays once on scroll and skipped under reduced motion. Uses the project icon set, with a per-intent default. Dismissible with a two-phase kinetic exit — content sweeps right and fades, then the container height collapses.' },
   'divider':          { label: 'DividerBlock',          cmsKey: 'OT_DividerBlock',          description: 'Structural section divider that opens deliberate breathing room between stacked sections. Three treatments: mark (a hairline broken by an editable label or an editorial ornament), glow (a precise luminous rule — a chromatic line of light with a soft bloom above and below), and bleed (atmospheric luminance — an elliptical light seam rising from the boundary). One Tone control spans all three — neutral, brand, accent, spectrum, aurora — plus editor-controlled spacing, weight, and an optional draw-in reveal that rides the shared scroll observer.' },
   'event-listing':    { label: 'EventListingBlock',     cmsKey: 'OT_EventListingBlock',     description: 'CMS-driven listing of Event Pages with three toggleable views: card grid, list (calendar-style date blocks), and a monthly calendar with day agenda. A segmented icon control switches views; type-filter chips and a past-events toggle refine the set. Works across technology, healthcare, legal, and financial events on both canvas and surface grounds. In production, events are fetched at render time from published Event Pages; the showcase uses static fixtures.' },
   'practitioner-listing': { label: 'PractitionerListingBlock', cmsKey: 'OT_PractitionerListingBlock', description: 'CMS-driven, vertical-agnostic people directory pulled from Practitioner Profiles. Grid (cards) or list (rows) layout, client-side search across name / credentials / specialty, and three multi-select filters — specialty, location, and language — derived dynamically from the loaded set, never a fixed list. Values OR within a filter and AND across filters. Automatically scoped to the current site via the Site Key field on each profile. Squared portraits with a chromatic brand bloom and a designed initials fallback. In production, practitioners are fetched at render time; the showcase uses static fixtures spanning medical, legal, and technology verticals.' },
@@ -250,6 +250,12 @@ function HeroShowcase() {
   ]
 
   const directions = [
+    {
+      label: 'Editorial Split (default) · Brand · image right',
+      note: 'The classic composition: a solid-color text panel beside a contained visual.',
+      content: { direction: 'editorialSplit', eyebrow: 'Editorial', headline: 'Clarity, side by side.', body: 'A solid text panel and a contained visual share the fold, each given equal weight.', primaryCtaLabel: 'Get started', primaryCtaUrl: { default: '#' }, secondaryCtaLabel: 'Learn more', secondaryCtaUrl: { default: '#' }, visual: HERO_IMG, visualAlt: HERO_ALT },
+      displaySettings: { layout: 'imageRight', color: 'brand', animation: 'none' },
+    },
     {
       label: 'Spotlight Bloom · Brand · image right',
       note: 'Text leads; the visual floats as a framed object on a chromatic brand-bloom halo. Not a full-bleed backdrop (that is the Banner).',
@@ -2005,7 +2011,7 @@ function CalloutShowcase() {
       <BlockHeader slug="callout" />
 
       {/* ── Filled · all 6 intents ──────────────────────────────────────── */}
-      <VariantGroup label="Filled variant · all 6 intents" note="18% alpha tint + 40% alpha full border in dark mode — each intent reads as a distinct color, not just a lighter surface. Heading and body use standard text tokens." />
+      <VariantGroup label="Filled variant · all 6 intents" note="Intent gradient with a glow shadow, open icon, and a watermark that rotates on hover. Inverted button." />
       <CalloutGrid>
         {CALLOUT_INTENTS.map(intent => (
           <CalloutBlock
@@ -2018,7 +2024,7 @@ function CalloutShowcase() {
       </CalloutGrid>
 
       {/* ── Bordered · all 6 intents ────────────────────────────────────── */}
-      <VariantGroup label="Bordered variant · all 6 intents" note="Surface background + 3px top accent rule in the intent foreground color. Subdued but categorically distinct." />
+      <VariantGroup label="Bordered variant · all 6 intents" note="Light card with a 1.5px intent border on all edges and a 5px left rail that grows in on entry. Tinted icon chip and solid button." />
       <CalloutGrid>
         {CALLOUT_INTENTS.map(intent => (
           <CalloutBlock
@@ -2026,6 +2032,21 @@ function CalloutShowcase() {
             heading={CALLOUT_HEADINGS[intent]}
             body={CALLOUT_BODIES[intent]}
             styleOptions={{ intent, variant: 'bordered' }}
+          />
+        ))}
+      </CalloutGrid>
+
+      {/* ── Split · all 6 intents ───────────────────────────────────────── */}
+      <VariantGroup label="Split variant · all 6 intents" note="Two-tone layout: a solid intent column with a centered icon beside a light message panel. Good for deadlines and urgent notices." />
+      <CalloutGrid>
+        {CALLOUT_INTENTS.map(intent => (
+          <CalloutBlock
+            key={intent}
+            heading={CALLOUT_HEADINGS[intent]}
+            body={CALLOUT_BODIES[intent]}
+            ctaLabel={CALLOUT_CTAS[intent]}
+            ctaUrl="#"
+            styleOptions={{ intent, variant: 'split' }}
           />
         ))}
       </CalloutGrid>
@@ -2059,7 +2080,7 @@ function CalloutShowcase() {
       </CalloutGrid>
 
       {/* ── Bar · all 6 intents ─────────────────────────────────────────── */}
-      <VariantGroup label="Bar variant · all 6 intents" note="Full intent-colored perimeter border + faint background tint separate the bar from the page; the colored icon carries the category; generous padding gives it enough mass to register at a glance. Designed for system notices and site-wide announcements." />
+      <VariantGroup label="Bar variant · all 6 intents" note="One-line strip with a solid intent tag (icon + label) and a tinted CTA chip. Designed for system notices and site-wide announcements." />
       <div className="flex flex-col px-md lg:px-lg pb-lg gap-xs">
         {CALLOUT_INTENTS.map(intent => (
           <CalloutBlock

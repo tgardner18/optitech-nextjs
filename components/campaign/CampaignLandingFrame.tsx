@@ -8,6 +8,7 @@ import { getEnabledLanguages } from '@/lib/i18n/getEnabledLanguages'
 import OptiFormsContainerDataAdapter from '@/cms/components/OptiFormsContainerData'
 import CampaignAtmosphere from '@/components/campaign/CampaignAtmosphere'
 import CampaignMobileBar from '@/components/campaign/CampaignMobileBar'
+import CampaignMotionToggle from '@/components/campaign/CampaignMotionToggle'
 import { getCampaignFooter } from '@/lib/campaignLanding'
 import { resolveCampaignAppearance } from '@/lib/campaign-looks'
 import { getRequestDomain, getSiteSettings } from '@/lib/optimizely'
@@ -131,6 +132,10 @@ export default async function CampaignLandingFrame({
             )}
           </div>
           <div className="flex shrink-0 items-center gap-md">
+            {/* Only the looks that move without end get the control (WCAG 2.2.2). */}
+            {(appearance.look === 'neon' || appearance.look === 'stage') && appearance.motion !== 'still' && (
+              <CampaignMotionToggle pauseLabel={t(locale, 'campaignLanding.pauseMotion')} playLabel={t(locale, 'campaignLanding.playMotion')} />
+            )}
             {/* Same picker as the site header; renders nothing when only one language is enabled. */}
             <LocaleSelector enabledLocales={enabledLocales} />
             {showCta && (

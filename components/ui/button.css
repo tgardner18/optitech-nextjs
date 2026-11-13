@@ -1,0 +1,28 @@
+/* Button: contrast-safe inks for the brand-coloured variants (Brand, Signal, Hover Fill).
+   The component sets data-variant; Tailwind keeps layout, size and the sweep effects.
+   Fill holds light text at 4.5:1; border and label ink lift in dark mode so they stay visible. */
+[data-btn] {
+  --btn-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --btn-fill-hover: oklch(from var(--btn-fill) calc(l - .06) c h);
+  --btn-ink: var(--btn-fill);
+}
+:where([data-theme="dark"]) [data-btn] {
+  --btn-fill: oklch(from var(--ot-brand) clamp(.42, l, .48) c h);
+  --btn-fill-hover: oklch(from var(--btn-fill) calc(l + .06) c h);
+  --btn-ink: oklch(from var(--ot-brand) max(l, .78) min(c, .12) h);
+}
+
+[data-btn][data-variant="brand"] { background-color: var(--btn-fill); }
+[data-btn][data-variant="brand"]:hover { background-color: var(--btn-fill-hover); }
+
+[data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]) { border-color: var(--btn-ink); }
+[data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]) > span { color: var(--btn-ink); }
+[data-btn][data-variant="signal"]::before,
+[data-btn][data-variant="hover-fill"]::before { background: var(--btn-fill); }
+[data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]):is(:hover, :focus-visible) > span { color: var(--ot-fg-on-brand); }
+[data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]) { --btn-focus: var(--btn-ink); }
+[data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]):focus-visible { outline-color: var(--btn-ink); }
+[data-btn][data-variant="brand"]:focus-visible { outline-color: var(--btn-ink); }
+@media (prefers-reduced-motion: reduce) {
+  [data-btn]:is([data-variant="signal"], [data-variant="hover-fill"]):is(:hover, :focus-visible) { background-color: var(--btn-fill); }
+}

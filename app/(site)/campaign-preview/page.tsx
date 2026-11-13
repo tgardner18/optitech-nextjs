@@ -8,7 +8,7 @@ import StatBlock from '@/components/blocks/StatBlock'
 import QuoteBlock from '@/components/blocks/QuoteBlock'
 import AccordionBlock from '@/components/blocks/AccordionBlock'
 import BannerBlock from '@/components/blocks/BannerBlock'
-import Button from '@/components/ui/Button'
+import CampaignDemoForm from '@/components/campaign/CampaignDemoForm'
 import { getRequestLocale } from '@/lib/optimizely'
 import { CAMPAIGN_LOOKS, resolveLook } from '@/lib/campaign-looks'
 
@@ -53,38 +53,6 @@ function HeroArt() {
   )
 }
 
-const FIELD = 'w-full rounded-ot-control border border-fg/40 bg-canvas px-md py-sm text-body text-fg placeholder:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
-
-function DemoForm() {
-  return (
-    <form className="grid gap-md" aria-label="Request an invitation" action="#request-information">
-      <div className="grid gap-md sm:grid-cols-2">
-        <label className="grid gap-xs text-label font-semibold uppercase tracking-label">
-          First name
-          <input className={FIELD} name="first" autoComplete="given-name" placeholder="Alex" />
-        </label>
-        <label className="grid gap-xs text-label font-semibold uppercase tracking-label">
-          Last name
-          <input className={FIELD} name="last" autoComplete="family-name" placeholder="Morgan" />
-        </label>
-      </div>
-      <label className="grid gap-xs text-label font-semibold uppercase tracking-label">
-        Work email
-        <input className={FIELD} name="email" type="email" autoComplete="email" placeholder="alex@company.com" />
-      </label>
-      <label className="grid gap-xs text-label font-semibold uppercase tracking-label">
-        Which day suits you?
-        <select className={FIELD} name="day" defaultValue="">
-          <option value="" disabled>Choose a day</option>
-          <option>Friday</option>
-          <option>Saturday</option>
-          <option>Sunday</option>
-        </select>
-      </label>
-      <div><Button variant="accent" type="button">Request an invitation</Button></div>
-    </form>
-  )
-}
 
 export default async function CampaignPreviewPage({ searchParams }: Props) {
   const sp     = await searchParams
@@ -119,7 +87,7 @@ export default async function CampaignPreviewPage({ searchParams }: Props) {
         ctaLabel="Request an invitation"
         ctaUrl="#request-information"
         formHeading="Request an invitation"
-        formSlot={<DemoForm />}
+        formSlot={<CampaignDemoForm />}
       >
         <HeroBlock
           eyebrow="Preview weekend · October 24 to 26"

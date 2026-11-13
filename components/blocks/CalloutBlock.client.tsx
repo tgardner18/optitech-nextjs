@@ -2,47 +2,57 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
-import { cn }            from '@/lib/utils'
-import { ICON_REGISTRY } from '@/components/icons/iconRegistry'
-import { X, ArrowRight } from 'lucide-react'
+import { useTokens }         from '@/components/providers/TokenProvider'
+import { cn }                from '@/lib/utils'
+import { ICON_REGISTRY }     from '@/components/icons/iconRegistry'
+import { X, ArrowRight }     from 'lucide-react'
 import type { CalloutStyleOptions, CalloutIntent, CalloutMaxWidth } from '@/cms/styling/OT_CalloutBlock.styling'
 import type { CalloutBlockProps } from './CalloutBlock'
 
-// ─── Intent token helpers ─────────────────────────────────────────────────────
+// All visual styling lives in callout.css (imported from app/globals.css).
+// This component only sets data attributes and markup.
 
-function iVar(intent: CalloutIntent, suffix: string): string {
-  return `var(--ot-intent-${intent}-${suffix})`
+// ─── Intent icons ─────────────────────────────────────────────────────────────
+// Icons come from the project's ICON_REGISTRY. Each intent has a default so the
+// callout always reads at a glance; the editor's Icon setting overrides it.
+
+const DEFAULT_ICON: Record<CalloutIntent, string> = {
+  neutral: 'messageSquare',
+  info:    'lightbulb',
+  success: 'checkCircle',
+  warning: 'timer',
+  danger:  'shield',
+  brand:   'sparkles',
 }
 
-// Derives an alpha variant directly from the base intent color.
-// Used for bar bg/border where we want a different opacity than the
-// -bg/-border tokens (which are set for filled/bordered variants).
-function iAlpha(intent: CalloutIntent, alpha: number): string {
-  return `oklch(from var(--ot-intent-${intent}) l c h / ${alpha})`
+// English defaults; a site can translate them via Token Manager keys
+// `callout-label-<intent>` (e.g. callout-label-warning).
+const DEFAULT_LABELS: Record<CalloutIntent, string> = {
+  neutral: 'Notice', info: 'Update', success: 'Good news', warning: 'Heads up', danger: 'Urgent', brand: 'New',
+}
+
+function Glyph({ intent, custom }: { intent: CalloutIntent; custom: string }) {
+  const key  = custom && custom !== 'none' ? custom : DEFAULT_ICON[intent]
+  const Icon = ICON_REGISTRY[key] ?? ICON_REGISTRY[DEFAULT_ICON.info]
+  return <Icon data-callout-icon aria-hidden />
 }
 
 // ─── ARIA role ────────────────────────────────────────────────────────────────
 
-function ariaRole(intent: CalloutIntent): 'alert' | 'status' | undefined {
+function ariaRole(intent: CalloutIntent): 'alert' | 'status' | 'note' {
   if (intent === 'danger' || intent === 'warning') return 'alert'
   if (intent === 'info'   || intent === 'success') return 'status'
-  return undefined
+  return 'note'
 }
 
-// ─── Max-width wrapper classes ────────────────────────────────────────────────
-// Applied to a separate BLOCK wrapper div (not the flex container) so that
-// mx-auto centering is reliable. Named Tailwind sizes (max-w-sm, max-w-xl) are
-// avoided because this project's @theme inline maps --spacing-sm/xl to 8px/64px,
-// making those utilities collapse to single-digit pixel widths.
-
+// Named Tailwind sizes (max-w-sm, max-w-xl) are avoided because this project's
+// @theme inline maps --spacing-sm/xl to 8px/64px, collapsing those utilities.
 const MAX_WIDTH_WRAPPER: Record<CalloutMaxWidth, string> = {
   full:    '',
   wide:    'max-w-[768px] mx-auto',
   default: 'max-w-[560px] mx-auto',
   narrow:  'max-w-[400px] mx-auto',
 }
-
-// ─── Dismiss phase ────────────────────────────────────────────────────────────
 
 type DismissPhase = 'visible' | 'sweeping' | 'collapsing' | 'gone'
 
@@ -56,21 +66,40 @@ export default function CalloutBlockClient({
   styleOptions = {},
 }: CalloutBlockProps) {
   const {
-    intent      = 'info',
-    variant     = 'filled',
-    size        = 'default',
-    alignment   = 'left',
-    dismissible = false,
-    sticky      = false,
-    icon        = 'none',
-    maxWidth    = 'full',
+    intent       = 'info',
+    variant      = 'filled',
+    size         = 'default',
+    alignment    = 'left',
+    dismissible  = false,
+    sticky       = false,
+    icon         = 'none',
+    maxWidth     = 'full',
+    label        = true,
+    nativeMotion = true,
   } = styleOptions as CalloutStyleOptions
 
-  const [phase,         setPhase]         = useState<DismissPhase>('visible')
-  const reducedMotion = usePrefersReducedMotion()
+  const [phase, setPhase] = useState<DismissPhase>('visible')
+  const rootRef   = useRef<HTMLDivElement>(null)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const reducedMotion = usePrefersReducedMotion()
+  const tokens        = useTokens()
 
   useEffect(() => () => { timersRef.current.forEach(clearTimeout) }, [])
+
+  // Entrance: arm on mount, reveal when 20% visible.
+  useEffect(() => {
+    const el = rootRef.current
+    if (!nativeMotion || !el) return
+    if (typeof IntersectionObserver === 'undefined') return   // never armed → content stays visible
+    // Set on the DOM directly (not React state): data-animate hides the surface until
+    // data-in is added, and only exists on the client so server HTML is never hidden.
+    el.setAttribute('data-animate', '')
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { el.setAttribute('data-in', ''); io.disconnect() }
+    }, { threshold: 0.2 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [nativeMotion, phase])
 
   function handleDismiss() {
     if (reducedMotion) { setPhase('gone'); return }
@@ -83,23 +112,16 @@ export default function CalloutBlockClient({
 
   if (phase === 'gone') return null
 
-  const IconComp     = (icon && icon !== 'none') ? ICON_REGISTRY[icon] : null
-  const isBrand      = intent === 'brand'
-  const isBar        = variant === 'bar'
-  const role         = ariaRole(intent)
-  const maxWidthWrapper = MAX_WIDTH_WRAPPER[maxWidth] ?? ''
+  const isBar     = variant === 'bar'
+  const labelText = tokens[`callout-label-${intent}`]?.trim() || DEFAULT_LABELS[intent] || ''
+  const hasBody   = !!body && !isBar
 
-  const fg        = iVar(intent, 'fg')
-  const bg        = iVar(intent, 'bg')
-  const border    = iVar(intent, 'border')
-  const iconColor = isBrand ? 'var(--ot-fg-on-brand)' : fg
-
-  // ── Dismiss animation wrappers ────────────────────────────────────────────
-  // Two-phase exit: content sweeps right+fades (220ms), then height collapses (280ms).
+  // ── Dismiss animation wrappers (two-phase exit: sweep right + fade, then collapse) ──
   const outerWrapStyle: React.CSSProperties = dismissible ? {
     display:          'grid',
     gridTemplateRows: phase === 'collapsing' ? '0fr' : '1fr',
-    overflow:         'hidden',
+    // Only clip while exiting, so the glow shadow isn't cut off at rest.
+    ...(phase !== 'visible' && { overflow: 'hidden' }),
     ...(phase === 'collapsing' && {
       transition: 'grid-template-rows 280ms cubic-bezier(0.25, 1, 0.5, 1)',
     }),
@@ -111,197 +133,65 @@ export default function CalloutBlockClient({
     transition: 'opacity 220ms cubic-bezier(0.25, 1, 0.5, 1), transform 220ms cubic-bezier(0.25, 1, 0.5, 1)',
   } : {}
 
-  // ── Root visual styles ────────────────────────────────────────────────────
-  let rootStyle: React.CSSProperties = {}
-  let rootClass = ''
+  // ── Parts ─────────────────────────────────────────────────────────────────
+  const glyph = (
+    <span data-part="icon" aria-hidden="true">
+      <span data-part="glyph"><Glyph intent={intent} custom={icon} /></span>
+    </span>
+  )
 
-  if (isBar) {
-    // Bar: faint intent tint + a full 1px perimeter border in the intent color.
-    // No side-stripe accent — DESIGN.md §11 bans a colored border >1px on a single
-    // edge. Intent still reads through the tint, the uniform frame, and the colored
-    // icon. bg/border use iAlpha so bar opacity is independent of the filled tokens.
-    const barBg     = iAlpha(intent, 0.10)
-    const barBorder = iAlpha(intent, 0.30)
-    if (isBrand) {
-      rootClass = 'bg-brand-fill'
-      rootStyle = { border: `1px solid ${barBorder}` }
-    } else {
-      rootStyle = {
-        background: barBg,
-        border:     `1px solid ${barBorder}`,
-      }
-    }
-  } else if (variant === 'filled') {
-    if (isBrand) {
-      rootClass = 'bg-brand-fill'
-    } else {
-      rootStyle = { background: bg, border: `1px solid ${border}` }
-    }
-  } else {
-    // bordered
-    rootStyle = { background: 'var(--ot-surface)', borderTop: `3px solid ${fg}` }
-  }
-
-  // ── Padding ───────────────────────────────────────────────────────────────
-  // Bar uses generous py-md for enough visual mass to register during a page scan.
-  // Filled/Bordered get roomier interior padding than Bar — they're meant to read
-  // as a self-contained card, not a slim inline strip, especially when dropped
-  // directly as a section with nothing else supplying that breathing room.
-  const padClass = isBar
-    ? 'px-md py-md'
-    : (size === 'compact' ? 'px-lg py-md' : 'px-lg py-lg')
-
-  // ── Text colors ───────────────────────────────────────────────────────────
-  const headingClass = isBrand ? 'text-fg-on-brand' : 'text-fg'
-  const bodyClass    = isBrand ? 'text-fg-on-brand/80' : 'text-fg-muted'
-
-  // ── Dismiss button ────────────────────────────────────────────────────────
-  const dismissBtn = dismissible ? (
-    <button
-      onClick={handleDismiss}
-      aria-label="Dismiss"
-      style={{ color: fg, borderColor: border } as React.CSSProperties}
-      className={cn(
-        'shrink-0 rounded-ot-control border flex items-center justify-center cursor-pointer',
-        'transition-colors hover:bg-fg/5',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 outline-none',
-        // Brand-intent bar resolves dark tokens; a brand ring would vanish on the
-        // brand fill, so switch the focus ring to fg-on-brand there.
-        isBrand ? 'focus-visible:ring-fg-on-brand' : 'focus-visible:ring-brand',
-        isBar ? 'size-6' : 'size-7',
-      )}
-    >
-      <X size={isBar ? 12 : 14} strokeWidth={2} aria-hidden />
-    </button>
-  ) : null
-
-  // ── CTA ───────────────────────────────────────────────────────────────────
   const ctaEl = ctaLabel && ctaUrl ? (
-    <a
-      href={ctaUrl}
-      style={{ color: fg }}
-      className={cn(
-        'flex items-center gap-xs text-label font-semibold hover:underline underline-offset-2 shrink-0',
-        alignment === 'center' && !isBar ? 'self-center' : 'self-start',
-      )}
-    >
+    <a data-part="cta" href={ctaUrl}>
       {ctaLabel}
-      <ArrowRight size={isBar ? 12 : 13} strokeWidth={2} aria-hidden />
+      <ArrowRight aria-hidden />
     </a>
   ) : null
 
-  // ── Bar variant ───────────────────────────────────────────────────────────
-  if (isBar) {
-    const barInner = (
-      <div
-        className={cn(
-          'w-full flex items-center gap-sm',
-          padClass,
-          rootClass,
-          sticky && 'fixed top-0 left-0 right-0 z-50',
+  const dismissBtn = dismissible ? (
+    <button type="button" data-part="dismiss" aria-label="Dismiss" onClick={handleDismiss}>
+      <X aria-hidden />
+    </button>
+  ) : null
+
+  const labelEl = label && !isBar && labelText ? (
+    <p data-part="label"><span data-part="dot" />{labelText}</p>
+  ) : null
+
+  const root = (
+    <div
+      ref={rootRef}
+      className={cn('ot-callout w-full', !isBar && 'my-xl', MAX_WIDTH_WRAPPER[maxWidth] ?? '')}
+      data-block={isBar ? 'callout-bar' : 'callout'}
+      data-intent={intent}
+      data-variant={variant}
+      data-size={size}
+      data-align={alignment}
+      data-body={hasBody ? 'yes' : 'no'}
+      data-label={label ? 'yes' : 'no'}
+      data-dismissible={dismissible ? 'yes' : 'no'}
+      data-sticky={isBar && sticky ? 'yes' : undefined}
+    >
+      <div data-part="surface" role={ariaRole(intent)}>
+        {isBar ? <span data-part="tag">{glyph}{label && labelText}</span> : glyph}
+        {variant === 'filled' && (
+          <span data-part="watermark" aria-hidden="true"><Glyph intent={intent} custom={icon} /></span>
         )}
-        style={rootStyle}
-        role={role}
-        data-theme={isBrand ? 'dark' : undefined}
-      >
-        {/* Left: icon (18px inline) + heading */}
-        <div className={cn('flex items-center gap-sm flex-1 min-w-0', alignment === 'center' && 'justify-center')}>
-          {IconComp && (
-            <IconComp size={18} strokeWidth={1.75} aria-hidden style={{ color: iconColor, flexShrink: 0 }} />
-          )}
-          <p className={cn('text-[15px] font-semibold leading-snug', headingClass)}>{heading}</p>
-        </div>
-        {/* Right: cta + dismiss */}
-        {(ctaEl || dismissBtn) && (
-          <div className="flex items-center gap-sm shrink-0">
-            {ctaEl}
-            {dismissBtn}
-          </div>
-        )}
-      </div>
-    )
-
-    // Outer block wrapper handles max-width centering (separate from sticky flex container)
-    const barContent = (
-      <div className={cn('w-full', maxWidthWrapper)} data-block="callout-bar">{barInner}</div>
-    )
-
-    if (!dismissible) return barContent
-    return (
-      <div style={outerWrapStyle}>
-        <div style={{ minHeight: 0 }}>
-          <div style={sweepStyle}>{barContent}</div>
-        </div>
-      </div>
-    )
-  }
-
-  // ── Filled / Bordered variants ────────────────────────────────────────────
-  // When an icon is set, it renders as a 28px left column vertically centered
-  // with the text column — a category signal, not inline text decoration.
-  const isCompactRow = size === 'compact' && !body
-
-  const innerContent = isCompactRow ? (
-    // Compact single row: [heading] ·· [cta]
-    <div className={cn('flex items-center gap-sm', alignment === 'center' && 'justify-center')}>
-      <p className={cn('text-body font-semibold leading-snug flex-1', headingClass)}>{heading}</p>
-      {ctaEl && <div className="ml-auto pl-sm shrink-0">{ctaEl}</div>}
-    </div>
-  ) : (
-    // Stacked: heading, body, cta
-    <div className="flex flex-col gap-xs">
-      <p className={cn('text-body font-semibold leading-snug', headingClass, alignment === 'center' && 'text-center')}>{heading}</p>
-      {body && (
-        <p className={cn('text-body leading-body text-pretty', bodyClass, alignment === 'center' && 'text-center')}>
-          {body}
-        </p>
-      )}
-      {ctaEl && (
-        <div className={cn('mt-xs', alignment === 'center' && 'flex justify-center')}>
+        <div data-part="content">
+          {labelEl}
+          <p data-part="heading">{heading}</p>
+          {hasBody && <p data-part="body">{body}</p>}
           {ctaEl}
         </div>
-      )}
+        {dismissBtn}
+      </div>
     </div>
   )
 
-  // Outer block wrapper handles max-width centering separately from the flex container
-  // so that mx-auto is reliable regardless of the parent's layout context.
-  const calloutInner = (
-    <div
-      className={cn(
-        'w-full flex gap-md rounded-ot-surface',
-        padClass,
-        rootClass,
-        isCompactRow ? 'items-center' : 'items-start',
-      )}
-      style={rootStyle}
-      role={role}
-      data-theme={isBrand ? 'dark' : undefined}
-    >
-      {/* Icon column: 32px, left-anchored, vertically centered with text column */}
-      {IconComp && (
-        <div className="shrink-0 self-center" style={{ color: iconColor }}>
-          <IconComp size={32} strokeWidth={1.5} aria-hidden />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">{innerContent}</div>
-      {dismissBtn && <div className={cn('shrink-0', !isCompactRow && 'mt-[2px]')}>{dismissBtn}</div>}
-    </div>
-  )
-
-  // Upper/lower margin — Filled/Bordered are the variants most often dropped
-  // directly as their own section (no Row/Column supplying vertical rhythm),
-  // where they'd otherwise butt straight up against whatever sits above/below.
-  // Bar is exempt: it's meant to sit flush (e.g. a sticky top-of-page notice).
-  const calloutContent = (
-    <div className={cn('w-full my-xl', maxWidthWrapper)} data-block="callout">{calloutInner}</div>
-  )
-
-  if (!dismissible) return calloutContent
+  if (!dismissible) return root
   return (
     <div style={outerWrapStyle}>
       <div style={{ minHeight: 0 }}>
-        <div style={sweepStyle}>{calloutContent}</div>
+        <div style={sweepStyle}>{root}</div>
       </div>
     </div>
   )

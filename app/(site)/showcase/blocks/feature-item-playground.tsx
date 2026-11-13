@@ -15,7 +15,7 @@ const bodyDoc = (text: string) => ({
 const FEATURES = [
   { headline: 'Fast by default',        body: bodyDoc('Every experience loads quickly for your audience, wherever they are. Speed is built in, not bolted on.'), icon: 'gauge'  },
   { headline: 'Always up to date',      body: bodyDoc('Changes go live the moment you publish them, with no waiting and no technical help required.'),           icon: 'clock'  },
-  { headline: 'Reach the right people', body: bodyDoc('Tailor what each audience sees in a few clicks. Target by location, behaviour, or any detail you know.'), icon: 'target' },
+  { headline: 'Reach the right people', body: bodyDoc('Tailor what each audience sees in a few clicks. Target by location, behavior, or any detail you know.'), icon: 'target' },
   { headline: 'Confidence built in',    body: bodyDoc('Clear measurement and sensible defaults tell you when a result is ready to act on.'),                     icon: 'shield' },
 ]
 

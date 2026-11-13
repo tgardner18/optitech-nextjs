@@ -13,16 +13,8 @@ export default function OT_DividerBlockAdapter({ content, displaySettings = {} }
   const { pa }       = getPreviewUtils(content)
   const styleOptions = getDividerStyles(content.style ? { ...displaySettings, style: content.style } : displaySettings)
 
-  // The "draw" reveal rides the shared MotionObserver: data-stagger marks the
-  // element for the IntersectionObserver, and the scoped CSS in globals.css
-  // animates .ot-divider-line / .ot-divider-bleed once data-in lands.
-  const reveal = String(displaySettings?.reveal ?? 'static')
-
   return (
-    <div
-      {...pa(content.__composition)}
-      data-stagger={reveal === 'draw' ? 'draw' : undefined}
-    >
+    <div {...pa(content.__composition)}>
       <DividerBlock
         label={content.label ?? undefined}
         styleOptions={styleOptions}

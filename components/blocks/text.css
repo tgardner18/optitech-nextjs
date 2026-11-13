@@ -1,0 +1,254 @@
+/* text.css: OT_PrimaryTextBlock refresh
+   CSS and markup hooks only. No content type or display template changes.
+   Size, color, alignment and all nine effects keep their meaning. */
+[data-block="text"] {
+  position: relative; isolation: isolate; font-family: var(--ot-font-sans); color: var(--ot-fg);
+  padding: var(--t-py) clamp(1.25rem, 4cqi, 3rem);
+  --t-fg: var(--ot-fg); --t-muted: var(--ot-fg-muted);
+  --t-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --t-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+  /* effect inks: brand and accent, adjusted so every stop clears 4.5:1 on its ground */
+  --e-a: oklch(from var(--ot-brand) min(l, .45) c h);
+  --e-b: oklch(from var(--ot-accent) min(l, .5) c h);
+  --e-glow-a: oklch(from var(--ot-brand) max(l, .55) calc(c * 1.1) h);
+  --t-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --t-fill-hi: oklch(from var(--ot-brand) min(calc(min(l, .46) + .06), .5) c h);
+  --t-fill-lo: oklch(from var(--ot-brand) calc(min(l, .46) - .1) c h);
+}
+[data-theme="dark"] [data-block="text"]:not([data-color="brand"]) {
+  --t-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --t-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+  --e-a: oklch(from var(--ot-brand) max(l, .78) calc(c * .9) h);
+  --e-b: oklch(from var(--ot-accent) max(l, .8) c h);
+  --e-glow-a: oklch(from var(--ot-brand) max(l, .7) c h);
+}
+[data-block="text"][data-color="canvas"] { background: var(--ot-canvas); }
+[data-block="text"][data-color="surface"] { background: var(--ot-surface); }
+[data-block="text"][data-color="brand"] {
+  background: radial-gradient(70% 90% at 100% 0%, var(--t-fill-hi), transparent 70%), linear-gradient(160deg, var(--t-fill) 0%, var(--t-fill-lo) 100%);
+  --t-fg: var(--ot-fg-on-brand); --t-ink: var(--ot-fg-on-brand);
+  --t-muted: color-mix(in srgb, var(--ot-fg-on-brand) 88%, transparent);
+  --t-rule: color-mix(in oklch, var(--ot-accent) 60%, var(--ot-fg-on-brand));
+  --e-a: var(--ot-fg-on-brand); --e-b: color-mix(in oklch, var(--ot-accent) 50%, var(--ot-fg-on-brand));
+  --e-glow-a: oklch(from var(--ot-accent) max(l, .7) c h);
+}
+
+/* Rhythm: a section opener needs air. Padding follows the size. */
+[data-block="text"][data-size="display"]  { --t-py: clamp(3rem, 8cqi, 7rem); }
+[data-block="text"][data-size="headline"] { --t-py: clamp(2.5rem, 6cqi, 5rem); }
+[data-block="text"][data-size="title"]    { --t-py: clamp(2rem, 4cqi, 3.5rem); }
+[data-block="text"][data-size="label"]    { --t-py: clamp(1.5rem, 3cqi, 2.5rem); }
+
+/* Same content width as Stat and Feature Grid, so left edges line up down the page */
+[data-block="text"] [data-part="inner"] { max-width: 80rem; margin-inline: auto; }
+[data-block="text"][data-align="center"] [data-part="inner"] { max-width: 68rem; text-align: center; }
+[data-block="text"] [data-part="stack"] { display: flex; flex-direction: column; gap: .875rem; }
+[data-block="text"][data-align="center"] [data-part="stack"] { align-items: center; }
+
+/* Eyebrow: accent rule, readable brand ink in both modes */
+[data-block="text"] [data-part="eyebrow"] { display: inline-flex; align-items: center; gap: .75rem; margin: 0; font-size: .75rem; line-height: 1; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--t-ink); }
+[data-block="text"] [data-part="eyebrow"]::before { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--t-rule); flex: none; }
+[data-block="text"][data-align="center"] [data-part="eyebrow"]::after { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--t-rule); flex: none; }
+
+/* Headline sizes, scaled to the container */
+[data-block="text"] [data-part="headline"] { margin: 0; color: var(--t-fg); text-wrap: balance; }
+[data-block="text"][data-align="center"] [data-part="headline"] { margin-inline: auto; }
+[data-block="text"][data-size="display"] [data-part="headline"]  { font-size: clamp(2.75rem, 1.2rem + 6.5cqi, 6rem); line-height: 1.02; letter-spacing: -.035em; font-weight: 800; max-inline-size: 22ch; }
+[data-block="text"][data-size="headline"] [data-part="headline"] { font-size: clamp(1.875rem, 1.1rem + 3.2cqi, 3.25rem); line-height: 1.08; letter-spacing: -.025em; font-weight: 700; max-inline-size: 34ch; }
+[data-block="text"][data-size="title"] [data-part="headline"]    { font-size: clamp(1.25rem, 1rem + 1.2cqi, 1.625rem); line-height: 1.25; letter-spacing: -.012em; font-weight: 600; max-inline-size: 60ch; }
+/* Label size: the headline stays the strongest line; the eyebrow steps back */
+[data-block="text"][data-size="label"] [data-part="headline"]    { font-size: .875rem; line-height: 1.35; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
+[data-block="text"][data-size="label"] [data-part="eyebrow"] { font-size: .8125rem; letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--t-muted); }
+[data-block="text"][data-size="label"] [data-part="eyebrow"]::before, [data-block="text"][data-size="label"] [data-part="eyebrow"]::after { display: none; }
+[data-block="text"][data-size="label"] [data-part="stack"] { gap: .375rem; }
+
+[data-block="text"] [data-part="body"] { margin-top: .25rem; max-width: 68ch; }
+[data-block="text"][data-align="center"] [data-part="body"] { margin-inline: auto; }
+[data-block="text"] [data-part="body"][data-rich-text] p { margin: 0; color: var(--t-muted); font-size: var(--ot-text-body); line-height: 1.6; text-wrap: pretty; }
+[data-block="text"] [data-part="body"][data-rich-text] p + p { margin-top: .75rem; }
+
+/* ===================== Effects =====================
+   Every effect works on top of a crisp, readable headline. Colors come from the effect inks above,
+   so nothing drops below 4.5:1 in light, dark, or brand. Motion pauses off screen and stops for reduced motion. */
+
+/* Gradient: brand ink to accent ink across the whole headline */
+[data-block="text"][data-effect="gradient"] [data-part="headline"] { background: linear-gradient(100deg, var(--e-a) 8%, var(--e-b) 92%); color: transparent; -webkit-background-clip: text; background-clip: text; padding-bottom: .06em; }
+
+/* Animated Gradient: the same safe inks drifting slowly; no stop ever leaves the safe range */
+@keyframes t-drift { to { background-position: 100% 50%; } }
+[data-block="text"][data-effect="animatedGradient"] [data-part="headline"] { background: linear-gradient(100deg, var(--e-a), var(--e-b), color-mix(in oklch, var(--e-a) 50%, var(--e-b)), var(--e-a), var(--e-b)); background-size: 300% 100%; background-position: 0% 50%; color: transparent; -webkit-background-clip: text; background-clip: text; padding-bottom: .06em; }
+@media (prefers-reduced-motion: no-preference) { [data-block="text"][data-effect="animatedGradient"] [data-part="headline"] { animation: t-drift 14s ease-in-out infinite alternate; } }
+[data-block="text"][data-effect="animatedGradient"] [data-part="headline"][data-offscreen] { animation-play-state: paused; }
+
+/* 3D Depth: a short, tight extrusion down and to the right. It stays inside the column and the face stays crisp. */
+[data-block="text"][data-size] .ot-extrude3d { display: inline-block; }
+[data-block="text"][data-size] .ot-extrude3d__rot { display: inline-block; position: relative; }
+[data-block="text"][data-size] .ot-extrude3d__layer { position: absolute; inset: 0; margin: 0; user-select: none; -webkit-text-stroke: 0; transform: translate(calc(var(--d) * var(--depth, 1)), calc(var(--d) * var(--depth, 1))); }
+[data-block="text"][data-size] .ot-extrude3d__layer:last-child { position: relative; }
+[data-block="text"][data-size] .ot-extrude3d__layer:nth-child(1) { --d: .1em;   color: var(--x1); }
+[data-block="text"][data-size] .ot-extrude3d__layer:nth-child(2) { --d: .075em; color: var(--x2); }
+[data-block="text"][data-size] .ot-extrude3d__layer:nth-child(3) { --d: .05em;  color: var(--x3); }
+[data-block="text"][data-size] .ot-extrude3d__layer:nth-child(4) { --d: .025em; color: var(--x4); }
+[data-block="text"][data-size] .ot-extrude3d__layer:nth-child(5) { --d: 0em;    color: var(--x5); }
+[data-block="text"][data-effect="depth3d"][data-size] { --x5: var(--e-a); --x4: oklch(from var(--ot-brand) .7 calc(c * .55) h); --x3: oklch(from var(--ot-brand) .76 calc(c * .45) h); --x2: oklch(from var(--ot-brand) .82 calc(c * .35) h); --x1: oklch(from var(--ot-brand) .87 calc(c * .25) h); }
+[data-theme="dark"] [data-block="text"][data-effect="depth3d"]:not([data-color="brand"]) { --x5: var(--ot-fg); --x4: oklch(from var(--ot-brand) max(l, .5) c h); --x3: oklch(from var(--ot-brand) max(calc(l * .85), .42) c h); --x2: oklch(from var(--ot-brand) max(calc(l * .7), .34) c h); --x1: oklch(from var(--ot-brand) max(calc(l * .55), .26) calc(c * .8) h); }
+[data-block="text"][data-effect="depth3d"][data-color="brand"][data-size] { --x5: var(--ot-fg-on-brand); --x4: oklch(from var(--ot-accent) max(l, .62) c h); --x3: oklch(from var(--ot-accent) max(calc(l * .8), .5) c h); --x2: oklch(from var(--ot-accent) max(calc(l * .62), .4) c h); --x1: oklch(from var(--ot-accent) max(calc(l * .45), .3) calc(c * .8) h); }
+@property --depth { syntax: "<number>"; inherits: true; initial-value: 1; }
+@keyframes t-extrude { from { --depth: 0; } }
+@media (prefers-reduced-motion: no-preference) { [data-block="text"][data-effect="depth3d"][data-in] .ot-extrude3d { animation: t-extrude .8s cubic-bezier(.16, 1, .3, 1) .1s both; } }
+[data-block="text"][data-effect="depth3d"] [data-part="headline"] { padding: 0 .1em .1em 0; }
+
+/* Glitch: a crisp face with a static RGB split behind it. A short slice-glitch runs on entrance and on hover, not on a loop. */
+[data-block="text"][data-effect="glitch"] [data-part="headline"] { position: relative; isolation: isolate; }
+[data-block="text"][data-effect="glitch"] [data-part="headline"]::before,
+[data-block="text"][data-effect="glitch"] [data-part="headline"]::after { content: attr(data-text); position: absolute; inset: 0; z-index: -1; pointer-events: none; user-select: none; }
+[data-block="text"][data-effect="glitch"] [data-part="headline"]::before { color: var(--e-b); transform: translate(.045em, .012em); opacity: .85; }
+[data-block="text"][data-effect="glitch"] [data-part="headline"]::after  { color: oklch(from var(--ot-brand) max(l, .55) max(c, .14) calc(h + 30)); transform: translate(-.045em, -.012em); opacity: .7; }
+[data-theme="dark"] [data-block="text"][data-effect="glitch"]:not([data-color="brand"]) [data-part="headline"]::after { color: oklch(from var(--ot-brand) max(l, .62) max(c, .16) calc(h + 30)); opacity: .85; }
+[data-block="text"][data-effect="glitch"][data-color="brand"] [data-part="headline"]::after { color: oklch(from var(--ot-accent) max(l, .6) c calc(h + 40)); }
+@keyframes t-slice {
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(.045em, .012em); }
+  12% { clip-path: inset(18% 0 58% 0); transform: translate(.12em, 0); }
+  24% { clip-path: inset(62% 0 12% 0); transform: translate(-.1em, 0); }
+  36% { clip-path: inset(38% 0 40% 0); transform: translate(.08em, 0); }
+  48% { clip-path: inset(0 0 0 0); transform: translate(.045em, .012em); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="text"][data-effect="glitch"][data-in] [data-part="headline"]::before { animation: t-slice .55s steps(1, end) .2s 2; }
+  [data-block="text"][data-effect="glitch"] [data-part="headline"]:hover::before { animation: t-slice .55s steps(1, end) 1; }
+}
+
+/* Outline: a solid face with outlined echoes.
+   The headline stays a solid, readable face in the foreground color at every size and in every mode. Behind it, two hollow
+   copies of the same letters step away along a diagonal: the first in accent ink, the second in brand ink, fainter.
+   They draw out from behind the letters on entrance and lean a little further on hover. (Hollow letters on their own turn
+   thin below Display size and disappear on dark grounds.) */
+[data-block="text"][data-effect="outline"] [data-part="headline"] { position: relative; isolation: isolate; padding: 0 .14em .14em 0; }
+[data-block="text"][data-effect="outline"] [data-part="headline"]::before,
+[data-block="text"][data-effect="outline"] [data-part="headline"]::after {
+  content: attr(data-text); position: absolute; inset: 0; z-index: -1; box-sizing: border-box; padding: inherit; pointer-events: none; user-select: none;
+  color: transparent; -webkit-text-stroke: clamp(1px, .02em, 2px) var(--o-c);
+  transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+}
+[data-block="text"][data-effect="outline"] [data-part="headline"]::before { --o-c: var(--e-b); transform: translate(.05em, .05em); }
+[data-block="text"][data-effect="outline"] [data-part="headline"]::after  { --o-c: var(--e-a); transform: translate(.1em, .1em); opacity: .65; }
+[data-block="text"][data-effect="outline"]:is([data-size="title"], [data-size="label"]) [data-part="headline"]::after { display: none; }
+@media (hover: hover) {
+  [data-block="text"][data-effect="outline"] [data-part="headline"]:hover::before { transform: translate(.075em, .075em); }
+  [data-block="text"][data-effect="outline"] [data-part="headline"]:hover::after  { transform: translate(.15em, .15em); }
+}
+@keyframes o-out { from { transform: translate(0, 0); opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="text"][data-effect="outline"][data-in] [data-part="headline"]::before { animation: o-out .9s cubic-bezier(.16, 1, .3, 1) .25s backwards; }
+  [data-block="text"][data-effect="outline"][data-in] [data-part="headline"]::after  { animation: o-out 1s cubic-bezier(.16, 1, .3, 1) .42s backwards; }
+}
+
+/* Neon: a lit glass tube. A white-hot core, a saturated tube edge, and layered light that spills onto the wall behind.
+   On dark grounds it's a sign at night; on light grounds it's the same sign in daylight (colored tube, bright core, softer spill).
+   Brand font, no swap. It flickers on, then hums, with an occasional stutter like a real sign. */
+[data-block="text"][data-effect="neon"] {
+  --n-tube: oklch(from var(--ot-accent) max(l, .74) max(c, .17) h);
+  --n-core: oklch(from var(--ot-accent) .985 .025 h);
+  --n-edge: oklch(from var(--ot-accent) .5 max(c, .15) h);
+}
+[data-block="text"][data-effect="neon"] [data-part="headline"] { position: relative; isolation: isolate; width: fit-content; letter-spacing: .01em; }
+/* night: dark mode and brand fills */
+[data-theme="dark"] [data-block="text"][data-effect="neon"] [data-part="headline"],
+[data-block="text"][data-effect="neon"][data-color="brand"] [data-part="headline"] {
+  color: var(--n-core);
+  -webkit-text-stroke: .012em oklch(from var(--n-tube) l c h / .9); paint-order: stroke fill;
+  text-shadow:
+    0 0 .02em #fff,
+    0 0 .05em var(--n-tube), 0 0 .1em var(--n-tube), 0 0 .2em var(--n-tube),
+    0 0 .4em oklch(from var(--n-tube) l c h / .85), 0 0 .8em oklch(from var(--n-tube) l c h / .55), 0 0 1.4em oklch(from var(--n-tube) l c h / .35);
+}
+/* the wall wash behind the sign */
+[data-theme="dark"] [data-block="text"][data-effect="neon"] [data-part="headline"]::before,
+[data-block="text"][data-effect="neon"][data-color="brand"] [data-part="headline"]::before {
+  content: ""; position: absolute; z-index: -1; inset: -40% -14%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, oklch(from var(--n-tube) l c h / .2), oklch(from var(--n-tube) l c h / .07) 60%, transparent 100%);
+}
+/* daylight: light canvas and surface */
+[data-theme="light"] [data-block="text"][data-effect="neon"]:not([data-color="brand"]) [data-part="headline"] {
+  color: oklch(from var(--ot-accent) .97 .04 h);
+  -webkit-text-stroke: clamp(2px, .06em, 5px) var(--n-edge); paint-order: stroke fill;
+  text-shadow: 0 0 .06em var(--n-tube), 0 0 .16em oklch(from var(--n-tube) l c h / .95), 0 0 .4em oklch(from var(--n-tube) l c h / .6), 0 0 .9em oklch(from var(--n-tube) l c h / .35);
+}
+/* Title and Label sizes: too small for a hollow tube, so the tube color fills the letters */
+[data-theme="light"] [data-block="text"][data-effect="neon"]:not([data-color="brand"]):is([data-size="title"], [data-size="label"]) [data-part="headline"] { color: var(--n-edge); -webkit-text-stroke: 0; }
+@keyframes n-on { 0% { opacity: .08; } 6% { opacity: 1; } 9% { opacity: .2; } 14% { opacity: .95; } 17% { opacity: .35; } 26%, 100% { opacity: 1; } }
+@keyframes n-hum { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.12); } }
+@keyframes n-stutter { 0%, 94%, 100% { opacity: 1; } 95% { opacity: .55; } 96% { opacity: 1; } 97.5% { opacity: .7; } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="text"][data-effect="neon"][data-in] [data-part="headline"] { animation: n-on 1.2s linear .15s both, n-hum 3.2s ease-in-out 1.4s infinite, n-stutter 11s linear 3s infinite; }
+}
+[data-block="text"][data-effect="neon"] [data-part="headline"][data-offscreen] { animation-play-state: paused; }
+
+/* Highlight: a highlighter on paper, in your accent color.
+   The marker is the theme's accent itself. Its hue and saturation are never changed; only its lightness is nudged,
+   and only when white type would otherwise fall short (Wings' teal is a touch deeper than the swatch).
+   Each line gets its own stroke, drawn left to right at pen speed. The type under the pen turns to whichever ink,
+   dark or white, reads best on that accent, in step with the stroke, so it's readable before, during, and after. */
+[data-block="text"][data-effect="highlight"] [data-part="stack"] { gap: 1.25rem; }
+[data-block="text"][data-effect="highlight"] [data-part="headline"] { line-height: 1.44; position: relative; isolation: isolate; }
+[data-block="text"][data-effect="highlight"] {
+  --h-m: oklch(from var(--ot-accent) calc(l - clamp(0, (.6 - l) * 1000, 1) * max(l - .5, 0)) c h);
+  --h-lo: oklch(from var(--h-m) calc(l + .015) c h);
+  --h-hi: oklch(from var(--h-m) calc(l - .04) c h);
+  --h-ink: oklch(from var(--ot-accent) calc(.19 + .8 * (1 - clamp(0, (l - .6) * 1000, 1))) .012 h);
+}
+@property --h-p { syntax: "<percentage>"; inherits: false; initial-value: 100%; }
+/* one stroke per line (lines are measured by a small client hook); without it, one band per line fragment */
+[data-block="text"][data-effect="highlight"] [data-part="mark"]:not(:has([data-part="mark-line"])) {
+  color: var(--h-ink);
+  background: linear-gradient(90deg, var(--h-lo), var(--h-m) 6%, var(--h-m) 94%, var(--h-hi)) 0 100% / 100% 88% no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: .02em .22em;
+}
+/* Band geometry. Every edge keeps a clear margin around the type, measured from the rendered glyphs:
+   about .3em at the left and .34em at the right (the -6deg skew pulls the top-left and bottom-right corners inward by about .06em,
+   and the rounded corners take a little more), and a band that runs from just above an accented capital to just below a descender.
+   Lines pitch at 1.44em, so the strokes stay separate with a small gap. Variants only ever grow the margins.
+   The bands share one stacking layer behind the type, so a band can never paint over a neighbouring line. */
+[data-block="text"][data-effect="highlight"] [data-part="mark-line"] { position: relative; display: block; width: fit-content; white-space: nowrap; }
+[data-block="text"][data-effect="highlight"][data-align="center"] [data-part="mark-line"] { margin-inline: auto; }
+[data-block="text"][data-effect="highlight"] [data-part="mark-line"]::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  top: .07em; bottom: .04em; left: -.3em; right: -.34em;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .04), transparent 30%, transparent 72%, rgb(0 0 0 / .06)),
+    linear-gradient(90deg, var(--h-lo) 0%, var(--h-m) 5%, var(--h-m) 93%, var(--h-hi) 98%, var(--h-hi) 100%);
+  border-radius: .24em .12em .22em .1em / .2em .34em .18em .3em;
+  transform: rotate(var(--tilt, -.35deg)) skewX(-6deg);
+}
+[data-block="text"][data-effect="highlight"] [data-part="mark-line"]:nth-child(2n)::before { --tilt: .3deg; top: .06em; bottom: .04em; right: -.36em; border-radius: .16em .3em .14em .24em / .3em .18em .34em .2em; }
+[data-block="text"][data-effect="highlight"] [data-part="mark-line"]:nth-child(3n)::before { --tilt: -.2deg; top: .065em; bottom: .035em; left: -.32em; right: -.4em; }
+/* the letters: headline color where the pen hasn't been, ink where it has */
+[data-block="text"][data-effect="highlight"] [data-part="mark-text"] {
+  padding-inline: .1em; margin-inline: -.1em; /* paint box grows, layout doesn't: glyph overhang is never trimmed */
+  color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-image: linear-gradient(90deg, var(--h-ink) var(--h-p), var(--t-fg) var(--h-p));
+}
+@keyframes h-draw { from { clip-path: inset(-10% 100% -10% 0); } to { clip-path: inset(-10% 0 -10% 0); } }
+@keyframes h-ink { from { --h-p: 0%; } to { --h-p: 100%; } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-block="text"][data-effect="highlight"][data-animate]:not([data-in]) [data-part="mark-line"]::before { clip-path: inset(-10% 100% -10% 0); }
+  [data-block="text"][data-effect="highlight"][data-animate]:not([data-in]) [data-part="mark-text"] { --h-p: 0%; }
+  [data-block="text"][data-effect="highlight"][data-in] [data-part="mark-line"]::before {
+    animation: h-draw var(--dur, .6s) cubic-bezier(.45, .05, .35, 1) var(--delay, .2s) both;
+  }
+  [data-block="text"][data-effect="highlight"][data-in] [data-part="mark-text"] {
+    animation: h-ink var(--dur, .6s) cubic-bezier(.45, .05, .35, 1) var(--delay, .2s) both;
+  }
+}
+
+/* Glow: backlit, like the Stat glow. A soft brand and accent halo sits behind the headline; the letters stay sharp. */
+[data-block="text"][data-effect="glow"] [data-part="headline"] { position: relative; isolation: isolate; width: fit-content; }
+[data-block="text"][data-effect="glow"] [data-part="headline"]::before {
+  content: ""; position: absolute; z-index: -1; inset: -35% -12%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, oklch(from var(--e-glow-a) l c h / var(--t-glow-a, .28)), oklch(from var(--ot-accent) l c h / var(--t-glow-b, .16)) 55%, transparent 100%);
+  filter: blur(6px);
+}
+[data-theme="dark"] [data-block="text"][data-effect="glow"]:not([data-color="brand"]) [data-part="headline"] { --t-glow-a: .34; --t-glow-b: .18; text-shadow: 0 0 .05em oklch(from var(--e-glow-a) l c h / .45); }
+[data-block="text"][data-effect="glow"][data-color="brand"] [data-part="headline"] { --t-glow-a: .4; --t-glow-b: .2; text-shadow: 0 0 .05em oklch(from var(--ot-fg-on-brand) l c h / .4); }
+@keyframes t-warm { from { opacity: 0; transform: scale(.8); } }
+@media (prefers-reduced-motion: no-preference) { [data-block="text"][data-effect="glow"][data-in] [data-part="headline"]::before { animation: t-warm 1.2s cubic-bezier(.16, 1, .3, 1) .2s both; } }

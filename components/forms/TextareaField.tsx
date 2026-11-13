@@ -1,5 +1,4 @@
-import FieldWrapper from './FieldWrapper'
-import { inputBase } from './fieldStyles'
+import FieldWrapper, { describedBy } from './FieldWrapper'
 
 type Props = {
   id: string
@@ -18,12 +17,12 @@ export default function TextareaField({ id, name, label, placeholder, tooltip, d
       <textarea
         id={id}
         name={name}
-        className={`${inputBase} resize-y min-h-32`}
+        data-part="input"
         placeholder={placeholder}
         defaultValue={defaultValue}
         autoComplete={autoComplete || undefined}
         required={required}
-        aria-describedby={tooltip ? `${id}-hint` : undefined}
+        aria-describedby={describedBy(id, tooltip)}
       />
     </FieldWrapper>
   )

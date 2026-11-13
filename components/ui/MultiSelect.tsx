@@ -34,6 +34,11 @@ type Props = {
   searchThreshold?: number
   /** Placeholder for the in-popover filter. */
   searchPlaceholder?: string
+  /** True when the host block styles the control through data-part hooks (see practitioner-listing.css);
+   *  false keeps the original utility-class styling for blocks not yet refreshed. */
+  scoped?: boolean
+  /** Optional per-option result counts, shown beside each option. */
+  counts?: Record<string, number>
 }
 
 export default function MultiSelect({
@@ -44,6 +49,8 @@ export default function MultiSelect({
   onSurface = false,
   searchThreshold = 12,
   searchPlaceholder,
+  scoped = false,
+  counts,
 }: Props) {
   const [open, setOpen]       = useState(false)
   const [active, setActive]   = useState(-1)   // keyboard-focused option index
@@ -167,9 +174,11 @@ export default function MultiSelect({
 
   const idle =
     onSurface ? 'bg-canvas' : 'bg-surface'
+  // Utility classes apply only in the legacy (unscoped) rendering.
+  const u = (cls: string) => (scoped ? undefined : cls)
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} data-part="facet" className={u('relative')}>
       <button
         ref={triggerRef}
         type="button"
@@ -178,7 +187,9 @@ export default function MultiSelect({
         aria-controls={open ? listId : undefined}
         onClick={() => (open ? close() : openMenu())}
         onKeyDown={onTriggerKeyDown}
-        className={
+        data-part="trigger"
+        data-has={count > 0 ? '' : undefined}
+        className={scoped ? undefined :
           `${idle} inline-flex h-12 items-center gap-sm rounded-ot-control border px-md ` +
           'text-label uppercase tracking-label font-semibold ' +
           'motion-safe:transition-[color,border-color,box-shadow] duration-150 ' +
@@ -195,7 +206,8 @@ export default function MultiSelect({
         {count > 0 && (
           <span
             aria-hidden
-            className="inline-flex min-w-5 h-5 items-center justify-center bg-brand px-1 text-fg-on-brand text-[0.6875rem] leading-none font-bold tabular-nums"
+            data-part="badge"
+            className={u("inline-flex min-w-5 h-5 items-center justify-center bg-brand px-1 text-fg-on-brand text-[0.6875rem] leading-none font-bold tabular-nums")}
           >
             {count}
           </span>
@@ -204,23 +216,25 @@ export default function MultiSelect({
           size={15}
           strokeWidth={2}
           aria-hidden
-          className={`text-fg-muted motion-safe:transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          data-open={open}
+          className={u(`text-fg-muted motion-safe:transition-transform duration-200 ${open ? 'rotate-180' : ''}`)}
         />
         {count > 0 && <span className="sr-only">, {count} selected</span>}
       </button>
 
       {open && (
         <div
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-40 w-[min(20rem,calc(100vw-2rem))] rounded-ot-surface overflow-hidden border border-fg/15 shadow-[0_12px_40px_var(--ot-bloom-brand-faint),0_2px_8px_var(--ot-bloom-brand-faint)] motion-safe:animate-[multiselect-in_160ms_var(--ot-ease-kinetic)]"
-          style={panelStyle}
+          data-part="pop"
+          className={u("absolute left-0 top-[calc(100%+0.5rem)] z-40 w-[min(20rem,calc(100vw-2rem))] rounded-ot-surface overflow-hidden border border-fg/15 shadow-[0_12px_40px_var(--ot-bloom-brand-faint),0_2px_8px_var(--ot-bloom-brand-faint)] motion-safe:animate-[multiselect-in_160ms_var(--ot-ease-kinetic)]")}
+          style={scoped ? undefined : panelStyle}
         >
           {showFilter && (
-            <div className="relative border-b border-fg/10 p-2">
+            <div data-part="pop-filter" className={u("relative border-b border-fg/10 p-2")}>
               <Search
                 size={15}
                 strokeWidth={1.75}
                 aria-hidden
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted"
+                className={u("pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted")}
               />
               <input
                 ref={filterRef}
@@ -239,7 +253,7 @@ export default function MultiSelect({
                 }}
                 placeholder={searchPlaceholder ?? `Filter ${label.toLowerCase()}`}
                 aria-label={searchPlaceholder ?? `Filter ${label.toLowerCase()}`}
-                className="h-9 w-full bg-transparent pl-7 pr-2 text-sm text-fg placeholder:text-fg-muted/60 focus:outline-none"
+                className={u("h-9 w-full bg-transparent pl-7 pr-2 text-sm text-fg placeholder:text-fg-muted/60 focus:outline-none")}
               />
             </div>
           )}
@@ -250,10 +264,10 @@ export default function MultiSelect({
             aria-multiselectable="true"
             aria-label={label}
             onKeyDown={onListKeyDown}
-            className="max-h-72 overflow-y-auto overscroll-contain py-1"
+            className={u("max-h-72 overflow-y-auto overscroll-contain py-1")}
           >
             {visible.length === 0 ? (
-              <li className="px-md py-sm text-sm text-fg-muted/70" role="presentation">
+              <li className={u("px-md py-sm text-sm text-fg-muted/70")} data-part="no-match" role="presentation">
                 No matches
               </li>
             ) : (
@@ -268,7 +282,7 @@ export default function MultiSelect({
                     tabIndex={active === i ? 0 : -1}
                     onClick={() => { setActive(i); toggleValue(opt) }}
                     onMouseEnter={() => setActive(i)}
-                    className={
+                    className={scoped ? undefined :
                       'flex cursor-pointer items-center gap-sm px-md py-2 text-sm ' +
                       'motion-safe:transition-colors duration-100 ' +
                       'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ' +
@@ -278,14 +292,16 @@ export default function MultiSelect({
                   >
                     <span
                       aria-hidden
-                      className={
+                      data-part="box"
+                      className={scoped ? undefined :
                         'flex h-4 w-4 flex-none items-center justify-center border ' +
                         (isSel ? 'border-brand bg-brand text-fg-on-brand' : 'border-fg/30')
                       }
                     >
                       {isSel && <Check size={12} strokeWidth={3} />}
                     </span>
-                    <span className="min-w-0 wrap-break-word">{opt}</span>
+                    <span className={u('min-w-0 wrap-break-word')}>{opt}</span>
+                    {counts && counts[opt] !== undefined && <span data-part="opt-n">{counts[opt]}</span>}
                   </li>
                 )
               })
@@ -293,11 +309,12 @@ export default function MultiSelect({
           </ul>
 
           {count > 0 && (
-            <div className="border-t border-fg/10 p-2">
+            <div data-part="pop-foot" className={u("border-t border-fg/10 p-2")}>
               <button
                 type="button"
+                data-part="text-btn"
                 onClick={() => onChange([])}
-                className="inline-flex items-center gap-xs px-2 py-1 text-label uppercase tracking-label font-semibold text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className={u("inline-flex items-center gap-xs px-2 py-1 text-label uppercase tracking-label font-semibold text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand")}
               >
                 <X size={13} strokeWidth={2} aria-hidden />
                 Clear {label.toLowerCase()}

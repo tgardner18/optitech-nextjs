@@ -34,7 +34,15 @@
     "siteSearch": "Website-Suche",
     "searchResults": "Suchergebnisse",
     "contentTypeFilter": "Inhaltstyp-Filter",
-    "clearFilter": "Löschen"
+    "clearFilter": "Löschen",
+    "suggestions": "Vorschläge",
+    "refine": "Verfeinern",
+    "showResults": "Ergebnisse anzeigen",
+    "clearFilters": "Filter zurücksetzen",
+    "forQuery": "für „{query}“",
+    "viewAll": "Alle {type} anzeigen",
+    "semanticTitle": "KI-Suche nach Bedeutung",
+    "semanticHint": "Findet verwandte Ideen, nicht nur passende Wörter"
   },
   "forms": {
     "submit": "Absenden",
@@ -203,6 +211,8 @@
     "strip": "Kampagnennavigation",
     "minimalFooter": "Alle Rechte vorbehalten.",
     "returnShort": "Hauptseite",
+    "pauseMotion": "Bewegung anhalten",
+    "playMotion": "Bewegung abspielen",
     "formHeading": "Informationen anfordern"
   }
 }

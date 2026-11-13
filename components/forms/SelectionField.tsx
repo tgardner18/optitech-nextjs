@@ -1,6 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import FieldWrapper from './FieldWrapper'
-import { inputBase } from './fieldStyles'
+import FieldWrapper, { describedBy } from './FieldWrapper'
 import MultiSelectDropdown from './MultiSelectDropdown'
 
 type Option = { caption: string; value: string; checked: boolean }
@@ -29,15 +28,15 @@ export default function SelectionField({ id, name, label, placeholder, tooltip, 
 
   return (
     <FieldWrapper id={id} label={label} tooltip={tooltip} required={required}>
-      <div className="relative">
+      <div data-part="select">
         <select
           id={id}
           name={name}
           defaultValue={preSelected}
           autoComplete={autoComplete || undefined}
           required={required}
-          aria-describedby={tooltip ? `${id}-hint` : undefined}
-          className={`${inputBase} appearance-none cursor-pointer pr-10`}
+          aria-describedby={describedBy(id, tooltip)}
+          data-part="input"
         >
           <option value="" disabled={!!options.find(o => o.checked)}>
             {placeholder ?? 'Select an option'}
@@ -46,11 +45,7 @@ export default function SelectionField({ id, name, label, placeholder, tooltip, 
             <option key={i} value={opt.value}>{opt.caption}</option>
           ))}
         </select>
-        <ChevronDown
-          size={14}
-          className="absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-fg/40"
-          aria-hidden="true"
-        />
+        <ChevronDown data-part="chev" aria-hidden="true" />
       </div>
     </FieldWrapper>
   )

@@ -3,7 +3,9 @@ import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
 import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_VideoBlock as OT_VideoBlockContentType } from '@/cms/content-types/OT_VideoBlock'
 import { getVideoStyles } from '@/cms/styling/OT_VideoBlock.styling'
+import { stableId } from '@/lib/stableId'
 import VideoBlock from '@/components/blocks/VideoBlock'
+import MediaEditorial from '@/components/blocks/MediaEditorial'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import { resolveCmsUrl } from '@/lib/resolveCmsUrl'
 
@@ -22,25 +24,10 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
   const hasBody      = Boolean(content.body?.html?.replace(/<[^>]*>/g, '').trim())
   const hasEditorial = Boolean(content.eyebrow || content.heading || hasBody || content.ctaUrl?.default)
 
-  if (!hasEditorial) {
-    // Standalone section: constrain to wide-content max-width (same as ImageBlock).
-    // fillHeight is off so aspect-ratio governs height instead of stretching full-bleed.
-    return (
-      <div {...pa(content.__composition)} className="w-full py-xl px-md lg:px-lg" data-stagger={staggerAttr}>
-        <div className="mx-auto max-w-360">
-          <VideoBlock
-            src={content.videoUrl ?? ''}
-            title={content.title ?? ''}
-            caption={content.caption ?? undefined}
-            styleOptions={styleOptions}
-            previewAttrs={{ caption: pa('caption') }}
-          />
-        </div>
-      </div>
-    )
-  }
+  const bgColor    = String(displaySettings?.bgColor ?? 'canvas')
+  const headingId  = stableId('video', `${content.heading ?? ''}|${content.eyebrow ?? ''}|${content.title ?? ''}`)
+  const themeAttr  = bgColor === 'brand' ? 'dark' : undefined
 
-  // Editorial: fillHeight=true so the video column stretches to match the text column.
   const mediaEl = (
     <VideoBlock
       src={content.videoUrl ?? ''}
@@ -48,84 +35,46 @@ export default function OT_VideoBlock({ content, displaySettings = {} }: Props) 
       caption={content.caption ?? undefined}
       styleOptions={styleOptions}
       previewAttrs={{ caption: pa('caption') }}
-      fillHeight={true}
     />
   )
 
-  const bgColor  = String(displaySettings?.bgColor ?? 'canvas')
-  const bgClass  = ({ surface: 'bg-surface', brand: 'bg-brand' } as Record<string,string>)[bgColor] ?? ''
-  const hasBg    = Boolean(bgClass)
-  const onBrand  = bgColor === 'brand'
-
-  const gridCols =
-    mediaSide === 'right'
-      ? 'md:grid-cols-[45fr_55fr]'
-      : 'md:grid-cols-[55fr_45fr]'
-
-  const mediaOrder =
-    mediaSide === 'right' ? 'order-2' : 'order-2 md:order-1'
-  const textOrder =
-    mediaSide === 'right' ? 'order-1' : 'order-1 md:order-2'
-
-  const textEdgePadding =
-    mediaSide === 'right' ? 'pl-lg' : 'pr-lg'
+  if (!hasEditorial) {
+    return (
+      <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+        <section data-block="video" data-layout="full" data-color={bgColor} data-theme={themeAttr} aria-label={`Video: ${content.title ?? ''}`}>
+          <div data-part="wrap">{mediaEl}</div>
+        </section>
+      </div>
+    )
+  }
 
   return (
-    <div
-      {...pa(content.__composition)}
-      className={`w-full${bgClass ? ` ${bgClass}` : ''}`}
-      data-stagger={staggerAttr}
-    >
-      <div className={`grid grid-cols-1 ${gridCols} gap-lg md:gap-xl items-stretch md:min-h-[max(31.25rem,30vw)] mx-auto max-w-360 px-lg py-xl`}>
-        <div className={`min-w-0 flex flex-col ${mediaOrder}`}>
-          {mediaEl}
+    <div {...pa(content.__composition)} className="w-full" data-stagger={staggerAttr}>
+      <section
+        data-block="video"
+        data-layout="editorial"
+        data-side={mediaSide}
+        data-color={bgColor}
+        data-theme={themeAttr}
+        {...(content.heading ? { 'aria-labelledby': headingId } : { 'aria-label': `Video: ${content.title ?? ''}` })}
+      >
+        <div data-part="grid">
+          <MediaEditorial
+            eyebrow={content.eyebrow}
+            heading={content.heading}
+            headingId={headingId}
+            ctaHref={content.ctaUrl?.default ? resolveCmsUrl(content.ctaUrl) : undefined}
+            ctaLabel={content.ctaLabel}
+            attrs={{ eyebrow: pa('eyebrow'), heading: pa('heading'), body: pa('body') }}
+            body={content.body
+              ? (content.body.json
+                  ? <RichText content={content.body.json} />
+                  : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />)
+              : undefined}
+          />
+          <div data-part="media">{mediaEl}</div>
         </div>
-
-        <div className={`min-w-0 flex flex-col gap-md justify-center ${textOrder} ${textEdgePadding}`}>
-          {content.eyebrow && (
-            <span
-              {...pa('eyebrow')}
-              className={`text-label uppercase tracking-wide font-semibold ${onBrand ? 'text-fg-on-brand/70' : 'text-brand'}`}
-            >
-              {content.eyebrow}
-            </span>
-          )}
-
-          {content.heading && (
-            <h2
-              {...pa('heading')}
-              className={`text-headline font-bold text-wrap-balance leading-tight ${onBrand ? 'text-fg-on-brand' : 'text-fg'}`}
-            >
-              {content.heading}
-            </h2>
-          )}
-
-          {content.body && (
-            <div
-              {...pa('body')}
-              data-rich-text=""
-              data-color={onBrand ? 'brand' : undefined}
-              className={`text-body leading-relaxed max-w-[60ch] ${onBrand ? 'text-fg-on-brand/80' : 'text-fg-muted'}`}
-            >
-              {content.body.json
-                ? <RichText content={content.body.json} />
-                : <div dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content.body.html) }} />
-              }
-            </div>
-          )}
-
-          {content.ctaUrl?.default && (
-            <div className="mt-sm">
-              <a
-                href={resolveCmsUrl(content.ctaUrl)}
-                className={`btn-signal inline-flex items-center gap-sm px-lg py-sm text-label font-semibold uppercase tracking-wide motion-safe:transition-colors motion-safe:duration-200 ease-quick ${onBrand ? 'bg-fg-on-brand text-brand' : 'bg-brand text-fg-on-brand'}`}
-              >
-                {content.ctaLabel || 'Learn more'}
-              </a>
-            </div>
-          )}
-        </div>
-      </div>
+      </section>
     </div>
   )
 }

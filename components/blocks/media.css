@@ -1,0 +1,156 @@
+/* media.css: OT_ImageBlock + OT_VideoBlock.
+   Two scopes:
+   - the section ([data-block="image" | "video"]) owns the editorial text column and the section ground;
+   - the figure ([data-part="figure"]) owns frame, overlay, shadow, caption and poster, so a bare ImageBlock
+     or VideoBlock (campaign pages, compact logos) gets the same treatment without a section around it.
+   Components only set data attributes and markup. Unlayered, so it beats Tailwind utilities. */
+
+/* ---------- Section: ground, text-column inks ---------- */
+:is([data-block="image"], [data-block="video"]) {
+  container: media / inline-size; position: relative; isolation: isolate; box-sizing: border-box; width: 100%;
+  font-family: var(--ot-font-sans); color: var(--ot-fg); background: var(--ot-canvas);
+  --m-fg: var(--ot-fg); --m-muted: var(--ot-fg-muted);
+  --m-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --m-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+  --m-btn: var(--m-ink); --m-btn-fg: #fff;
+  --m-fill: oklch(from var(--ot-brand) min(l, .46) c h);
+  --m-fill-hi: oklch(from var(--ot-brand) min(calc(min(l, .46) + .06), .5) c h);
+  --m-fill-lo: oklch(from var(--ot-brand) calc(min(l, .46) - .1) c h);
+}
+[data-theme="dark"] :is([data-block="image"], [data-block="video"]):not([data-color="brand"]) {
+  --m-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --m-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+  --m-btn: var(--m-ink); --m-btn-fg: oklch(from var(--ot-brand) .2 .04 h);
+}
+:is([data-block="image"], [data-block="video"])[data-color="canvas"] { background: transparent; }
+:is([data-block="image"], [data-block="video"])[data-color="surface"] { background: var(--ot-surface); }
+:is([data-block="image"], [data-block="video"])[data-color="brand"] {
+  background: radial-gradient(70% 90% at 100% 0%, var(--m-fill-hi), transparent 70%), linear-gradient(160deg, var(--m-fill) 0%, var(--m-fill-lo) 100%);
+  --m-fg: var(--ot-fg-on-brand); --m-ink: var(--ot-fg-on-brand);
+  --m-muted: color-mix(in srgb, var(--ot-fg-on-brand) 88%, transparent);
+  --m-rule: color-mix(in oklch, var(--ot-accent) 60%, var(--ot-fg-on-brand));
+  --m-btn: var(--ot-fg-on-brand); --m-btn-fg: var(--m-fill);
+}
+
+/* ---------- Full width ---------- */
+:is([data-block="image"], [data-block="video"])[data-layout="full"] { padding: clamp(2.5rem, 6cqi, 5rem) clamp(1.25rem, 4cqi, 3rem); }
+:is([data-block="image"], [data-block="video"])[data-layout="full"] [data-part="wrap"] { max-width: 90rem; margin-inline: auto; }
+
+/* ---------- Editorial ----------
+   Text and media share one 80rem content width (same as Stat, Feature Grid and Primary Text).
+   The media keeps its ratio and centers against the text, instead of stretching to a 500px row. */
+:is([data-block="image"], [data-block="video"])[data-layout="editorial"] { padding: clamp(3rem, 7cqi, 6rem) clamp(1.25rem, 4cqi, 3rem); }
+:is([data-block="image"], [data-block="video"]) [data-part="grid"] { max-width: 80rem; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5cqi, 4.5rem); align-items: center; }
+@container media (min-width: 56rem) {
+  :is([data-block="image"], [data-block="video"])[data-side="right"] [data-part="grid"] { grid-template-columns: minmax(0, 45fr) minmax(0, 55fr); }
+  :is([data-block="image"], [data-block="video"])[data-side="left"] [data-part="grid"] { grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); }
+  :is([data-block="image"], [data-block="video"])[data-side="left"] [data-part="media"] { order: -1; }
+}
+:is([data-block="image"], [data-block="video"]) [data-part="media"] { min-width: 0; }
+:is([data-block="image"], [data-block="video"]) [data-part="text"] { min-width: 0; max-width: 34rem; display: flex; flex-direction: column; }
+:is([data-block="image"], [data-block="video"]) [data-part="eyebrow"] { display: inline-flex; align-items: center; gap: .75rem; margin: 0 0 .875rem; font-size: .75rem; line-height: 1; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--m-ink); }
+:is([data-block="image"], [data-block="video"]) [data-part="eyebrow"]::before { content: ""; width: 1.75rem; height: 2px; border-radius: 2px; background: var(--m-rule); flex: none; }
+:is([data-block="image"], [data-block="video"]) [data-part="heading"] { margin: 0; max-inline-size: 20ch; font-size: clamp(1.75rem, 1.1rem + 2.4cqi, 2.75rem); line-height: 1.1; letter-spacing: -.022em; font-weight: 700; text-wrap: balance; color: var(--m-fg); }
+:is([data-block="image"], [data-block="video"]) [data-part="body"] { margin-top: 1.125rem; max-width: 52ch; }
+:is([data-block="image"], [data-block="video"]) [data-part="body"][data-rich-text] p { margin: 0; color: var(--m-muted); font-size: var(--ot-text-body); line-height: 1.6; text-wrap: pretty; }
+:is([data-block="image"], [data-block="video"]) [data-part="body"][data-rich-text] p + p { margin-top: .75rem; }
+:is([data-block="image"], [data-block="video"]) [data-part="cta-wrap"] { margin-top: 2rem; }
+/* CTA: themed corners, an arrow, and the label never disappears on hover.
+   Keeps the .btn-signal class so each campaign look can restyle it; the slide-in fill is off here. */
+:is([data-block="image"], [data-block="video"]) [data-part="cta"] {
+  display: inline-flex; align-items: center; gap: .5rem; min-height: 2.875rem; padding: 0 1.375rem; box-sizing: border-box;
+  border-radius: var(--ot-radius-control); background: var(--m-btn); color: var(--m-btn-fg);
+  font-size: .9375rem; font-weight: 600; letter-spacing: 0; text-transform: none; text-decoration: none;
+  box-shadow: 0 10px 24px -14px oklch(from var(--m-btn) l c h / .9);
+  transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, background-color .2s ease;
+}
+:is([data-block="image"], [data-block="video"]) [data-part="cta"]::before { content: none; }
+:is([data-block="image"], [data-block="video"]) [data-part="cta"] svg { width: 1.05rem; height: 1.05rem; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+:is([data-block="image"], [data-block="video"]) [data-part="cta"]:is(:hover, :focus-visible) { transform: translateY(-2px); background: color-mix(in oklch, var(--m-btn) 88%, var(--m-btn-fg)); box-shadow: 0 16px 30px -14px oklch(from var(--m-btn) l c h / .9); }
+:is([data-block="image"], [data-block="video"]) [data-part="cta"]:is(:hover, :focus-visible) svg { transform: translateX(3px); }
+:is([data-block="image"], [data-block="video"]) :is(a, button):focus-visible { outline: 2px solid var(--m-rule); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  :is([data-block="image"], [data-block="video"]) [data-part="cta"], :is([data-block="image"], [data-block="video"]) [data-part="cta"] svg { transition: none; }
+  :is([data-block="image"], [data-block="video"]) [data-part="cta"]:is(:hover, :focus-visible), :is([data-block="image"], [data-block="video"]) [data-part="cta"]:is(:hover, :focus-visible) svg { transform: none; }
+}
+
+/* ---------- Figure: tokens (self-contained, so a bare figure works too) ---------- */
+[data-part="figure"] {
+  margin: 0; position: relative; box-sizing: border-box; width: 100%;
+  --m-ratio: 16 / 9;
+  --m-offset: oklch(from var(--ot-brand) max(l, .5) calc(c * .9) h / .22);
+  --m-glow-a: oklch(from var(--ot-brand) max(l, .55) c h); --m-glow-b: var(--ot-accent);
+  --m-cap-ink: var(--ot-fg-muted);
+  --m-cap-rule: oklch(from var(--ot-accent) min(l, .6) c h);
+}
+[data-theme="dark"] [data-part="figure"]:not([data-color="brand"]) {
+  --m-offset: oklch(from var(--ot-brand) max(l, .55) c h / .3);
+  --m-glow-a: oklch(from var(--ot-brand) max(l, .65) c h);
+  --m-cap-rule: oklch(from var(--ot-accent) max(l, .72) c h);
+}
+[data-part="figure"][data-color="brand"] {
+  --m-offset: color-mix(in srgb, var(--ot-fg-on-brand) 22%, transparent);
+  --m-glow-a: oklch(from var(--ot-accent) max(l, .65) c h);
+  --m-cap-ink: color-mix(in srgb, var(--ot-fg-on-brand) 88%, transparent);
+  --m-cap-rule: color-mix(in oklch, var(--ot-accent) 60%, var(--ot-fg-on-brand));
+}
+[data-part="figure"][data-ratio="4:3"] { --m-ratio: 4 / 3; }
+[data-part="figure"][data-ratio="3:2"] { --m-ratio: 3 / 2; }
+[data-part="figure"][data-ratio="1:1"] { --m-ratio: 1 / 1; }
+[data-part="figure"][data-compact] { width: auto; display: inline-block; }
+
+/* ---------- Frame, box, image ---------- */
+[data-part="figure"] [data-part="frame"] { position: relative; isolation: isolate; border-radius: var(--ot-radius-surface); }
+[data-part="figure"] [data-part="box"] { position: relative; overflow: hidden; border-radius: var(--ot-radius-surface); background: var(--ot-surface); }
+[data-part="figure"]:not([data-compact]) [data-part="box"] { aspect-ratio: var(--m-ratio); }
+/* Video poster and player are always 16:9 beside text; the ratio setting applies to full-width video only */
+[data-block="video"][data-layout="editorial"] [data-part="figure"] [data-part="box"] { aspect-ratio: 16 / 9; }
+[data-part="figure"] [data-part="img"] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+[data-part="figure"][data-fit="contain"] [data-part="img"] { object-fit: contain; }
+[data-part="figure"][data-fit="contain"]:not([data-frame="glow"]) [data-part="box"],
+[data-part="figure"][data-compact] [data-part="box"] { background: var(--ot-canvas); }
+
+/* Offset: a tinted plate behind the media. The media keeps its full size and stays on the column edge. */
+[data-part="figure"][data-frame="offset"] [data-part="frame"]::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--m-offset); transform: translate(clamp(.625rem, 1.4cqi, 1rem), clamp(.625rem, 1.4cqi, 1rem)); }
+/* Glow: a lit gradient edge with a soft bloom. No side margins, so the media stays aligned. */
+[data-part="figure"][data-frame="glow"] [data-part="frame"]::before { content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: calc(var(--ot-radius-surface) + 2px); background: linear-gradient(135deg, var(--m-glow-a), var(--m-glow-b)); }
+[data-part="figure"][data-frame="glow"] [data-part="frame"] { box-shadow: 0 22px 50px -26px oklch(from var(--m-glow-a) l c h / .6), 0 0 44px -14px oklch(from var(--m-glow-b) l c h / .4); }
+/* Shadow: a chromatic bloom under the media. It adds no padding, so vertical centering holds. */
+[data-part="figure"][data-shadow="yes"] [data-part="frame"]::after { content: ""; position: absolute; z-index: -2; left: 8%; right: 8%; bottom: -1.75rem; height: 45%; pointer-events: none; background: radial-gradient(ellipse at 25% 100%, oklch(from var(--m-glow-a) l c h / .55), transparent 62%), radial-gradient(ellipse at 75% 100%, oklch(from var(--ot-accent) l c h / .45), transparent 62%); filter: blur(34px); }
+[data-theme="dark"] [data-part="figure"][data-shadow="yes"]:not([data-color="brand"]) [data-part="frame"]::after { opacity: .9; }
+
+/* Overlay: a brand tint that keeps the photo visible. Dark brands are lifted first, so the image isn't crushed to near-black. */
+[data-part="figure"] [data-part="overlay"] { position: absolute; inset: 0; pointer-events: none; background: oklch(from var(--ot-brand) max(l, .58) calc(c * 1.05) h); mix-blend-mode: multiply; opacity: .5; }
+
+/* Captions */
+[data-part="figure"] [data-part="cap-inset"] { position: absolute; z-index: 2; left: .75rem; bottom: .75rem; max-width: calc(100% - 1.5rem); box-sizing: border-box; padding: .5rem .75rem; border-radius: var(--ot-radius-control); background: oklch(from var(--ot-canvas) l c h / .84); -webkit-backdrop-filter: blur(10px) saturate(150%); backdrop-filter: blur(10px) saturate(150%); }
+[data-part="figure"] [data-part="cap-inset"] p { margin: 0; font-size: .8125rem; line-height: 1.4; color: var(--ot-fg); }
+[data-part="figure"] [data-part="cap-below"] { margin-top: .875rem; display: flex; align-items: baseline; gap: .625rem; }
+[data-part="figure"][data-frame="offset"] [data-part="cap-below"] { margin-top: calc(.875rem + clamp(.625rem, 1.4cqi, 1rem)); }
+[data-part="figure"] [data-part="cap-below"]::before { content: ""; width: 1.25rem; height: 2px; border-radius: 2px; background: var(--m-cap-rule); flex: none; transform: translateY(-.25em); }
+[data-part="figure"] [data-part="cap-below"] p { margin: 0; font-size: .875rem; line-height: 1.45; color: var(--m-cap-ink); }
+
+/* Lightbox hint sits on the box */
+[data-part="figure"] [data-part="expand"] { position: absolute; top: .5rem; right: .5rem; z-index: 30; }
+
+/* ---------- Video poster ---------- */
+/* A neutral scrim behind the play button and title, in every mode. No light-mode fog over the thumbnail. */
+[data-part="figure"] [data-part="scrim"] { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgb(0 0 0 / .28), transparent 42%), linear-gradient(to top, rgb(0 0 0 / .55), rgb(0 0 0 / 0) 48%); }
+[data-part="figure"] [data-part="play"] { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; cursor: pointer; border-radius: inherit; }
+[data-part="figure"] [data-part="play-btn"] {
+  display: flex; align-items: center; justify-content: center; width: clamp(3.75rem, 8cqi, 5rem); aspect-ratio: 1; border-radius: var(--ot-radius-control);
+  background: oklch(from var(--ot-brand) min(l, .46) c h); color: #fff;
+  box-shadow: 0 0 0 .375rem rgb(255 255 255 / .26), 0 14px 34px -10px rgb(0 0 0 / .6);
+  transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease;
+}
+[data-part="figure"][data-color="brand"] [data-part="play-btn"] { background: #fff; color: oklch(from var(--ot-brand) min(l, .46) c h); }
+[data-part="figure"] [data-part="play-btn"] svg { width: 38%; height: 38%; transform: translateX(6%); }
+[data-part="figure"] [data-part="play"]:hover [data-part="play-btn"] { transform: scale(1.06); box-shadow: 0 0 0 .625rem rgb(255 255 255 / .3), 0 18px 40px -10px rgb(0 0 0 / .65); }
+[data-part="figure"] [data-part="play"]:focus-visible { outline: none; }
+[data-part="figure"] [data-part="play"]:focus-visible [data-part="play-btn"] { outline: 3px solid #fff; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { [data-part="figure"] [data-part="play-btn"] { transition: none; } [data-part="figure"] [data-part="play"]:hover [data-part="play-btn"] { transform: none; } }
+/* The video title, which the block already has, labels the poster */
+[data-part="figure"] [data-part="chip"] { position: absolute; z-index: 1; left: clamp(.875rem, 2cqi, 1.25rem); bottom: clamp(.75rem, 1.8cqi, 1.125rem); right: clamp(.875rem, 2cqi, 1.25rem); display: flex; align-items: center; gap: .5rem; pointer-events: none; color: #fff; font-size: .875rem; font-weight: 600; line-height: 1.3; text-shadow: 0 1px 2px rgb(0 0 0 / .4); margin: 0; }
+[data-part="figure"] [data-part="chip"] span { opacity: .8; font-weight: 500; }
+[data-part="figure"][data-caption="inset"] [data-part="chip"] { display: none; }
+@container media (max-width: 30rem) { [data-part="figure"] [data-part="chip"] { display: none; } }

@@ -23,22 +23,22 @@ const rootCva = cva(
     "text-label font-semibold tracking-label uppercase",
     "transition-[background-color,box-shadow,transform] duration-150 ease-quick",
     "focus-visible:outline-2 focus-visible:outline-offset-[3px]",
-    "disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none",
-    "aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
+    "disabled:opacity-55 disabled:cursor-not-allowed disabled:pointer-events-none",
+    "aria-disabled:opacity-55 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
   ],
   {
     variants: {
       variant: {
         brand: [
           "bg-brand text-fg-on-brand",
-          "hover:bg-brand-hover hover:-translate-y-0.5",
+          "hover:bg-brand-hover motion-safe:hover:-translate-y-0.5",
           "hover:shadow-hover-lift",
           "active:translate-y-0 active:shadow-none",
           "focus-visible:outline-brand",
         ],
         accent: [
           "bg-accent text-fg-on-accent",
-          "hover:bg-accent-hover hover:-translate-y-0.5",
+          "hover:bg-accent-hover motion-safe:hover:-translate-y-0.5",
           "hover:shadow-hover-lift",
           "active:translate-y-0 active:shadow-none",
           "focus-visible:outline-accent",
@@ -183,6 +183,9 @@ export default function Button({
           target="_blank"
           rel="noopener noreferrer"
           className={classes}
+      data-btn=""
+      data-variant={variant}
+      data-size={size}
           aria-label={ariaLabel}
           aria-disabled={disabled || undefined}
           onClick={onClick}
@@ -196,6 +199,9 @@ export default function Button({
       <Link
         href={href}
         className={classes}
+      data-btn=""
+      data-variant={variant}
+      data-size={size}
         aria-label={ariaLabel}
         aria-disabled={disabled || undefined}
         onClick={onClick}
@@ -210,6 +216,9 @@ export default function Button({
       type={type}
       disabled={disabled}
       className={classes}
+      data-btn=""
+      data-variant={variant}
+      data-size={size}
       aria-label={ariaLabel}
       onClick={onClick}
     >

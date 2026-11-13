@@ -3,7 +3,8 @@
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
-export default function ThemeToggle() {
+/** `scoped`: the site-nav stylesheet owns the look (data-part="tool"); no utility classes. */
+export default function ThemeToggle({ scoped = false }: { scoped?: boolean }) {
   const { theme, toggle } = useTheme();
   const { t } = useTranslation();
   const isDark = theme === "dark";
@@ -13,20 +14,21 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={isDark ? t('theme.toggleLight') : t('theme.toggleDark')}
-      className="flex items-center justify-center w-8 h-8
+      data-part={scoped ? 'tool' : undefined}
+      className={scoped ? undefined : `flex items-center justify-center w-8 h-8
                  text-fg-muted hover:text-fg
                  transition-colors duration-150 ease-quick
-                 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-[3px]"
+                 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-[3px]`}
     >
-      {isDark ? <SunIcon /> : <MoonIcon />}
+      {isDark ? <SunIcon scoped={scoped} /> : <MoonIcon scoped={scoped} />}
     </button>
   );
 }
 
-function SunIcon() {
+function SunIcon({ scoped }: { scoped?: boolean }) {
   return (
     <svg
-      width="16" height="16" viewBox="0 0 24 24"
+      width={scoped ? 18 : 16} height={scoped ? 18 : 16} viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2"
       strokeLinecap="round" strokeLinejoin="round"
       aria-hidden="true"
@@ -44,10 +46,10 @@ function SunIcon() {
   );
 }
 
-function MoonIcon() {
+function MoonIcon({ scoped }: { scoped?: boolean }) {
   return (
     <svg
-      width="16" height="16" viewBox="0 0 24 24"
+      width={scoped ? 18 : 16} height={scoped ? 18 : 16} viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2"
       strokeLinecap="round" strokeLinejoin="round"
       aria-hidden="true"

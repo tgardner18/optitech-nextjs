@@ -7,12 +7,11 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts'
 import ChartTooltip from './ChartTooltip'
 import type { ChartData } from './parseChartData'
-import type { ChartTheme } from './chartColors'
+import { tickSuffix, type ChartTheme } from './chartColors'
 
 type Props = {
   data:          ChartData
@@ -36,7 +35,7 @@ export default function LineChart({
 
   const tickStyle = {
     fill:       theme.tickColor,
-    fontSize:   11,
+    fontSize:   12,
     fontFamily: 'var(--ot-font-sans)',
     fontWeight: 500,
   }
@@ -46,23 +45,23 @@ export default function LineChart({
       <RechartsLineChart data={chartData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
         {showGrid && (
           <CartesianGrid
-            strokeDasharray="3 3"
             stroke={theme.gridColor}
             vertical={false}
           />
         )}
         <XAxis
           dataKey="label"
+          minTickGap={16}
           axisLine={{ stroke: theme.axisColor }}
           tickLine={false}
           tick={tickStyle}
           dy={6}
         />
         <YAxis
-          axisLine={{ stroke: theme.axisColor }}
+          axisLine={false}
           tickLine={false}
           tick={tickStyle}
-          tickFormatter={(v: number) => `${valuePrefix}${v}${valueSuffix}`}
+          tickFormatter={(v: number) => `${valuePrefix}${v}${tickSuffix(valueSuffix)}`}
           width="auto"
         />
         <Tooltip
@@ -78,15 +77,6 @@ export default function LineChart({
             />
           )}
         />
-        {showLegend && (
-          <Legend
-            wrapperStyle={{
-              color:      theme.legendColor,
-              fontSize:   11,
-              fontFamily: 'var(--ot-font-sans)',
-            }}
-          />
-        )}
         {data.series.map((s, i) => (
           <Line
             key={s.name}

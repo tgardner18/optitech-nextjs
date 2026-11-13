@@ -1,0 +1,178 @@
+/* card.css: OT_CardBlock
+   Styling lives here; CardBlock.tsx only sets data attributes and markup.
+   Hooks: [data-card-shell] (container) > [data-block="card"] with data-fill, data-border,
+   data-image, data-image-side, data-hover, data-density, and [data-part] children
+   (media, img, scrim, body, text, eyebrow, heading, desc, cta-wrap, cta, arrow).
+   Fill, border, image treatment and hover keep their meaning; only the look changed.
+   Layout adapts to the card's own width (container query on the shell), not the screen. */
+
+[data-card-shell] { container: card / inline-size; height: 100%; }
+
+[data-block="card"] {
+  position: relative; isolation: isolate; box-sizing: border-box;
+  display: flex; flex-direction: column; height: 100%;
+  border-radius: var(--ot-radius-surface); overflow: hidden;
+  font-family: var(--ot-font-sans); color: var(--ot-fg);
+  --c-ink: oklch(from var(--ot-brand) min(l, .5) c h);
+  --c-eyebrow: var(--c-ink); --c-heading: var(--ot-fg); --c-desc: var(--ot-fg-muted); --c-link: var(--c-ink);
+  --c-btn-bg: var(--c-ink); --c-btn-fg: #fff;
+  --c-panel: var(--ot-canvas);
+  --c-pad: clamp(1.25rem, 7cqi, 2rem);
+  --c-ring: 0 0 #0000; --c-lift: 0 0 #0000;
+  box-shadow: var(--c-ring), var(--c-lift);
+  transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s cubic-bezier(.16,1,.3,1), border-color .25s ease;
+}
+[data-theme="dark"] [data-block="card"] {
+  --c-ink: oklch(from var(--ot-brand) max(l, .76) calc(c * .9) h);
+  --c-btn-fg: oklch(from var(--ot-brand) .2 .04 h);
+}
+[data-block="card"][data-density="compact"]  { --c-pad: clamp(1rem, 5cqi, 1.25rem); }
+[data-block="card"][data-density="spacious"] { --c-pad: clamp(1.75rem, 9cqi, 2.75rem); }
+
+/* ---------- Fills ---------- */
+[data-block="card"][data-fill="ghost"] { background: transparent; }
+[data-block="card"][data-fill="surface"] {
+  background: var(--ot-surface); --c-panel: var(--ot-surface);
+  --c-ring: 0 0 0 1px oklch(from var(--ot-fg) l c h / .07), 0 1px 2px oklch(0 0 0 / .04);
+}
+[data-block="card"][data-fill="glass"] { --c-heading: var(--ot-fg); --c-desc: var(--ot-fg-muted); }
+[data-block="card"][data-fill="brand"] {
+  background: radial-gradient(120% 90% at 100% 0%, oklch(from var(--ot-brand) min(calc(l + .06), .56) c h), transparent 60%), oklch(from var(--ot-brand) min(l, .5) c h);
+  --c-panel: oklch(from var(--ot-brand) min(l, .5) c h);
+  --c-eyebrow: rgb(255 255 255 / .85); --c-heading: #fff; --c-desc: rgb(255 255 255 / .88); --c-link: #fff;
+  --c-btn-bg: #fff; --c-btn-fg: oklch(from var(--ot-brand) min(l, .42) c h);
+}
+[data-block="card"][data-fill="light"] {
+  background: oklch(from var(--ot-brand) .97 .014 h); --c-panel: oklch(from var(--ot-brand) .97 .014 h);
+  --c-ink: oklch(from var(--ot-brand) min(l, .48) c h); --c-heading: oklch(from var(--ot-brand) .2 .03 h);
+  --c-desc: oklch(from var(--ot-brand) .38 .03 h); --c-btn-fg: #fff;
+}
+
+/* ---------- Borders ---------- */
+[data-block="card"][data-border="subtle"] { border: 1px solid oklch(from var(--ot-fg) l c h / .12); }
+[data-block="card"][data-border="subtle"][data-fill="brand"] { border-color: rgb(255 255 255 / .22); }
+[data-block="card"][data-border="subtle"][data-fill="light"] { border-color: oklch(from var(--ot-brand) .55 .1 h / .22); }
+[data-block="card"][data-border="brand"] { border: 1.5px solid var(--c-ink); }
+[data-block="card"][data-border="brand"][data-fill="brand"] { border-color: rgb(255 255 255 / .5); }
+
+/* ---------- Anatomy ---------- */
+[data-block="card"] [data-part="media"] { position: relative; z-index: -1; flex: none; aspect-ratio: 16 / 10; overflow: hidden; }
+[data-block="card"] [data-part="img"] {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 35%;
+  transition: transform .7s cubic-bezier(.16,1,.3,1);
+}
+[data-block="card"] [data-part="body"] { display: flex; flex-direction: column; flex: 1; gap: 1.5rem; padding: var(--c-pad); }
+[data-block="card"] [data-part="text"] { display: flex; flex-direction: column; gap: .75rem; flex: 1; }
+[data-block="card"] [data-part="eyebrow"] {
+  margin: 0 0 -.125rem; font-size: .75rem; line-height: 1.2; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--c-eyebrow);
+}
+[data-block="card"] [data-part="heading"] {
+  margin: 0; color: var(--c-heading);
+  font-size: clamp(1.25rem, .95rem + 2cqi, 1.75rem); line-height: 1.22; font-weight: 650; letter-spacing: -.012em; text-wrap: balance;
+}
+[data-block="card"] [data-part="desc"] { color: var(--c-desc); font-size: clamp(.9375rem, .85rem + .6cqi, 1.0625rem); line-height: 1.55; text-wrap: pretty; }
+[data-block="card"] [data-part="desc"] p { margin: 0; }
+[data-block="card"] [data-part="desc"] p + p { margin-top: var(--ot-space-sm); }
+[data-block="card"] [data-part="cta-wrap"] { display: flex; }
+
+/* The whole card is the link: the CTA's ::after covers the card */
+[data-block="card"] [data-part="cta"] {
+  display: inline-flex; align-items: center; gap: .375rem; box-sizing: border-box;
+  font-size: .9375rem; line-height: 1.3; font-weight: 600; color: var(--c-link);
+  text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px;
+  transition: text-decoration-color .2s ease, filter .2s ease;
+}
+[data-block="card"] [data-part="cta"]::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+[data-block="card"] [data-part="arrow"] { width: 1rem; height: 1rem; flex: none; transition: transform .3s cubic-bezier(.16,1,.3,1); }
+[data-block="card"]:has([data-part="cta"]) { cursor: pointer; }
+[data-block="card"] [data-part="cta"]:focus-visible { outline: none; }
+[data-block="card"]:has([data-part="cta"]:focus-visible) { outline: 2px solid var(--c-ink); outline-offset: 3px; }
+@media (hover: hover) {
+  [data-block="card"]:has([data-part="cta"]):hover [data-part="cta"] { text-decoration-color: currentColor; }
+  [data-block="card"]:has([data-part="cta"]):hover [data-part="arrow"] { transform: translateX(4px); }
+  [data-block="card"]:has([data-part="cta"]):hover [data-part="img"] { transform: scale(1.045); }
+  [data-block="card"][data-hover="lift"]:has([data-part="cta"]):hover {
+    transform: translateY(-4px); --c-lift: 0 2px 4px oklch(0 0 0 / .04), 0 22px 44px -18px oklch(from var(--ot-brand) l c h / .45);
+  }
+  [data-block="card"][data-hover="glow"]:has([data-part="cta"]):hover {
+    --c-lift: 0 0 0 1.5px oklch(from var(--ot-brand) l c h / .45), 0 18px 48px -14px oklch(from var(--ot-brand) l c h / .5);
+  }
+  [data-block="card"][data-hover="tilt"]:has([data-part="cta"]):hover { transform: translate(-3px, -3px); --c-lift: 6px 6px 0 var(--c-ink); }
+}
+[data-block="card"][data-hover="lift"]:has([data-part="cta"]:focus-visible) { transform: translateY(-4px); }
+
+/* Ghost with no border (the CMS default): align text to the grid instead of floating it in empty padding */
+[data-block="card"][data-fill="ghost"][data-border="none"] { overflow: visible; border-radius: 0; }
+[data-block="card"][data-fill="ghost"][data-border="none"] [data-part="media"] {
+  border-radius: var(--ot-radius-surface);
+  transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s cubic-bezier(.16,1,.3,1);
+}
+[data-block="card"][data-fill="ghost"][data-border="none"] [data-part="body"] { padding: 1.25rem 0 0; }
+[data-block="card"][data-fill="ghost"][data-border="none"][data-image="none"] [data-part="body"] { padding-top: 1.25rem; border-top: 2px solid var(--c-ink); }
+/* Ghost, no border: the hover lifts the photo, so the shadow follows its rounded corners and the text stays on the grid */
+@media (hover: hover) {
+  [data-block="card"][data-fill="ghost"][data-border="none"][data-hover]:has([data-part="cta"]):hover { transform: none; --c-lift: 0 0 #0000; }
+  [data-block="card"][data-fill="ghost"][data-border="none"][data-hover="lift"]:has([data-part="cta"]):hover [data-part="media"] {
+    transform: translateY(-4px); box-shadow: 0 2px 4px oklch(0 0 0 / .05), 0 22px 40px -16px oklch(from var(--ot-brand) l c h / .5);
+  }
+  [data-block="card"][data-fill="ghost"][data-border="none"][data-hover="glow"]:has([data-part="cta"]):hover [data-part="media"] {
+    box-shadow: 0 0 0 1.5px oklch(from var(--ot-brand) l c h / .45), 0 18px 44px -12px oklch(from var(--ot-brand) l c h / .5);
+  }
+  [data-block="card"][data-fill="ghost"][data-border="none"][data-hover="tilt"]:has([data-part="cta"]):hover [data-part="media"] {
+    transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--c-ink);
+  }
+  [data-block="card"][data-fill="ghost"][data-border="none"][data-image="none"][data-hover="lift"]:has([data-part="cta"]):hover { transform: translateY(-3px); }
+}
+[data-block="card"][data-fill="ghost"][data-border="none"][data-hover="lift"]:has([data-part="cta"]:focus-visible) { transform: none; }
+[data-block="card"][data-fill="ghost"][data-border="none"][data-hover="lift"]:has([data-part="cta"]:focus-visible) [data-part="media"] { transform: translateY(-4px); }
+
+/* Wider cards get a wider photo so the copy keeps its proportion */
+@container card (min-width: 30rem) {
+  [data-block="card"]:is([data-image="top"], [data-image="float"]) [data-part="media"] { aspect-ratio: 16 / 9; }
+}
+
+/* ---------- Floating panel ---------- */
+/* The photo and the raised panel carry the fill, so the card itself stays clear and the panel reads as floating */
+[data-block="card"][data-image="float"][data-fill] { background: transparent; --c-ring: 0 0 #0000; }
+[data-block="card"][data-image="float"] [data-part="media"] { aspect-ratio: 3 / 2; }
+[data-block="card"][data-image="float"][data-fill] [data-part="body"] {
+  margin: -3rem .875rem .875rem; padding: var(--c-pad); border-top: 0;
+  border-radius: max(0px, calc(var(--ot-radius-surface) - 6px)); background: var(--c-panel);
+  box-shadow: 0 0 0 1px oklch(from var(--ot-fg) l c h / .06), 0 14px 32px -16px oklch(from var(--ot-brand) l c h / .4);
+}
+
+/* ---------- Background image: a real scrim so white text holds 4.5:1 over bright photos ---------- */
+[data-block="card"][data-image="background"][data-fill] {
+  min-height: 22rem; overflow: hidden; border-radius: var(--ot-radius-surface); background: #0b0f14;
+  --c-eyebrow: rgb(255 255 255 / .85); --c-heading: #fff; --c-desc: rgb(255 255 255 / .88);
+  --c-link: #fff; --c-ink: #fff; --c-btn-bg: #fff; --c-btn-fg: #111;
+}
+[data-block="card"][data-image="background"][data-fill] [data-part="media"] { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
+[data-block="card"] [data-part="scrim"] {
+  position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgb(0 0 0 / .82) 0%, rgb(0 0 0 / .5) 42%, rgb(0 0 0 / .06) 75%);
+}
+[data-block="card"][data-image="background"][data-fill] [data-part="body"] { flex: none; margin-top: auto; padding: var(--c-pad); border-top: 0; }
+[data-block="card"][data-image="background"][data-fill] [data-part="text"] { flex: none; }
+
+/* Optional grain */
+[data-block="card"] [data-part="noise"] { position: absolute; inset: 0; z-index: 3; pointer-events: none; mix-blend-mode: overlay; opacity: .07; }
+
+/* ---------- Side image: beside the text on wide cards, stacked on narrow ones ---------- */
+@container card (min-width: 34rem) {
+  [data-block="card"][data-image="side"] { flex-direction: row; }
+  [data-block="card"][data-image="side"][data-image-side="right"] { flex-direction: row-reverse; }
+  [data-block="card"][data-image="side"] [data-part="media"] { width: 42%; aspect-ratio: auto; align-self: stretch; min-height: 16rem; }
+  [data-block="card"][data-image="side"][data-fill="ghost"][data-border="none"] [data-part="body"] { padding: 0 0 0 1.75rem; justify-content: center; }
+  [data-block="card"][data-image="side"][data-image-side="right"][data-fill="ghost"][data-border="none"] [data-part="body"] { padding: 0 1.75rem 0 0; }
+  /* Only a wide card with a side photo earns a button; every other card keeps the quiet arrow link */
+  [data-block="card"][data-image="side"] [data-part="cta"] {
+    min-height: 2.75rem; padding: 0 1.25rem; border-radius: var(--ot-radius-control);
+    background: var(--c-btn-bg); color: var(--c-btn-fg); text-decoration: none;
+  }
+  [data-block="card"][data-image="side"]:has([data-part="cta"]):hover [data-part="cta"] { filter: brightness(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-block="card"], [data-block="card"] * { transition-duration: .01ms !important; }
+  [data-block="card"]:hover, [data-block="card"]:hover [data-part="img"], [data-block="card"]:hover [data-part="media"] { transform: none !important; }
+}

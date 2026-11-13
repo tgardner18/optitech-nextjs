@@ -130,54 +130,40 @@ export default async function SplitHeader() {
       </a>
 
       <SplitHeaderShell>
-        {/* ── Desktop masthead: left wing / centered logo / right wing ─────── */}
-        <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center gap-md px-md py-6 2xl:gap-lg 2xl:px-lg">
+        <div data-part="bar">
 
-          <div className="flex justify-end" data-stagger="split-left">
-            <DesktopNav navItems={leftItems} variant="split" ariaLabel="Primary navigation" />
+          {/* Left wing. Below 85rem the two wings dissolve into one row (logo first); from 85rem the logo centers. */}
+          <div data-part="wing" data-side="left">
+            <DesktopNav navItems={leftItems} wing="left" alignLastEnd={false} ariaLabel="Primary navigation" />
           </div>
 
           <a
             href={localizedHref('/', locale)}
+            data-part="logo"
             aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="split-logo flex items-center justify-center h-10 shrink-0"
-            style={{ filter: 'drop-shadow(0 0 20px var(--ot-bloom-brand-faint))' }}
           >
             {logoEl}
           </a>
 
-          <div className="flex items-center justify-start gap-md 2xl:gap-lg" data-stagger="split-right">
-            <DesktopNav navItems={rightItems} variant="split" ariaLabel="More navigation" />
+          <div data-part="wing" data-side="right">
+            <DesktopNav navItems={rightItems} wing="right" ariaLabel="More navigation" />
 
-            <div aria-hidden="true" className="w-px h-6 bg-fg/15 shrink-0" />
-
-            <div className="flex items-center gap-xs shrink-0">
+            <div data-part="tools">
               <SearchTrigger />
-              <LocaleSelector enabledLocales={enabledLocales} />
-              <ThemeToggle />
+              <LocaleSelector enabledLocales={enabledLocales} scoped />
+              <ThemeToggle scoped />
               {commerce.enabled && <CommerceHeaderActions initialBagCount={commerce.bagCount} />}
+              {showCta && <Button href={ctaHref} size="sm">{ctaLabel}</Button>}
             </div>
-
-            {showCta && <Button href={ctaHref} size="sm" className="shrink-0">{ctaLabel}</Button>}
           </div>
 
-        </div>
-
-        {/* ── Mobile: glass bar — identical to top-bar mobile ──────────────── */}
-        <div className="lg:hidden flex items-center justify-between px-md py-md">
-          <a
-            href={localizedHref('/', locale)}
-            aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="flex items-center h-12"
-          >
-            {logoEl}
-          </a>
-          <div className="flex items-center gap-sm">
+          <div data-part="mobile-tools">
             <SearchTrigger />
-            <ThemeToggle />
+            <ThemeToggle scoped />
             {commerce.enabled && <CommerceHeaderActions initialBagCount={commerce.bagCount} showWishlist={false} showAccount />}
-            <MobileMenu navItems={navItems} ctaLabel={showCta ? ctaLabel : ''} ctaHref={ctaHref} enabledLocales={enabledLocales} />
+            <MobileMenu navStyle="split-bar" navItems={navItems} ctaLabel={showCta ? ctaLabel : ''} ctaHref={ctaHref} enabledLocales={enabledLocales} />
           </div>
+
         </div>
       </SplitHeaderShell>
     </>

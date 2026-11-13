@@ -16,9 +16,10 @@
  */
 
 import * as RadixAccordion from '@radix-ui/react-accordion'
-import { cva }              from 'class-variance-authority'
-import { cn }               from '@/lib/utils'
 import { Plus }             from 'lucide-react'
+
+// Presentation lives in components/blocks/accordion.css, keyed on the data
+// attributes below. Radix owns state, keyboard and ARIA; it writes data-state.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,167 +47,6 @@ export type AccordionBlockProps = {
 const MIN_ITEMS = 2
 const MAX_ITEMS = 12
 
-// ─── CVA variants ─────────────────────────────────────────────────────────────
-
-const sectionCva = cva('w-full px-md lg:px-lg', {
-  variants: {
-    color: {
-      canvas:  'bg-canvas py-xl',
-      surface: 'bg-surface py-xl',
-      brand:   'bg-brand   py-xl',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const eyebrowCva = cva('text-label tracking-label uppercase font-semibold mb-xs', {
-  variants: {
-    color: {
-      canvas:  'text-brand',
-      surface: 'text-brand',
-      brand:   'text-fg-on-brand/70',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-const headlineCva = cva('text-headline tracking-headline font-bold leading-headline mb-xl', {
-  variants: {
-    color: {
-      canvas:  'text-fg',
-      surface: 'text-fg',
-      brand:   'text-fg-on-brand',
-    },
-  },
-  defaultVariants: { color: 'canvas' },
-})
-
-// Outer item wrapper — carries borders in "ruled" and "boxed" modes
-const itemWrapperCva = cva('', {
-  variants: {
-    borderStyle: {
-      ruled:  'border-t border-fg/10 last:border-b',
-      boxed:  'border border-fg/10 mb-xs last:mb-0',
-      clean:  'mb-sm last:mb-0',
-    },
-  },
-  defaultVariants: { borderStyle: 'ruled' },
-})
-
-// Trigger row
-const triggerCva = cva(
-  [
-    'group flex w-full items-start justify-between gap-md',
-    'py-md text-left',
-    // Focus ring — keyboard-accessible, never show on mouse. Ring color is set
-    // per surface (below) so it never lands brand-on-brand and vanishes.
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
-    // Transition
-    'transition-colors duration-150',
-  ].join(' '),
-  {
-    variants: {
-      borderStyle: {
-        ruled:  '',
-        boxed:  'px-md',
-        clean:  '',
-      },
-      color: {
-        canvas:  'focus-visible:ring-brand',
-        surface: 'focus-visible:ring-brand',
-        brand:   'focus-visible:ring-fg-on-brand',
-      },
-    },
-    defaultVariants: { borderStyle: 'ruled', color: 'canvas' },
-  },
-)
-
-const questionCva = cva(
-  // Title-scale tokens (leading-title / tracking-title) match every other title in
-  // the system; the old leading-snug / tracking-tight were generic Tailwind defaults
-  // that read cramped at 20px Poppins and diverged from the type scale.
-  'text-title font-semibold leading-title tracking-title flex-1 text-balance transition-colors duration-150',
-  {
-    variants: {
-      color: {
-        canvas:  'text-fg group-data-[state=open]:text-brand',
-        surface: 'text-fg group-data-[state=open]:text-brand',
-        brand:   'text-fg-on-brand group-data-[state=open]:text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-const iconCva = cva(
-  [
-    'shrink-0 mt-0.5',
-    // Rotate +45° → × when open, on the same slower, smooth curve as the row reveal.
-    'transition-transform [transition-duration:var(--ot-dur-accordion)]',
-    'group-data-[state=open]:rotate-45',
-    '[transition-timing-function:var(--ot-ease-accordion)]',
-  ].join(' '),
-  {
-    variants: {
-      color: {
-        canvas:  'text-fg-muted/50 group-data-[state=open]:text-brand',
-        surface: 'text-fg-muted/50 group-data-[state=open]:text-brand',
-        brand:   'text-fg-on-brand/60 group-data-[state=open]:text-fg-on-brand',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
-
-// Standard Radix height animation: overflow-hidden clips the content while height
-// animates 0 ↔ --radix-accordion-content-height. motion-safe: gates it for
-// reduced-motion (which then opens/closes instantly).
-//
-// forceMount keeps every answer in the server-rendered HTML (Radix otherwise
-// unmounts closed content, so crawlers see empty containers). Closed items are
-// held at height 0 and flipped to `invisible` only AFTER the close animation
-// (visibility transition delayed by the same duration), so they stay out of the
-// a11y tree and tab order without cutting the exit animation short. Opening
-// removes both rules in the same commit Radix measures in, so the open height
-// is still the natural one.
-const contentClasses = [
-  'overflow-hidden',
-  'data-[state=closed]:h-0 data-[state=closed]:invisible',
-  '[transition:visibility_0s_linear_var(--ot-dur-accordion)] data-[state=open]:[transition-delay:0s]',
-  'motion-safe:data-[state=open]:animate-accordion-down',
-  'motion-safe:data-[state=closed]:animate-accordion-up',
-].join(' ')
-
-const answerCva = cva(
-  'text-body leading-body max-w-(--ot-measure-wide) text-pretty',
-  {
-    variants: {
-      color: {
-        canvas:  'text-fg-muted',
-        surface: 'text-fg-muted',
-        brand:   'text-fg-on-brand/75',
-      },
-      borderStyle: {
-        ruled:  'pb-md',
-        boxed:  'px-md pb-md',
-        clean:  'pb-sm',
-      },
-    },
-    defaultVariants: { color: 'canvas', borderStyle: 'ruled' },
-  },
-)
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-function EmptyState({ color }: { color: 'canvas' | 'surface' | 'brand' }) {
-  const msgClass = color === 'brand' ? 'text-fg-on-brand/50' : 'text-fg-muted/40'
-  return (
-    <p className={cn('text-body py-xl text-center', msgClass)}>
-      Add at least {MIN_ITEMS} accordion items to display this block.
-    </p>
-  )
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AccordionBlock({
@@ -225,9 +65,7 @@ export default function AccordionBlock({
   // Cap at MAX_ITEMS; enforce minimum for empty state
   const visibleItems = items.slice(0, MAX_ITEMS)
   const isEmpty      = visibleItems.length < MIN_ITEMS
-
-  // Brand fill is always dark — assert dark theme so tokens resolve correctly
-  const isDarkSurface = color === 'brand'
+  const hasHead      = Boolean(eyebrow || headline)
 
   // Default value for Radix (single mode opens first item; multiple opens none)
   const defaultValue =
@@ -235,62 +73,50 @@ export default function AccordionBlock({
       ? (openMode === 'single' ? 'item-0' : visibleItems.length >= 2 ? ['item-0', 'item-1'] : ['item-0'])
       : (openMode === 'single' ? undefined  : [])
 
+  const nodes = visibleItems.map((item, i) => (
+    <AccordionItemNode key={i} value={`item-${i}`} item={item} />
+  ))
+
   return (
     <section
-      className={sectionCva({ color })}
-      data-theme={isDarkSurface ? 'dark' : undefined}
       data-block="accordion"
+      data-color={color}
+      data-border={borderStyle}
+      data-open={openMode}
+      data-head={hasHead ? '' : undefined}
+      data-theme={color === 'brand' ? 'dark' : undefined}
     >
-      <div className="max-w-3xl mx-auto">
+      <div data-part="inner">
 
-        {/* ── Block header ─────────────────────────────────────────────────── */}
-        {(eyebrow || headline) && (
-          <header className="mb-lg">
-            {eyebrow && (
-              <p className={eyebrowCva({ color })}>{eyebrow}</p>
-            )}
-            {headline && (
-              <h2 className={headlineCva({ color })}>{headline}</h2>
-            )}
+        {hasHead && (
+          <header data-part="head">
+            {eyebrow && <p data-part="eyebrow">{eyebrow}</p>}
+            {headline && <h2 data-part="headline">{headline}</h2>}
           </header>
         )}
 
-        {/* ── Empty state ──────────────────────────────────────────────────── */}
-        {isEmpty && <EmptyState color={color} />}
+        {isEmpty && (
+          <p data-part="empty">Add at least {MIN_ITEMS} accordion items to display this block.</p>
+        )}
 
-        {/* ── Accordion ────────────────────────────────────────────────────── */}
         {!isEmpty && openMode === 'single' && (
           <RadixAccordion.Root
+            data-part="list"
             type="single"
             collapsible
             defaultValue={typeof defaultValue === 'string' ? defaultValue : undefined}
           >
-            {visibleItems.map((item, i) => (
-              <AccordionItemNode
-                key={i}
-                value={`item-${i}`}
-                item={item}
-                color={color}
-                borderStyle={borderStyle}
-              />
-            ))}
+            {nodes}
           </RadixAccordion.Root>
         )}
 
         {!isEmpty && openMode === 'multiple' && (
           <RadixAccordion.Root
+            data-part="list"
             type="multiple"
             defaultValue={Array.isArray(defaultValue) ? defaultValue : []}
           >
-            {visibleItems.map((item, i) => (
-              <AccordionItemNode
-                key={i}
-                value={`item-${i}`}
-                item={item}
-                color={color}
-                borderStyle={borderStyle}
-              />
-            ))}
+            {nodes}
           </RadixAccordion.Root>
         )}
 
@@ -301,40 +127,28 @@ export default function AccordionBlock({
 
 // ─── AccordionItemNode ────────────────────────────────────────────────────────
 
-type ItemNodeProps = {
-  value:       string
-  item:        AccordionItem
-  color:       'canvas' | 'surface' | 'brand'
-  borderStyle: 'ruled' | 'boxed' | 'clean'
-}
-
-function AccordionItemNode({ value, item, color, borderStyle }: ItemNodeProps) {
+function AccordionItemNode({ value, item }: { value: string; item: AccordionItem }) {
   return (
-    <RadixAccordion.Item
-      value={value}
-      className={itemWrapperCva({ borderStyle })}
-    >
+    <RadixAccordion.Item value={value} data-part="item">
       <RadixAccordion.Header asChild>
         <h3>
-          <RadixAccordion.Trigger className={triggerCva({ borderStyle, color })}>
-            <span className={questionCva({ color })}>
-              {item.question}
+          <RadixAccordion.Trigger data-part="trigger">
+            <span data-part="question">{item.question}</span>
+            <span data-part="icon" aria-hidden="true">
+              <Plus strokeWidth={1.75} />
             </span>
-            <Plus
-              className={cn(iconCva({ color }), 'w-5 h-5')}
-              aria-hidden
-              strokeWidth={1.75}
-            />
           </RadixAccordion.Trigger>
         </h3>
       </RadixAccordion.Header>
 
-      {/* Radix sets --radix-accordion-content-height on this element; the
-          overflow-hidden + height keyframes animate the reveal. */}
-      <RadixAccordion.Content forceMount className={contentClasses}>
-        <p className={answerCva({ color, borderStyle })}>
-          {item.answer}
-        </p>
+      {/* forceMount keeps every answer in the server-rendered HTML for crawlers;
+          accordion.css collapses closed panels (grid row 0fr, then hidden after the transition). */}
+      <RadixAccordion.Content forceMount data-part="panel">
+        <div data-part="answer-wrap">
+          <div data-part="answer-clip">
+            <p data-part="answer">{item.answer}</p>
+          </div>
+        </div>
       </RadixAccordion.Content>
     </RadixAccordion.Item>
   )

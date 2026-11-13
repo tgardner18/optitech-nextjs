@@ -21,7 +21,7 @@ export default function OT_CalloutBlockAdapter({ content, displaySettings = {} }
   return (
     <div
       {...pa(content.__composition)}
-      data-stagger={entranceAnimation !== 'none' ? entranceAnimation : undefined}
+      data-stagger={entranceAnimation !== 'none' && entranceAnimation !== 'off' ? entranceAnimation : undefined}
     >
       <CalloutBlock
         heading={content.heading ?? ''}

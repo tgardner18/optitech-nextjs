@@ -1,0 +1,115 @@
+/* Divider block: scoped styles keyed on data-block / data-part. */
+@layer components {
+  /* divider.css: OT_DividerBlock refresh
+     CSS and data attributes only. Style, tone, weight, ornament, space, label, and reveal keep their meaning. */
+  [data-block="divider"] {
+    container: dv / inline-size; display: block; font-family: var(--ot-font-sans);
+    /* line inks keep the brand color, lifted only where it would vanish (dark purple on a dark canvas, pale green on white) */
+    --dv-brand-line: oklch(from var(--ot-brand) min(l, .7) c h);
+    --dv-accent-line: oklch(from var(--ot-accent) min(l, .7) c h);
+    /* label inks hold 4.5:1 for 13px text */
+    --dv-brand-text: oklch(from var(--ot-brand) min(l, .45) c h);
+    --dv-accent-text: oklch(from var(--ot-accent) min(l, .46) c h);
+    --dv-fill: var(--dv-brand-line); --dv-text: var(--dv-brand-text);
+    --dv-glow-o: .4;
+    --dv-pad: clamp(4rem, 7cqi, 6rem); --dv-h: 1px;
+  }
+  :where([data-theme="dark"]) [data-block="divider"] {
+    --dv-brand-line: oklch(from var(--ot-brand) max(l, .66) min(c, .14) h);
+    --dv-accent-line: oklch(from var(--ot-accent) max(l, .66) c h);
+    --dv-brand-text: oklch(from var(--ot-brand) max(l, .8) min(c, .12) h);
+    --dv-accent-text: oklch(from var(--ot-accent) max(l, .78) c h);
+    --dv-glow-o: .6;
+  }
+  [data-block="divider"][data-tone="neutral"] { --dv-fill: color-mix(in oklch, var(--ot-fg) 26%, transparent); --dv-text: var(--ot-fg-muted); --dv-glow-o: .5; }
+  [data-block="divider"][data-tone="brand"] { --dv-fill: var(--dv-brand-line); --dv-text: var(--dv-brand-text); }
+  [data-block="divider"][data-tone="accent"] { --dv-fill: var(--dv-accent-line); --dv-text: var(--dv-accent-text); }
+  [data-block="divider"][data-tone="spectrum"] { --dv-fill: linear-gradient(to right, var(--dv-brand-line), var(--dv-accent-line)); --dv-text: var(--dv-brand-text); }
+  [data-block="divider"][data-tone="aurora"] { --dv-fill: linear-gradient(to right, var(--dv-brand-line), var(--dv-accent-line), var(--dv-brand-line)); --dv-text: var(--dv-accent-text); }
+  [data-block="divider"][data-space="sm"] { --dv-pad: clamp(1.5rem, 3cqi, 2rem); }
+  [data-block="divider"][data-space="md"] { --dv-pad: clamp(2.5rem, 5cqi, 4rem); }
+  [data-block="divider"][data-space="xl"] { --dv-pad: clamp(5.5rem, 9cqi, 8rem); }
+  [data-block="divider"][data-weight="bold"] { --dv-h: 2px; }
+
+  /* ---- the rule: line, mark, line ---- */
+  [data-block="divider"] [data-part="rule"] { position: relative; display: flex; align-items: center; justify-content: center; gap: var(--ot-space-md, 16px); width: 100%; padding-block: var(--dv-pad); }
+  [data-block="divider"] [data-part="line"] { display: block; flex: 1 1 2rem; min-width: 2rem; height: 1px; background: var(--dv-fill); }
+  [data-block="divider"] [data-part="line"][data-side="start"] { transform-origin: right; }
+  [data-block="divider"] [data-part="line"][data-side="end"] { transform-origin: left; }
+  [data-block="divider"] [data-part="mark"] { flex: 0 1 auto; max-width: min(36rem, 72%); display: flex; align-items: center; justify-content: center; color: var(--dv-text); }
+  [data-block="divider"] [data-part="label"] { font-size: var(--ot-text-label, .8125rem); font-weight: 600; line-height: 1.4; letter-spacing: var(--ot-tracking-label, .06em); text-transform: uppercase; text-align: center; text-wrap: balance; }
+  /* ornaments: a symbol font that has the glyphs, centered on the line instead of the text baseline */
+  [data-block="divider"] [data-part="ornament"] { display: inline-grid; place-items: center; height: 1.5rem; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; font-size: 1.375rem; line-height: 1; user-select: none; }
+  [data-block="divider"] [data-part="ornament"][data-orn="dot"] { width: 6px; height: 6px; border-radius: 50%; background: currentColor; font-size: 0; }
+
+  /* ---- Glow: the same line with a soft bloom; ends fade out ---- */
+  [data-block="divider"][data-style="glow"] [data-part="rule"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent); mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent); }
+  [data-block="divider"][data-style="glow"] [data-part="line"] { position: relative; height: var(--dv-h); }
+  [data-block="divider"][data-style="glow"] [data-part="line"]::after { content: ""; position: absolute; inset: calc(-10px - var(--dv-h) * 3) 0; background: inherit; filter: blur(7px); opacity: var(--dv-glow-o); border-radius: 50%; pointer-events: none; }
+
+  /* ---- Bleed: today's full-width blend shadow, unchanged in light mode (same height, alphas, and mask).
+     Dark mode lifts the ink so the blend still shows on a dark canvas; a label floats over the blend without narrowing it. ---- */
+  [data-block="divider"] { --dv-wa: .25; --dv-wh: 60px; --dv-b-wash: var(--ot-brand); --dv-a-wash: var(--ot-accent); }
+  [data-block="divider"][data-weight="bold"] { --dv-wa: .35; --dv-wh: 80px; }
+  :where([data-theme="dark"]) [data-block="divider"] { --dv-wa: .3; --dv-b-wash: oklch(from var(--ot-brand) max(l, .6) min(c, .16) h); --dv-a-wash: oklch(from var(--ot-accent) max(l, .62) c h); }
+  :where([data-theme="dark"]) [data-block="divider"][data-weight="bold"] { --dv-wa: .42; }
+  [data-block="divider"] { --dv-bw: oklch(from var(--dv-b-wash) l c h / var(--dv-wa)); --dv-aw: oklch(from var(--dv-a-wash) l c h / var(--dv-wa)); }
+  [data-block="divider"][data-style="bleed"] [data-part="rule"] { display: block; position: relative; }
+  [data-block="divider"] [data-part="wash"] { position: relative; display: block; width: 100%; height: var(--dv-wh); overflow: hidden; background: var(--dv-bw);
+    -webkit-mask-image: radial-gradient(ellipse 60% 100% at 50% 0%, #000 0%, transparent 100%); mask-image: radial-gradient(ellipse 60% 100% at 50% 0%, #000 0%, transparent 100%); }
+  [data-block="divider"][data-tone="neutral"] [data-part="wash"] { background: oklch(from var(--ot-fg-muted) l c h / .15); }
+  [data-block="divider"][data-tone="accent"] [data-part="wash"] { background: var(--dv-aw); }
+  [data-block="divider"][data-tone="spectrum"] [data-part="wash"] { background: linear-gradient(to right, var(--dv-bw), var(--dv-aw)); }
+  [data-block="divider"][data-style="bleed"] [data-part="mark"] { position: absolute; left: 50%; top: calc(var(--dv-pad) + var(--dv-wh) * .42); transform: translate(-50%, -50%); width: max-content; }
+
+  /* ---- Aurora: the northern lights. Brand and accent flow along the line, the glow breathes,
+     and in Bleed, curtains of color sway inside the blend. Static with reduced motion. ---- */
+  [data-block="divider"][data-tone="aurora"] {
+    --dv-aurora: linear-gradient(90deg, var(--dv-brand-line), var(--dv-accent-line), var(--dv-brand-line), var(--dv-accent-line), var(--dv-brand-line));
+    --dv-aurora-wash: linear-gradient(90deg, var(--dv-bw), var(--dv-aw), var(--dv-bw), var(--dv-aw), var(--dv-bw));
+  }
+  [data-block="divider"][data-tone="aurora"] [data-part="line"] { background: var(--dv-aurora); background-size: 200% 100%; }
+  [data-block="divider"][data-tone="aurora"] [data-part="line"][data-side="end"] { background-position: 50% 0; }
+  [data-block="divider"][data-tone="aurora"][data-style="glow"] [data-part="line"]::after { background: var(--dv-aurora); background-size: 200% 100%; }
+  [data-block="divider"][data-tone="aurora"] [data-part="wash"] { --dv-wa: .32; height: calc(var(--dv-wh) * 1.5); background: var(--dv-aurora-wash); background-size: 200% 100%; }
+  :where([data-theme="dark"]) [data-block="divider"][data-tone="aurora"] [data-part="wash"] { --dv-wa: .48; }
+  [data-block="divider"][data-tone="aurora"][data-style="bleed"] [data-part="mark"] { top: calc(var(--dv-pad) + var(--dv-wh) * .6); }
+  [data-block="divider"][data-tone="aurora"] [data-part="wash"]::before, [data-block="divider"][data-tone="aurora"] [data-part="wash"]::after {
+    content: ""; position: absolute; inset: 0 -12%; pointer-events: none;
+    background: linear-gradient(90deg, var(--dv-a-wash), var(--dv-b-wash), var(--dv-a-wash), var(--dv-b-wash), var(--dv-a-wash)) 0 0 / 200% 100%;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 2.1%, rgb(0 0 0 / .45) 2.8%, transparent 3.6%, transparent 4.8%, #000 6.1%, transparent 7.6%, transparent 9.9%, rgb(0 0 0 / .45) 10.5%, transparent 11.2%, transparent 13.0%, rgb(0 0 0 / .7) 13.6%, transparent 14.4%, transparent 15.6%, rgb(0 0 0 / .7) 16.2%, transparent 17.0%, transparent 18.2%, #000 19.2%, transparent 20.5%, transparent 23.7%, #000 24.8%, transparent 26.1%, transparent 29.1%, #000 30.0%, transparent 31.1%, transparent 32.3%, rgb(0 0 0 / .7) 33.6%, transparent 35.2%, transparent 37.7%, rgb(0 0 0 / .45) 38.7%, transparent 39.9%, transparent 42.0%, #000 43.3%, transparent 44.9%, transparent 46.2%, #000 47.3%, transparent 48.6%, transparent 50.9%, #000 51.9%, transparent 53.2%, transparent 56.1%, rgb(0 0 0 / .7) 57.2%, transparent 58.6%, transparent 62.0%, rgb(0 0 0 / .7) 62.9%, transparent 64.0%, transparent 66.6%, rgb(0 0 0 / .7) 68.0%, transparent 69.7%, transparent 71.7%, rgb(0 0 0 / .45) 73.0%, transparent 74.5%, transparent 78.3%, rgb(0 0 0 / .7) 78.9%, transparent 79.6%, transparent 82.5%, rgb(0 0 0 / .45) 83.8%, transparent 85.4%, transparent 88.0%, #000 89.1%, transparent 90.4%, transparent 91.8%, rgb(0 0 0 / .7) 92.7%, transparent 93.8%, transparent 95.4%, #000 96.4%, transparent 97.6%, transparent 100%), linear-gradient(#000 10%, transparent 95%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 2.1%, rgb(0 0 0 / .45) 2.8%, transparent 3.6%, transparent 4.8%, #000 6.1%, transparent 7.6%, transparent 9.9%, rgb(0 0 0 / .45) 10.5%, transparent 11.2%, transparent 13.0%, rgb(0 0 0 / .7) 13.6%, transparent 14.4%, transparent 15.6%, rgb(0 0 0 / .7) 16.2%, transparent 17.0%, transparent 18.2%, #000 19.2%, transparent 20.5%, transparent 23.7%, #000 24.8%, transparent 26.1%, transparent 29.1%, #000 30.0%, transparent 31.1%, transparent 32.3%, rgb(0 0 0 / .7) 33.6%, transparent 35.2%, transparent 37.7%, rgb(0 0 0 / .45) 38.7%, transparent 39.9%, transparent 42.0%, #000 43.3%, transparent 44.9%, transparent 46.2%, #000 47.3%, transparent 48.6%, transparent 50.9%, #000 51.9%, transparent 53.2%, transparent 56.1%, rgb(0 0 0 / .7) 57.2%, transparent 58.6%, transparent 62.0%, rgb(0 0 0 / .7) 62.9%, transparent 64.0%, transparent 66.6%, rgb(0 0 0 / .7) 68.0%, transparent 69.7%, transparent 71.7%, rgb(0 0 0 / .45) 73.0%, transparent 74.5%, transparent 78.3%, rgb(0 0 0 / .7) 78.9%, transparent 79.6%, transparent 82.5%, rgb(0 0 0 / .45) 83.8%, transparent 85.4%, transparent 88.0%, #000 89.1%, transparent 90.4%, transparent 91.8%, rgb(0 0 0 / .7) 92.7%, transparent 93.8%, transparent 95.4%, #000 96.4%, transparent 97.6%, transparent 100%), linear-gradient(#000 10%, transparent 95%);
+    mask-composite: intersect;
+    opacity: .5; filter: blur(1.5px); transform-origin: 50% 0;
+  }
+  [data-block="divider"][data-tone="aurora"] [data-part="wash"]::after {
+    inset: 0 -20%; opacity: .32; filter: blur(4px);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 6.1%, rgb(0 0 0 / .45) 8.8%, transparent 12.2%, transparent 14.9%, rgb(0 0 0 / .7) 16.6%, transparent 18.7%, transparent 26.7%, #000 28.6%, transparent 30.9%, transparent 36.4%, rgb(0 0 0 / .7) 38.0%, transparent 39.9%, transparent 43.8%, #000 45.7%, transparent 47.9%, transparent 54.5%, #000 57.5%, transparent 61.1%, transparent 66.5%, #000 68.3%, transparent 70.3%, transparent 77.9%, rgb(0 0 0 / .7) 79.4%, transparent 81.3%, transparent 85.7%, #000 88.3%, transparent 91.6%, transparent 100%), linear-gradient(#000, transparent 75%);
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 6.1%, rgb(0 0 0 / .45) 8.8%, transparent 12.2%, transparent 14.9%, rgb(0 0 0 / .7) 16.6%, transparent 18.7%, transparent 26.7%, #000 28.6%, transparent 30.9%, transparent 36.4%, rgb(0 0 0 / .7) 38.0%, transparent 39.9%, transparent 43.8%, #000 45.7%, transparent 47.9%, transparent 54.5%, #000 57.5%, transparent 61.1%, transparent 66.5%, #000 68.3%, transparent 70.3%, transparent 77.9%, rgb(0 0 0 / .7) 79.4%, transparent 81.3%, transparent 85.7%, #000 88.3%, transparent 91.6%, transparent 100%), linear-gradient(#000, transparent 75%);
+  }
+  :where([data-theme="dark"]) [data-block="divider"][data-tone="aurora"] [data-part="wash"]::before { opacity: .85; }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-block="divider"][data-tone="aurora"] [data-part="line"] { animation: dvFlow 9s linear infinite; }
+    [data-block="divider"][data-tone="aurora"][data-style="glow"] [data-part="line"]::after { animation: dvFlow 9s linear infinite, dvBreathe 3.6s ease-in-out infinite alternate; }
+    [data-block="divider"][data-tone="aurora"] [data-part="wash"] { animation: dvFlow 16s linear infinite; }
+    [data-block="divider"][data-tone="aurora"] [data-part="wash"]::before { animation: dvFlow 11s linear infinite reverse, dvCurtain 6s ease-in-out infinite alternate; }
+    [data-block="divider"][data-tone="aurora"] [data-part="wash"]::after { animation: dvFlow 19s linear infinite, dvCurtain 8.5s ease-in-out -3s infinite alternate-reverse; }
+  }
+  @keyframes dvFlow { from { background-position-x: 0%; } to { background-position-x: 100%; } }
+  @keyframes dvBreathe { from { opacity: calc(var(--dv-glow-o) * .55); transform: scaleY(.8); } to { opacity: calc(var(--dv-glow-o) * 1.35); transform: scaleY(1.3); } }
+  @keyframes dvCurtain { from { transform: translateX(-3%) skewX(-10deg) scaleY(.88); } to { transform: translateX(3%) skewX(10deg) scaleY(1.08); } }
+
+  /* ---- Draw reveal (same timing as today); nothing moves with reduced motion ---- */
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-ready [data-block="divider"][data-stagger="draw"]:not([data-in]) [data-part="line"] { transform: scaleX(0); }
+    .motion-ready [data-block="divider"][data-stagger="draw"]:not([data-in]) :is([data-part="mark"], [data-part="wash"]) { opacity: 0; }
+    [data-block="divider"][data-stagger="draw"][data-in] [data-part="line"] { animation: dvDraw .7s var(--ot-ease-kinetic, cubic-bezier(.16, 1, .3, 1)) both; }
+    [data-block="divider"][data-stagger="draw"][data-in] [data-part="mark"] { animation: dvFade .5s var(--ot-ease-kinetic, cubic-bezier(.16, 1, .3, 1)) .26s both; }
+    [data-block="divider"][data-stagger="draw"][data-in] [data-part="wash"] { animation: dvFade .4s ease-in both; }
+    [data-block="divider"][data-tone="aurora"][data-stagger="draw"][data-in] [data-part="line"] { animation: dvDraw .7s var(--ot-ease-kinetic, cubic-bezier(.16, 1, .3, 1)) both, dvFlow 9s linear infinite; }
+    [data-block="divider"][data-tone="aurora"][data-stagger="draw"][data-in] [data-part="wash"] { animation: dvFade .4s ease-in both, dvFlow 16s linear infinite; }
+  }
+  @keyframes dvDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes dvFade { from { opacity: 0; } }
+}

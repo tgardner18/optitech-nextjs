@@ -123,22 +123,14 @@ export default async function SidebarNav() {
 
       {/* ── Desktop sidebar rail — client shell handles animation + toggle ─────── */}
       <SidebarNavShell defaultOpen={!isPreview}>
-        {/* Logo */}
-        <div className="px-lg py-md shrink-0 border-b border-fg/8">
-          <a
-            href={localizedHref('/', locale)}
-            aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="block"
-          >
+        <div data-part="rail-logo">
+          <a href={localizedHref('/', locale)} aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}>
             {logoEl}
           </a>
         </div>
 
-        {/* Nav items — scrollable if they overflow */}
-        <nav
-          aria-label="Primary navigation"
-          className="flex-1 overflow-y-auto py-sm px-xs"
-        >
+        {/* Nav items: scrollable if they overflow */}
+        <nav aria-label="Primary navigation" data-part="rail-nav">
           {navItems.map(item => (
             <SidebarNavItem
               key={item.label}
@@ -149,45 +141,32 @@ export default async function SidebarNav() {
           ))}
         </nav>
 
-        {/* Bottom: CTA anchored to rail bottom, utilities above. The divider
-            is the same brand→accent horizon hairline used by the split-bar
-            header and the mega-menu dropdown, not a flat neutral border —
-            ties the rail into the same visual system as the rest of the nav. */}
-        <div
-          aria-hidden="true"
-          className="h-px shrink-0"
-          style={{ background: 'linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent)' }}
-        />
-        <div className="p-md shrink-0 space-y-sm">
+        <div data-part="rail-foot">
           {showCta && (
             <Button href={ctaHref} size="sm" className="w-full justify-center">
               {ctaLabel}
             </Button>
           )}
-          <div className="flex items-center gap-xs">
+          <div data-part="rail-tools">
             <SearchTrigger />
-            <LocaleSelector enabledLocales={enabledLocales} />
-            <ThemeToggle />
+            <LocaleSelector enabledLocales={enabledLocales} scoped />
+            <ThemeToggle scoped />
             {commerce.enabled && <CommerceHeaderActions initialBagCount={commerce.bagCount} />}
           </div>
         </div>
       </SidebarNavShell>
 
       {/* ── Mobile top bar — rail is hidden; hamburger takes over ───────────── */}
-      <header className="lg:hidden sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-fg/5">
-        <div className="flex items-center justify-between px-md py-md">
-          <a
-            href={localizedHref('/', locale)}
-            aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}
-            className="flex items-center h-12"
-          >
+      <header data-block="site-nav" data-style="sidebar-top">
+        <div data-part="bar">
+          <a href={localizedHref('/', locale)} data-part="logo" aria-label={`${logoAlt} — ${t(locale, 'nav.home')}`}>
             {logoEl}
           </a>
-          <div className="flex items-center gap-sm">
+          <div data-part="mobile-tools">
             <SearchTrigger />
-            <ThemeToggle />
+            <ThemeToggle scoped />
             {commerce.enabled && <CommerceHeaderActions initialBagCount={commerce.bagCount} showWishlist={false} showAccount />}
-            <MobileMenu navItems={navItems} ctaLabel={showCta ? ctaLabel : ''} ctaHref={ctaHref} enabledLocales={enabledLocales} />
+            <MobileMenu navStyle="sidebar" navItems={navItems} ctaLabel={showCta ? ctaLabel : ''} ctaHref={ctaHref} enabledLocales={enabledLocales} />
           </div>
         </div>
       </header>

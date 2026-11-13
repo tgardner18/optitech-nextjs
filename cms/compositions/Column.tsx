@@ -115,6 +115,19 @@ export default function Column({ node, displaySettings = {}, children }: Props) 
     )
   }
 
+  if (displaySettings.formLayout === true || displaySettings.formLayout === 'true') {
+    const n = Number(String(displaySettings.gridSpan ?? '').replace('col', ''))
+    return (
+      <div
+        data-part="col"
+        style={Number.isFinite(n) && n > 0 ? ({ '--span': n } as React.CSSProperties) : undefined}
+        {...pa(node)}
+      >
+        {content}
+      </div>
+    )
+  }
+
   const span    = String(displaySettings.gridSpan           ?? 'auto')
   const spacing = String(displaySettings.contentSpacing    ?? 'medium')
   const justify = String(displaySettings.justifyContent    ?? 'start')

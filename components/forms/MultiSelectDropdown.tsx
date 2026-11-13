@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import FieldWrapper from './FieldWrapper'
-import { inputBase } from './fieldStyles'
+import FieldWrapper, { describedBy } from './FieldWrapper'
 
 type Option = { caption: string; value: string; checked: boolean }
 
@@ -74,36 +73,25 @@ export default function MultiSelectDropdown({ id, name, label, placeholder, tool
 
   return (
     <FieldWrapper id={id} label={label} tooltip={tooltip} required={required}>
-      <div className="relative" ref={rootRef}>
+      <div data-part="select" ref={rootRef}>
         <button
           type="button"
           id={id}
+          data-part="input"
+          data-empty={selectedCaptions.length === 0 ? '' : undefined}
           aria-expanded={open}
           aria-controls={panelId}
+          aria-describedby={describedBy(id, tooltip)}
           onClick={() => setOpen(o => !o)}
-          className={`${inputBase} appearance-none cursor-pointer pr-10 text-left ${selectedCaptions.length === 0 ? 'text-fg/25' : ''}`}
         >
           {summary}
         </button>
-        <ChevronDown
-          size={14}
-          className={`absolute right-md top-1/2 -translate-y-1/2 pointer-events-none text-fg/40 transition-transform duration-150 ease-quick ${open ? 'rotate-180' : ''}`}
-          aria-hidden="true"
-        />
-        <div
-          id={panelId}
-          hidden={!open}
-          role="group"
-          aria-label={label}
-          className="absolute z-10 mt-xs w-full max-h-64 overflow-y-auto bg-surface border border-fg/10 rounded-input shadow-[0_8px_24px_var(--ot-bloom-brand-faint)] p-sm flex flex-col gap-2"
-        >
+        <ChevronDown data-part="chev" aria-hidden="true" />
+        <div id={panelId} hidden={!open} role="group" aria-label={label} data-part="menu">
           {options.map((opt, i) => {
             const optId = `${id}-${i}`
             return (
-              <label
-                key={optId}
-                className="flex items-center gap-sm text-body text-fg cursor-pointer select-none px-sm py-1.5 rounded-input hover:bg-fg/5 group"
-              >
+              <label key={optId} data-part="option">
                 <input
                   type="checkbox"
                   id={optId}
@@ -111,11 +99,9 @@ export default function MultiSelectDropdown({ id, name, label, placeholder, tool
                   value={opt.value}
                   checked={selected.includes(opt.value)}
                   onChange={e => toggleValue(opt.value, e.target.checked)}
-                  className="w-4 h-4 shrink-0 rounded-none accent-[var(--ot-brand)]"
+                  data-part="check"
                 />
-                <span className="text-fg-muted group-has-[:checked]:text-fg transition-colors duration-150 ease-quick">
-                  {opt.caption}
-                </span>
+                <span>{opt.caption}</span>
               </label>
             )
           })}

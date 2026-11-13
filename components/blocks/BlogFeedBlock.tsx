@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { stableId } from '@/lib/stableId'
 import BlogFeedClient, { type BlogFeedClientProps } from './BlogFeedClient'
 import type { BlogFeedPost } from '@/lib/blogFeed'
 
@@ -42,14 +42,6 @@ const HEADING_CLASS: Record<BlogFeedHeadingSize, string> = {
   title:    'text-title leading-title tracking-title font-semibold',
 }
 
-// ─── Background + theme map ────────────────────────────────────────────────────
-
-const BG_CLASS: Record<BlogFeedColor, string> = {
-  canvas:  'bg-canvas',
-  surface: 'bg-surface',
-  brand:   'bg-brand-fill',
-}
-
 // ─── BlogFeedBlock ─────────────────────────────────────────────────────────────
 
 export default function BlogFeedBlock({
@@ -70,36 +62,31 @@ export default function BlogFeedBlock({
   } = styleOptions
 
   const onBrand = color === 'brand'
-  const id      = useId()
-  // Strip React's colon characters so the id is a valid CSS/DOM selector
-  const anchorId = `blog-feed-${id.replace(/:/g, '')}`
+  // Server component: a deterministic id (useId crashes server components in production here)
+  const anchorId = stableId('blog-feed', `${heading ?? ''}|${topics.join(',')}|${topicFilter ?? ''}`)
 
   const colCount: BlogFeedClientProps['columns'] = columns === 'col2' ? 2 : 3
 
-  const headingTextClass = onBrand
-    ? `${HEADING_CLASS[headingSize]} text-fg-on-brand`
-    : `${HEADING_CLASS[headingSize]} text-fg`
-
   return (
     <section
-      className={`${BG_CLASS[color]} px-md py-xl lg:px-lg`}
-      {...(onBrand ? { 'data-theme': 'dark' } : {})}
+      data-block="blog-feed"
+      data-color={color}
+      data-columns={colCount}
+      data-theme={onBrand ? 'dark' : undefined}
     >
-      <div className="mx-auto max-w-7xl">
+      <div data-part="inner">
 
         {/* Scroll anchor — page-change scrolls here so the heading stays visible */}
         <div id={anchorId} aria-hidden style={{ scrollMarginTop: '5rem' }} />
 
         {/* Heading — rendered server-side so it carries preview attributes + is SEO-indexable */}
         {heading && (
-          <div className="mb-xl">
-            <h2 className={headingTextClass} {...pa('heading')}>
-              {heading}
-            </h2>
-          </div>
+          <h2 data-part="heading" className={HEADING_CLASS[headingSize]} {...pa('heading')}>
+            {heading}
+          </h2>
         )}
 
-        {/* Interactive feed — client component handles view toggle, chips, pagination */}
+        {/* Interactive feed — client component handles view toggle, filters, pagination */}
         <BlogFeedClient
           posts={posts}
           topics={topics}

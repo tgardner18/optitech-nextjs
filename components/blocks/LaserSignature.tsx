@@ -60,11 +60,8 @@ export default function LaserSignature({ name, color, epiProps }: Props) {
       ([entry]) => {
         if (entry.isIntersecting) {
           // Remove first to reset mid-cycle; reflow forces browser to clear state
-          delete wrap.dataset.active
-          void wrap.offsetHeight
           wrap.dataset.active = 'true'
-        } else {
-          delete wrap.dataset.active
+          io.disconnect() // write on once, not on every re-entry
         }
       },
       { threshold: 0.4 }

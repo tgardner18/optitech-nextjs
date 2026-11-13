@@ -67,19 +67,8 @@ export type ImageBlockProps = {
   caption?: string;
   styleOptions?: ImageStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
-  /** Fill the parent column's height instead of constraining by aspect ratio.
-   *  true  — standalone in a VB column: stretch to fill the column height.
-   *  false — editorial layout: use CSS aspect-ratio. */
+  /** @deprecated No longer used. The image always keeps its aspect ratio (see media.css). */
   fillHeight?: boolean;
-};
-
-// ─── Aspect ratio map ─────────────────────────────────────────────────────────
-
-const RATIO_CLASS: Record<NonNullable<ImageStyleOptions["ratio"]>, string> = {
-  "16:9": "aspect-video",
-  "4:3":  "aspect-4/3",
-  "3:2":  "aspect-3/2",
-  "1:1":  "aspect-square",
 };
 
 // ─── Media size map (compact, never-crop boxes for logos/icons) ──────────────
@@ -100,7 +89,6 @@ export default function ImageBlock({
   caption,
   styleOptions = {},
   previewAttrs,
-  fillHeight = false,
 }: ImageBlockProps) {
   const {
     ratio,
@@ -116,9 +104,6 @@ export default function ImageBlock({
   } = styleOptions;
 
   const isCompact = mediaSize !== "fill";
-  /* Compact sizing takes over the box entirely — it never stretches to the
-   * column, so fillHeight is meaningless while it's active. */
-  const effectiveFillHeight = fillHeight && !isCompact;
   const effectiveObjectFit = isCompact ? "contain" : objectFit;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -161,8 +146,6 @@ export default function ImageBlock({
     };
   }, [lightboxOpen]);
 
-  const aspectClass = ratio ? RATIO_CLASS[ratio] : "aspect-video";
-
   /* clip-path wipe: image reveals left-to-right as the right inset shrinks */
   const imageRevealStyle: React.CSSProperties = animate
     ? {
@@ -183,63 +166,15 @@ export default function ImageBlock({
   const hasInsetCaption = caption && captionPosition === "inset";
   const hasBelowCaption = caption && captionPosition === "below";
 
-  /*
-   * Shadow bloom: two radial gradients share the bottom of the figure —
-   * teal (brand) pools bottom-left, signal green (accent) pools bottom-right.
-   * Heavy blur (~52px) diffuses them into a chromatic halo.
-   * isolation: isolate on the figure creates a contained stacking context so
-   * z-index: -1 here paints between the page canvas and the image, not behind
-   * the entire page.
-   */
-  const shadowStyle: React.CSSProperties = {
-    position: "absolute",
-    left: "6%",
-    right: "6%",
-    top: "75%",
-    bottom: "-28px",
-    background:
-      "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
-      "radial-gradient(ellipse at 78% 100%, var(--ot-bloom-accent) 0%, transparent 58%)",
-    filter: "blur(52px)",
-    transform: "scaleX(0.86)",
-    zIndex: -1,
-  };
-
-  /*
-   * Glow frame: gradient brand→accent wrapper (3 px on all sides) with an
-   * outer ambient bloom — mirrors the .rte-glow-frame treatment in RichText.
-   */
-  const glowStyle: React.CSSProperties = frame === "glow"
-    ? {
-        background:   "linear-gradient(135deg, var(--ot-brand), var(--ot-accent))",
-        borderRadius: "var(--ot-radius-surface)",
-        boxShadow:
-          "0 0 32px 8px var(--ot-bloom-brand-faint), " +
-          "0 0 64px 20px var(--ot-bloom-accent-faint)",
-      }
-    : {};
-
-  // ── Core image markup (shared between normal and lightbox-trigger modes) ────
-
-  /* "contain" (and compact mode, which is always contain) can leave the box
-   * only partially covered (e.g. a wide logo in a tall column) — give it a
-   * neutral backing so the gap doesn't read as a transparent hole. Frame
-   * treatments already supply their own backing. */
-  const containsWithoutFrame = (effectiveObjectFit === "contain" || isCompact) && !frame;
-  const containerBgClass = frame === "offset" || frame === "glow" || containsWithoutFrame
-    ? " bg-canvas"
-    : "";
-
-  const sizeClass = isCompact
-    ? MEDIA_SIZE_CLASS[mediaSize as "small" | "medium" | "large"]
-    : effectiveFillHeight
-    ? `flex-1${frame !== "glow" ? " min-h-100" : ""}`
-    : aspectClass;
+  /* Frame, shadow bloom, overlay tint and caption styling all live in media.css, keyed on the
+   * figure's data attributes. Only the compact box keeps utility sizing (it never uses a ratio). */
+  const boxSizeClass = isCompact ? ` ${MEDIA_SIZE_CLASS[mediaSize as "small" | "medium" | "large"]}` : "";
 
   const imageContainerEl = (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-ot-surface ${sizeClass}${frame === "offset" ? " z-10" : ""}${containerBgClass}`}
+      data-part="box"
+      className={boxSizeClass.trim() || undefined}
       {...(previewAttrs?.image ?? {})}
     >
       {animate && (
@@ -251,22 +186,16 @@ export default function ImageBlock({
       )}
       <div className="absolute inset-0" style={imageRevealStyle}>
         <Image
+          data-part="img"
           src={src}
           alt={alt}
           fill
-          className={frame !== "glow" && effectiveObjectFit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
-        {overlay && (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: "var(--ot-brand)", opacity: 0.4, mixBlendMode: "multiply" }}
-          />
-        )}
+        {overlay && <div data-part="overlay" aria-hidden="true" />}
         {hasInsetCaption && (
-          <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
-            <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+          <figcaption data-part="cap-inset">
+            <p {...(previewAttrs?.caption ?? {})}>{caption}</p>
           </figcaption>
         )}
       </div>
@@ -275,7 +204,8 @@ export default function ImageBlock({
       {lightbox && (
         <div
           aria-hidden="true"
-          className="absolute top-2 right-2 z-30 rounded-ot-control p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
+          data-part="expand"
+          className="rounded-ot-control p-1.5 bg-canvas/75 backdrop-blur-sm text-fg opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity motion-safe:duration-150 pointer-events-none"
         >
           <Maximize2 className="w-4 h-4" />
         </div>
@@ -285,30 +215,23 @@ export default function ImageBlock({
 
   return (
     <>
-      <figure className={`relative${frame === "glow" ? " mx-4" : isCompact ? " inline-block" : " w-full"}${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
-
-        {shadow && <div aria-hidden="true" style={shadowStyle} />}
-
-        <div
-          className={
-            frame === "offset"
-              ? `relative overflow-hidden pr-3 pb-3${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
-              : frame === "glow"
-              ? `p-[3px]${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
-              : `overflow-hidden${effectiveFillHeight ? " flex-1 min-h-100 flex flex-col" : ""}`
-          }
-          style={frame === "glow" ? glowStyle : undefined}
-        >
-          {frame === "offset" && (
-            <div aria-hidden="true" className={`absolute top-3 left-3 right-0 bottom-0 rounded-ot-surface ${invertedBg ? "bg-fg-on-brand/20" : "bg-brand"}`} />
-          )}
-
+      <figure
+        data-part="figure"
+        data-kind="image"
+        data-frame={frame ?? "none"}
+        data-shadow={shadow ? "yes" : "no"}
+        data-ratio={ratio ?? "16:9"}
+        data-fit={effectiveObjectFit}
+        data-color={invertedBg ? "brand" : undefined}
+        data-compact={isCompact ? "" : undefined}
+      >
+        <div data-part="frame">
           {lightbox ? (
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label={`View full size${alt ? `: ${alt}` : ''}`}
-              className={`${effectiveFillHeight ? "flex flex-col flex-1 w-full " : isCompact ? "inline-block " : "block w-full "}text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
+              className={`${isCompact ? "inline-block " : "block w-full "}text-left group cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
             >
               {imageContainerEl}
             </button>
@@ -318,8 +241,8 @@ export default function ImageBlock({
         </div>
 
         {hasBelowCaption && (
-          <figcaption className="mt-sm">
-            <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+          <figcaption data-part="cap-below">
+            <p {...(previewAttrs?.caption ?? {})}>{caption}</p>
           </figcaption>
         )}
       </figure>

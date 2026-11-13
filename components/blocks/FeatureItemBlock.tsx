@@ -21,6 +21,9 @@ export default function FeatureItemBlock({ feature, styleOptions = {} }: Feature
     <div
       className={cn(isDarkSurface && 'bg-brand-fill rounded-ot-surface')}
       data-theme={isDarkSurface ? 'dark' : undefined}
+      data-block="feature"
+      data-solo=""
+      data-color={styleOptions.color ?? 'canvas'}
     >
       <FeatureTile feature={feature} styleOptions={styleOptions} variant="card" />
     </div>

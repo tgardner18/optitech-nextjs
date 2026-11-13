@@ -1,0 +1,347 @@
+/* callout.css — OT_CalloutBlock (V3)
+ *
+ * Imported from app/globals.css into the `components` layer. Uses only existing
+ * --ot-* tokens; every selector is scoped to .ot-callout.
+ * Variants: filled | bordered | bar | split.
+ *
+ * Light/dark: the mode-dependent numbers (--co-*) are declared on the
+ * [data-theme] element itself and inherited, so the NEAREST theme wins when a
+ * dark section is nested inside a light page (or the reverse).
+ */
+
+@property --c-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --c-rail  { syntax: "<percentage>"; inherits: false; initial-value: 100%; }
+
+/* ── Mode numbers (dark is the repo default) ─────────────────────────────── */
+:root, [data-theme="dark"] {
+  --co-fg-lo: .74;  --co-fg-hi: 1;     /* intent text lightness range        */
+  --co-s-lo:  .42;  --co-s-hi:  .52;   /* solid fill lightness range         */
+  --co-s2-lo: .3;   --co-s2-hi: .4;    /* solid fill, deep stop              */
+  --co-glow:  .42;
+  --co-edge:  .45;
+  --co-line:  .12;
+  --co-elev:  color-mix(in oklab, var(--ot-canvas), var(--ot-fg) 6%);
+}
+[data-theme="light"] {
+  --co-fg-lo: 0;    --co-fg-hi: .52;
+  --co-s-lo:  0;    --co-s-hi:  .52;
+  --co-s2-lo: 0;    --co-s2-hi: .4;
+  --co-glow:  .32;
+  --co-edge:  .5;
+  --co-line:  .1;
+  --co-elev:  color-mix(in oklab, var(--ot-canvas), #fff 70%);
+}
+
+.ot-callout {
+  width: 100%;
+  container-type: inline-size;
+  --i: var(--ot-intent-info);
+  --i-bg: var(--ot-intent-info-bg);
+  --i-border: var(--ot-intent-info-border);
+  --i-fg-raw: var(--ot-intent-info-fg);
+  --i-fg:      oklch(from var(--i-fg-raw) max(min(l, var(--co-fg-hi)), var(--co-fg-lo)) c h);
+  --i-solid:   oklch(from var(--i) max(min(l, var(--co-s-hi)), var(--co-s-lo)) c h);
+  --i-solid-2: oklch(from var(--i) max(min(calc(l - .1), var(--co-s2-hi)), var(--co-s2-lo)) c h);
+  --i-ink: #fff;
+  --i-ink-soft: color-mix(in oklab, var(--i-ink) 90%, transparent);
+  --i-btn-fg: var(--i-solid-2);
+  --i-rail: oklch(from var(--i) max(min(l, calc(var(--co-fg-hi) + .1)), var(--co-fg-lo)) c h);
+  --i-edge: oklch(from var(--i-rail) l c h / var(--co-edge));
+  --i-halo: oklch(from var(--i) l c h / .2);
+  --i-glow: oklch(from var(--i) l c h / var(--co-glow));
+  --c-line: oklch(from var(--ot-fg) l c h / var(--co-line));
+  --c-elev: var(--co-elev);
+  --c-rise: 10px;
+}
+.ot-callout[data-intent="neutral"] { --i: var(--ot-intent-neutral); --i-bg: var(--ot-intent-neutral-bg); --i-border: var(--ot-intent-neutral-border); --i-fg-raw: var(--ot-intent-neutral-fg); }
+.ot-callout[data-intent="success"] { --i: var(--ot-intent-success); --i-bg: var(--ot-intent-success-bg); --i-border: var(--ot-intent-success-border); --i-fg-raw: var(--ot-intent-success-fg); }
+.ot-callout[data-intent="warning"] { --i: var(--ot-intent-warning); --i-bg: var(--ot-intent-warning-bg); --i-border: var(--ot-intent-warning-border); --i-fg-raw: var(--ot-intent-warning-fg); }
+.ot-callout[data-intent="danger"]  { --i: var(--ot-intent-danger);  --i-bg: var(--ot-intent-danger-bg);  --i-border: var(--ot-intent-danger-border);  --i-fg-raw: var(--ot-intent-danger-fg); }
+.ot-callout[data-intent="brand"]   { --i: var(--ot-intent-brand);   --i-bg: var(--ot-intent-brand-bg);   --i-border: var(--ot-intent-brand-border);   --i-fg-raw: var(--ot-intent-brand-fg); }
+
+/* Warning is too light for white ink: bright fill, dark ink */
+.ot-callout[data-intent="warning"] {
+  --i-solid: var(--i);
+  --i-solid-2: oklch(from var(--i) calc(l - .09) calc(c * 1.05) h);
+  --i-ink: oklch(from var(--i) .25 .06 h);
+  --i-btn-fg: var(--i);
+}
+
+/* ── Shared anatomy ──────────────────────────────────────────────────────── */
+.ot-callout [data-part="surface"] {
+  position: relative; isolation: isolate;
+  display: flex; align-items: flex-start; gap: 1rem;
+  border-radius: var(--ot-radius-surface);
+  color: var(--ot-fg); text-align: left;
+}
+.ot-callout [data-part="icon"] { position: relative; flex: none; display: grid; place-items: center; color: var(--i-fg); }
+.ot-callout [data-part="glyph"] { position: relative; display: grid; place-items: center; }
+.ot-callout [data-part="glyph"]::before {
+  content: ""; position: absolute; inset: -.5rem; border-radius: 50%;
+  border: 2px solid currentColor; opacity: 0; pointer-events: none;
+}
+.ot-callout svg[data-callout-icon] {
+  width: 1.75rem; height: 1.75rem; overflow: visible;
+  fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round;
+}
+.ot-callout [data-part="watermark"] { display: none; }
+.ot-callout [data-part="content"] { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .375rem; }
+.ot-callout [data-part="label"] {
+  display: flex; align-items: center; gap: .5rem; margin: 0 0 .125rem;
+  font-size: .6875rem; line-height: 1; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--i-fg);
+}
+.ot-callout [data-part="dot"] { position: relative; flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ot-callout [data-part="dot"]::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0; }
+.ot-callout [data-part="heading"] {
+  margin: 0; color: var(--ot-fg);
+  font-size: 1.0625rem; line-height: 1.35; font-weight: 650; letter-spacing: -.01em; text-wrap: balance;
+}
+.ot-callout [data-part="body"] { margin: 0; color: var(--ot-fg-muted); font-size: .9375rem; line-height: 1.6; text-wrap: pretty; }
+.ot-callout [data-part="cta"] {
+  align-self: flex-start; margin-top: .625rem;
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .875rem; font-weight: 600; line-height: 1; white-space: nowrap;
+  color: var(--i-fg); text-decoration: none;
+  transition: transform .2s var(--ot-ease-kinetic), background-color .2s, filter .2s, box-shadow .2s;
+}
+.ot-callout [data-part="cta"] svg { width: 1rem; height: 1rem; flex: none; transition: transform .25s var(--ot-ease-kinetic); }
+.ot-callout [data-part="cta"]:hover svg { transform: translateX(3px); }
+.ot-callout :focus-visible { outline: 2px solid var(--i-fg); outline-offset: 3px; }
+.ot-callout [data-part="dismiss"] {
+  position: absolute; top: .75rem; right: .75rem;
+  width: 2rem; height: 2rem; display: grid; place-items: center;
+  border: 0; background: transparent; color: var(--ot-fg-muted); cursor: pointer;
+  border-radius: var(--ot-radius-control); transition: background-color .2s, color .2s;
+}
+.ot-callout [data-part="dismiss"]:hover { background: var(--c-line); color: var(--ot-fg); }
+.ot-callout [data-part="dismiss"] svg { width: 1rem; height: 1rem; }
+.ot-callout[data-dismissible="yes"] [data-part="content"] { padding-right: 2.25rem; }
+
+/* Alignment: text centers, icon stays anchored left */
+.ot-callout[data-align="center"]:not([data-variant="bar"]) [data-part="content"] { align-items: center; text-align: center; }
+.ot-callout[data-align="center"] [data-part="label"] { justify-content: center; }
+.ot-callout[data-align="center"]:not([data-variant="bar"]) [data-part="cta"] { align-self: center; }
+
+/* Compact: tighter padding; with no body, heading + CTA share one row */
+.ot-callout[data-size="compact"][data-body="no"]:not([data-variant="bar"]) [data-part="content"] {
+  flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+}
+.ot-callout[data-size="compact"][data-body="no"]:not([data-variant="bar"]) [data-part="heading"] { flex: 1 1 14rem; }
+.ot-callout[data-size="compact"][data-body="no"]:not([data-variant="bar"]) [data-part="label"] { display: none; }
+.ot-callout[data-size="compact"][data-body="no"]:not([data-variant="bar"]) [data-part="cta"] { margin: 0 0 0 auto; }
+.ot-callout[data-size="compact"][data-variant="filled"] [data-part="surface"] { padding-block: 1rem; }
+.ot-callout[data-size="compact"][data-variant="bordered"] [data-part="surface"] { padding-block: .875rem; }
+.ot-callout[data-size="compact"][data-variant="split"] [data-part="content"] { padding-block: .875rem; }
+
+/* ── Filled: gradient card, open icon, watermark ─────────────────────────── */
+.ot-callout[data-variant="filled"] [data-part="surface"] {
+  gap: 1.125rem; padding: 1.5rem 1.75rem 1.625rem 1.5rem; overflow: hidden;
+  color: var(--i-ink);
+  background:
+    radial-gradient(120% 170% at 0% 0%, oklch(1 0 0 / .2), transparent 46%),
+    linear-gradient(135deg, var(--i-solid), var(--i-solid-2));
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / .12),
+    0 0 0 1px oklch(from var(--i-solid) l c h / .3),
+    0 2px 5px -1px oklch(from var(--ot-fg) l c h / .12),
+    0 14px 36px -10px var(--i-glow),
+    0 0 32px -6px var(--i-halo);
+  transition: box-shadow .35s var(--ot-ease-kinetic), transform .35s var(--ot-ease-kinetic);
+}
+.ot-callout[data-variant="filled"] [data-part="surface"]:hover {
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / .14),
+    0 0 0 1px oklch(from var(--i-solid) l c h / .4),
+    0 4px 8px -2px oklch(from var(--ot-fg) l c h / .14),
+    0 22px 48px -12px var(--i-glow),
+    0 0 40px -6px var(--i-halo);
+}
+.ot-callout[data-variant="filled"] [data-part="surface"]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, oklch(1 0 0 / .16) 48%, transparent 66%);
+  transform: translateX(-100%);
+}
+.ot-callout[data-variant="filled"] [data-part="icon"] { color: var(--i-ink); margin-top: -.125rem; }
+.ot-callout[data-variant="filled"] [data-part="glyph"]::after {
+  content: ""; position: absolute; inset: -.75rem; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, oklch(from var(--i-ink) l c h / .2), transparent);
+}
+.ot-callout[data-variant="filled"] svg[data-callout-icon] { width: 2.125rem; height: 2.125rem; }
+.ot-callout[data-variant="filled"] [data-part="watermark"] {
+  display: block; position: absolute; z-index: -1; right: -2.25rem; bottom: -3.5rem;
+  width: 12.5rem; height: 12.5rem; color: var(--i-ink); opacity: .13; pointer-events: none;
+  transform: rotate(-12deg); transition: transform 1s var(--ot-ease-kinetic);
+}
+.ot-callout[data-variant="filled"] [data-part="watermark"] svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.ot-callout[data-variant="filled"] [data-part="surface"]:hover [data-part="watermark"] { transform: rotate(-3deg) scale(1.05); }
+.ot-callout[data-variant="filled"] [data-part="label"] { color: var(--i-ink); opacity: .85; }
+.ot-callout[data-variant="filled"] [data-part="heading"] { color: var(--i-ink); font-size: 1.125rem; }
+.ot-callout[data-variant="filled"] [data-part="body"] { color: var(--i-ink-soft); }
+.ot-callout[data-variant="filled"] [data-part="cta"] {
+  height: 2.375rem; padding: 0 1.125rem; border-radius: var(--ot-radius-control);
+  background: var(--i-ink); color: var(--i-btn-fg);
+  box-shadow: 0 8px 20px -10px oklch(from var(--ot-fg) l c h / .4);
+}
+.ot-callout[data-variant="filled"] [data-part="cta"]:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -10px oklch(from var(--ot-fg) l c h / .45); }
+.ot-callout[data-variant="filled"] :focus-visible { outline-color: var(--i-ink); }
+.ot-callout[data-variant="filled"] [data-part="dismiss"] { color: var(--i-ink-soft); }
+.ot-callout[data-variant="filled"] [data-part="dismiss"]:hover { background: oklch(from var(--i-ink) l c h / .14); color: var(--i-ink); }
+
+/* ── Bordered: visible border on all edges + 5px left rail ───────────────── */
+.ot-callout[data-variant="bordered"] [data-part="surface"] {
+  gap: 1.125rem; padding: 1.375rem 1.75rem 1.5rem 1.75rem;
+  border: 1.5px solid var(--i-edge);
+  background:
+    linear-gradient(var(--i-rail), var(--i-rail)) 0 0 / 5px var(--c-rail) no-repeat,
+    linear-gradient(90deg, var(--i-bg), transparent 55%),
+    var(--c-elev);
+  box-shadow: 0 1px 2px oklch(from var(--ot-fg) l c h / .05), 0 14px 32px -20px var(--i-glow);
+  transition: border-color .25s, box-shadow .3s var(--ot-ease-kinetic), transform .3s var(--ot-ease-kinetic);
+}
+.ot-callout[data-variant="bordered"] [data-part="surface"]:hover {
+  border-color: var(--i-rail); transform: translateY(-1px);
+  box-shadow: 0 2px 4px oklch(from var(--ot-fg) l c h / .05), 0 20px 40px -20px var(--i-glow);
+}
+.ot-callout[data-variant="bordered"] [data-part="surface"]::after {
+  content: ""; position: absolute; inset: -1.5px; padding: 1.5px; border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--c-angle), transparent 0 60%, var(--i-rail) 82%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0;
+}
+/* Bold open icon: no chip, no box. Heavier stroke and larger size carry the weight. */
+.ot-callout[data-variant="bordered"] [data-part="icon"] { color: var(--i-rail); margin-top: -.0625rem; }
+.ot-callout[data-variant="bordered"] svg[data-callout-icon] { width: 2rem; height: 2rem; stroke-width: 2.75; }
+.ot-callout[data-variant="bordered"] [data-part="glyph"]::before { inset: -.5rem; }
+.ot-callout[data-variant="bordered"] [data-part="cta"] {
+  height: 2.375rem; padding: 0 1.125rem; border-radius: var(--ot-radius-control);
+  background: var(--i-solid); color: var(--i-ink);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / .16), 0 6px 16px -8px var(--i-glow);
+}
+.ot-callout[data-variant="bordered"] [data-part="cta"]:hover { transform: translateY(-1px); filter: brightness(1.06); }
+
+/* ── Bar: notification strip with solid intent tag ───────────────────────── */
+.ot-callout[data-variant="bar"] [data-part="surface"] {
+  align-items: center; flex-wrap: wrap; gap: .625rem .875rem;
+  padding: .4375rem .4375rem .4375rem .5rem; overflow: hidden;
+  background: var(--c-elev);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 1px 2px oklch(from var(--ot-fg) l c h / .04), 0 12px 30px -16px var(--i-glow);
+}
+.ot-callout[data-variant="bar"][data-sticky="yes"] [data-part="surface"] { position: fixed; top: 0; left: 0; right: 0; z-index: 50; border-radius: 0; }
+.ot-callout[data-variant="bar"] [data-part="surface"]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(100deg, transparent 35%, var(--i-halo) 50%, transparent 65%);
+  transform: translateX(-110%);
+}
+.ot-callout[data-variant="bar"] [data-part="tag"] {
+  display: inline-flex; align-items: center; gap: .5rem; flex: none;
+  height: 2.125rem; padding: 0 .875rem 0 .625rem;
+  border-radius: max(0px, calc(var(--ot-radius-surface) - .375rem));
+  background: linear-gradient(135deg, var(--i-solid), var(--i-solid-2)); color: var(--i-ink);
+  font-size: .6875rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap;
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / .18), 0 4px 12px -6px var(--i-glow);
+}
+.ot-callout[data-variant="bar"][data-label="no"] [data-part="tag"] { padding: 0 .5rem; }
+.ot-callout[data-variant="bar"] [data-part="icon"] { color: var(--i-ink); }
+.ot-callout[data-variant="bar"] svg[data-callout-icon] { width: 1.125rem; height: 1.125rem; stroke-width: 2.5; }
+.ot-callout[data-variant="bar"] [data-part="glyph"]::before { inset: -.375rem; }
+.ot-callout[data-variant="bar"] [data-part="content"] { flex: 1 1 18rem; flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding-right: 0; }
+.ot-callout[data-variant="bar"] [data-part="heading"] { flex: 1 1 14rem; font-size: .9375rem; font-weight: 600; text-wrap: pretty; }
+.ot-callout[data-variant="bar"][data-align="center"] [data-part="heading"] { text-align: center; }
+.ot-callout[data-variant="bar"] [data-part="cta"] {
+  margin: 0 0 0 auto; height: 2.125rem; padding: 0 .875rem;
+  border-radius: max(0px, calc(var(--ot-radius-surface) - .375rem));
+  background: var(--i-bg);
+}
+.ot-callout[data-variant="bar"] [data-part="cta"]:hover { background: var(--i-border); }
+.ot-callout[data-variant="bar"] [data-part="dismiss"] { position: static; flex: none; border-radius: max(0px, calc(var(--ot-radius-surface) - .375rem)); }
+
+/* ── Split: color column + message, centered icon ────────────────────────── */
+.ot-callout[data-variant="split"] [data-part="surface"] {
+  display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0;
+  padding: 0; overflow: hidden;
+  background: var(--c-elev);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 1px 2px oklch(from var(--ot-fg) l c h / .05), 0 18px 40px -22px var(--i-glow);
+}
+.ot-callout[data-variant="split"] [data-part="icon"] {
+  align-self: stretch; place-items: center; overflow: hidden; isolation: isolate;
+  color: var(--i-ink);
+  background: radial-gradient(120% 60% at 30% 0%, oklch(1 0 0 / .18), transparent 60%), linear-gradient(160deg, var(--i-solid), var(--i-solid-2));
+}
+/* Subtle character for the column: a soft halo behind the icon plus faint concentric rings */
+.ot-callout[data-variant="split"] [data-part="icon"]::before {
+  content: ""; position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(closest-side at 50% 50%, oklch(1 0 0 / .22), transparent 70%),
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 1.1rem, oklch(1 0 0 / .07) 1.1rem calc(1.1rem + 1px));
+}
+.ot-callout[data-variant="split"] svg[data-callout-icon] { width: 2.375rem; height: 2.375rem; stroke-width: 2.5; }
+.ot-callout[data-variant="split"] [data-part="content"] { padding: 1.25rem 1.5rem 1.375rem; }
+.ot-callout[data-variant="split"][data-dismissible="yes"] [data-part="content"] { padding-right: 3.25rem; }
+.ot-callout[data-variant="split"] [data-part="cta"] {
+  height: 2.25rem; padding: 0 1rem; border-radius: var(--ot-radius-control);
+  background: var(--i-bg); box-shadow: inset 0 0 0 1px var(--i-border);
+}
+.ot-callout[data-variant="split"] [data-part="cta"]:hover { background: var(--i-border); }
+
+/* ── Narrow containers (sidebars, columns, mobile) ───────────────────────── */
+@container (max-width: 30rem) {
+  .ot-callout [data-part="cta"] { max-width: 100%; white-space: normal; text-align: left; line-height: 1.25; }
+  .ot-callout:is([data-variant="filled"], [data-variant="bordered"], [data-variant="split"]) [data-part="cta"] { height: auto; min-height: 2.25rem; padding-block: .5rem; }
+  .ot-callout[data-variant="filled"] [data-part="surface"] { padding: 1.125rem 1.25rem 1.25rem 1.125rem; gap: .875rem; }
+  .ot-callout[data-variant="filled"] svg[data-callout-icon] { width: 1.75rem; height: 1.75rem; }
+  .ot-callout[data-variant="filled"] [data-part="watermark"] { width: 9rem; height: 9rem; right: -1.75rem; bottom: -2.5rem; }
+  .ot-callout[data-variant="bordered"] [data-part="surface"] { padding: 1.125rem 1.25rem 1.25rem 1.375rem; gap: .875rem; }
+  .ot-callout[data-variant="bordered"] svg[data-callout-icon] { width: 1.625rem; height: 1.625rem; }
+  .ot-callout[data-variant="split"] [data-part="surface"] { grid-template-columns: 4.75rem minmax(0, 1fr); }
+  .ot-callout[data-variant="split"] [data-part="content"] { padding: 1rem 1.125rem 1.125rem; }
+  .ot-callout[data-variant="split"] svg[data-callout-icon] { width: 1.875rem; height: 1.875rem; }
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+@keyframes callout-rise   { from { opacity: 0; transform: translateY(var(--c-rise)) scale(.985); } }
+@keyframes callout-slide  { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes callout-fade   { from { opacity: 0; transform: translateY(6px); } }
+@keyframes callout-pop    { from { opacity: 0; transform: scale(.5) rotate(-12deg); } }
+@keyframes callout-spin   { from { opacity: 0; transform: rotate(-70deg) scale(.7); } }
+@keyframes callout-sweep  { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+@keyframes callout-wipe   { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+@keyframes callout-rail   { from { --c-rail: 0%; } to { --c-rail: 100%; } }
+@keyframes callout-trace  { 0% { --c-angle: 0deg; opacity: 0; } 12%, 85% { opacity: 1; } 100% { --c-angle: 360deg; opacity: 0; } }
+@keyframes callout-ring   { 0% { opacity: .6; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.8); } }
+@keyframes callout-dot    { 0% { opacity: .9; transform: scale(.6); } 100% { opacity: 0; transform: scale(2); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hidden until in view. data-animate is only set on the client, so server-rendered content is never hidden. */
+  .ot-callout[data-animate]:not([data-in]) [data-part="surface"] { opacity: 0; }
+
+  .ot-callout[data-in] [data-part="content"] > * { animation: callout-fade .5s var(--ot-ease-kinetic) both; }
+  .ot-callout[data-in] [data-part="content"] > :nth-child(1) { animation-delay: .14s; }
+  .ot-callout[data-in] [data-part="content"] > :nth-child(2) { animation-delay: .2s; }
+  .ot-callout[data-in] [data-part="content"] > :nth-child(3) { animation-delay: .26s; }
+  .ot-callout[data-in] [data-part="content"] > :nth-child(4) { animation-delay: .32s; }
+
+  .ot-callout[data-variant="filled"][data-in] [data-part="surface"] { animation: callout-rise .65s var(--ot-ease-kinetic) both; }
+  .ot-callout[data-variant="filled"][data-in] [data-part="surface"]::after { animation: callout-sweep 1.3s var(--ot-ease-kinetic) .35s both; }
+  .ot-callout[data-variant="filled"][data-in] [data-part="watermark"] { animation: callout-spin 1.2s var(--ot-ease-kinetic) .1s both; }
+  .ot-callout[data-variant="filled"][data-in] [data-part="glyph"] { animation: callout-pop .6s var(--ot-ease-kinetic) .18s both; }
+
+  .ot-callout[data-variant="bordered"][data-in] [data-part="surface"] { animation: callout-rise .6s var(--ot-ease-kinetic) both, callout-rail .7s var(--ot-ease-kinetic) .15s both; }
+  .ot-callout[data-variant="bordered"][data-in] [data-part="surface"]::after { animation: callout-trace 1.5s cubic-bezier(.45,0,.25,1) .35s both; }
+  .ot-callout[data-variant="bordered"][data-in] [data-part="icon"] { animation: callout-pop .6s var(--ot-ease-kinetic) .2s both; }
+
+  .ot-callout[data-variant="bar"][data-in] [data-part="surface"] { animation: callout-slide .55s var(--ot-ease-kinetic) both; }
+  .ot-callout[data-variant="bar"][data-in] [data-part="tag"] { animation: callout-pop .55s var(--ot-ease-kinetic) .12s both; }
+  .ot-callout[data-variant="bar"][data-in] [data-part="surface"]::after { animation: callout-sweep 1.4s var(--ot-ease-kinetic) .4s both; }
+
+  .ot-callout[data-variant="split"][data-in] [data-part="surface"] { animation: callout-rise .6s var(--ot-ease-kinetic) both; }
+  .ot-callout[data-variant="split"][data-in] [data-part="icon"] { animation: callout-wipe .55s var(--ot-ease-kinetic) .05s both; }
+  .ot-callout[data-variant="split"][data-in] [data-part="glyph"] { animation: callout-pop .6s var(--ot-ease-kinetic) .3s both; }
+
+  /* Attention cue: warning and danger only, and finite (not an endless loop) */
+  .ot-callout[data-in]:is([data-intent="warning"], [data-intent="danger"]) [data-part="glyph"]::before { animation: callout-ring 1.6s ease-out .7s 2; }
+  .ot-callout[data-in]:is([data-intent="warning"], [data-intent="danger"]) [data-part="dot"]::after { animation: callout-dot 1.6s ease-out .7s 3; }
+}

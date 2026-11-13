@@ -1,38 +1,41 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useId, useMemo, useRef } from 'react'
 import {
-  LayoutGrid, List,
-  File, FileText, Image as LucideImage, Video, Archive, ArrowDownToLine,
+  LayoutGrid, List, Search, X, ArrowDownToLine,
+  File, FileText, FileSpreadsheet, Presentation, Image as LucideImage, Video, Archive,
   type LucideIcon,
 } from 'lucide-react'
 import Pagination from '@/components/ui/Pagination'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
-import { cva } from 'class-variance-authority'
 import type { ResourceAsset } from '@/lib/resourceLibrary'
+
+// Presentation lives in components/blocks/resource-library.css, keyed on the data attributes below.
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type FileKind = { icon: LucideIcon; label: string }
-
-function resolveFileKind(extension: string | null): FileKind {
-  const ext = (extension ?? '').toLowerCase().replace(/^\./, '')
-  if (['pdf'].includes(ext))
-    return { icon: FileText, label: 'PDF' }
-  if (['doc', 'docx', 'odt', 'rtf'].includes(ext))
-    return { icon: FileText, label: ext.toUpperCase() }
-  if (['ppt', 'pptx', 'odp', 'key'].includes(ext))
-    return { icon: File, label: ext.toUpperCase() }
-  if (['xls', 'xlsx', 'ods', 'csv'].includes(ext))
-    return { icon: File, label: ext.toUpperCase() }
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif', 'bmp', 'tiff'].includes(ext))
-    return { icon: LucideImage, label: ext.toUpperCase() }
-  if (['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv'].includes(ext))
-    return { icon: Video, label: ext.toUpperCase() }
-  if (['zip', 'rar', 'tar', 'gz', '7z', 'bz2'].includes(ext))
-    return { icon: Archive, label: ext.toUpperCase() }
-  return { icon: File, label: ext ? ext.toUpperCase() : 'FILE' }
+const FAMILIES: Record<string, string[]> = {
+  Documents:     ['pdf', 'doc', 'docx', 'odt', 'rtf', 'txt'],
+  Spreadsheets:  ['xls', 'xlsx', 'ods', 'csv'],
+  Presentations: ['ppt', 'pptx', 'odp', 'key'],
+  Images:        ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif', 'bmp', 'tiff'],
+  Video:         ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv'],
+  Archives:      ['zip', 'rar', 'tar', 'gz', '7z', 'bz2'],
 }
+const FAMILY_ORDER = [...Object.keys(FAMILIES), 'Other']
+const FAMILY_ICON: Record<string, LucideIcon> = {
+  Documents: FileText, Spreadsheets: FileSpreadsheet, Presentations: Presentation,
+  Images: LucideImage, Video, Archives: Archive, Other: File,
+}
+const TYPE_WORD: Record<string, string> = {
+  pdf: 'PDF document', doc: 'Word document', docx: 'Word document', odt: 'Text document', rtf: 'Text document',
+  txt: 'Text file', xls: 'Excel spreadsheet', xlsx: 'Excel spreadsheet', csv: 'CSV spreadsheet',
+  ppt: 'PowerPoint presentation', pptx: 'PowerPoint presentation', zip: 'ZIP archive',
+}
+
+const extOf = (a: ResourceAsset) => (a.extension ?? '').toLowerCase().replace(/^\./, '')
+const familyOf = (ext: string) => FAMILY_ORDER.find(f => FAMILIES[f]?.includes(ext)) ?? 'Other'
+const wordOf = (ext: string) => TYPE_WORD[ext] ?? (ext ? `${ext.toUpperCase()} file` : 'File')
 
 function formatFileSize(bytes: number | null): string | null {
   if (bytes === null || bytes <= 0) return null
@@ -47,184 +50,61 @@ function downloadFilename(asset: ResourceAsset): string {
   return `${asset.title}${ext}`
 }
 
-// ─── CVA ──────────────────────────────────────────────────────────────────────
+// ─── One file: an article whose title is the link, stretched over the whole row or card ───
 
-const cardCva = cva(
-  // rounded-ot-surface = Corner Style axis; Sharp 0px default → unchanged today.
-  'resource-card group h-full flex flex-col overflow-hidden border border-fg/8 rounded-ot-surface',
-  {
-    variants: {
-      color: {
-        canvas:  'bg-surface',
-        surface: 'bg-canvas/50',
-      },
-    },
-    defaultVariants: { color: 'canvas' },
-  },
-)
+function FileItem({ asset, view, showFileSize }: { asset: ResourceAsset; view: 'grid' | 'list'; showFileSize: boolean }) {
+  const ext    = extOf(asset)
+  const fam    = familyOf(ext)
+  const Icon   = FAMILY_ICON[fam]
+  const size   = showFileSize ? formatFileSize(asset.fileSize) : null
+  const word   = wordOf(ext)
+  const tags   = asset.tags ?? []
+  const cap    = view === 'grid' ? 3 : 4
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function IconChip({ icon: Icon, size = 'md' }: { icon: LucideIcon; size?: 'sm' | 'md' | 'lg' }) {
-  const sizeCls = {
-    sm: 'w-8 h-8 [&>svg]:w-4 [&>svg]:h-4',
-    md: 'w-10 h-10 [&>svg]:w-5 [&>svg]:h-5',
-    lg: 'w-12 h-12 [&>svg]:w-6 [&>svg]:h-6',
-  }[size]
-  return (
-    <div
-      className={`shrink-0 flex items-center justify-center bg-brand/10 text-brand ${sizeCls}`}
-      aria-hidden="true"
-    >
-      <Icon />
-    </div>
-  )
-}
-
-function ExtBadge({ label }: { label: string }) {
-  return (
-    <span className="text-label tracking-label uppercase font-semibold text-fg-muted border border-fg/10 px-[6px] py-px">
-      {label}
-    </span>
-  )
-}
-
-function TagPill({ tag }: { tag: string }) {
-  return (
-    <span className="text-label font-medium text-fg-muted/80 bg-fg/[0.06] border border-fg/8 px-[6px] py-px">
-      {tag}
-    </span>
-  )
-}
-
-// ─── List row ─────────────────────────────────────────────────────────────────
-
-function ListRow({ asset, showFileSize }: { asset: ResourceAsset; showFileSize: boolean }) {
-  const { icon, label } = resolveFileKind(asset.extension)
-  const size     = formatFileSize(asset.fileSize)
-  const filename = downloadFilename(asset)
-
-  return (
-    <a
-      href={asset.url}
-      download={filename}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-center gap-md px-md py-[14px] border-t border-fg/5 hover:bg-fg/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-0 motion-safe:transition-colors motion-safe:duration-150"
-      aria-label={`Download ${asset.title} (${label}${size ? `, ${size}` : ''})`}
-    >
-      <IconChip icon={icon} size="md" />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-body font-medium text-fg leading-tight truncate">{asset.title}</p>
-        {asset.description && (
-          <p className="text-label text-fg-muted mt-[2px] truncate">{asset.description}</p>
-        )}
-        {asset.tags && asset.tags.length > 0 && (
-          <div className="flex flex-wrap gap-xs mt-[5px]">
-            {asset.tags.slice(0, 4).map(tag => <TagPill key={tag} tag={tag} />)}
-          </div>
-        )}
-      </div>
-
-      <div className="hidden sm:flex items-center gap-sm shrink-0">
-        <ExtBadge label={label} />
-        {showFileSize && size && (
-          <span className="text-label text-fg-muted font-semibold tracking-label tabular-nums">
-            {size}
-          </span>
-        )}
-      </div>
-
-      <div
-        className="shrink-0 ml-sm text-brand opacity-60 group-hover:opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-150 group-hover:translate-x-1"
-        aria-hidden="true"
-      >
-        <ArrowDownToLine className="w-5 h-5" />
-      </div>
-    </a>
-  )
-}
-
-// ─── Grid card ────────────────────────────────────────────────────────────────
-
-function GridCard({
-  asset,
-  color,
-  showFileSize,
-}: {
-  asset: ResourceAsset
-  color: 'canvas' | 'surface'
-  showFileSize: boolean
-}) {
-  const { icon, label } = resolveFileKind(asset.extension)
-  const size     = formatFileSize(asset.fileSize)
-  const filename = downloadFilename(asset)
-  const Icon     = icon
-
-  return (
-    <div className={cardCva({ color })}>
-      {/* Brand header band — scan-line sweeps on card hover (CSS .resource-card-band::after) */}
-      <div className="resource-card-band bg-brand flex items-center justify-center h-20 shrink-0">
-        {/* dur-exempt: 240ms — icon hover lift; nearest token quick(200ms) Δ40ms / base(320ms) Δ80ms, would change feel */}
-        <div
-          className="relative z-10 text-fg-on-brand opacity-70 group-hover:opacity-100 motion-safe:transition-[transform,opacity] motion-safe:duration-[240ms] motion-safe:ease-kinetic motion-safe:group-hover:-translate-y-[3px] motion-safe:group-hover:scale-110"
-          aria-hidden="true"
-        >
-          <Icon className="w-9 h-9" />
-        </div>
-      </div>
-
-      {/* Body — flex-1 ensures the download CTA always sits at the card foot */}
-      <div className="flex flex-col gap-sm px-md pt-md pb-md flex-1">
-        <p
-          className="text-body font-semibold text-fg leading-snug line-clamp-3"
-          title={asset.title}
-        >
+  const body = (
+    <>
+      <h3 data-part="title">
+        <a data-part="link" href={asset.url} download={downloadFilename(asset)} target="_blank" rel="noopener noreferrer">
           {asset.title}
-        </p>
+          <span className="sr-only"> ({word}{size ? `, ${size}` : ''}, opens in a new tab)</span>
+        </a>
+      </h3>
+      <p data-part="meta"><span>{word}</span>{size && <span>{size}</span>}</p>
+      {asset.description && <p data-part="desc">{asset.description}</p>}
+      {tags.length > 0 && (
+        <ul data-part="tags" aria-label="Tags">
+          {tags.slice(0, cap).map(tag => <li key={tag}>{tag}</li>)}
+          {tags.length > cap && <li data-more="">+{tags.length - cap}</li>}
+        </ul>
+      )}
+    </>
+  )
+  const dl = (
+    <span data-part="dl" aria-hidden="true"><ArrowDownToLine size={18} strokeWidth={2} /><span data-part="dl-t">Download</span></span>
+  )
 
-        <div className="flex items-center flex-wrap gap-sm">
-          <ExtBadge label={label} />
-          {showFileSize && size && (
-            <span className="text-label text-fg-muted font-semibold tracking-label tabular-nums">
-              {size}
-            </span>
-          )}
-        </div>
-
-        {asset.description && (
-          <p className="text-label text-fg-muted line-clamp-2">{asset.description}</p>
-        )}
-
-        {asset.tags && asset.tags.length > 0 && (
-          <div className="flex flex-wrap gap-xs mt-auto pt-xs">
-            {asset.tags.slice(0, 3).map(tag => <TagPill key={tag} tag={tag} />)}
+  if (view === 'grid') {
+    return (
+      <li>
+        <article data-part="card">
+          <div data-part="band">
+            <span data-part="band-ic" aria-hidden="true"><Icon size={34} strokeWidth={1.6} /></span>
+            <b data-part="band-t">{ext ? ext.toUpperCase() : 'FILE'}</b>
           </div>
-        )}
-      </div>
-
-      {/* Download CTA — pre-activates on card group-hover, deeper on direct hover */}
-      <a
-        href={asset.url}
-        download={filename}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-center gap-sm px-md py-sm border-t border-fg/8
-          text-label font-semibold tracking-label uppercase text-fg-muted
-          group-hover:text-fg group-hover:bg-brand/[0.08]
-          hover:text-fg-on-brand hover:bg-brand hover:border-brand
-          motion-safe:transition-[color,background-color,border-color] motion-safe:duration-(--ot-dur-quick) motion-safe:ease-quick
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
-        aria-label={`Download ${asset.title} (${label}${size ? `, ${size}` : ''})`}
-      >
-        <ArrowDownToLine
-          className="w-4 h-4 motion-safe:transition-transform motion-safe:duration-(--ot-dur-quick) motion-safe:ease-kinetic motion-safe:group-hover:translate-y-[2px] motion-safe:hover:translate-y-[4px]"
-          aria-hidden="true"
-        />
-        Download
-      </a>
-    </div>
+          <div data-part="card-body">{body}</div>
+          {dl}
+        </article>
+      </li>
+    )
+  }
+  return (
+    <li>
+      <article data-part="item">
+        <span data-part="tile" aria-hidden="true"><Icon size={22} strokeWidth={1.75} /><b>{ext ? ext.toUpperCase() : 'FILE'}</b></span>
+        <div data-part="body">{body}</div>
+        {dl}
+      </article>
+    </li>
   )
 }
 
@@ -233,7 +113,6 @@ function GridCard({
 export type ResourceLibraryClientProps = {
   assets:        ResourceAsset[]
   defaultLayout: 'list' | 'grid'
-  color:         'canvas' | 'surface'
   showFileSize:  boolean
   pageSize:      number
   label?:        string
@@ -241,91 +120,115 @@ export type ResourceLibraryClientProps = {
 
 type View = 'grid' | 'list'
 
-export default function ResourceLibraryClient({
-  assets,
-  defaultLayout,
-  color,
-  showFileSize,
-  pageSize,
-  label,
-}: ResourceLibraryClientProps) {
+export default function ResourceLibraryClient({ assets, defaultLayout, showFileSize, pageSize, label }: ResourceLibraryClientProps) {
   const [view, setView] = useState<View>(defaultLayout)
   const [page, setPage] = useState(1)
+  const [q, setQ]       = useState('')
+  const [type, setType] = useState<string>('all')
   const prefersReducedMotion = usePrefersReducedMotion()
+  const searchId = useId()
+  const listRef  = useRef<HTMLUListElement>(null)
 
-  const totalPages = Math.max(1, Math.ceil(assets.length / pageSize))
+  // Search and file-type chips only earn their place once there is more than one page to look through.
+  const many = assets.length > pageSize
+
+  const families = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const a of assets) counts.set(familyOf(extOf(a)), (counts.get(familyOf(extOf(a))) ?? 0) + 1)
+    return FAMILY_ORDER.filter(f => counts.has(f)).map(f => ({ key: f, count: counts.get(f)! }))
+  }, [assets])
+
+  const matches = useMemo(() => {
+    const needle = q.trim().toLowerCase()
+    return assets.filter(a =>
+      (type === 'all' || familyOf(extOf(a)) === type) &&
+      (!needle || [a.title, a.description ?? '', ...(a.tags ?? [])].join(' ').toLowerCase().includes(needle)),
+    )
+  }, [assets, q, type])
+
+  const totalPages = Math.max(1, Math.ceil(matches.length / pageSize))
   const safePage   = Math.min(page, totalPages)
-  const pageAssets = assets.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const pageAssets = matches.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const from       = (safePage - 1) * pageSize + 1
+  const to         = Math.min(safePage * pageSize, matches.length)
+  const filtered   = q.trim() !== '' || type !== 'all'
 
   const changePage = useCallback((p: number) => {
     setPage(p)
-    // Honour prefers-reduced-motion for the JS-driven scroll.
-    window.scrollBy({ top: -120, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+    // Bring the top of the list into view (instant for visitors who prefer reduced motion).
+    listRef.current?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth' })
   }, [prefersReducedMotion])
 
-  const toggleBase     = 'inline-flex items-center justify-center w-11 h-11 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
-  const toggleActive   = 'text-brand'
-  const toggleInactive = 'text-fg-muted/50 hover:text-fg-muted'
-
   return (
-    <div>
-      {/* ── View toggle ── */}
-      <div className="flex items-center justify-end mb-md">
-        <div className="flex items-center gap-0" role="group" aria-label="View mode">
-          <button
-            type="button"
-            aria-label="Grid view"
-            aria-pressed={view === 'grid'}
-            onClick={() => setView('grid')}
-            className={`${toggleBase} ${view === 'grid' ? toggleActive : toggleInactive}`}
-          >
-            <LayoutGrid size={17} strokeWidth={1.75} />
+    <>
+      <div data-part="controls">
+        {many && (
+          <div data-part="field">
+            <Search data-part="field-ic" size={18} strokeWidth={2} aria-hidden />
+            <label htmlFor={searchId} className="sr-only">Search resources</label>
+            <input
+              id={searchId}
+              type="search"
+              value={q}
+              onChange={e => { setQ(e.target.value); setPage(1) }}
+              placeholder="Search by title, description, or tag"
+              autoComplete="off"
+            />
+            {q && (
+              <button type="button" data-part="icon-btn" aria-label="Clear search" onClick={() => { setQ(''); setPage(1) }}>
+                <X size={16} strokeWidth={2} aria-hidden />
+              </button>
+            )}
+          </div>
+        )}
+
+        <div data-part="toggle" role="group" aria-label="Layout">
+          <button type="button" aria-label="Grid" aria-pressed={view === 'grid'} onClick={() => setView('grid')}>
+            <LayoutGrid size={18} strokeWidth={1.75} aria-hidden />
           </button>
-          <button
-            type="button"
-            aria-label="List view"
-            aria-pressed={view === 'list'}
-            onClick={() => setView('list')}
-            className={`${toggleBase} ${view === 'list' ? toggleActive : toggleInactive}`}
-          >
-            <List size={17} strokeWidth={1.75} />
+          <button type="button" aria-label="List" aria-pressed={view === 'list'} onClick={() => setView('list')}>
+            <List size={18} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
+
+        {many && families.length > 1 && (
+          <div data-part="types" role="group" aria-label="File type">
+            <button type="button" data-part="chip" aria-pressed={type === 'all'} onClick={() => { setType('all'); setPage(1) }}>
+              All<span data-part="chip-n">{assets.length}</span>
+            </button>
+            {families.map(f => (
+              <button key={f.key} type="button" data-part="chip" aria-pressed={type === f.key} onClick={() => { setType(f.key); setPage(1) }}>
+                {f.key}<span data-part="chip-n">{f.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ── Asset list / grid ── */}
-      {view === 'list' ? (
-        <div className="border border-fg/8" role="list" aria-label={label ?? 'Resource library'}>
+      <p data-part="status" role="status">
+        {matches.length > 0 && (
+          <>
+            Showing <b>{from}–{to}</b> of <b>{matches.length}</b> {matches.length === 1 ? 'file' : 'files'}
+            {filtered ? (matches.length === 1 ? ' that matches' : ' that match') : ''}
+          </>
+        )}
+      </p>
+
+      {matches.length > 0 ? (
+        <ul ref={listRef} data-part={view === 'grid' ? 'cards' : 'list'} aria-label={label ?? 'Resource library'}>
           {pageAssets.map((asset, i) => (
-            <div key={`${asset.url}-${i}`} role="listitem">
-              <ListRow asset={asset} showFileSize={showFileSize} />
-            </div>
+            <FileItem key={`${asset.url}-${i}`} asset={asset} view={view} showFileSize={showFileSize} />
           ))}
-        </div>
+        </ul>
       ) : (
-        <div
-          className="grid gap-md"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
-          role="list"
-          aria-label={label ?? 'Resource library'}
-        >
-          {pageAssets.map((asset, i) => (
-            <div key={`${asset.url}-${i}`} role="listitem" className="flex flex-col">
-              <GridCard asset={asset} color={color} showFileSize={showFileSize} />
-            </div>
-          ))}
+        <div data-part="empty" role="status">
+          <span data-part="empty-ic" aria-hidden="true"><Search size={26} strokeWidth={1.75} /></span>
+          <p data-part="empty-t">No files match</p>
+          <p data-part="empty-d">Try a different word, or clear the search and file type.</p>
         </div>
       )}
 
-      {/* ── Pagination ── */}
-      <Pagination
-        page={safePage}
-        totalPages={totalPages}
-        total={assets.length}
-        pageSize={pageSize}
-        countLabel="files"
-        onChange={changePage}
-      />
-    </div>
+      <Pagination page={safePage} totalPages={totalPages} onChange={changePage} label="Resource pages" />
+    </>
   )
 }

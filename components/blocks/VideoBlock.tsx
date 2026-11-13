@@ -32,9 +32,7 @@ export type VideoBlockProps = {
   caption?: string;
   styleOptions?: VideoStyleOptions;
   previewAttrs?: Record<string, Record<string, string | undefined>>;
-  /** Fill the parent column's height instead of constraining by aspect ratio.
-   *  Used by OT_VideoBlock so the video stretches to match an adjacent column
-   *  rather than stopping at its natural 16:9 proportion. */
+  /** @deprecated No longer used. Video keeps its aspect ratio (see media.css). */
   fillHeight?: boolean;
 };
 
@@ -68,13 +66,6 @@ function buildEmbedUrl(meta: VideoMeta): string {
   return `https://player.vimeo.com/video/${meta.id}?autoplay=1`;
 }
 
-const RATIO_CLASS: Record<NonNullable<VideoStyleOptions["ratio"]>, string> = {
-  "16:9": "aspect-video",
-  "4:3":  "aspect-4/3",
-  "3:2":  "aspect-3/2",
-  "1:1":  "aspect-square",
-};
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function VideoBlock({
@@ -83,7 +74,6 @@ export default function VideoBlock({
   caption,
   styleOptions = {},
   previewAttrs,
-  fillHeight = false,
 }: VideoBlockProps) {
   const {
     ratio,
@@ -111,8 +101,8 @@ export default function VideoBlock({
     if (!parsed) { setThumbState("error"); return; }
 
     if (parsed.platform === "youtube") {
-      // Reliable hq thumbnail; onError handler below upgrades to maxres when available
-      setPosterSrc(`https://img.youtube.com/vi/${parsed.id}/hqdefault.jpg`);
+      // Try maxres first (sharp at full width); onLoad/onError below fall back to hq
+      setPosterSrc(`https://img.youtube.com/vi/${parsed.id}/maxresdefault.jpg`);
       setThumbState("ready");
     } else {
       // Vimeo requires an API round-trip for the thumbnail
@@ -136,72 +126,21 @@ export default function VideoBlock({
     if (playing) requestAnimationFrame(() => iframeRef.current?.focus());
   }, [playing]);
 
-  // Fill mode: drop the aspect-ratio constraint so the container can grow to
-  // match the adjacent column height. The 400px min-h in the container class
-  // provides a floor for single-column sections with no adjacent content to
-  // define the row height.
-  const aspectClass = fillHeight ? "" : (ratio ? RATIO_CLASS[ratio] : "aspect-video");
-
-  const glowStyle: React.CSSProperties = frame === "glow"
-    ? {
-        background:   "linear-gradient(135deg, var(--ot-brand), var(--ot-accent))",
-        borderRadius: "var(--ot-radius-surface)",
-        boxShadow:
-          "0 0 32px 8px var(--ot-bloom-brand-faint), " +
-          "0 0 64px 20px var(--ot-bloom-accent-faint)",
-      }
-    : {};
-
-  /*
-   * Shadow bloom — brand pools bottom-left, accent pools bottom-right.
-   * isolation: isolate on the figure paints this between the page and the
-   * container, not behind the entire page.
-   */
-  const shadowStyle: React.CSSProperties = {
-    position:   "absolute",
-    left:       "6%",
-    right:      "6%",
-    top:        "75%",
-    bottom:     "-28px",
-    background:
-      "radial-gradient(ellipse at 22% 100%, var(--ot-bloom-brand)  0%, transparent 58%), " +
-      "radial-gradient(ellipse at 78% 100%, var(--ot-bloom-accent) 0%, transparent 58%)",
-    filter:    "blur(52px)",
-    transform: "scaleX(0.86)",
-    zIndex:    -1,
-  };
-
   const hasInsetCaption = caption && captionPosition === "inset";
   const hasBelowCaption = caption && captionPosition === "below";
 
   return (
-    <figure className={`relative${frame === "glow" ? " mx-4" : " w-full"}${fillHeight ? " flex-1 min-h-100 flex flex-col" : ""}${shadow ? " isolate pb-7" : ""}`}>
-
-      {/* Chromatic shadow bloom */}
-      {shadow && <div aria-hidden="true" style={shadowStyle} />}
-
-      {/* Offset / glow frame outer wrapper */}
-      <div
-        className={
-          frame === "offset"
-            ? `relative pr-3 pb-3${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-            : frame === "glow"
-            ? `p-[3px]${fillHeight ? " flex-1 min-h-0 flex flex-col" : ""}`
-            : fillHeight ? "flex-1 min-h-0 flex flex-col" : ""
-        }
-        style={frame === "glow" ? glowStyle : undefined}
-      >
-        {frame === "offset" && (
-          <div
-            aria-hidden="true"
-            className={`absolute top-3 left-3 right-0 bottom-0 rounded-ot-surface ${invertedBg ? "bg-fg-on-brand/20" : "bg-brand"}`}
-          />
-        )}
-
-        {/* Aspect-ratio / fill container */}
-        <div
-          className={`relative overflow-hidden rounded-ot-surface ${aspectClass}${fillHeight ? ` flex-1${frame !== "glow" ? " min-h-100" : ""}` : ""}${frame === "offset" ? " z-10" : ""}${frame === "glow" ? " bg-canvas" : ""}`}
-        >
+    <figure
+      data-part="figure"
+      data-kind="video"
+      data-frame={frame ?? "none"}
+      data-shadow={shadow ? "yes" : "no"}
+      data-ratio={ratio ?? "16:9"}
+      data-color={invertedBg ? "brand" : undefined}
+      data-caption={hasInsetCaption ? "inset" : undefined}
+    >
+      <div data-part="frame">
+        <div data-part="box">
           {playing ? (
 
             /* ── Live embed ──────────────────────────────────────────────── */
@@ -218,7 +157,6 @@ export default function VideoBlock({
 
             /* ── Poster state ─────────────────────────────────────────────── */
             <>
-              {/* Thumbnail or shimmer */}
               {thumbState === "loading" && (
                 <div className="absolute inset-0 bg-surface animate-pulse" />
               )}
@@ -227,16 +165,26 @@ export default function VideoBlock({
               )}
               {thumbState === "ready" && posterSrc && (
                 <Image
+                  data-part="img"
                   src={posterSrc}
                   alt=""
                   fill
                   unoptimized
-                  className="object-cover"
                   sizes="(min-width: 1280px) 1200px, 100vw"
+                  onLoad={(e) => {
+                    // YouTube serves a 120px grey placeholder (not a 404) when a video has no
+                    // maxres thumbnail, so judge by size, not by an error event.
+                    if (
+                      meta?.platform === "youtube" &&
+                      posterSrc.includes("maxresdefault") &&
+                      e.currentTarget.naturalWidth <= 200
+                    ) {
+                      setPosterSrc(`https://img.youtube.com/vi/${meta.id}/hqdefault.jpg`);
+                    }
+                  }}
                   onError={() => {
-                    // YouTube: try maxresdefault if hqdefault fails (rare)
-                    if (meta?.platform === "youtube" && posterSrc.includes("hqdefault")) {
-                      setPosterSrc(`https://img.youtube.com/vi/${meta.id}/maxresdefault.jpg`);
+                    if (meta?.platform === "youtube" && posterSrc.includes("maxresdefault")) {
+                      setPosterSrc(`https://img.youtube.com/vi/${meta.id}/hqdefault.jpg`);
                     } else {
                       setThumbState("error");
                     }
@@ -244,69 +192,32 @@ export default function VideoBlock({
                 />
               )}
 
-              {/* Dark scrim — ensures play button legibility regardless of thumbnail brightness */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(to top, oklch(from var(--ot-canvas) l c h / 0.65) 0%, oklch(from var(--ot-canvas) l c h / 0.25) 45%, transparent 100%)",
-                }}
-              />
+              {overlay && <div data-part="overlay" aria-hidden="true" />}
 
-              {/* Optional teal brand wash */}
-              {overlay && (
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:   "var(--ot-brand)",
-                    opacity:      0.4,
-                    mixBlendMode: "multiply",
-                  }}
-                />
-              )}
+              {/* Neutral scrim: keeps the play button and title legible on any thumbnail, in every mode */}
+              <div data-part="scrim" aria-hidden="true" />
 
-              {/* Play button */}
               <button
                 type="button"
                 onClick={() => setPlaying(true)}
                 aria-label={`Play: ${title}`}
-                className="absolute inset-0 flex items-center justify-center group/play focus-visible:outline-none"
+                data-part="play"
               >
-                {/* Focus indicator rides the button's focus-visible state via
-                    group/play so the ring frames the square, not the whole poster. */}
-                <span
-                  className={[
-                    "relative flex items-center justify-center w-16 h-16",
-                    "bg-brand rounded-ot-control",
-                    "motion-safe:transition-[transform,background-color]",
-                    "motion-safe:duration-200 motion-safe:ease-quick",
-                    "group-hover/play:bg-brand-hover",
-                    "motion-safe:group-hover/play:scale-110",
-                    "group-focus-visible/play:ring-2 group-focus-visible/play:ring-fg-on-brand",
-                    "group-focus-visible/play:ring-offset-2 group-focus-visible/play:ring-offset-transparent",
-                  ].join(" ")}
-                >
-                  {/* Play triangle */}
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="w-6 h-6 translate-x-0.5"
-                  >
-                    <path
-                      d="M6 4.5L20 12L6 19.5V4.5Z"
-                      fill="var(--ot-fg-on-brand)"
-                    />
+                <span data-part="play-btn">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 4.5L20 12L6 19.5V4.5Z" fill="currentColor" />
                   </svg>
                 </span>
               </button>
 
-              {/* Inset caption — floats over bottom-left, clips with the poster */}
+              {/* The video's title labels the poster for sighted visitors (the button already names it for AT) */}
+              {title && (
+                <p data-part="chip" aria-hidden="true">{title} <span>· Watch</span></p>
+              )}
+
               {hasInsetCaption && (
-                <figcaption className="absolute bottom-0 left-0 z-10 bg-canvas/90 px-sm py-xs max-w-[70%]">
-                  <p className="text-label text-fg-muted leading-snug" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+                <figcaption data-part="cap-inset">
+                  <p {...(previewAttrs?.caption ?? {})}>{caption}</p>
                 </figcaption>
               )}
             </>
@@ -314,10 +225,9 @@ export default function VideoBlock({
         </div>
       </div>
 
-      {/* Below caption */}
       {hasBelowCaption && (
-        <figcaption className="mt-sm">
-          <p className="text-label text-fg-muted" {...(previewAttrs?.caption ?? {})}>{caption}</p>
+        <figcaption data-part="cap-below">
+          <p {...(previewAttrs?.caption ?? {})}>{caption}</p>
         </figcaption>
       )}
     </figure>

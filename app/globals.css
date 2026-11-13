@@ -1,5 +1,34 @@
 @import "tailwindcss";
 @import "../styles/tokens.css";
+@import "../components/blocks/callout.css";
+@import "../components/blocks/hero.css";
+@import "../components/blocks/card.css";
+@import "../components/blocks/stat.css";
+@import "../components/blocks/feature.css";
+@import "../components/blocks/text.css";
+@import "../components/blocks/media.css";
+@import "../components/blocks/quote.css";
+@import "../components/blocks/tabs.css";
+@import "../components/blocks/banner.css";
+@import "../components/blocks/rich-text.css";
+@import "../components/blocks/accordion.css";
+@import "../components/blocks/blog-feed.css";
+@import "../components/blocks/comparison-table.css";
+@import "../components/blocks/event-listing.css";
+@import "../components/blocks/forms.css";
+@import "../components/blocks/trust-rail.css";
+@import "../components/blocks/chart.css";
+@import "../components/blocks/blog-page.css";
+@import "../components/blocks/slider.css";
+@import "../components/blocks/location-listing.css";
+@import "../components/blocks/divider.css";
+@import "../components/search/search.css";
+@import "../components/ui/button.css";
+@import "../components/pages/topic-hub.css";
+@import "../components/pages/event-page.css";
+@import "../components/blocks/practitioner-listing.css";
+@import "../components/layout/site-nav.css";
+@import "../components/blocks/resource-library.css";
 
 @theme inline {
   /* Colors */
@@ -146,6 +175,13 @@
 html {
   scroll-padding-top: 6rem;
 }
+/* Smooth in-page jumps (CTA -> #form). Next only skips this on route changes because the
+ * <html> tag carries data-scroll-behavior="smooth"; reduced-motion visitors jump instantly. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+/* Invisible anchor markers emitted by CompositionRenderer (lib/anchors.ts). */
+.ot-anchor { display: block; height: 0; pointer-events: none; }
 
 [data-surface="light"] {
   /* Text tokens — mirror the [data-theme="light"] values so all text within
@@ -274,44 +310,41 @@ html {
  * ─────────────────────────────────────────────────────────────────────────── */
 
 /* ── Glow ────────────────────────────────────────────────────────────────────
- * Two-layer rendering mirrors .ot-fx-glow:
- *   text-shadow  — soft per-glyph bloom contained within text metrics.
- *   filter:drop-shadow — chromatic aurora that spills beyond the glyph edge,
- *     a tight high-alpha brand core (backlit edge) + wide accent outer bloom.
- * Together these read as "lit from within" with a genuine two-colour halo. */
+ * A single text-shadow stack with an exponential falloff: tight, bright core
+ * hugging the glyph edge, then progressively wider and fainter layers so the
+ * light decays smoothly into the background. No filter/drop-shadow — those
+ * flatten into a uniform halo. The tile must not clip (see StatTile: glow
+ * disables overflow-hidden) or the bloom ends in a hard rectangular edge. */
 .stat-effect-glow {
+  /* Chromatic falloff: accent rim → brand body → wide accent aura. The hue
+     shifts as the light decays, which reads as depth rather than a flat halo. */
   text-shadow:
-    0 0 0.45em oklch(from var(--ot-brand)  l c h / 0.55),
-    0 0 1.30em oklch(from var(--ot-brand)  l c h / 0.28),
-    0 0 2.80em oklch(from var(--ot-brand)  l c h / 0.14),
-    0 0 0.30em oklch(from var(--ot-accent) l c h / 0.22);
-  filter:
-    drop-shadow(0 0 0.10em oklch(from var(--ot-brand)  l c h / 0.72))
-    drop-shadow(0 0 0.72em oklch(from var(--ot-accent) l c h / 0.38));
+    0 0 0.04em oklch(from var(--ot-accent) l c h / 0.85),   /* lit edge        */
+    0 0 0.12em oklch(from var(--ot-accent) l c h / 0.75),
+    0 0 0.30em oklch(from var(--ot-brand)  l c h / 0.85),   /* brand body      */
+    0 0 0.60em oklch(from var(--ot-brand)  l c h / 0.65),
+    0 0 1.10em oklch(from var(--ot-brand)  l c h / 0.42),
+    0 0 1.80em oklch(from var(--ot-accent) l c h / 0.24),   /* accent aura     */
+    0 0 3.00em oklch(from var(--ot-accent) l c h / 0.12);
 }
 
-/* Light mode: soften both layers so the bloom reads as aura, not mud. */
 [data-theme="light"] .stat-effect-glow {
   text-shadow:
-    0 0 0.35em oklch(from var(--ot-brand)  l c h / 0.20),
-    0 0 0.90em oklch(from var(--ot-brand)  l c h / 0.10),
-    0 0 0.28em oklch(from var(--ot-accent) l c h / 0.14);
-  filter:
-    drop-shadow(0 0 0.08em oklch(from var(--ot-brand)  l c h / 0.30))
-    drop-shadow(0 0 0.45em oklch(from var(--ot-accent) l c h / 0.20));
+    0 0 0.08em oklch(from var(--ot-accent) l c h / 0.30),
+    0 0 0.22em oklch(from var(--ot-brand)  l c h / 0.22),
+    0 0 0.50em oklch(from var(--ot-brand)  l c h / 0.12),
+    0 0 0.90em oklch(from var(--ot-brand)  l c h / 0.06);
 }
 
-/* Brand fill (dark bg): accent-led — accent core + brand outer aurora.
-   Brand-on-brand core would disappear; accent is bright against the dark field. */
+/* Brand fill (dark bg): accent-led — brand-on-brand would disappear. */
 .bg-brand-fill .stat-effect-glow {
   text-shadow:
-    0 0 0.45em oklch(from var(--ot-accent)       l c h / 0.65),
-    0 0 1.50em oklch(from var(--ot-accent)       l c h / 0.38),
-    0 0 3.00em oklch(from var(--ot-brand)        l c h / 0.20),
-    0 0 0.32em oklch(from var(--ot-fg-on-brand)  l c h / 0.18);
-  filter:
-    drop-shadow(0 0 0.10em oklch(from var(--ot-accent) l c h / 0.75))
-    drop-shadow(0 0 0.80em oklch(from var(--ot-brand)  l c h / 0.32));
+    0 0 0.04em oklch(from var(--ot-fg-on-brand) l c h / 0.35),
+    0 0 0.12em oklch(from var(--ot-accent)      l c h / 0.60),
+    0 0 0.28em oklch(from var(--ot-accent)      l c h / 0.50),
+    0 0 0.55em oklch(from var(--ot-accent)      l c h / 0.32),
+    0 0 1.00em oklch(from var(--ot-brand)       l c h / 0.24),
+    0 0 1.70em oklch(from var(--ot-brand)       l c h / 0.12);
 }
 
 /* ── Quote Block · Bubble treatment ─────────────────────────────────────────
@@ -798,35 +831,6 @@ html {
   [data-stagger][data-in] > *:nth-child(n+8) { animation-delay: 620ms; }
 }
 
-/* ── DividerBlock "draw" reveal ──────────────────────────────────────────────
- * Rides the same MotionObserver as the row stagger above (data-stagger="draw").
- * Line-based styles (mark, glow rule) draw out from their transform-origin; the
- * glow bloom and the mark label fade in just behind; the bleed seam fades up.
- * The [data-stagger="draw"] value is outside the slide/fade/parallax set, so
- * the generic "> *" rules above never touch it — these scoped rules own it.
- * All wrapped in prefers-reduced-motion: no-preference, so reduced-motion users
- * see the final state with no animation and no layout shift.
- * ─────────────────────────────────────────────────────────────────────────── */
-@keyframes otDividerDraw { from { transform: scaleX(0); }                   to { transform: scaleX(1); } }
-@keyframes otDividerMark { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes otDividerFade { from { opacity: 0; }                             to { opacity: 1; } }
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Hold the pre-animation state once the scroll system is ready */
-  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-line  { transform: scaleX(0); }
-  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-mark  { opacity: 0; }
-  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-bloom { opacity: 0; }
-  .motion-ready [data-stagger="draw"]:not([data-in]) .ot-divider-bleed { opacity: 0; }
-
-  /* Draw / fade in when the divider enters the viewport */
-  [data-stagger="draw"][data-in] .ot-divider-line  { animation: otDividerDraw 0.7s var(--ot-ease-kinetic) both; } /* dur-exempt: 700ms — nearest slow(600) Δ100ms */
-  [data-stagger="draw"][data-in] .ot-divider-mark  { animation: otDividerMark 0.5s var(--ot-ease-kinetic) both; animation-delay: 260ms; } /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
-  /* glow bloom fades in 200ms behind the rule it surrounds */
-  [data-stagger="draw"][data-in] .ot-divider-bloom { animation: otDividerFade 0.5s var(--ot-ease-kinetic) both; animation-delay: 200ms; } /* dur-exempt: 500ms — nearest slow(600) Δ100ms */
-  /* bleed: a pure fade up from nothing, eased in — no transform */
-  [data-stagger="draw"][data-in] .ot-divider-bleed { animation: otDividerFade 0.4s ease-in both; } /* dur-exempt: 400ms — nearest base(320) Δ80ms */
-}
-
 /* ── Split-bar masthead entrance ──────────────────────────────────────────
  * Rides the same MotionObserver as the row stagger above. Two stagger hosts
  * — data-stagger="split-left" and data-stagger="split-right" — sit on either
@@ -856,86 +860,6 @@ html {
 
   [data-stagger="split-left"][data-in]  > * { animation: splitInLeft  var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
   [data-stagger="split-right"][data-in] > * { animation: splitInRight var(--ot-dur-slow) var(--ot-ease-kinetic) both; }
-}
-
-/* ── Split-bar masthead shell ────────────────────────────────────────────────
- * The split-bar header (SplitHeaderShell.tsx) starts fully transparent on
- * desktop — logo and nav read directly against the hero. Past the scroll
- * threshold it crossfades to a glass surface and gains a brand→accent
- * horizon hairline along the bottom edge — the same motif as the mega-menu
- * dropdown and the footer, so the material change reads as one system rather
- * than a one-off transition. Mobile keeps its own static glass bar (Tailwind
- * classes on the header itself) and is untouched by this — scoped to lg+.
- *
- * Only paint properties animate (background-color, box-shadow,
- * backdrop-filter, opacity) plus a transform:scale() on the logo — never a
- * layout property — so the transition never reflows the page underneath the
- * sticky header.
- * ─────────────────────────────────────────────────────────────────────────── */
-@media (min-width: 1024px) {
-  .split-shell {
-    background-color: transparent;
-    box-shadow: none;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-    transition:
-      background-color var(--ot-dur-base) var(--ot-ease-kinetic),
-      box-shadow        var(--ot-dur-base) var(--ot-ease-kinetic),
-      backdrop-filter   var(--ot-dur-base) var(--ot-ease-kinetic);
-  }
-  .split-shell[data-scrolled="true"] {
-    background-color: color-mix(in oklch, var(--ot-surface) 88%, transparent);
-    box-shadow: 0 8px 32px var(--ot-bloom-brand-faint);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-  }
-
-  /* Horizon hairline — brand → accent gradient, fades in with the glass.
-   * z-index: -1 is load-bearing, not decorative: the mega-menu dropdown
-   * (DesktopNav.tsx) extends down through this same region when open, and
-   * must always paint above this line. z-index: auto would normally lose to
-   * the dropdown's explicit z-50 within their shared stacking context, but
-   * a completed CSS animation with fill-mode: both on an ancestor (the
-   * split-left/split-right entrance reveal) can leave that ancestor with a
-   * non-none resolved transform — which creates a stacking context of its
-   * own and traps the dropdown's z-index inside it, letting a z-index:auto
-   * sibling like this hairline win regardless of the dropdown's z-50. This
-   * varies by browser (observed correct in Chromium, broken in Safari) —
-   * rather than depend on every engine releasing that stacking context
-   * identically, pin this to z-index: -1 so it structurally cannot outrank
-   * *any* real content, independent of what any animation leaves behind.
-   * It still paints above the header's own background (that's the element's
-   * own box, category 1 — earlier than any z-index) so the line stays
-   * visible against the glass; it only loses to actual descendants. */
-  .split-shell::after {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent);
-    opacity: 0;
-    transition: opacity var(--ot-dur-base) var(--ot-ease-kinetic);
-  }
-  .split-shell[data-scrolled="true"]::after { opacity: 1; }
-
-  /* Logo settles to a smaller scale once the shell is glass */
-  .split-shell .split-logo {
-    transition: transform var(--ot-dur-base) var(--ot-ease-kinetic);
-  }
-  .split-shell[data-scrolled="true"] .split-logo {
-    transform: scale(0.86);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .split-shell,
-  .split-shell::after,
-  .split-shell .split-logo {
-    transition: none;
-  }
 }
 
 body {
@@ -2858,61 +2782,6 @@ body {
 .location-popup.mapboxgl-popup-anchor-top-left  .mapboxgl-popup-tip,
 .location-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip { border-bottom-color: var(--ot-canvas); }
 
-/* ── Resource Library grid card ───────────────────────────────────────────────
- * Chromatic lift on hover (translateY + shadow intensification) plus a bottom-
- * to-top fill on the brand band that deepens to brand-hover. The fill uses
- * scaleY(0→1) on a ::before overlay, never animating layout properties.
- * Reduced-motion: shadow deepens + band transitions background-color directly.
- * Bloom tokens follow CMS theme overrides automatically.
- * ─────────────────────────────────────────────────────────────────────────── */
-.resource-card {
-  box-shadow: 0 2px 18px var(--ot-bloom-brand-faint);
-  transition:
-    transform var(--ot-dur-base) var(--ot-ease-quick),
-    box-shadow var(--ot-dur-base) var(--ot-ease-quick);
-}
-.resource-card:hover {
-  box-shadow:
-    0 12px 40px var(--ot-bloom-brand-faint),
-    0 4px 16px var(--ot-bloom-accent-faint);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .resource-card:hover {
-    transform: translateY(-5px);
-  }
-}
-
-/* Header band — ::before overlay fills upward on card hover */
-.resource-card-band {
-  position: relative;
-  overflow: hidden;
-}
-.resource-card-band::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: var(--ot-brand-hover);
-  transform: scaleY(0);
-  transform-origin: bottom center;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .resource-card-band::before {
-    transition: transform var(--ot-dur-base) var(--ot-ease-kinetic);
-  }
-  .resource-card:hover .resource-card-band::before {
-    transform: scaleY(1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .resource-card-band {
-    transition: background-color var(--ot-dur-quick) var(--ot-ease-quick);
-  }
-  .resource-card:hover .resource-card-band {
-    background-color: var(--ot-brand-hover);
-  }
-}
-
 /* ── Glass panel — true frosted-glass overlay for rows, sections, and stat panels
  * True glassmorphism: backdrop-filter does the frosting — the background MUST be
  * a low-alpha tint so the blur of whatever is behind shows through. This is the
@@ -3387,11 +3256,13 @@ body {
 .btn-signal {
   position: relative;
   overflow: hidden;
+  isolation: isolate; /* keeps the hover fill behind the label */
 }
 
 .btn-signal::before {
   content: '';
   position: absolute;
+  z-index: -1;
   inset: 0;
   background: var(--ot-brand);
   transform: scaleX(0);
