@@ -1,271 +1,241 @@
 import Image from 'next/image'
 import BannerBlock from '@/components/blocks/BannerBlock'
+import HeroBlock from '@/components/blocks/HeroBlock'
+import Button from '@/components/ui/Button'
+import Footer from '@/components/layout/Footer'
+import ThemeChecks from '@/components/theme/ThemeChecks'
+import { getFooterStyles } from '@/cms/styling/OT_FooterBlock.styling'
+import {
+  CORNER_STYLES, PRIMARY_FONTS, MOTION_INTENSITIES, resolveNavbarStyle,
+} from '@/lib/theme-axes'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// The Theme Manager's CMS preview body (editor-only). Visuals: components/theme/theme-preview.css,
+// keyed on data-block="theme-preview" / data-part. The footer is the real Footer component, rendered
+// with the draft settings; the header is a static stand-in (the real one needs request context).
 
-// Container owns the height; img uses h-full w-auto — mirrors Header.tsx fix.
-const LOGO_CONTAINER_CLASS: Record<string, string> = {
-  full:    'h-10 max-w-[200px]',
-  icon:    'h-10 w-10',
-  compact: 'h-8 max-w-[160px]',
-}
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const LOGO_CONTAINER_CLASS_SM: Record<string, string> = {
-  full:    'h-9 max-w-[200px]',
-  icon:    'h-9 w-9',
-  compact: 'h-6 max-w-[140px]',
-}
+// [token, label, field key, mode-specific field suffix]
+const MODE_TOKENS = [
+  ['canvas', 'Canvas', 'colorCanvas'],
+  ['surface', 'Surface', 'colorSurface'],
+  ['fg', 'Foreground', 'colorFg'],
+  ['fg-muted', 'Foreground Muted', 'colorFgMuted'],
+] as const
 
-type ColorField = { key: string; label: string; mode: 'dark' | 'light' | 'both' }
+const SHARED_TOKENS = [
+  ['brand', 'Brand', 'colorBrand'],
+  ['brand-hover', 'Brand Hover', 'colorBrandHover'],
+  ['accent', 'Accent', 'colorAccent'],
+  ['accent-hover', 'Accent Hover', 'colorAccentHover'],
+  ['fg-on-brand', 'On Brand', 'colorFgOnBrand'],
+  ['fg-on-accent', 'On Accent', 'colorFgOnAccent'],
+] as const
 
-const COLOR_FIELDS: ColorField[] = [
-  { key: 'colorBrand',        label: 'Brand',          mode: 'both'  },
-  { key: 'colorBrandHover',   label: 'Brand Hover',    mode: 'both'  },
-  { key: 'colorAccent',       label: 'Accent',         mode: 'both'  },
-  { key: 'colorCanvas',       label: 'Canvas (dark)',  mode: 'dark'  },
-  { key: 'colorSurface',      label: 'Surface (dark)', mode: 'dark'  },
-  { key: 'colorCanvasLight',  label: 'Canvas (light)', mode: 'light' },
-  { key: 'colorSurfaceLight', label: 'Surface (light)', mode: 'light' },
-]
+// [label, foreground token, background token, minimum ratio]
+const CHECKS = [
+  ['Body text on canvas', 'var(--ot-fg)', 'var(--ot-canvas)'],
+  ['Muted text on canvas', 'var(--ot-fg-muted)', 'var(--ot-canvas)'],
+  ['Muted text on surface', 'var(--ot-fg-muted)', 'var(--ot-surface)'],
+  ['Text on Brand fills', 'var(--ot-fg-on-brand)', 'var(--ot-brand)'],
+  ['Text on Accent fills', 'var(--ot-fg-on-accent)', 'var(--ot-accent)'],
+  ['Brand as link text', 'var(--ot-brand-text, var(--ot-brand))', 'var(--ot-canvas)'],
+  ['Accent as text', 'var(--ot-accent)', 'var(--ot-canvas)'],
+] as const
 
-// Stock images from Unsplash — used in component previews
-const CARD_IMAGES = [
-  {
-    src: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=70',
-    alt: 'Earth city lights from orbit',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1488229297570-58520851e868?auto=format&fit=crop&w=800&q=70',
-    alt: 'Abstract data visualization',
-  },
-]
-
-function SectionHead({ label, title }: { label: string; title: string }) {
+function Swatch({ token, label, value, tag }: { token: string; label: string; value?: string; tag: 'Set' | 'Default' }) {
   return (
-    <div className="mb-lg pb-md border-b border-fg/10">
-      <p className="text-label tracking-label uppercase text-fg-muted mb-xs font-semibold">{label}</p>
-      <h2 className="text-headline font-bold leading-headline tracking-headline text-fg">{title}</h2>
+    <li data-part="sw">
+      <span data-part="sw-chip" style={{ background: `var(--ot-${token})` }} />
+      <span data-part="sw-t"><b>{label}</b><code>{value ?? 'token default'}</code></span>
+      <span data-part="tag" data-tag={tag.toLowerCase()}>{tag}</span>
+    </li>
+  )
+}
+
+function ModePanel({ mode, settings, isDefault }: { mode: 'light' | 'dark'; settings: any; isDefault: boolean }) {
+  const sfx = mode === 'light' ? 'Light' : ''
+  return (
+    <div data-part="mode" data-theme={mode}>
+      <p data-part="mode-t">{cap(mode)} mode{isDefault && <span>Default</span>}</p>
+      <ul data-part="sws">
+        {MODE_TOKENS.map(([token, label, key]) => {
+          const v = settings?.[key + sfx] as string | undefined
+          return <Swatch key={token} token={token} label={label} value={v} tag={v ? 'Set' : 'Default'} />
+        })}
+      </ul>
+      <ul data-part="checks">
+        {CHECKS.map(([label, fg, bg]) => (
+          <li key={label} data-part="check" data-min="4.5" data-label={label} data-mode={mode}>
+            <span data-part="probe" style={{ color: fg, background: bg }}>Aa</span>
+            <span data-part="check-t">{label}</span>
+            <span data-part="ratio" />
+            <span data-part="verdict" />
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
-export default function ThemePreviewContent({ settings }: { settings: any }) {
+export default async function ThemePreviewContent({
+  settings, footerBlock, rootId,
+}: { settings: any; footerBlock?: unknown; rootId: string }) {
   const siteName    = (settings?.siteName as string | undefined) ?? 'Site Accelerator'
-  const logoSrc     = settings?.logo?.url?.default ?? '/brand/logo/OT.png'
+  const logoSrc     = (settings?.logo?.url?.default as string | undefined) ?? '/brand/logo/OT.png'
   const logoAlt     = settings?.logoAlt ?? siteName
-  const logoFit     = (settings?.logoFit as string | undefined) ?? 'full'
   const invertDark  = settings?.logoInvertDark === true
-  const ctaLabel    = settings?.ctaLabel ?? 'Get Started'
-  const copyright   = settings?.copyright ?? `© ${new Date().getFullYear()} ${siteName}. All rights reserved.`
-  const defaultMode = (settings?.defaultMode as string | undefined) ?? 'dark'
-  const brandColor  = settings?.colorBrand as string | undefined
+  const ctaLabel    = (settings?.ctaLabel as string | undefined) ?? 'Get Started'
+  const mode        = ((settings?.defaultMode as string | undefined) === 'light' ? 'light' : 'dark') as 'light' | 'dark'
 
-  const navItems: { label: string; href: string }[] = settings?.primaryNavigation?.length
-    ? settings.primaryNavigation.map((i: any) => ({ label: i.menuLink?.text ?? '', href: i.menuLink?.url?.default ?? '#' }))
-    : [{ label: 'Product', href: '#' }, { label: 'Pricing', href: '#' }, { label: 'About', href: '#' }]
+  const navItems: string[] = settings?.primaryNavigation?.length
+    ? (settings.primaryNavigation as any[]).map(i => i.menuLink?.text ?? '').filter(Boolean)
+    : ['Product', 'Pricing', 'About']
 
-  const hasAnyColor = COLOR_FIELDS.some(f => !!settings?.[f.key])
+  const corner   = (settings?.cornerStyle as keyof typeof CORNER_STYLES | undefined) ?? 'sharp'
+  const fontKey  = (settings?.primaryFont as keyof typeof PRIMARY_FONTS | undefined) ?? 'poppins'
+  const motion   = (settings?.motionIntensity as keyof typeof MOTION_INTENSITIES | undefined) ?? 'default'
+  const motionScale = MOTION_INTENSITIES[motion] ?? 1
+  const fontLabel = (PRIMARY_FONTS[fontKey]?.label ?? 'Poppins').replace(' (default)', '')
+  const { style: footerStyle, background: footerBg } = getFooterStyles(footerBlock as Record<string, unknown> | undefined)
+  const footerLabel = footerBlock ? `${cap(footerStyle)} on ${cap(footerBg)}` : 'None assigned'
+  const navStyle = resolveNavbarStyle(settings?.navbarStyle)
+  const half = Math.ceil(Math.min(navItems.length, 6) / 2)
+  const leftNav = navItems.slice(0, half)
+  const rightNav = navItems.slice(half, 6)
+  const navLabel = cap(resolveNavbarStyle(settings?.navbarStyle)).replace('-b', ' B')
+
+  const sample = 'Build experiences that adapt'
+  const hostLabel = (settings?.frontEndDomain as string | undefined) ?? 'your-site.example'
 
   return (
-    <>
-      {/* ── 01 Logo Rendering ── */}
-      <section id="logo" className="px-md py-xl lg:px-lg">
-        <SectionHead label="01 · Theme" title="Logo Rendering" />
+    <div data-block="theme-preview" data-theme={mode}>
+      <ThemeChecks rootId={rootId} />
 
-        <div className="space-y-lg">
-          <div>
-            <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
-              Header size — <code className="font-mono text-fg">logoFit: {logoFit}</code>
-            </p>
-            <div className="bg-canvas/80 border border-fg/10 px-md py-md flex items-center justify-between">
-              <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoSrc}
-                  alt={logoAlt}
-                  className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
-                  style={{ color: 'transparent' }}
-                />
-              </div>
-              <div className="hidden sm:flex items-center gap-lg">
-                {navItems.slice(0, 3).map(n => (
-                  <span key={n.label} className="text-sm font-normal text-fg-muted">{n.label}</span>
-                ))}
-              </div>
-              <span className="rounded-ot-control bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
-                {ctaLabel}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">Footer size</p>
-            <div className="bg-canvas border border-fg/10 px-md py-lg flex items-start justify-between gap-lg">
-              <div className={LOGO_CONTAINER_CLASS_SM[logoFit] ?? LOGO_CONTAINER_CLASS_SM.full}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoSrc}
-                  alt={logoAlt}
-                  className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
-                  style={{ color: 'transparent' }}
-                />
-              </div>
-              <p className="text-label tracking-label uppercase text-fg-muted self-end">{copyright}</p>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
-              All logo fit options — same image
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
-              {(['full', 'icon', 'compact'] as const).map(fit => (
-                <div key={fit} className="rounded-ot-surface bg-surface border border-fg/10 p-md">
-                  <p className="text-label tracking-label uppercase font-semibold text-brand mb-md">
-                    {fit}{fit === logoFit ? ' · active' : ''}
-                  </p>
-                  <div className={`${LOGO_CONTAINER_CLASS[fit]} mb-sm`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={logoSrc}
-                      alt={logoAlt}
-                      className={`h-full w-auto max-w-full object-contain object-left${invertDark ? ' logo-invert-dark' : ''}`}
-                      style={{ color: 'transparent' }}
-                    />
-                  </div>
-                  <p className="font-mono text-label text-fg-muted/60">{LOGO_CONTAINER_CLASS[fit]}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {invertDark && (
-            <div>
-              <p className="text-label tracking-label uppercase text-fg-muted mb-md font-semibold">
-                Dark-mode invert — active
-              </p>
-              <div className="grid grid-cols-2 gap-md">
-                <div className="p-md flex flex-col gap-md" style={{ background: 'oklch(12% 0.012 195)' }}>
-                  <p className="text-label tracking-label uppercase font-semibold" style={{ color: 'oklch(68% 0.06 195)' }}>Dark mode — filter applied</p>
-                  <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logoSrc} alt={logoAlt}
-                      className="h-full w-auto max-w-full object-contain object-left"
-                      style={{ color: 'transparent', filter: 'brightness(0) invert(1)' }}
-                    />
-                  </div>
-                </div>
-                <div className="p-md flex flex-col gap-md" style={{ background: 'oklch(97% 0.005 195)' }}>
-                  <p className="text-label tracking-label uppercase font-semibold" style={{ color: 'oklch(38% 0.05 195)' }}>Light mode — no filter</p>
-                  <div className={LOGO_CONTAINER_CLASS[logoFit] ?? LOGO_CONTAINER_CLASS.full}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logoSrc} alt={logoAlt}
-                      className="h-full w-auto max-w-full object-contain object-left"
-                      style={{ color: 'transparent', filter: 'none' }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+      <header data-part="top">
+        <div>
+          <p data-part="kicker">Theme Manager preview · draft</p>
+          <h1>{siteName}</h1>
+          <p data-part="lede">Everything below uses the colors and settings saved on this Theme Manager, including values that aren’t published yet. Save in the editor to refresh.</p>
         </div>
-      </section>
+        <ul data-part="facts">
+          <li><span>Default mode</span><b>{cap(mode)}</b></li>
+          <li><span>Corner Style</span><b>{cap(corner)}</b></li>
+          <li><span>Primary Font</span><b>{fontLabel}</b></li>
+          <li><span>Motion</span><b>{cap(motion)}</b></li>
+          <li><span>Navbar Style</span><b>{navLabel}</b></li>
+          <li><span>Footer</span><b>{footerLabel}</b></li>
+        </ul>
+        <nav data-part="jump" aria-label="Preview sections">
+          <a href="#tp-chrome">Site chrome</a><a href="#tp-colors">Colors and contrast</a>
+          <a href="#tp-shape">Type, corners, and motion</a><a href="#tp-comp">Components</a><a href="#tp-logo">Logo</a>
+        </nav>
+      </header>
 
-      {/* ── 02 Color Theme ── */}
-      <section id="colors" className="px-md py-xl lg:px-lg">
-        <SectionHead label="02 · Theme" title="Color Theme" />
+      <p data-part="alert" role="status" hidden>
+        <b data-part="alert-n" /> <span data-part="alert-list" /> See Colors and contrast.
+      </p>
 
-        {!hasAnyColor ? (
-          <div className="bg-surface border border-fg/10 px-md py-lg">
-            <p className="text-body text-fg-muted">
-              No color overrides are set. Using the default design tokens.
-            </p>
-            <p className="text-label text-fg-muted/60 mt-sm font-mono">styles/tokens.css</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-lg">
-            {COLOR_FIELDS.map(f => {
-              const value = settings?.[f.key] as string | undefined
-              if (!value) return null
-              return (
-                <div key={f.key}>
-                  <div className="h-16 w-full border border-fg/10" style={{ background: value }} />
-                  <div className="mt-sm space-y-xs">
-                    <div className="flex items-center gap-sm flex-wrap">
-                      <p className="text-title font-semibold leading-title text-fg">{f.label}</p>
-                      <span className="text-label tracking-label uppercase font-semibold text-fg-muted/50">{f.mode}</span>
-                    </div>
-                    <p className="font-mono text-label text-fg-muted">{value}</p>
-                    <p className="font-mono text-label text-fg-muted/50">{f.key}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* ── 03 CTA Button ── */}
-      <section id="cta" className="px-md py-xl lg:px-lg">
-        <SectionHead label="03 · Theme" title="CTA Button" />
-        <div className="flex flex-wrap items-center gap-lg">
-          <div className="flex flex-col gap-sm items-start">
-            <span className="rounded-ot-control bg-brand hover:bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
-              {ctaLabel}
-            </span>
-            <p className="text-label text-fg-muted">Primary · Canvas surface</p>
-          </div>
-          <div className="bg-brand p-lg flex flex-col gap-sm items-start">
-            <span className="rounded-ot-control bg-brand-hover text-fg-on-brand text-label font-semibold tracking-label uppercase px-12 py-4 transition-colors duration-150 ease-quick">
-              {ctaLabel}
-            </span>
-            <p className="text-label text-fg-on-brand/60">Primary · Brand surface</p>
+      <section data-part="sec" id="tp-chrome">
+        <h2>Site chrome</h2>
+        <p data-part="sub">The header and footer as visitors see them, with this theme’s colors. The footer is the one assigned in Footer.</p>
+        <div data-part="browser" data-theme={mode}>
+          <div data-part="bar-dots" aria-hidden="true"><i /><i /><i /><span>{hostLabel}</span></div>
+          <div data-part="frame" data-nav={navStyle}>
+            <div data-part="hdr">
+              {navStyle === 'split-bar' && <ul data-part="wing">{leftNav.map((n, i) => <li key={n} data-on={i === 0 ? '' : undefined}>{n}</li>)}</ul>}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logoSrc} alt={logoAlt} data-invert={invertDark && mode === 'dark' ? '' : undefined} />
+              <ul data-part={navStyle === 'split-bar' ? 'wing' : 'links'}>
+                {(navStyle === 'split-bar' ? rightNav : navItems.slice(0, 6)).map((n, i) => <li key={n} data-on={navStyle !== 'split-bar' && i === 0 ? '' : undefined}>{n}</li>)}
+              </ul>
+              <span data-part="btn" data-v="brand" data-size="sm">{ctaLabel}</span>
+            </div>
+            <div data-part="page">
+              <div data-part="hero">
+                <p data-part="eyebrow">Platform</p>
+                <p data-part="h">{sample}</p>
+                <p data-part="p">Supporting copy in the muted text color, so a weak muted color shows up here first.</p>
+              </div>
+              <Footer settings={settings} footerBlock={footerBlock} />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── 04 Component Preview ── */}
-      <section id="components" className="px-md py-xl lg:px-lg">
-        <SectionHead label="04 · Theme" title="Component Preview" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg items-stretch">
+      <section data-part="sec" id="tp-colors">
+        <h2>Colors and contrast</h2>
+        <p data-part="sub">Both modes side by side, with every color field (set or default) and the checks that matter for reading. Text needs 4.5:1.</p>
+        <ul data-part="shared">
+          {SHARED_TOKENS.map(([token, label, key]) => {
+            const v = settings?.[key] as string | undefined
+            return <Swatch key={token} token={token} label={label} value={v} tag={v ? 'Set' : 'Default'} />
+          })}
+        </ul>
+        <div data-part="modes">
+          <ModePanel mode="light" settings={settings} isDefault={mode === 'light'} />
+          <ModePanel mode="dark" settings={settings} isDefault={mode === 'dark'} />
+        </div>
+      </section>
 
-          {/* ── Card ────────────────────────────────────────────────────────── */}
-          <div className="flex flex-col gap-sm">
-            <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold">Card</p>
-            <div className="rounded-ot-surface overflow-hidden bg-surface border border-fg/10 flex flex-col flex-1">
-              <div className="aspect-video relative overflow-hidden">
-                <Image
-                  src={CARD_IMAGES[0].src}
-                  alt={CARD_IMAGES[0].alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
-              <div className="p-md flex flex-col gap-sm flex-1">
-                <p className="text-label tracking-label uppercase text-brand font-semibold">Product</p>
-                <h3 className="text-title font-semibold leading-title text-fg">
-                  Intelligent Optimization at Scale
-                </h3>
-                <p className="text-sm text-fg-muted leading-body">
-                  Our platform adapts to your traffic patterns in real time, delivering personalized experiences without engineering overhead.
-                </p>
-                <span className="mt-sm self-start rounded-ot-control bg-brand text-fg-on-brand text-label font-semibold tracking-label uppercase px-7 py-3">
-                  {ctaLabel}
-                </span>
-              </div>
+      <section data-part="sec" id="tp-shape">
+        <h2>Type, corners, and motion</h2>
+        <p data-part="sub">The three theme axes, plus the type scale in the Primary Font.</p>
+        <div data-part="spec">
+          <p data-s="display">{sample}</p>
+          <p data-s="headline">Headline · Find the plan that fits</p>
+          <p data-s="title">Title · Questions customers ask</p>
+          <p data-s="body">Body · Earn more from every visit with personalized, tested experiences across every channel.</p>
+          <p data-s="label">Label · Updated weekly</p>
+        </div>
+        <div data-part="axes">
+          {(Object.keys(CORNER_STYLES) as (keyof typeof CORNER_STYLES)[]).map(c => (
+            <div key={c} data-part="corner" data-on={corner === c ? '' : undefined}
+              style={{ ['--r-s' as string]: CORNER_STYLES[c].surface, ['--r-c' as string]: CORNER_STYLES[c].control }}>
+              <p>{cap(c)}{corner === c && <span>Active</span>}</p>
+              <div data-part="mini"><i /><b>{ctaLabel}</b></div>
+              <small>{CORNER_STYLES[c].surface} surface · {CORNER_STYLES[c].control} control</small>
+            </div>
+          ))}
+          <div data-part="motion" style={{ ['--scale' as string]: motionScale }}>
+            <p>Motion Intensity: {cap(motion)}<span>{motionScale}× duration</span></p>
+            <div data-part="track"><i /></div>
+            <small>Visitors who ask for reduced motion always get still.</small>
+          </div>
+        </div>
+      </section>
+
+      <section data-part="sec" id="tp-comp">
+        <h2>Components</h2>
+        <p data-part="sub">Your Button, Hero, and Banner blocks (the most used), rendered by the real components with this theme.</p>
+        <div data-part="comp">
+          <div data-part="btns">
+            <Button variant="brand">{ctaLabel}</Button>
+            <Button variant="accent">Learn more</Button>
+          </div>
+          <div data-part="btns" data-surface="dark">
+            <Button variant="accent">{ctaLabel}</Button>
+            <Button variant="ghost">Contact us</Button>
+          </div>
+        </div>
+        <div data-part="blocks">
+          <div data-part="blk">
+            <p data-part="blk-t">Hero · Brand</p>
+            <div data-part="blk-frame">
+              <HeroBlock
+                eyebrow="Platform"
+                headline="Build experiences that adapt"
+                body="A hero as visitors meet it: headline, supporting copy, and two calls to action, in this theme's colors and type."
+                primaryCta={{ label: ctaLabel, href: '#' }}
+                secondaryCta={{ label: 'Learn more', href: '#' }}
+                visual={<div data-part="art" aria-hidden="true" />}
+                styleOptions={{ direction: 'editorialSplit', layout: 'imageRight', color: 'brand', animation: 'none' }}
+              />
             </div>
           </div>
-
-          {/* ── Banner (brand background, centered) ─────────────────────────── */}
-          {/* Renders the real BannerBlock so it reflects the live component under
-              the current theme. With no image the banner fills with the SOLID brand
-              color; [&>section]:flex-1 lets it fill the column height to match the card. */}
-          <div className="flex flex-col gap-sm">
-            <p className="text-label tracking-label uppercase text-fg-muted/70 font-semibold">Banner · Brand</p>
-            <div className="rounded-ot-surface border border-fg/10 overflow-hidden flex-1 flex [&>section]:flex-1">
+          <div data-part="blk">
+            <p data-part="blk-t">Banner · Brand</p>
+            <div data-part="blk-frame">
               <BannerBlock
                 eyebrow="Now Available"
                 heading="Optimize Every Visitor Experience"
@@ -275,51 +245,17 @@ export default function ThemePreviewContent({ settings }: { settings: any }) {
               />
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* ── 05 Default Mode ── */}
-      <section id="mode" className="px-md py-xl lg:px-lg">
-        <SectionHead label="05 · Theme" title="Default Theme Mode" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-lg">
-          {(['dark', 'light'] as const).map(mode => {
-            const isActive = defaultMode === mode
-            const bg   = mode === 'dark'  ? 'oklch(12% 0.012 195)'  : 'oklch(97% 0.005 195)'
-            const fg   = mode === 'dark'  ? 'oklch(97% 0.005 195)'  : 'oklch(12% 0.012 195)'
-            const sub  = mode === 'dark'  ? 'oklch(68% 0.06 195)'   : 'oklch(38% 0.05 195)'
-            const surf = mode === 'dark'  ? 'oklch(20% 0.022 195)'  : 'oklch(93% 0.008 195)'
-            // Use the configured brand color for the button; fall back to the default teal
-            const btnBg = brandColor ?? 'oklch(55% 0.18 195)'
-            return (
-              <div key={mode} className={`border-2 ${isActive ? 'border-brand' : 'border-fg/10'}`}>
-                {isActive && (
-                  <div className="bg-brand px-md py-xs">
-                    <p className="text-label tracking-label uppercase font-semibold text-fg-on-brand">Active default</p>
-                  </div>
-                )}
-                <div className="p-md" style={{ background: bg }}>
-                  <div className="flex items-center justify-between mb-md" style={{ background: surf, padding: '8px 12px' }}>
-                    <span className="text-label font-semibold" style={{ color: fg }}>{siteName}</span>
-                    <span className="text-label font-semibold tracking-label uppercase" style={{ background: btnBg, color: fg, padding: '2px 10px' }}>
-                      {ctaLabel}
-                    </span>
-                  </div>
-                  <div style={{ background: surf, padding: '16px', marginBottom: '8px' }}>
-                    <p className="text-label tracking-label uppercase font-semibold mb-xs" style={{ color: btnBg }}>Hero</p>
-                    <p className="font-bold" style={{ color: fg, fontSize: '1.25rem' }}>Your headline goes here</p>
-                    <p className="text-sm mt-xs" style={{ color: sub }}>Supporting body copy that adapts to the active mode.</p>
-                  </div>
-                  <p className="text-label text-center capitalize" style={{ color: sub }}>{mode} mode</p>
-                </div>
-              </div>
-            )
-          })}
+      <section data-part="sec" id="tp-logo">
+        <h2>Logo</h2>
+        <p data-part="sub">At the sizes the header and footer use, on this theme’s own light and dark canvases.</p>
+        <div data-part="logos">
+          <div data-theme="light"><p>Light canvas</p>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logoSrc} alt="" style={{ height: 40 }} /></div>
+          <div data-theme="dark"><p>Dark canvas{invertDark ? ' · Invert Logo in Dark Mode is on' : ''}</p>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logoSrc} alt="" style={{ height: 40 }} data-invert={invertDark ? '' : undefined} /></div>
         </div>
-        <p className="text-label text-fg-muted mt-md">
-          Users can override this with the toggle in the header — their preference is stored in localStorage.
-        </p>
       </section>
-    </>
+    </div>
   )
 }

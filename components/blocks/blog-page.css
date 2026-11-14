@@ -131,7 +131,7 @@
 [data-block="blog"] [data-part="body"] h2 { margin-top: 2.2em; font-size: clamp(1.375rem, 1.2rem + .8cqi, 1.75rem); line-height: 1.25; font-weight: 700; letter-spacing: -.015em; text-wrap: balance; }
 [data-block="blog"] [data-part="body"] h2 + * { margin-top: .6em; }
 [data-block="blog"] [data-part="body"] a { color: var(--bl-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
-[data-block="blog"] [data-part="body"] :is(figure, table, pre) { width: min(60rem, 100cqi - 2 * var(--bl-pad)); margin-inline: calc((var(--bl-measure) - min(60rem, 100cqi - 2 * var(--bl-pad))) / 2); }
+[data-block="blog"] [data-part="body"] :is(figure, pre) { width: min(60rem, 100cqi - 2 * var(--bl-pad)); margin-inline: calc((var(--bl-measure) - min(60rem, 100cqi - 2 * var(--bl-pad))) / 2); }
 
 /* author: a compact card on the article's measure, instead of a full-width band with a 44px name */
 [data-block="blog"] [data-part="author-card"] { box-sizing: content-box; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.25rem; max-width: var(--bl-measure); margin: 0 auto; padding: 2rem var(--bl-pad) clamp(3rem, 2rem + 3cqi, 4.5rem); border-top: 1px solid var(--bl-line); }
@@ -172,8 +172,21 @@
 [data-block="blog"] [data-part="body"] hr { border: 0; border-top: 1px solid var(--bl-line); margin-block: 2.5em; }
 [data-block="blog"] [data-part="body"] :is(code, pre) { font-family: var(--ot-font-mono, ui-monospace, monospace); font-size: .875em; }
 [data-block="blog"] [data-part="body"] pre { overflow-x: auto; padding: 1rem; background: var(--ot-surface); border-radius: var(--ot-radius-control); }
-[data-block="blog"] [data-part="body"] table { width: 100%; border-collapse: collapse; font-size: .9em; }
-[data-block="blog"] [data-part="body"] :is(th, td) { padding: .5rem .75rem; border-bottom: 1px solid var(--bl-line); text-align: left; }
+/* Tables sit on the text column (no break-out), so their edges line up with the paragraphs; the first and last cells drop their side padding so the text lines up too. Wide tables scroll inside the column. */
+[data-block="blog"] [data-part="body"] table { width: 100%; margin-inline: 0; border-collapse: collapse; font-size: .9em; line-height: 1.5; font-variant-numeric: tabular-nums; }
+@container bl (max-width: 40rem) { [data-block="blog"] [data-part="body"] table { display: block; overflow-x: auto; } }
+[data-block="blog"] [data-part="body"] :is(th, td) { padding: .75rem 1rem; border-bottom: 1px solid var(--bl-line); text-align: left; vertical-align: top; }
+[data-block="blog"] [data-part="body"] :is(th, td):first-child { padding-left: 0; }
+[data-block="blog"] [data-part="body"] :is(th, td):last-child { padding-right: 0; }
+[data-block="blog"] [data-part="body"] th { font-weight: 700; color: var(--ot-fg); border-bottom-width: 2px; border-bottom-color: color-mix(in oklch, var(--ot-fg) 30%, transparent); }
+[data-block="blog"] [data-part="body"] td:first-child { font-weight: 600; }
+/* Footnote markers stay on the line (no extra line height) */
+[data-block="blog"] [data-part="body"] sup { font-size: .7em; line-height: 0; vertical-align: super; }
+/* Disclaimers and footnotes: a paragraph that is only <small> text. The first of a run gets a rule and room above; each reads as small, muted, upright print. */
+[data-block="blog"] [data-part="body"] > p:has(> small:only-child) { margin-top: .6em; font-size: .8125rem; line-height: 1.6; color: var(--ot-fg-muted); }
+[data-block="blog"] [data-part="body"] > p:has(> small:only-child) :is(small, em) { font-size: inherit; font-style: normal; }
+[data-block="blog"] [data-part="body"] > p:not(:has(> small:only-child)) + p:has(> small:only-child) { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--bl-line); }
+[data-block="blog"] [data-part="body"] > p:has(> small:only-child) sup { font-size: .75em; margin-right: .15em; }
 /* Atmospheric background video: its Pause control */
 [data-block="blog"] [data-part="video-toggle"] { position: absolute; z-index: 3; top: .75rem; right: .75rem; display: inline-flex; align-items: center; gap: .4rem; min-height: 2.5rem; padding: 0 .9rem; cursor: pointer; border: 1px solid color-mix(in oklch, var(--ot-fg-on-brand) 40%, transparent); border-radius: 999px; background: oklch(from var(--bl-fill) calc(l - .1) c h / .7); color: var(--ot-fg-on-brand); font: 600 .8125rem/1 var(--ot-font-sans); }
 [data-block="blog"] [data-part="video-toggle"] svg { width: .875rem; height: .875rem; }

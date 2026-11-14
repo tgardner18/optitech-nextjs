@@ -1,112 +1,74 @@
 import { ContentProps } from '@optimizely/cms-sdk'
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server'
-import { RichText } from '@optimizely/cms-sdk/react/richText'
 import { OT_FooterBlock as OT_FooterBlockContentType } from '@/cms/content-types/OT_FooterBlock'
-import Image from 'next/image'
-import Link from 'next/link'
-import { richTextJson } from '@/lib/richTextJson'
-import { resolveCmsUrl } from '@/lib/resolveCmsUrl'
+import Footer from '@/components/layout/Footer'
+import { getFooterStyles, type FooterStyle } from '@/cms/styling/OT_FooterBlock.styling'
 
 type Props = {
   content: ContentProps<typeof OT_FooterBlockContentType>
   displaySettings?: Record<string, string | boolean>
 }
 
+const STYLE_LABEL: Record<FooterStyle, string> = { spotlight: 'Spotlight', centered: 'Centered', minimal: 'Minimal', columns: 'Columns' }
+const BG_LABEL = { dark: 'Dark', light: 'Light', brand: 'Brand' } as const
+const ALL_STYLES: FooterStyle[] = ['spotlight', 'centered', 'minimal', 'columns']
+
 /**
- * CMS adapter for OT_FooterBlock — renders a preview of the footer block
- * when editing it as a shared item in the Optimizely editor.
+ * CMS adapter for OT_FooterBlock: the editor preview of the footer block.
  *
- * Not used for the public site footer (which is rendered by components/layout/Footer.tsx).
- * This exists solely to give editors a visual preview pane in the CMS.
+ * The public site footer is rendered by components/layout/Footer.tsx. The preview
+ * renders that same component with this block's own content, so editors see the
+ * chosen Footer Style and Footer Background, plus the same content in the other
+ * styles. Visuals: components/layout/site-footer.css (data-block="footer-preview").
  */
 export default function OT_FooterBlockAdapter({ content }: Props) {
   const { pa, src } = getPreviewUtils(content)
+  const { style, background } = getFooterStyles(content as unknown as Record<string, unknown>)
 
-  const descriptionJson            = richTextJson(content.description)
-  const logoSrc:  string | null   = src(content.footerLogo) ?? null
-  const logoSize: string          = (content.footerLogoSize as string | undefined) ?? 'md'
-  const logoInvert: boolean       = content.footerLogoInvertDark === true
+  const links = Array.isArray(content.links) ? (content.links as any[]).filter(l => l?.label) : []
+  const logoSrc = src(content.footerLogo) ?? undefined
+  const descriptionHtml = (content as any).description?.html as string | undefined
 
-  const LOGO_SIZE: Record<string, string> = {
-    sm: 'max-h-10 w-auto',
-    md: 'max-h-14 w-auto',
-    lg: 'max-h-20 w-auto',
-    xl: 'max-h-28 w-auto',
+  // The record Footer.tsx reads (same shape as the Graph footer block).
+  const block = {
+    _metadata: (content as any)._metadata,
+    footerStyle: style,
+    footerLeftMode: background,
+    footerLogo: logoSrc ? { url: { default: logoSrc } } : undefined,
+    footerLogoSize: content.footerLogoSize,
+    footerLogoInvertDark: content.footerLogoInvertDark,
+    description: descriptionHtml ? { html: descriptionHtml } : undefined,
+    links,
   }
-  const logoClass = [
-    LOGO_SIZE[logoSize] ?? LOGO_SIZE.md,
-    logoInvert ? 'logo-invert-dark' : '',
-  ].filter(Boolean).join(' ')
 
-  type FooterLink = { label: string; href: string }
-  const links: FooterLink[] = Array.isArray(content.links)
-    ? (content.links as any[])
-        .map((l: any) => ({ label: l.label ?? '', href: resolveCmsUrl(l.url) ?? '#' }))
-        .filter((l: FooterLink) => l.label)
-    : []
-
-  const twoColumn = links.length > 5
+  const empty = !descriptionHtml && links.length === 0
+  const others = ALL_STYLES.filter(s => s !== style)
 
   return (
-    <div
-      {...pa(content.__composition)}
-      className="bg-canvas border border-fg/10 p-lg max-w-3xl"
-    >
-      {/* Logo preview */}
-      {logoSrc && (
-        <div className="mb-lg" {...pa('footerLogo')}>
-          <Image
-            src={logoSrc}
-            alt="Footer logo preview"
-            width={300}
-            height={90}
-            className={logoClass}
-          />
-        </div>
-      )}
-
-      {/* Description */}
-      {descriptionJson && (
-        <div
-          className="
-            text-[1rem] font-medium leading-[1.65] text-fg
-            max-w-[52ch] mb-lg
-            [&_p]:m-0 [&_p+p]:mt-[0.75em]
-            [&_strong]:font-semibold
-            [&_em]:not-italic [&_em]:text-accent
-          "
-        >
-          <RichText content={descriptionJson} />
-        </div>
-      )}
-
-      {/* Links grid */}
-      {links.length > 0 && (
-        <nav aria-label="Footer navigation preview">
-          <ul
-            className={`grid grid-cols-1 gap-x-xl gap-y-xs ${
-              twoColumn ? 'sm:grid-cols-2' : ''
-            }`}
-          >
-            {links.map(link => (
-              <li key={link.label}>
-                <Link
-                  href={link.href}
-                  className="text-label tracking-label uppercase text-fg-muted hover:text-fg transition-colors duration-150"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
-      {!descriptionJson && links.length === 0 && (
-        <p className="text-sm text-fg-muted/60 italic">
-          Add a description or links to preview the footer.
+    <div data-block="footer-preview" {...pa(content.__composition)}>
+      <div data-part="strip">
+        <b>Footer block preview</b>
+        <span data-part="tag">Style: {STYLE_LABEL[style]}</span>
+        <span data-part="tag">Background: {BG_LABEL[background]}</span>
+        <span data-part="tag">Footer Links: {links.length} of 10</span>
+        <span data-part="tag">Logo: {logoSrc ? 'Footer Logo (override)' : 'site logo from Theme Manager'}</span>
+      </div>
+      {empty && (
+        <p data-part="hint">
+          This footer has no description or links yet, so visitors see the logo and copyright only.
+          Add Footer Links (up to 10) or, for Columns, Link Columns.
         </p>
       )}
+      <div data-part="stage"><Footer footerBlock={block} /></div>
+      <details data-part="others">
+        <summary>See this content in {others.map(o => STYLE_LABEL[o]).join(', ').replace(/, ([^,]*)$/, ', and $1')}</summary>
+        {others.map(o => (
+          <div key={o}>
+            <p data-part="other-t">{STYLE_LABEL[o]}</p>
+            <div data-part="stage"><Footer footerBlock={{ ...block, footerStyle: o }} /></div>
+          </div>
+        ))}
+      </details>
     </div>
   )
 }

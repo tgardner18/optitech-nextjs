@@ -1,67 +1,52 @@
 import Link from 'next/link'
-import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import Image from 'next/image'
-import { cn } from '@/lib/utils'
+import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import { getClient, getSiteSettings, getRequestDomain, getRequestLocale } from '@/lib/optimizely'
 import { BrandMark } from '@/components/layout/BrandMark'
+import Button from '@/components/ui/Button'
+import { normalizeNavHref } from '@/components/layout/Header'
 import { resolveCmsUrl } from '@/lib/resolveCmsUrl'
 import {
   getFooterStyles,
   footerSurfaceAttrs,
   type FooterBackground,
+  type FooterStyle,
 } from '@/cms/styling/OT_FooterBlock.styling'
 
 // Normalized, layout-agnostic footer data. Resolved once, then handed to the
-// chosen layout sub-component below.
+// chosen layout below. Visuals live in components/layout/site-footer.css,
+// keyed on data-block / data-style / data-surface / data-part.
 type FooterLink = { label: string; href: string }
 type FooterColumn = { title: string; links: FooterLink[] }
 type FooterView = {
+  style: FooterStyle
   siteName: string
   logoSrc?: string
   logoAlt: string
   logoInvert: boolean
-  logoSizeClass: string
+  logoHeight: string
   descriptionHtml: string | null
   links: FooterLink[]
   columns: FooterColumn[]
-  year: number
+  legal: string
   background: FooterBackground
   surfaceAttrs: ReturnType<typeof footerSurfaceAttrs>
+  cta: { label: string; href: string } | null
 }
 
-// Shared rich-text element styling. <em> colour is handled by the `.footer-prose`
-// rules in globals.css (accent on dark/brand, accent-hover on light).
-const PROSE =
-  'footer-prose [&_p]:m-0 [&_strong]:font-semibold [&_strong]:text-fg ' +
-  '[&_a]:text-fg-muted [&_a]:underline [&_a]:decoration-fg/20 ' +
-  '[&_a:hover]:text-fg [&_a:hover]:decoration-fg/50 transition-colors duration-150'
+// Footer Logo Size → the logo's max height.
+const FOOTER_LOGO_H: Record<string, string> = { sm: '2rem', md: '2.5rem', lg: '3.5rem', xl: '5rem' }
 
-// Top hairline gradient. On a brand surface the brand stop vanishes into the
-// teal, so it centres on accent instead.
-function topBarBg(background: FooterBackground): string {
-  return background === 'brand'
-    ? 'linear-gradient(to right, transparent, var(--ot-accent) 50%, transparent)'
-    : 'linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent)'
-}
-
-function FooterLogo({ view, className }: { view: FooterView; className?: string }) {
+function FooterLogo({ view }: { view: FooterView }) {
   return (
-    <Link
-      href="/"
-      aria-label={`${view.logoAlt} — Home`}
-      className={cn(
-        'inline-flex items-center hover:opacity-80 transition-opacity duration-200 ease-quick',
-        className,
-      )}
-      style={{ filter: 'drop-shadow(0 4px 16px var(--ot-bloom-brand-faint))' }}
-    >
+    <Link href="/" data-part="logo" aria-label={`${view.logoAlt}, home`}>
       {view.logoSrc ? (
         <Image
           src={view.logoSrc}
           alt={view.logoAlt}
           width={444}
           height={90}
-          className={cn(view.logoSizeClass, view.logoInvert && 'logo-invert-dark')}
+          data-invert={view.logoInvert ? '' : undefined}
         />
       ) : (
         <BrandMark name={view.siteName} size="lg" className="text-fg" />
@@ -70,294 +55,106 @@ function FooterLogo({ view, className }: { view: FooterView; className?: string 
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
- * Spotlight — the original asymmetric, branded layout. Background tints only the
- * left (logo) zone; the right link panel stays brand. Unchanged structurally;
- * the left zone's tone now comes from the generalized background field.
- * ════════════════════════════════════════════════════════════════════════════ */
+function FooterLinks({ links, part = 'links' }: { links: FooterLink[]; part?: string }) {
+  if (!links.length) return null
+  return (
+    <ul data-part={part} data-wrap={part === 'links' && links.length > 5 ? '' : undefined}>
+      {links.map(l => (
+        <li key={l.href + l.label}>
+          <Link data-part={part === 'chips' ? 'chip' : 'link'} href={l.href}>{l.label}</Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Desc({ html }: { html: string | null }) {
+  if (!html) return null
+  return <div data-part="desc" dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(html) }} />
+}
+
+function FooterShell({ view, children }: { view: FooterView; children: React.ReactNode }) {
+  return (
+    <footer
+      data-block="site-footer"
+      data-style={view.style}
+      data-surface={view.background}
+      {...view.surfaceAttrs}
+      style={{ ['--ft-logo-h' as string]: view.logoHeight }}
+    >
+      <span data-part="rule" aria-hidden="true" />
+      {children}
+    </footer>
+  )
+}
+
+/* Spotlight: Stage grid texture with a travelling lit sweep, and a three-hue chromatic bloom
+ * rising from the bottom edge. The Theme Manager CTA is the footer's action. */
 function SpotlightFooter({ view }: { view: FooterView }) {
-  const { surfaceAttrs, background, links, descriptionHtml, year } = view
-
-  // In brand mode both zones are teal, so lift the canvas zone a touch above
-  // brand-hover to keep the diagonal seam readable; otherwise use the surface canvas.
-  const canvasLayerBg =
-    background === 'brand'
-      ? 'oklch(from var(--ot-brand-hover) calc(l + 0.07) c h)'
-      : 'var(--ot-canvas)'
-
+  const { links, descriptionHtml, legal, cta, background } = view
   return (
-    <footer className="relative overflow-hidden isolate" data-theme="dark">
-
-      {/* Top gradient bar */}
-      <div aria-hidden className="h-px" style={{ background: topBarBg(background) }} />
-
-      {/* z-0: brand-hover base fills everything */}
-      <div aria-hidden className="absolute inset-0" style={{ zIndex: 0, background: 'var(--ot-brand-hover)' }} />
-
-      {/* z-1: canvas panel — masked right edge dissolves into the brand side */}
-      <div
-        aria-hidden
-        {...surfaceAttrs}
-        className="hidden lg:block absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 1,
-          background: canvasLayerBg,
-          clipPath: 'polygon(0 0, 74% 0, calc(74% - 5rem) 100%, 0 100%)',
-          WebkitMaskImage:
-            'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.80) 57%, rgba(0,0,0,0.50) 63%, rgba(0,0,0,0.18) 68%, transparent 73%)',
-          maskImage:
-            'linear-gradient(to right, black 0%, black 50%, rgba(0,0,0,0.80) 57%, rgba(0,0,0,0.50) 63%, rgba(0,0,0,0.18) 68%, transparent 73%)',
-          filter: 'drop-shadow(12px 0 44px oklch(4% 0.005 195 / 0.65))',
-        }}
-      />
-
-      {/* z-3: right-column elevation */}
-      <div
-        aria-hidden
-        className="hidden lg:block absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 3,
-          background:
-            'linear-gradient(to bottom, oklch(from var(--ot-brand-hover) calc(l + 0.10) c h / 0.50) 0%, transparent 60%)',
-          clipPath: 'polygon(61% 0, 100% 0, 100% 100%, calc(61% - 5rem) 100%)',
-        }}
-      />
-
-      {/* z-4: ambient bloom */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 4,
-          backgroundImage:
-            'radial-gradient(ellipse 50% 80% at 90% 115%, var(--ot-bloom-brand-faint) 0%, transparent 65%)',
-        }}
-      />
-
-      <div className="relative flex flex-col lg:flex-row" style={{ zIndex: 10 }}>
-
-        {/* Left: canvas — logo + description + copyright */}
-        <div {...surfaceAttrs} className="bg-canvas lg:bg-transparent lg:w-[62%] flex flex-col justify-center px-md py-md lg:px-lg lg:py-lg lg:pr-20">
-
-          <FooterLogo view={view} />
-
-          {descriptionHtml && (
-            <div
-              className={cn(PROSE, 'mt-sm max-w-(--ot-measure-tight) text-body leading-body text-fg-muted [&_p+p]:mt-[0.5em]')}
-              dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(descriptionHtml) }}
-            />
-          )}
-
-          <p className="text-label tracking-label uppercase text-fg-muted/60 mt-sm">
-            © {year}
-          </p>
-
+    <FooterShell view={view}>
+      <div data-part="scene" aria-hidden="true"><span data-part="grid" /><span data-part="bloom" /><span data-part="glow" /></div>
+      <div data-part="in">
+        <div data-part="lead"><FooterLogo view={view} /><Desc html={descriptionHtml} /></div>
+        <div data-part="act">
+          {cta && <Button href={cta.href} size="sm" variant={background === 'brand' ? 'ghost' : 'brand'}>{cta.label}</Button>}
+          {links.length > 0 && <nav aria-label="Footer"><FooterLinks links={links} part="chips" /></nav>}
         </div>
-
-        {/* Right: brand — nav links, right-aligned */}
-        <div className="bg-brand-hover lg:bg-transparent lg:w-[38%] flex flex-col justify-center items-end px-md py-md lg:px-lg lg:py-lg border-t border-accent/20 lg:border-t-0">
-
-          {links.length > 0 && (
-            <nav aria-label="Footer navigation">
-              <ul className="flex flex-col gap-y-3 items-end">
-                {links.map(link => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-[0.875rem] font-medium text-fg-on-brand/80 underline-offset-2 hover:text-fg-on-brand hover:underline decoration-fg-on-brand/30 transition-all duration-200 ease-quick"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
-
-        </div>
-
       </div>
-
-    </footer>
+      <div data-part="bar">
+        <p data-part="legal">{legal}</p>
+      </div>
+    </FooterShell>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
- * Centered — calm, symmetrical, single-surface column. Background tints the whole
- * footer. Description reads as a statement (subhead scale).
- * ════════════════════════════════════════════════════════════════════════════ */
 function CenteredFooter({ view }: { view: FooterView }) {
-  const { surfaceAttrs, background, links, descriptionHtml, year, siteName } = view
-
   return (
-    <footer {...surfaceAttrs} className="relative overflow-hidden isolate bg-canvas">
-
-      {/* Top gradient bar */}
-      <div aria-hidden className="h-px" style={{ background: topBarBg(background) }} />
-
-      {/* Ambient bloom, bottom-centre — reads as depth on dark/brand, invisible on light */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 0,
-          backgroundImage:
-            'radial-gradient(ellipse 50% 60% at 50% 115%, var(--ot-bloom-brand-faint) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Main area. Arbitrary px width — the named max-w-* scale is broken in this
-          Tailwind v4 setup (collapses to a few px); the repo uses max-w-[Npx]/[Nch]. */}
-      <div className="relative z-10 mx-auto max-w-[640px] px-md py-lg lg:py-xl flex flex-col items-center text-center">
-
+    <FooterShell view={view}>
+      <div data-part="in">
         <FooterLogo view={view} />
-
-        {descriptionHtml && (
-          <div
-            className={cn(PROSE, 'mt-sm text-body leading-body text-balance text-fg-muted max-w-[58ch] [&_p+p]:mt-[0.5em]')}
-            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(descriptionHtml) }}
-          />
-        )}
-
-        {links.length > 0 && (
-          <nav aria-label="Footer navigation" className="mt-md">
-            <ul className="flex flex-wrap items-center justify-center gap-y-2">
-              {links.map((link, i) => (
-                <li key={link.label} className="flex items-center">
-                  <Link
-                    href={link.href}
-                    className="text-[0.9375rem] font-medium text-fg-muted underline-offset-4 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
-                  >
-                    {link.label}
-                  </Link>
-                  {i < links.length - 1 && (
-                    <span aria-hidden className="mx-3 select-none text-fg-muted/30">·</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-
+        <Desc html={view.descriptionHtml} />
+        {view.links.length > 0 && <nav aria-label="Footer"><FooterLinks links={view.links} /></nav>}
       </div>
-
-      {/* Brand bottom bar — anchors the footer with the brand color. Uses fixed
-          brand tokens + fg-on-brand so it stays legible on any Footer Background;
-          a faint top rule separates it when the surface itself is Brand. */}
-      <div className="relative z-10 bg-brand-hover border-t border-fg-on-brand/10">
-        <p className="mx-auto max-w-[1120px] px-md py-sm text-center text-label tracking-label uppercase text-fg-on-brand/85">
-          © {year} {siteName}
-        </p>
-      </div>
-
-    </footer>
+      <div data-part="bar"><p data-part="legal">{view.legal}</p></div>
+    </FooterShell>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
- * Minimal — compact single-row footer. No description (kept slim by design).
- * Logo left, links right, hairline, then copyright. Background tints the surface.
- * ════════════════════════════════════════════════════════════════════════════ */
 function MinimalFooter({ view }: { view: FooterView }) {
-  const { surfaceAttrs, background, links, year } = view
-
   return (
-    <footer {...surfaceAttrs} className="relative overflow-hidden isolate bg-canvas">
-
-      {/* Top gradient bar */}
-      <div aria-hidden className="h-px" style={{ background: topBarBg(background) }} />
-
-      <div className="relative z-10 px-md py-md lg:px-lg">
-
-        <div className="flex flex-col gap-y-sm sm:flex-row sm:items-center sm:justify-between">
-
-          <FooterLogo view={view} />
-
-          {links.length > 0 && (
-            <nav aria-label="Footer navigation">
-              <ul className="flex flex-wrap items-center gap-x-md gap-y-xs sm:justify-end">
-                {links.map(link => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-[0.875rem] font-medium text-fg-muted underline-offset-2 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
-
-        </div>
-
-        <p className="text-label tracking-label uppercase text-fg-muted/60 mt-sm pt-sm border-t border-fg/10">
-          © {year}
-        </p>
-
+    <FooterShell view={view}>
+      <div data-part="in">
+        <FooterLogo view={view} />
+        {view.links.length > 0 && <nav aria-label="Footer"><FooterLinks links={view.links} /></nav>}
+        <p data-part="legal">{view.legal}</p>
       </div>
-
-    </footer>
+    </FooterShell>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
- * Columns — titled link columns for sites with a deep IA (retail: Shop / Help /
- * About / Legal). Brand statement + logo on the left, columns on the right,
- * copyright on a hairline-ruled bottom bar. Background tints the whole footer.
- * ════════════════════════════════════════════════════════════════════════════ */
 function ColumnsFooter({ view }: { view: FooterView }) {
-  const { surfaceAttrs, background, columns, links, descriptionHtml, year, siteName } = view
+  const { columns, links } = view
   // No columns authored yet → fall back to the flat links as one column.
   const cols = columns.length ? columns : links.length ? [{ title: '', links }] : []
-
   return (
-    <footer {...surfaceAttrs} className="relative overflow-hidden isolate bg-canvas">
-      <div aria-hidden className="h-px" style={{ background: topBarBg(background) }} />
-
-      <div className="relative z-10 mx-auto grid max-w-[96rem] grid-cols-1 gap-lg px-md py-lg lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-xl lg:px-lg lg:py-xl">
-        <div className="flex flex-col gap-sm">
-          <FooterLogo view={view} />
-          {descriptionHtml && (
-            <div
-              className={cn(PROSE, 'max-w-[42ch] text-body leading-body text-fg-muted [&_p+p]:mt-[0.5em]')}
-              dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(descriptionHtml) }}
-            />
-          )}
-        </div>
-
+    <FooterShell view={view}>
+      <div data-part="in">
+        <div data-part="lead"><FooterLogo view={view} /><Desc html={view.descriptionHtml} /></div>
         {cols.length > 0 && (
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-md gap-y-lg sm:grid-cols-3 lg:grid-cols-4">
+          <nav aria-label="Footer" data-part="cols">
             {cols.map((col, i) => (
-              <div key={col.title || i} className="flex flex-col gap-sm">
-                {col.title && (
-                  <h2 className="text-label uppercase tracking-label font-semibold text-fg">{col.title}</h2>
-                )}
-                <ul className="flex flex-col gap-2">
-                  {col.links.map(link => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="text-[0.9375rem] text-fg-muted underline-offset-4 hover:text-fg hover:underline transition-colors duration-200 ease-quick"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+              <div key={col.title || i} data-part="col">
+                {col.title && <h2 data-part="col-t">{col.title}</h2>}
+                <FooterLinks links={col.links} />
               </div>
             ))}
           </nav>
         )}
       </div>
-
-      <div className="relative z-10 border-t border-fg/10">
-        <p className="mx-auto max-w-[96rem] px-md py-sm text-label tracking-label uppercase text-fg-muted/70 lg:px-lg">
-          © {year} {siteName}
-        </p>
-      </div>
-    </footer>
+      <div data-part="bar"><p data-part="legal">{view.legal}</p></div>
+    </FooterShell>
   )
 }
 
@@ -391,16 +188,18 @@ async function getFooterColumns(key: string | undefined, locale: string): Promis
   }
 }
 
-export default async function Footer({ footerBlock }: { footerBlock?: unknown } = {}) {
+export default async function Footer({ footerBlock, settings: settingsProp }: { footerBlock?: unknown; settings?: any } = {}) {
+  const domain   = await getRequestDomain()
   const locale   = await getRequestLocale()
-  const settings = await getSiteSettings(await getRequestDomain(), locale)
+  // `settings` lets the Theme Manager preview render the footer with its draft values.
+  const settings = settingsProp ?? await getSiteSettings(domain, locale)
 
   const siteName        = (settings?.siteName as string | undefined) ?? 'Site Accelerator'
   const themeLogoSrc    = settings?.logo?.url?.default as string | undefined
   const logoAlt         = settings?.logoAlt ?? siteName
   const themeLogoInvert = settings?.logoInvertDark === true
 
-  // `footerBlock` lets a standalone page (campaign landing) supply its own footer record.
+  // `footerBlock` lets a standalone page (campaign landing, CMS preview) supply its own footer record.
   const footerRef          = (footerBlock ?? settings?.footerRef?.item ?? settings?.footerRef) as any | undefined
   const footerLogoOverride = footerRef?.footerLogo?.url?.default as string | undefined
   const footerLogoSrc      = footerLogoOverride ?? themeLogoSrc
@@ -409,45 +208,48 @@ export default async function Footer({ footerBlock }: { footerBlock?: unknown } 
                                : themeLogoInvert
   const footerLogoSize     = (footerRef?.footerLogoSize as string | undefined) ?? 'md'
 
-  // Two independent axes — layout structure and background tone — resolved with
-  // safe fallbacks. Background is applied as a scoped colour context so the
-  // footer pins its own tone regardless of the site's light/dark mode.
+  // Two independent axes: layout structure and background tone. The footer pins
+  // its own tone regardless of the site's light/dark mode.
   const { style, background } = getFooterStyles(footerRef)
   const surfaceAttrs = footerSurfaceAttrs(background)
 
-  const FOOTER_LOGO_SIZE: Record<string, string> = {
-    sm: 'max-h-8 w-auto',
-    md: 'max-h-10 w-auto',
-    lg: 'max-h-14 w-auto',
-    xl: 'max-h-20 w-auto',
-  }
-  const logoSizeClass = FOOTER_LOGO_SIZE[footerLogoSize] ?? FOOTER_LOGO_SIZE.md
-
   const descriptionHtml = (footerRef?.description?.html as string | undefined) ?? null
 
+  // The CMS allows 10 Footer Links; every saved link shows.
   const links: FooterLink[] = Array.isArray(footerRef?.links)
     ? (footerRef.links as any[])
         .map(l => ({ label: (l.label as string) ?? '', href: resolveCmsUrl(l.url) ?? '#' }))
         .filter(l => l.label)
-        .slice(0, 5)
+        .slice(0, 10)
     : []
 
   const columns = style === 'columns'
     ? await getFooterColumns(footerRef?._metadata?.key as string | undefined, locale)
     : []
 
+  // The Theme Manager's Copyright field, falling back to "© year site name".
+  const copyright = (settings?.copyright as string | undefined)?.trim()
+  const legal = copyright || `© ${new Date().getFullYear()} ${siteName}`
+
+  // The header's CTA (same label and link) is the Spotlight footer's action.
+  const ctaLabel = (settings?.ctaLabel as string | undefined)?.trim()
+  const ctaHref  = normalizeNavHref(resolveCmsUrl(settings?.ctaUrl, domain), locale, domain)
+  const cta = ctaLabel ? { label: ctaLabel, href: ctaHref } : null
+
   const view: FooterView = {
+    style,
     siteName,
     logoSrc: footerLogoSrc,
     logoAlt,
     logoInvert: footerLogoInvert,
-    logoSizeClass,
+    logoHeight: FOOTER_LOGO_H[footerLogoSize] ?? FOOTER_LOGO_H.md,
     descriptionHtml,
     links,
     columns,
-    year: new Date().getFullYear(),
+    legal,
     background,
     surfaceAttrs,
+    cta,
   }
 
   switch (style) {

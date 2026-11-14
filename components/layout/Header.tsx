@@ -35,7 +35,7 @@ const FALLBACK_NAV: NavItem[] = [
  * All internal paths are run through localizedHref so nav links stay
  * locale-aware: on /es/* every link points to /es/... automatically.
  */
-function normalizeNavHref(
+export function normalizeNavHref(
   rawUrl: string | null | undefined,
   locale: Locale,
   domain: string,       // request Host header, e.g. "your-site.vercel.app"

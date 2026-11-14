@@ -1,0 +1,181 @@
+@property --ft-spot { syntax: "<percentage>"; inherits: false; initial-value: 20%; }
+@layer components {
+  /* site-footer.css: Spotlight, Centered, Minimal, and Columns
+     CSS plus markup hooks. Footer Style, Footer Background, the logo override and size, Footer Links, and
+     Link Columns keep their meaning. The footer still pins its own tone with data-theme (and
+     data-footer-surface="brand"), so it never follows the visitor's light/dark toggle. */
+  [data-block="site-footer"] {
+    --ft-ink: oklch(from var(--ot-brand) min(l, .45) c h);
+    --ft-line: color-mix(in oklch, var(--ot-fg) 12%, transparent);
+    --ft-panel: var(--ot-brand-hover);
+    --ft-on-panel: var(--ot-fg-on-brand);
+    --ft-bar: var(--ot-brand-hover);
+    --ft-pad: clamp(1rem, 2.5vw, 2rem);
+    --ft-max: 96rem;
+    position: relative; isolation: isolate; overflow: clip; display: block;
+    background: var(--ot-canvas); color: var(--ot-fg); font-family: var(--ot-font-sans);
+  }
+  [data-block="site-footer"][data-theme="dark"] { --ft-ink: oklch(from var(--ot-brand) max(l, .8) min(c, .12) h); --ft-line: color-mix(in oklch, var(--ot-fg) 14%, transparent); }
+  /* Brand background: tokens.css already floods the canvas with brand-hover; the panel and bar step one shade deeper so they stay distinct */
+  /* The brand surface sets its own grounds here, at a specificity the Theme Manager's inline [data-theme] rule can't beat
+     (today tokens.css loses to it, so Brand renders as the plain dark footer on any theme that sets dark colors, Wings included) */
+  /* Brand = the deep brand, the same "brand deep" step the Banner and Slider refreshes use (for Wings this is the real #291e47) */
+  [data-block="site-footer"][data-surface="brand"] { --ft-deep: oklch(from var(--ot-brand) min(l, .3) min(c, .12) h);
+    --ot-canvas: var(--ft-deep); --ot-fg: var(--ot-fg-on-brand); --ot-fg-muted: color-mix(in oklch, var(--ot-fg-on-brand) 80%, transparent);
+    --ft-ink: var(--ot-fg-on-brand); --ft-panel: oklch(from var(--ft-deep) calc(l + .07) c h); --ft-bar: oklch(from var(--ft-deep) calc(l - .07) c h); --ft-line: color-mix(in oklch, var(--ot-fg-on-brand) 22%, transparent); }
+  [data-block="site-footer"] :where(ul, h2, p) { margin: 0; padding: 0; }
+  [data-block="site-footer"] :where(ul) { list-style: none; }
+  [data-block="site-footer"] :where(a) { color: inherit; text-decoration: none; }
+  [data-block="site-footer"] [data-part="rule"] { display: block; height: 1px; background: linear-gradient(to right, transparent, var(--ot-brand) 20%, var(--ot-accent) 80%, transparent); }
+  [data-block="site-footer"][data-surface="brand"] [data-part="rule"] { background: linear-gradient(to right, transparent, var(--ot-accent) 50%, transparent); }
+
+  /* ---- Logo: the bloom only where it reads as glow (dark and brand); on light it muddied the mark ---- */
+  [data-block="site-footer"] [data-part="logo"] { display: inline-flex; align-items: center; flex: none; border-radius: var(--ot-radius-control); transition: opacity .2s; }
+  [data-block="site-footer"] [data-part="logo"]:hover { opacity: .8; }
+  [data-block="site-footer"] [data-part="logo"] img { display: block; width: auto; max-height: var(--ft-logo-h, 2.5rem); }
+  [data-block="site-footer"][data-theme="dark"] [data-part="logo"] { filter: drop-shadow(0 4px 16px var(--ot-bloom-brand-faint)); }
+  [data-block="site-footer"][data-theme="dark"] [data-part="logo"] img[data-invert] { filter: brightness(0) invert(1); }
+
+  /* ---- Shared text ---- */
+  [data-block="site-footer"] [data-part="desc"] { max-width: 52ch; color: var(--ot-fg-muted); font-size: 1rem; line-height: 1.6; text-wrap: pretty; }
+  [data-block="site-footer"] [data-part="desc"] p + p { margin-top: .5em; }
+  [data-block="site-footer"] [data-part="desc"] strong { color: var(--ot-fg); font-weight: 600; }
+  [data-block="site-footer"] [data-part="desc"] em { font-style: normal; color: var(--ft-ink); }
+  [data-block="site-footer"] [data-part="desc"] a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in oklch, currentColor 45%, transparent); }
+  /* the copyright line: full-strength muted text, sentence case, room for a regulatory line */
+  [data-block="site-footer"] [data-part="legal"] { color: var(--ot-fg-muted); font-size: .875rem; line-height: 1.5; text-wrap: pretty; }
+
+  /* ---- Links: every saved link (up to 10), two columns past five, 36px rows, a visible focus ring ---- */
+  [data-block="site-footer"] [data-part="links"] { display: grid; gap: 0 2rem; }
+  [data-block="site-footer"] [data-part="links"][data-wrap] { grid-template-columns: repeat(2, max-content); }
+  [data-block="site-footer"] [data-part="link"] { display: inline-flex; align-items: center; min-height: 2.25rem; color: var(--ot-fg-muted); font-size: .9375rem; font-weight: 500; text-underline-offset: 4px; transition: color .15s; }
+  [data-block="site-footer"] [data-part="link"]:hover { color: var(--ot-fg); text-decoration: underline; text-decoration-thickness: 1px; }
+  [data-block="site-footer"] :is([data-part="link"], [data-part="logo"]):focus-visible { outline: 2px solid var(--ft-ink); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---- Spotlight v4: "bloom" ----
+     The Campaign Landing Page's Stage texture (the 56px accent grid of .ot-cl-band--bottom, same weight and mask),
+     a three-hue chromatic bloom (brand, an in-between hue, accent) rising from the bottom edge and drifting, plus a
+     lit-grid sweep that travels along the floor. Built for demos: the header CTA (Theme Manager ctaLabel / ctaUrl) is the footer's
+     action, links become chips when there are any, and the layout looks finished with zero links. Pure CSS; the
+     bloom breathes slowly at the Motion Intensity pace and holds still under reduced motion. */
+  [data-block="site-footer"][data-style="spotlight"] {
+    container: ftspot / inline-size;
+    --ft-logo-h: 3rem;
+    --ft-hue-a: oklch(from var(--ot-brand) max(l, .62) max(c, .12) h);      /* brand, lifted so it glows on a dark canvas */
+    --ft-hue-b: oklch(from var(--ot-accent) max(l, .68) c h);              /* accent */
+    --ft-hue-c: oklch(from color-mix(in oklch, var(--ft-hue-a), var(--ft-hue-b)) l c calc(h + 30));   /* a third, in-between hue so the bloom reads as chromatic, not two blobs */
+    --ft-bloom-a: oklch(from var(--ft-hue-a) l c h / .7);
+    --ft-bloom-b: oklch(from var(--ft-hue-b) l c h / .55);
+    --ft-bloom-c: oklch(from var(--ft-hue-c) l c h / .5);
+    --ft-lit: oklch(from var(--ft-hue-b) l c h / .55);                      /* the lit grid: the sweep that travels along the grid lines */
+    --ft-grid: oklch(from var(--ot-accent) max(l, .62) c h / .12);          /* the Stage grid (accent at 9% there; 12% here, so it reads on near-black) */
+    --ft-chip-edge: color-mix(in oklch, var(--ot-fg) 30%, transparent);
+  }
+  [data-block="site-footer"][data-style="spotlight"][data-theme="light"] {
+    --ft-hue-a: oklch(from var(--ot-brand) min(l, .5) max(c, .1) h);
+    --ft-hue-b: oklch(from var(--ot-accent) min(l, .58) c h);
+    --ft-bloom-a: oklch(from var(--ft-hue-a) l c h / .2);
+    --ft-bloom-b: oklch(from var(--ft-hue-b) l c h / .2);
+    --ft-bloom-c: oklch(from var(--ft-hue-c) l c h / .15);
+    --ft-lit: oklch(from var(--ft-hue-b) l c h / .4);
+    --ft-grid: oklch(from var(--ot-accent) min(l, .5) c h / .09);
+  }
+  [data-block="site-footer"][data-style="spotlight"][data-surface="brand"] {
+    --ft-hue-a: oklch(from var(--ot-brand) max(l, .66) max(c, .12) h);
+    --ft-hue-b: oklch(from var(--ot-accent) max(l, .74) c h);
+    --ft-bloom-a: oklch(from var(--ft-hue-a) l c h / .45);
+    --ft-bloom-b: oklch(from var(--ft-hue-b) l c h / .35);
+    --ft-bloom-c: oklch(from var(--ft-hue-c) l c h / .3);
+    --ft-lit: oklch(1 0 0 / .3);
+    --ft-grid: oklch(1 0 0 / .07);
+    --ft-chip-edge: oklch(1 0 0 / .45);
+  }
+  /* the scenery */
+  [data-block="site-footer"] [data-part="scene"] { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  [data-block="site-footer"] [data-part="grid"] { position: absolute; inset: 0; background-image: linear-gradient(var(--ft-grid) 1px, transparent 1px), linear-gradient(90deg, var(--ft-grid) 1px, transparent 1px); background-size: 56px 56px; background-position: center bottom; -webkit-mask-image: linear-gradient(to top, #000, transparent 92%); mask-image: linear-gradient(to top, #000, transparent 92%); }
+  /* the lit grid: the same lines, brighter, revealed only under a soft spot that travels along the floor (--ft-spot) */
+  [data-block="site-footer"] [data-part="grid"]::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--ft-lit) 1px, transparent 1px), linear-gradient(90deg, var(--ft-lit) 1px, transparent 1px); background-size: 56px 56px; background-position: center bottom; -webkit-mask-image: radial-gradient(ellipse 26% 90% at var(--ft-spot) 100%, #000, transparent); mask-image: radial-gradient(ellipse 26% 90% at var(--ft-spot) 100%, #000, transparent); }
+  [data-block="site-footer"] [data-part="bloom"] { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; }
+  /* three lobes (brand, in-between, accent) with different sizes and periods, so the light never visibly loops. Only transform and opacity animate; the blur is static. */
+  [data-block="site-footer"] [data-part="bloom"]::before, [data-block="site-footer"] [data-part="bloom"]::after, [data-block="site-footer"] [data-part="glow"] { content: ""; position: absolute; border-radius: 50%; filter: blur(52px); will-change: transform, opacity; }
+  [data-block="site-footer"] [data-part="bloom"]::before { left: -6%; bottom: -42%; width: 66%; height: 105%; background: radial-gradient(closest-side, var(--ft-bloom-a), transparent); }
+  [data-block="site-footer"] [data-part="bloom"]::after { right: -6%; bottom: -42%; width: 62%; height: 100%; background: radial-gradient(closest-side, var(--ft-bloom-b), transparent); }
+  [data-block="site-footer"] [data-part="glow"] { left: 28%; bottom: -55%; width: 44%; height: 90%; background: radial-gradient(closest-side, var(--ft-bloom-c), transparent); }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-block="site-footer"] [data-part="bloom"]::before { animation: ft-lobe-a calc(17s * var(--ot-motion-scale, 1)) ease-in-out infinite alternate; }
+    [data-block="site-footer"] [data-part="bloom"]::after { animation: ft-lobe-b calc(23s * var(--ot-motion-scale, 1)) ease-in-out infinite alternate; }
+    [data-block="site-footer"] [data-part="glow"] { animation: ft-lobe-c calc(29s * var(--ot-motion-scale, 1)) ease-in-out infinite alternate; }
+    [data-block="site-footer"] [data-part="grid"]::after { animation: ft-sweep calc(21s * var(--ot-motion-scale, 1)) ease-in-out infinite alternate; }
+    [data-block="site-footer"][data-style="spotlight"] [data-part="bar"]::before { background-size: 220% 100%; animation: ft-edge calc(15s * var(--ot-motion-scale, 1)) ease-in-out infinite alternate; }
+  }
+  @keyframes ft-lobe-a { 0% { transform: translate(-6%, 8%) scale(.92); opacity: .65; } 55% { transform: translate(14%, -4%) scale(1.08); opacity: 1; } 100% { transform: translate(24%, 4%) scale(1); opacity: .8; } }
+  @keyframes ft-lobe-b { 0% { transform: translate(8%, -2%) scale(1.05); opacity: 1; } 45% { transform: translate(-14%, 8%) scale(.9); opacity: .7; } 100% { transform: translate(-26%, 0) scale(1.1); opacity: .95; } }
+  @keyframes ft-lobe-c { 0% { transform: translate(-30%, 10%) scale(.85); opacity: .5; } 50% { transform: translate(6%, -10%) scale(1.15); opacity: 1; } 100% { transform: translate(34%, 6%) scale(.95); opacity: .6; } }
+  @keyframes ft-sweep { from { --ft-spot: 8%; } to { --ft-spot: 92%; } }
+  @keyframes ft-edge { from { background-position: 0 0; } to { background-position: 100% 0; } }
+  /* the content */
+  [data-block="site-footer"][data-style="spotlight"] [data-part="in"] { display: grid; gap: 2rem; max-width: var(--ft-max); margin-inline: auto; padding: clamp(3.5rem, 7vw, 5.5rem) var(--ft-pad) clamp(3rem, 6vw, 5rem); }
+  [data-block="site-footer"][data-style="spotlight"] [data-part="lead"] { display: grid; justify-items: start; gap: 1.125rem; }
+  [data-block="site-footer"][data-style="spotlight"] [data-part="desc"] { max-width: 44ch; font-size: 1.0625rem; }
+  [data-block="site-footer"][data-style="spotlight"] [data-part="act"] { display: grid; justify-items: start; align-content: end; gap: 1.25rem; }
+  [data-block="site-footer"] [data-part="chips"] { display: flex; flex-wrap: wrap; gap: .5rem; }
+  [data-block="site-footer"] [data-part="chip"] { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 1.125rem; border: 1px solid var(--ft-chip-edge); border-radius: 999px; background: color-mix(in oklch, var(--ot-canvas) 55%, transparent); color: var(--ot-fg); font-size: .9375rem; font-weight: 500; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: border-color .15s, background-color .15s; }
+  [data-block="site-footer"] [data-part="chip"]:hover { border-color: var(--ft-ink); background: color-mix(in oklch, var(--ft-ink) 14%, transparent); }
+  [data-block="site-footer"] [data-part="chip"]:focus-visible { outline: 2px solid var(--ft-ink); outline-offset: 2px; }
+  /* the bar: legal text on a light scrim so the bloom never touches its contrast; the edge catches the bloom's two hues */
+  [data-block="site-footer"][data-style="spotlight"] [data-part="bar"] { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; max-width: var(--ft-max); margin-inline: auto; padding: 1rem var(--ft-pad) 1.25rem; }
+  [data-block="site-footer"][data-style="spotlight"] [data-part="bar"]::before { content: ""; position: absolute; top: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--ft-hue-a) 25%, var(--ft-hue-b) 75%, transparent); opacity: .8; }
+  [data-block="site-footer"][data-style="spotlight"] [data-part="bar"]::after { content: ""; position: absolute; z-index: -1; inset: 0 -100vw; background: color-mix(in oklch, var(--ot-canvas) 50%, transparent); }
+  @media (min-width: 48rem) {
+    [data-block="site-footer"][data-style="spotlight"] [data-part="in"] { grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); align-items: end; gap: 3rem; }
+    [data-block="site-footer"][data-style="spotlight"] [data-part="act"] { justify-items: end; }
+    [data-block="site-footer"][data-style="spotlight"] [data-part="chips"] { justify-content: flex-end; }
+  }
+
+  /* ---- Centered ---- */
+  [data-block="site-footer"][data-style="centered"] [data-part="in"] { display: grid; justify-items: center; gap: 1.25rem; max-width: 44rem; margin-inline: auto; padding: clamp(2.5rem, 5vw, 4rem) var(--ft-pad); text-align: center; }
+  [data-block="site-footer"][data-style="centered"] [data-part="desc"] { text-wrap: balance; }
+  /* links wrap with plain spacing, so a wrapped line never starts with a separator */
+  [data-block="site-footer"][data-style="centered"] [data-part="links"], [data-block="site-footer"][data-style="centered"] [data-part="links"][data-wrap] { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 1.75rem; }
+  [data-block="site-footer"][data-style="centered"] [data-part="bar"] { background: var(--ft-bar); color: var(--ot-fg-on-brand); text-align: center; padding: .875rem var(--ft-pad); }
+  [data-block="site-footer"][data-style="centered"] [data-part="bar"] [data-part="legal"] { color: var(--ot-fg-on-brand); }
+
+  /* ---- Minimal: one row, as the editor label says (logo, links, copyright); it stacks on narrow screens ---- */
+  [data-block="site-footer"][data-style="minimal"] [data-part="in"] { display: grid; gap: .75rem 2rem; align-items: center; max-width: var(--ft-max); margin-inline: auto; padding: 1.5rem var(--ft-pad); }
+  [data-block="site-footer"][data-style="minimal"] [data-part="links"], [data-block="site-footer"][data-style="minimal"] [data-part="links"][data-wrap] { display: flex; flex-wrap: wrap; gap: 0 1.5rem; }
+  [data-block="site-footer"][data-style="minimal"] [data-part="legal"] { padding-top: .75rem; border-top: 1px solid var(--ft-line); }
+  @media (min-width: 64rem) {
+    [data-block="site-footer"][data-style="minimal"] [data-part="in"] { grid-template-columns: auto minmax(0, 1fr) auto; }
+    [data-block="site-footer"][data-style="minimal"] [data-part="in"]:not(:has(nav)) { grid-template-columns: auto minmax(0, 1fr); }
+    [data-block="site-footer"][data-style="minimal"] nav { justify-self: end; }
+    [data-block="site-footer"][data-style="minimal"] [data-part="legal"] { max-width: 34ch; padding: 0 0 0 2rem; border-top: 0; border-left: 1px solid var(--ft-line); text-align: right; justify-self: end; }
+  }
+
+  /* ---- Columns: up to five titled columns fit one row (today a fifth column wraps alone) ---- */
+  [data-block="site-footer"][data-style="columns"] [data-part="in"] { display: grid; gap: 2.5rem; max-width: var(--ft-max); margin-inline: auto; padding: clamp(2.5rem, 5vw, 4rem) var(--ft-pad); }
+  [data-block="site-footer"][data-style="columns"] [data-part="lead"] { display: grid; justify-items: start; align-content: start; gap: 1rem; }
+  [data-block="site-footer"][data-style="columns"] [data-part="desc"] { max-width: 42ch; }
+  [data-block="site-footer"][data-style="columns"] [data-part="cols"] { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: 2rem 1.5rem; }
+  [data-block="site-footer"][data-style="columns"] [data-part="col-t"] { margin-bottom: .5rem; color: var(--ot-fg); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  [data-block="site-footer"][data-style="columns"] [data-part="links"][data-wrap] { grid-template-columns: 1fr; }
+  [data-block="site-footer"][data-style="columns"] [data-part="link"] { min-height: 2rem; font-weight: 400; }
+  [data-block="site-footer"][data-style="columns"] [data-part="bar"] { border-top: 1px solid var(--ft-line); }
+  [data-block="site-footer"][data-style="columns"] [data-part="bar"] [data-part="legal"] { max-width: var(--ft-max); margin-inline: auto; padding: 1rem var(--ft-pad); }
+  @media (min-width: 40rem) and (max-width: 63.99rem) { [data-block="site-footer"][data-style="columns"] [data-part="cols"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 39.99rem) { [data-block="site-footer"][data-style="columns"] [data-part="cols"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { [data-block="site-footer"][data-style="columns"] [data-part="in"] { grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); gap: 4rem; } }
+
+  @media (prefers-reduced-motion: reduce) { [data-block="site-footer"] *, [data-block="site-footer"] { transition: none !important; } }
+
+  /* ---- CMS preview of the Footer block (cms/components/OT_FooterBlock.tsx): renders the real footer ---- */
+  [data-block="footer-preview"] { display: block; background: var(--ot-canvas); color: var(--ot-fg); font-family: var(--ot-font-sans); }
+  [data-block="footer-preview"] [data-part="strip"] { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .875rem 1.25rem; border-bottom: 1px solid color-mix(in oklch, var(--ot-fg) 12%, transparent); background: var(--ot-surface); font-size: .875rem; }
+  [data-block="footer-preview"] [data-part="strip"] b { margin-right: .5rem; font-weight: 700; }
+  [data-block="footer-preview"] [data-part="tag"] { padding: .25rem .625rem; border-radius: 999px; background: color-mix(in oklch, var(--ot-fg) 7%, transparent); color: var(--ot-fg); font-weight: 500; }
+  [data-block="footer-preview"] [data-part="hint"] { margin: 1rem 1.25rem 0; padding: .75rem 1rem; border-left: 3px solid oklch(from var(--ot-brand) clamp(.4, l, .8) c h); background: color-mix(in oklch, var(--ot-brand) 7%, transparent); font-size: .9375rem; line-height: 1.5; }
+  [data-block="footer-preview"] [data-part="stage"] { margin: 1.25rem; border: 1px solid color-mix(in oklch, var(--ot-fg) 12%, transparent); border-radius: var(--ot-radius-surface); overflow: hidden; }
+  [data-block="footer-preview"] [data-part="others"] { margin: 0 1.25rem 1.25rem; }
+  [data-block="footer-preview"] [data-part="others"] summary { cursor: pointer; padding: .5rem 0; font-size: .9375rem; font-weight: 600; }
+  [data-block="footer-preview"] [data-part="other-t"] { margin: 1rem 0 -.5rem; color: var(--ot-fg-muted); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  [data-block="footer-preview"] [data-part="others"] [data-part="stage"] { margin: 1rem 0 0; }
+}

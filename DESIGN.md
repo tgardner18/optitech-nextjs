@@ -283,6 +283,10 @@ All use `--ot-ease-kinetic`; durations derive from `--ot-dur-slow` so `--ot-moti
 
 Individual blocks (currently HeroBlock) support an `animation` display setting: `none`, `fade`, `slide`, `parallax`. Implemented with `motion-safe:animate-fade-in` and `motion-safe:animate-slide-up` + staggered `animationDelay` values per element within the block.
 
+### Disclosure motion (a sanctioned exception)
+
+The "never animate layout properties" rule has one exception: expanding and collapsing content (Accordion, nav panels) animates `grid-template-rows` between `0fr` and `1fr` on an inner wrapper, with the clip element at `min-height: 0; overflow: hidden`. It is the only smooth way to reach `auto` height, it runs at the same speed both directions, and it is gated on `prefers-reduced-motion: no-preference`.
+
 ### The reduced-motion requirement
 
 Every animation and transition in the system must degrade gracefully under `prefers-reduced-motion: reduce`. Use the `motion-safe:` Tailwind modifier for all animation utilities. The stagger system's `@media (prefers-reduced-motion: no-preference)` guard means reduced-motion users see content immediately at full opacity with no layout shift.
@@ -305,19 +309,41 @@ The layout system is driven by Visual Builder composition settings rather than c
 
 ## 8. Component Inventory
 
+### Scoped component CSS (the current convention)
+
+Newer and refreshed components no longer style themselves with long Tailwind class strings. Each one ships a stylesheet next to it and marks its markup with hooks:
+
+- **Hooks.** The root carries `data-block="name"` (plus variant attributes such as `data-style`, `data-color`, `data-surface`); every styled element carries `data-part="name"`. State is a data attribute (`data-open`, `data-scrolled`, `aria-expanded`, `aria-current`, `aria-pressed`), not a class.
+- **Stylesheet.** `components/<area>/<name>.css`, imported from `app/globals.css`, wrapped in `@layer components` so Tailwind utilities (the Button's, for one) still win where a component deliberately mixes them. Colors, radii, type and motion come only from `--ot-*` tokens.
+- **Responsive.** Blocks that render inside any width use `container-type: inline-size` and `@container`; site chrome (header, footer, nav) uses viewport `@media`.
+- **Opt-in for shared pieces.** A shared component that also lives elsewhere takes a `scoped` prop (ThemeToggle, LocaleSelector) so its utility-class look is untouched outside the refreshed chrome.
+- **Done so far:** Callout, Hero, Card, Stat, Feature, Text, Media, Quote, Tabs, Banner, RichText, Accordion, BlogFeed, ComparisonTable, EventListing, Forms, TrustRail, Chart, Blog page, Slider, LocationListing, Divider, Search, Button, Topic Hub, Event Page, Practitioner Listing, Resource Library, site navigation (`site-nav.css`), site footer (`site-footer.css`) and the Theme Manager preview (`theme-preview.css`).
+
+**Accessibility baked into the hooks.** Disclosures use `aria-expanded` + `aria-controls`, a closed panel is `inert`, Escape closes and returns focus to the trigger. The mobile menu is a modal dialog (`role="dialog"`, `aria-modal`, siblings made `inert` while open, focus returns to the burger).
+
 ### Navigation (Header)
 
 Server component fed by ThemeManager. Dark glass sticky bar — `bg-canvas/80 backdrop-blur-md` with `border-b border-fg/5`. Logo area, primary nav links (desktop: inline; mobile: full-height overlay via `MobileMenu.tsx` client component), and CTA button. All content CMS-driven.
 
 **Desktop dropdown (mega menu).** A single flat `bg-surface` panel — no angled clip-path, no two-zone brand/canvas dissolve. Built entirely on semantic tokens (`bg-surface`, `text-fg`, `border-fg/*`), so the whole panel inverts automatically between dark and light mode and reads correctly on any ThemeManager theme. Structure is a single column of inset rows, each an optional icon tile + title + description, with a trailing `ArrowRight` that slides in on hover. Corners follow the Corner Style axis (`rounded-ot-surface` panel + tiles, `rounded-ot-control` rows) — sharp by default, rounded under a soft/rounded theme. Depth is a chromatic brand-hued bloom shadow (`--ot-bloom-brand-faint` / `--ot-bloom-brand-border`, never grey) plus the 1px brand→accent horizon along the top edge. Rows reveal with a 45ms-per-item kinetic stagger on open. The rest icon is `text-fg` ink (never the `brand` token) so it stays legible on `surface` in both modes and under any brand darkness — themeable colors are unsafe as foreground on a themeable ground; the brand color instead lives in the faint `bg-brand/10` tile tint and the solid `bg-brand` hover fill (icon → `fg-on-brand`), the one earned moment of color. Icons are optional per item, sourced from the shared `ICON_REGISTRY` via a `selectOne` field on `OT_NavigationSubItem` (same canonical library as the block icon pickers) and rendered on both desktop and mobile.
 
-**Split Bar (`navbarStyle: 'split-bar'`, `SplitHeader.tsx` / `SplitHeaderShell.tsx`).** An editorial masthead, not a shrunk-down utility bar: the logo sits dead-center in a `grid-cols-[1fr_auto_1fr]` row, and the primary nav links split into two wings that flank it (`DesktopNav` called twice — `variant="split"` for the bolder tracked-caps voice, distinct `ariaLabel`s so screen readers get two clearly distinguished landmarks instead of duplicates). The right wing also carries the utility icons and CTA, so the left wing takes the extra item on an odd-length nav list to keep both sides visually balanced. No floating pill capsule — that read as the generic "modern SaaS nav" default; this is a full-width bar whose *material* transforms instead.
+**Three Navbar Styles, one stylesheet.** All nav visuals live in `components/layout/site-nav.css` (`data-block="site-nav"`, `data-style="top-bar" | "split-bar" | "sidebar"`); the style comes from the Theme Manager.
+- **Top Bar** (`Header.tsx`): logo, inline links, tools (search, locale, theme, commerce) and the CTA. Below 72rem the links collapse to a menu button.
+- **Split Bar** (`SplitHeader.tsx` / `SplitHeaderShell.tsx`): an editorial masthead with the logo centered from 85rem and the links split into two wings (`DesktopNav` called twice with `wing="left" | "right"` and distinct `ariaLabel`s). On scroll (`data-scrolled`, threshold 8px) the bar crossfades from a bare masthead to a glass surface with a brand-to-accent hairline; only paint properties and a `scale(.86)` on the logo animate. The first-paint wing slide-in was dropped (the wings use `display: contents` below 85rem), so the old `splitInLeft/Right` keyframes are unused.
+- **Sidebar** (`SidebarNav*.tsx`): a rail from 64rem with `s-group` / `s-link` / `s-sub` items, collapsing to a floating Menu button. `--ot-sidebar-width` is 0px unless the CMS style is sidebar, so any local preview must set it too. A collapsed rail needs about 3.5rem of top padding on full-bleed heroes.
+- **Mobile sheet** (`MobileMenu.tsx`): a portal dialog; `navStyle` drives `data-for` so the sheet matches the active style.
 
-The style earns its name twice:
-- **First paint** — the two wings slide in from the outer edges toward the logo (`data-stagger="split-left"` / `"split-right"`, new `splitInLeft`/`splitInRight` keyframes in globals.css, riding the existing `MotionObserver`/stagger infrastructure rather than a one-off mechanism). The header visibly performs a "split" resolving into place.
-- **On scroll** — the whole bar crossfades from a bare transparent masthead into a glass surface and gains a brand→accent horizon hairline along the bottom edge (`.split-shell` in globals.css, `data-scrolled` set by a plain scroll-listener in `SplitHeaderShell.tsx`) — the same hairline motif as the mega-menu dropdown above and the footer, so the material change reads as one system. Only paint properties (`background-color`, `box-shadow`, `backdrop-filter`, `opacity`) and a `transform: scale(0.86)` on the logo animate — never a layout property — so the transition never reflows the page under the sticky header. Scoped to `lg:` — mobile keeps its own static glass bar via plain Tailwind classes on the header, untouched by the crossfade.
+`--ot-site-header-h` is emitted onto a `data-nav` wrapper in `app/(site)/layout.tsx` (both branches, via a `display:contents` div) so every consumer (for example the showcase nav's sticky offset) sees it whichever style is active.
 
-`--ot-site-header-h` is emitted onto a `data-nav` wrapper in `app/(site)/layout.tsx` (both the top-bar/split-bar branch and the sidebar branch, via a `display:contents` div) so it cascades correctly to every consumer on the page (e.g. the showcase nav's sticky offset), regardless of which nav style is active.
+### Footer (`components/layout/Footer.tsx`, `site-footer.css`)
+
+Four styles (`footerStyle`: Spotlight, Centered, Minimal, Columns) on three backgrounds (`footerLeftMode`: Dark, Light, Brand). The footer pins its own tone with `data-theme` and never follows the visitor's light/dark toggle. Content rules: every saved Footer Link shows (up to 10, two columns past five); the Theme Manager's Copyright field is the legal line in every style (fallback "© year site name"); Brand means the deep brand, `oklch(from var(--ot-brand) min(l, .3) min(c, .12) h)`, set at a specificity the Theme Manager's inline `[data-theme]` rule cannot beat.
+- **Spotlight**: the 56px accent grid (the Campaign Landing Page's Stage texture) with a lit-grid sweep (a brighter copy of the lines revealed under a soft spot that travels via the registered `--ft-spot` property), a three-hue chromatic bloom (brand, an in-between hue, accent) from the bottom edge drifting on 17s / 23s / 29s cycles so it never visibly loops, and a bar whose top hairline slowly shifts colour. The header CTA is the footer's action; links become chips. No site-name wordmark and no Back to top link (both were tried and removed). Only `transform` and `opacity` animate (the blur is static); everything is gated on `prefers-reduced-motion: no-preference` and scales with `--ot-motion-scale`. The effect is deliberately faint on Light.
+- The CMS preview of the Footer block (`OT_FooterBlock` adapter) renders this same component with the block's own content, a settings strip, an empty-footer hint, and the other three styles in a disclosure.
+
+### Theme Manager preview (`components/theme/`, `theme-preview.css`)
+
+Editor-only. Sections: site chrome (a stand-in header that follows the chosen Navbar Style, plus the real assigned footer), colors and contrast (both modes, every color field tagged Set or Default), type/corners/motion, components (real Button, Hero and Banner), logo. Contrast checks (`ThemeChecks.tsx`) measure the rendered colors in the browser (WCAG 4.5:1) and raise a banner naming failures. The draft CSS is scoped to `#ot-theme-preview` including nested `[data-theme]` surfaces, so nested light/dark areas show draft values, not published ones.
 
 ### Blocks (currently built)
 
@@ -332,6 +358,8 @@ The style earns its name twice:
 | **VideoBlock** | aspectRatio, bloom, caption | Same bloom system as ImageBlock |
 | **StatBlock** | color (brand/canvas/surface), layout (row/grid), glass | Animated counters, staggered entrance, divider lines |
 | **FeatureGridBlock** | color, layout (grid/list), glass | Icon + heading + body feature tiles |
+| **AccordionBlock** | style (boxed/clean/…) | Radix accordion with `forceMount`. Open and close both animate through an inner wrapper (`grid-template-rows` 0fr to 1fr, `--ac-dur` x `--ot-motion-scale`, ease `cubic-bezier(.32,.72,0,1)`), with a fading answer; same timing both ways so the page height stays steady, and `overflow-anchor: none` on the list. Radix zeroes `transitionDuration` on the content node while measuring, so never put the transition there. |
+| **ResourceLibraryBlock** | color, layout (list/cards), page size | DAM file list with search (only when files exceed a page), file-type chips with counts, list/card toggle, and a stretched-link title per file; scoped CSS in a `resources` container. |
 | **TrustRail** | motion (scroll/fade/static), treatment (auto/color), background (canvas/surface/brand), size (xs/sm/md/lg/xl), density, glass | Seamless CSS marquee (doubled track + `paddingRight` seam fix), IntersectionObserver fade. `auto` (default) forces a theme-matched silhouette — white on dark grounds and any `brand` fill, grey-reading-to-black on a light-mode canvas/surface — via `.trust-rail-logo-auto`; `color` shows each logo's own hues, undimmed, for near-white backgrounds only (`brand` always overrides back to the silhouette). Hovering any logo grows it (`scale(1.12)`) and dims every other logo in the row via a `:has()`-driven spotlight (`.trust-rail-track` / `.trust-rail-logo` in globals.css) — degrades gracefully (no dimming) without `:has()` support. `brand` uses `.bg-brand-fill` (radial gradient, matching every other block) instead of a flat fill. |
 
 ### TrustRail logo image guidance
@@ -345,6 +373,10 @@ The style earns its name twice:
 **Recommended dimensions:** logos vary in proportions, but a height of 80–160px in the source SVG viewBox works well across all five size settings (xs/sm/md/lg/xl). Width is unconstrained — the component respects natural aspect ratio up to `5 × height`.
 
 **Transparency is required** for the `auto` treatment (and on any `brand` background) to work correctly — logos are forced to a silhouette via `brightness(0)` (optionally `invert(1)` for white); a transparent background is mandatory for this to produce the correct result.
+
+### Blog article body
+
+The article body (`blog-page.css`, `data-part="body"`) styles CMS rich text on a 52rem measure. Tables sit on the text column (no break-out) with first/last cell padding removed so their text aligns with the paragraphs, and scroll sideways inside the column below 40rem. A paragraph that contains only `<small>` text is treated as a disclaimer or footnote: small, muted, upright print, with a rule and extra space above the first of a run. Footnote `<sup>` markers keep `line-height: 0` so they never open up a line.
 
 ### Composition structure
 
@@ -423,7 +455,8 @@ When impeccable introduces a new effect, document it here under the relevant com
 - **Do** use weight contrast of 200+ between adjacent type hierarchy levels.
 - **Do** tint every neutral toward the brand hue when implementing custom themes.
 - **Do** meet WCAG 2.1 AA on all text and interactive states, including body copy on surface/canvas backgrounds.
-- **Do** use `transform` and `opacity` only for animated properties. Never animate `width`, `height`, `top`, `left`.
+- **Do** use `transform` and `opacity` only for animated properties. Never animate `width`, `height`, `top`, `left` (the one exception is disclosure content; see §6). Registered custom properties (`@property`) may drive small masked layers, as in the footer lit-grid sweep.
+- **Do** build new components with `data-block` / `data-part` hooks and a scoped stylesheet in `@layer components` (see §8), and verify them in the browser in light and dark.
 - **Do** lean into 70s/80s **retro display treatments** at display scale — extruded/isometric poster type (`.display-extrude`), warm multi-tone fills, and chromatic/print effects (offset channel split, halftone, screenprint misregistration). These are part of the Kinetic Editorial voice, not a violation of the Web3 ban — provided they stay on tinted grounds (never pure black), derive every color from brand/accent/fg tokens, hold WCAG 2.1 AA, and appear at display scale only. See §4 *Retro display headers* for the full constraint set.
 
 ### Don't
@@ -439,4 +472,5 @@ When impeccable introduces a new effect, document it here under the relevant com
 - **Don't** use gradient text fills (`.ot-fx-gradient`, `.ot-depth-liquid`, `.display-gradient-*`) below headline scale, or more than once per composition. Gradient text is a sanctioned display-moment effect — not body copy, not label text, not repeated through a page.
 - **Don't** assume a fixed container width inside block components. Blocks render at any width from a full-bleed section to a narrow column.
 - **Don't** introduce new layout-shifting animation properties without a `prefers-reduced-motion: reduce` fallback.
+- **Don't** put a repeated brand wordmark in the footer as decoration, or a Back to top link, in Spotlight; the bloom and grid carry the footer.
 - **Don't** add `rounded-lg`, `rounded-xl`, or `rounded-full` to buttons or cards. Sharp corners are the system's identity.
