@@ -1831,7 +1831,7 @@ body {
   border-bottom: 1px solid oklch(from var(--ot-fg) l c h / 0.1);
 }
 [data-rich-text] th,
-[data-rich-text] table:not(:has(th)) tr:first-child td {
+[data-rich-text] table:not(:has(th)):has(tr ~ tr) tr:first-child td {
   font-size: var(--ot-text-label);
   font-weight: 700;
   letter-spacing: var(--ot-tracking-label);
@@ -1886,7 +1886,7 @@ body {
   border-bottom-color: oklch(from var(--ot-fg-on-brand) l c h / 0.15);
 }
 [data-rich-text][data-color="brand"] th,
-[data-rich-text][data-color="brand"] table:not(:has(th)) tr:first-child td {
+[data-rich-text][data-color="brand"] table:not(:has(th)):has(tr ~ tr) tr:first-child td {
   background: oklch(from var(--ot-fg-on-brand) l c h / 0.1);
   border-bottom-color: oklch(from var(--ot-fg-on-brand) l c h / 0.3);
 }
@@ -1936,7 +1936,7 @@ body {
   border-bottom-color: oklch(from var(--ot-fg-on-accent) l c h / 0.15);
 }
 [data-rich-text][data-color="accent"] th,
-[data-rich-text][data-color="accent"] table:not(:has(th)) tr:first-child td {
+[data-rich-text][data-color="accent"] table:not(:has(th)):has(tr ~ tr) tr:first-child td {
   background: oklch(from var(--ot-fg-on-accent) l c h / 0.1);
   border-bottom-color: oklch(from var(--ot-fg-on-accent) l c h / 0.3);
 }
@@ -1976,11 +1976,55 @@ body {
   border-bottom-color: oklch(97% 0.005 195 / 0.15);
 }
 [data-rich-text][data-color="glass"] th,
-[data-rich-text][data-color="glass"] table:not(:has(th)) tr:first-child td {
+[data-rich-text][data-color="glass"] table:not(:has(th)):has(tr ~ tr) tr:first-child td {
   color: oklch(97% 0.005 195 / 0.95);
   background: oklch(97% 0.005 195 / 0.08);
   border-bottom-color: oklch(97% 0.005 195 / 0.25);
 }
+
+/* Column-layout tables — a table with ONE row and no header cells is how editors lay
+ * content out in columns (e.g. two bullet lists side by side), not a data table. It
+ * must not get the header-row treatment above (that is why it is excluded from the
+ * first-row fallback), so it renders as an even set of columns in a soft panel. The
+ * columns wrap to a single stack when the space is narrow. Everything is derived from
+ * currentColor so it holds on the brand / accent / glass / canvas backgrounds alike.
+ * The doubled [data-rich-text] raises specificity above the per-color table rules and
+ * the inline padding/border-collapse the editor leaves on the markup. */
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) {
+  display: block;
+  width: 100%;
+  max-width: none;
+  border: 1px solid color-mix(in oklch, currentColor 14%, transparent);
+  border-radius: var(--ot-radius-surface);
+  background: color-mix(in oklch, currentColor 4%, transparent);
+  padding: clamp(1.25rem, 0.75rem + 1.6vw, 2rem);
+  overflow: visible;
+}
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) :is(tbody, thead, tfoot) {
+  display: block;
+}
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) tr {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--ot-space-md) clamp(1.5rem, 1rem + 2vw, 3rem);
+}
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) td {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  min-width: 0;
+}
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) td > :first-child { margin-top: 0; }
+[data-rich-text][data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) td > :last-child { margin-bottom: 0; }
+/* Lists in a column panel: calm spacing and brand-colored markers */
+[data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) :is(ul, ol) { padding-left: 1.25rem; }
+[data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) li {
+  margin: 0;
+  padding: 0.3em 0 0.3em 0.25rem;
+  border: 0;
+}
+[data-rich-text] table:not(:has(th)):not(:has(tr ~ tr)) li::marker { color: var(--ot-brand); }
 
 /* ── Size: compact ── */
 [data-rich-text][data-size="compact"] p {
