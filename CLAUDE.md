@@ -29,8 +29,8 @@ No test runner is configured yet.
 - **Next.js 16.3.5** — App Router, TypeScript, no Pages Router
 - **React 19.3.0**
 - **Tailwind CSS v4** (4.3.x) — configured via `@import "tailwindcss"` in `globals.css`; theme tokens defined with `@theme inline` (v4 syntax, not `tailwind.config.*`)
-- **@optimizely/cms-sdk ^3.0.0** — headless CMS client; initialize with `GraphClient` using a single app key
-- **@optimizely/cms-cli ^3.0.0** — syncs TypeScript content type definitions to Optimizely CMS; needs `OPTIMIZELY_CMS_CLIENT_ID` / `OPTIMIZELY_CMS_CLIENT_SECRET` in `process.env` (the CLI does not load `.env` files itself — use the `yarn cms:push` / `cms:pull` scripts; see the optimizely-block skill at `.claude/skills/optimizely-block/references/push-checklist.md`)
+- **@optimizely/cms-sdk 3.1.0** — headless CMS client; initialize with `GraphClient` using a single app key
+- **@optimizely/cms-cli 3.1.0** — syncs TypeScript content type definitions to Optimizely CMS; needs `OPTIMIZELY_CMS_CLIENT_ID` / `OPTIMIZELY_CMS_CLIENT_SECRET` in `process.env` (the CLI does not load `.env` files itself — use the `yarn cms:push` / `cms:pull` scripts; see the optimizely-block skill at `.claude/skills/optimizely-block/references/push-checklist.md`)
 
 ## Architecture
 

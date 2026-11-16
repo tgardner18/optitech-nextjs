@@ -11,8 +11,8 @@ Its primary job is **pre-sales enablement**: solution engineers re-skin and re-c
 - **Next.js 16.3.5** — App Router, TypeScript (no Pages Router)
 - **React 19.3.0**
 - **Tailwind CSS v4** (4.3.x) — configured via `@import "tailwindcss"` in `app/globals.css`; design tokens live in `styles/tokens.css` (there is no `tailwind.config.*`)
-- **@optimizely/cms-sdk ^3.0.0** — headless content client (Optimizely Graph)
-- **@optimizely/cms-cli ^3.0.0** — syncs TypeScript content-type definitions to the CMS (`yarn cms:push` / `cms:pull`)
+- **@optimizely/cms-sdk 3.1.0** (requires Node ≥ 22.23.4) — headless content client (Optimizely Graph)
+- **@optimizely/cms-cli 3.1.0** — syncs TypeScript content-type definitions to the CMS (`yarn cms:push` / `cms:pull`)
 - **Recharts** — powers the ChartBlock data visualizations
 - **Embla Carousel** (`embla-carousel-react`) — carousel engine behind the SliderBlock's four presentation styles
 
