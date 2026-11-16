@@ -32,15 +32,14 @@ const SHARED_TOKENS = [
   ['fg-on-accent', 'On Accent', 'colorFgOnAccent'],
 ] as const
 
-// [label, foreground token, background token, minimum ratio]
+// [label, foreground, background, plain-language description]
 const CHECKS = [
-  ['Body text on canvas', 'var(--ot-fg)', 'var(--ot-canvas)'],
-  ['Muted text on canvas', 'var(--ot-fg-muted)', 'var(--ot-canvas)'],
-  ['Muted text on surface', 'var(--ot-fg-muted)', 'var(--ot-surface)'],
-  ['Text on Brand fills', 'var(--ot-fg-on-brand)', 'var(--ot-brand)'],
-  ['Text on Accent fills', 'var(--ot-fg-on-accent)', 'var(--ot-accent)'],
-  ['Brand as link text', 'var(--ot-brand-text, var(--ot-brand))', 'var(--ot-canvas)'],
-  ['Accent as text', 'var(--ot-accent)', 'var(--ot-canvas)'],
+  ['Body text on canvas', 'var(--ot-fg)', 'var(--ot-canvas)', 'The main paragraph text on the page background. Adjust Foreground or Canvas.'],
+  ['Muted text on canvas', 'var(--ot-fg-muted)', 'var(--ot-canvas)', 'Captions, dates and secondary text on the page background. Adjust Foreground Muted or Canvas.'],
+  ['Muted text on surface', 'var(--ot-fg-muted)', 'var(--ot-surface)', 'The same secondary text inside cards and panels. Adjust Foreground Muted or Surface.'],
+  ['Text on Brand fills', 'var(--ot-fg-on-brand)', 'var(--ot-brand)', 'Labels on brand-colored buttons and banners. Adjust On Brand or Brand.'],
+  ['Text on Accent fills', 'var(--ot-fg-on-accent)', 'var(--ot-accent)', 'Labels on accent-colored buttons. Adjust On Accent or Accent.'],
+  ['Brand as link text', 'var(--ot-brand-text, var(--ot-brand))', 'var(--ot-canvas)', 'Links and small brand-colored labels on the page background. Adjust Brand or Canvas.'],
 ] as const
 
 function Swatch({ token, label, value, tag }: { token: string; label: string; value?: string; tag: 'Set' | 'Default' }) {
@@ -65,10 +64,10 @@ function ModePanel({ mode, settings, isDefault }: { mode: 'light' | 'dark'; sett
         })}
       </ul>
       <ul data-part="checks">
-        {CHECKS.map(([label, fg, bg]) => (
+        {CHECKS.map(([label, fg, bg, desc]) => (
           <li key={label} data-part="check" data-min="4.5" data-label={label} data-mode={mode}>
             <span data-part="probe" style={{ color: fg, background: bg }}>Aa</span>
-            <span data-part="check-t">{label}</span>
+            <span data-part="check-t"><b>{label}</b><small data-part="check-d">{desc}</small></span>
             <span data-part="ratio" />
             <span data-part="verdict" />
           </li>
@@ -126,10 +125,6 @@ export default async function ThemePreviewContent({
           <li><span>Navbar Style</span><b>{navLabel}</b></li>
           <li><span>Footer</span><b>{footerLabel}</b></li>
         </ul>
-        <nav data-part="jump" aria-label="Preview sections">
-          <a href="#tp-chrome">Site chrome</a><a href="#tp-colors">Colors and contrast</a>
-          <a href="#tp-shape">Type, corners, and motion</a><a href="#tp-comp">Components</a><a href="#tp-logo">Logo</a>
-        </nav>
       </header>
 
       <p data-part="alert" role="status" hidden>
@@ -137,8 +132,8 @@ export default async function ThemePreviewContent({
       </p>
 
       <section data-part="sec" id="tp-chrome">
-        <h2>Site chrome</h2>
-        <p data-part="sub">The header and footer as visitors see them, with this theme’s colors. The footer is the one assigned in Footer.</p>
+        <h2>Front-end preview</h2>
+        <p data-part="sub">A sample page as visitors see it, with this theme’s colors, fonts and corners: the header in the chosen Navbar Style, some page content, and the footer assigned in Footer.</p>
         <div data-part="browser" data-theme={mode}>
           <div data-part="bar-dots" aria-hidden="true"><i /><i /><i /><span>{hostLabel}</span></div>
           <div data-part="frame" data-nav={navStyle}>
@@ -155,7 +150,7 @@ export default async function ThemePreviewContent({
               <div data-part="hero">
                 <p data-part="eyebrow">Platform</p>
                 <p data-part="h">{sample}</p>
-                <p data-part="p">Supporting copy in the muted text color, so a weak muted color shows up here first.</p>
+                <p data-part="p">This is sample page copy in your theme’s body text and muted text colors, so you can judge how a real paragraph reads. Good themes keep long passages easy on the eye, with <a data-part="lnk" href="#" tabIndex={-1}>links that stand out</a> without shouting. Then see how the footer below picks up the same colors.</p>
               </div>
               <Footer settings={settings} footerBlock={footerBlock} />
             </div>
@@ -165,7 +160,16 @@ export default async function ThemePreviewContent({
 
       <section data-part="sec" id="tp-colors">
         <h2>Colors and contrast</h2>
-        <p data-part="sub">Both modes side by side, with every color field (set or default) and the checks that matter for reading. Text needs 4.5:1.</p>
+        <p data-part="sub">Both modes side by side, with every color field (set or default) and a readability check for each pairing of text and background.</p>
+        <div data-part="explain">
+          <h3>How to read the ratios</h3>
+          <p>A contrast ratio compares how bright two colors are, from 1:1 (identical, so the text disappears) up to 21:1 (black on white). Higher is easier to read, especially for people with low vision and on phones in bright light. Each row below shows a sample of one text color on its background and the ratio measured from your colors.</p>
+          <ul data-part="legend">
+            <li data-state="pass"><b>Passes</b><span>4.5:1 or higher. Comfortable for all text; this is the web accessibility standard (WCAG AA).</span></li>
+            <li data-state="large"><b>Large text only</b><span>Between 3:1 and 4.5:1. Fine for big headlines (about 24px, or 19px bold) but too faint for paragraphs and small labels.</span></li>
+            <li data-state="fail"><b>Fails</b><span>Below 3:1. Hard to read at any size. Make the text lighter or darker against its background in the color fields named in the row.</span></li>
+          </ul>
+        </div>
         <ul data-part="shared">
           {SHARED_TOKENS.map(([token, label, key]) => {
             const v = settings?.[key] as string | undefined
@@ -228,7 +232,8 @@ export default async function ThemePreviewContent({
                 body="A hero as visitors meet it: headline, supporting copy, and two calls to action, in this theme's colors and type."
                 primaryCta={{ label: ctaLabel, href: '#' }}
                 secondaryCta={{ label: 'Learn more', href: '#' }}
-                visual={<div data-part="art" aria-hidden="true" />}
+                visualSrc="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=70"
+                visualAlt=""
                 styleOptions={{ direction: 'editorialSplit', layout: 'imageRight', color: 'brand', animation: 'none' }}
               />
             </div>
