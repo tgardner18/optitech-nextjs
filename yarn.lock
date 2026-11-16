@@ -550,6 +550,83 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource-variable/caveat@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/caveat@npm:5.3.0"
+  checksum: dd758a2ca26d83e44e025fbc5abdf6cbd6adf49b42e8548a0299af2a1d8b39a9fedc59ee166ba68db75a4d6a407cae5094cacd6f2614a006876200d5f60fd152
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/fraunces@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/fraunces@npm:5.3.0"
+  checksum: 6c7a26ee2a045730da28b700dba19e43894caad68306a845a0e811cfbac723b79c249df21a6ac9284255cc0f81235ed81f2501a3f3935c3c04612ffab9ef20a4
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/geist-mono@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/geist-mono@npm:5.3.0"
+  checksum: 739fdf1032f14abe244110272562cbb5623e9d9335f9dc95eb5ad53915c5c9c6426ec2f670c759c3cc72ce65f006df05fce60f5200fb7326d46e1240153e44ee
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/hanken-grotesk@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/hanken-grotesk@npm:5.3.0"
+  checksum: 800c184828fc564bde706259baab1e7820d100b80dc1d347f5c53f530d029a8ca7575d15cc08f1844c85c320a0d754003bd98e6ba7ed3b02af41c3ad0c546316
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/manrope@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/manrope@npm:5.3.0"
+  checksum: 2a5985e330b3aac899157d25da8efb3ece0537728bf7e9a171596189f85e4cf9bd1d4229f66bd033ef9eee8f2d28f9b09eba64877bafb25acd04f5700aacde55
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/orbitron@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/orbitron@npm:5.3.0"
+  checksum: ce12934236149c954d58753738e2fd2d606380491982f7209f333ebb2b72b885cf91f1d75331c15effbd718b17e33f60dcfd02780aee815c41fbabd5306d3659
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/plus-jakarta-sans@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/plus-jakarta-sans@npm:5.3.0"
+  checksum: 2f0070dec22a8ad8892721696f5f0cd6ebf47dd69f4810990deb8bf09a16b1b906dfc38d392117a85b12823e467544102c8bb14c897cf185cb4b920406c4d734
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/sora@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/sora@npm:5.3.0"
+  checksum: be303e0add2b64312883e2e03b1456d05caa087c0acae128d3c8d4ad6923b8f7e53537d370c4b583c62fdb5e6444c5d6198184254ad03b4827da430f25aa99d9
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/source-serif-4@npm:^5.3.1":
+  version: 5.3.1
+  resolution: "@fontsource-variable/source-serif-4@npm:5.3.1"
+  checksum: ce731a7226b32c8a60e48eb59fafc6f1865ecf60d689d9de692a66198a4c20f006090cb1bcd619f71bcb669e446fe02824a06f1e4ffc9abdd8726b999dcfc44b
+  languageName: node
+  linkType: hard
+
+"@fontsource-variable/syne@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/syne@npm:5.3.0"
+  checksum: 92b02e3efe0699af79a7c32bc7da9399196780040681d3760cd0b6f4504ac590347008b2b98c670cf40e3df6ffeba95abdb6c1e10394a7ed3325e2a090d93a1a
+  languageName: node
+  linkType: hard
+
+"@fontsource/poppins@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/poppins@npm:5.3.0"
+  checksum: 7858401266b67d75000e5db3cdb32c59ff74b7d302aafcb7504de55aa0351c6ddd3d3dd0972f7de07e6aa190f0b99116060f566fc1bf47734902b2a2bda3a987
+  languageName: node
+  linkType: hard
+
 "@formatjs/fast-memoize@npm:3.1.7, @formatjs/fast-memoize@npm:^3.1.0":
   version: 3.1.7
   resolution: "@formatjs/fast-memoize@npm:3.1.7"
@@ -7410,6 +7487,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "site-accelerator@workspace:."
   dependencies:
+    "@fontsource-variable/caveat": ^5.3.0
+    "@fontsource-variable/fraunces": ^5.3.0
+    "@fontsource-variable/geist-mono": ^5.3.0
+    "@fontsource-variable/hanken-grotesk": ^5.3.0
+    "@fontsource-variable/manrope": ^5.3.0
+    "@fontsource-variable/orbitron": ^5.3.0
+    "@fontsource-variable/plus-jakarta-sans": ^5.3.0
+    "@fontsource-variable/sora": ^5.3.0
+    "@fontsource-variable/source-serif-4": ^5.3.1
+    "@fontsource-variable/syne": ^5.3.0
+    "@fontsource/poppins": ^5.3.0
     "@google-cloud/bigquery": ^8.3.1
     "@optimizely/cms-cli": ^3.1.0
     "@optimizely/cms-sdk": ^3.1.0

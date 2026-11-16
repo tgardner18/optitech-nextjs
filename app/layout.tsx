@@ -1,7 +1,7 @@
 import '@/lib/optimizely'
 import '@/cms/registry'
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans, Caveat, Geist_Mono, Hanken_Grotesk, Manrope, Poppins, Sora, Source_Serif_4, Syne, Orbitron } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { cookies, draftMode } from "next/headers";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -10,112 +10,109 @@ import { OptimizelyTracking } from "@/components/tracking/OptimizelyTracking";
 import { getSiteSettings, getRequestDomain, buildThemeCSS, getRequestLocale } from '@/lib/optimizely'
 import Script from 'next/script'
 
+// ── Fonts are SELF-HOSTED (next/font/local from @fontsource packages) ─────────
+// They used to come from next/font/google, which downloads from fonts.googleapis.com on
+// every build; a single transient network failure failed the whole deploy ("Can't resolve
+// @vercel/turbopack-next/internal/font/google/font"). Local files make the build network-
+// independent. Same families, same CSS variables, latin subset, so nothing downstream
+// changes. Variable fonts cover the whole 300–800 weight ladder in one file; Poppins is
+// not published as a variable font, so it ships one file per weight.
+// NOTE: next/font/local needs literal `src` paths, so these can't be built in a loop.
+
 // Weights are limited to the set the product UI actually renders:
 // 300 (light — stat values, banner lede), 400 (body), 500 (medium — nav/UI),
-// 600 (title/label), 700 (headline), 800 (display). Thin/ExtraLight/Black
-// (100/200/900) are unused in product and intentionally not shipped.
-const poppins = Poppins({
+// 600 (title/label), 700 (headline), 800 (display).
+const poppins = localFont({
+  src: [
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-300-normal.woff2", weight: "300", style: "normal" },
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-700-normal.woff2", weight: "700", style: "normal" },
+    { path: "../node_modules/@fontsource/poppins/files/poppins-latin-800-normal.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 // Syne — fixed accent/display font for very select areas (e.g. the Impact blog).
 // No longer themeable: the ThemeManager font axis now swaps the PRIMARY family.
-const syne = Syne({
+const syne = localFont({
+  src: "../node_modules/@fontsource-variable/syne/files/syne-latin-wght-normal.woff2",
   variable: "--font-syne",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "400 800",
   display: "swap",
 });
 
 // ── Alternate PRIMARY fonts (ThemeManager "Primary Font" axis) ─────────────────
-// Each is a full primary typeface — drives the entire hierarchy (display headers
-// down to body and labels) when selected, exactly like Poppins. All preloaded
-// here because next/font is build-time; the CMS only selects among these via
-// lib/theme-axes.ts and can never load an arbitrary font string. The 300–800
-// weight ladder matches Poppins so every type level holds, and display: "swap" +
-// variable assignment keeps the swap FOUT-free.
-//
-// Primary A — Source Serif 4: the lone serif. The institutional / editorial pole
-// — gravitas for medical, financial, and legal verticals, and categorically
-// distinct from the three sans. Strong 800 for display, legible 400 for body.
-const sourceSerif = Source_Serif_4({
+// Each is a full primary typeface — drives the entire hierarchy when selected, exactly
+// like Poppins. All preloaded here because next/font is build-time; the CMS only selects
+// among these via lib/theme-axes.ts and can never load an arbitrary font string.
+// A: Source Serif 4 (institutional serif) · B: Sora (technical, squared geometric)
+// C: Plus Jakarta Sans (warm geometric humanist) · D: Manrope (clean, minimal)
+// E: Hanken Grotesk (quiet neo-grotesk) · F: Fraunces (soft, characterful serif)
+const sourceSerif = localFont({
+  src: "../node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2",
   variable: "--font-primary-a",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-// Primary B — Sora: squared geometric sans engineered for technical brands.
-// The precise / engineered pole; large display sizes read milled-from-metal.
-const sora = Sora({
+const sora = localFont({
+  src: "../node_modules/@fontsource-variable/sora/files/sora-latin-wght-normal.woff2",
   variable: "--font-primary-b",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-// Primary C — Plus Jakarta Sans: geometric humanist with wide weight ladder and
-// strong legibility at all sizes. Warm, modern alternative to Poppins.
-const plusJakarta = Plus_Jakarta_Sans({
+const plusJakarta = localFont({
+  src: "../node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2",
   variable: "--font-primary-c",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-// Primary D — Manrope: variable-axis geometric sans. Clean, minimal, excellent
-// legibility at small sizes and strong presence at display scale.
-const manrope = Manrope({
+const manrope = localFont({
+  src: "../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2",
   variable: "--font-primary-d",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-// Primary E — Hanken Grotesk: a quiet neo-grotesk (100–900) in the register
-// fashion and editorial retail expect — neutral at body size, tight and graphic
-// at display scale without Manrope's rounded, product-UI geometry.
-const hankenGrotesk = Hanken_Grotesk({
+const hankenGrotesk = localFont({
+  src: "../node_modules/@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2",
   variable: "--font-primary-e",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-// Primary F — Fraunces: a "soft-serif" variable face (Old Style revival with wonk and
-// optical-size axes). Warm, characterful serif for hospitality, wellness, food, and
-// boutique editorial verticals; a second, friendlier serif beside Source Serif.
-const fraunces = Fraunces({
+const fraunces = localFont({
+  src: "../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2",
   variable: "--font-primary-f",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: "300 800",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Signature font — Caveat 400: thin, handwriting feel, less calligraphic than
-// script fonts. Used exclusively by LaserSignature on the QuoteBlock.
-const caveat = Caveat({
-  variable: "--font-signature",
-  subsets: ["latin"],
-  weight: ["400"],
+  weight: "100 900",
   display: "swap",
 });
 
-// Neon font — Orbitron: a wide, mechanical retro-futurist geometric that stays legible
-// under heavy glow, the foundation of the white-core / colored-glow neon sign look.
-// Display-only. Used by the PrimaryText "neon" header effect and the Neon campaign
-// look (same scoped pattern as Caveat for the QuoteBlock signature).
-const orbitron = Orbitron({
+// Signature font — Caveat: thin, handwriting feel. Used exclusively by LaserSignature on the QuoteBlock.
+const caveat = localFont({
+  src: "../node_modules/@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2",
+  variable: "--font-signature",
+  weight: "400 700",
+  display: "swap",
+});
+
+// Neon font — Orbitron: wide, mechanical, legible under heavy glow. Display-only (PrimaryText "neon" effect, Neon campaign look).
+const orbitron = localFont({
+  src: "../node_modules/@fontsource-variable/orbitron/files/orbitron-latin-wght-normal.woff2",
   variable: "--font-orbitron",
-  subsets: ["latin"],
-  weight: ["500", "700", "800"],
+  weight: "400 900",
   display: "swap",
 });
 
