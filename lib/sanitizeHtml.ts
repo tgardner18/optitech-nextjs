@@ -8,7 +8,7 @@ const ALLOWED_TAGS = [
   'a', 'span', 'div',
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
   'figure', 'figcaption', 'img',
-  'hr', 'sup', 'sub',
+  'hr', 'sup', 'sub', 'small',
 ]
 
 const ALLOWED_ATTRS: sanitizeHtml.IOptions['allowedAttributes'] = {
