@@ -1,22 +1,24 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, startTransition, useId } from 'react'
+import { useState, useEffect, useRef, useCallback, startTransition, useId, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import {
-  Search, Sparkles, Loader2, X,
-  CalendarDays, Newspaper, FileText, BookOpen, Code2,
-  MapPin, Video, ArrowRight, ArrowDownToLine, ChevronDown,
-  Users, Building2, Globe, Award, Layers,
-  GraduationCap, Heart, Scale, BarChart3,
-  Lightbulb, Folder, Tag, MessageSquare,
+  Search, Sparkles, Loader2, X, Newspaper, FileText, Code2,
+  MapPin, Video, ArrowRight, ArrowDownToLine, ChevronDown, LayoutGrid, ArrowLeft,
 } from 'lucide-react'
 import type { SearchResult } from '@/lib/search'
 import type { TopicHubBucket, TopicHubRecommendation } from '@/lib/topicHub'
 import { eventTypeLabel } from '@/lib/eventFormat'
 import LocationPlate from '@/components/location/LocationPlate'
 import LocationLabelBadge from '@/components/location/LocationLabelBadge'
+import CodeView from '@/components/taxonomy/CodeView'
+import { t } from '@/lib/i18n/t'
+import { trackTopicSelect } from '@/components/taxonomy/track'
+import {
+  TopicPanel, CardTags, Names, useTaggedPages, fromTagged, poolFor, score, topicsOf, bucketIcon, defaultBucketName, type Match, type HubItem,
+} from '@/components/taxonomy/TopicBrowser'
 
 const PrimaryTextDepth3D = dynamic(
   () => import('@/components/blocks/PrimaryTextDepth3D.client'),
@@ -40,21 +42,6 @@ export type TopicHubConfig = {
   damFolderContainerId:  string | null
   searchRecommendations: TopicHubRecommendation[]
   contentBuckets:        TopicHubBucket[]
-}
-
-// ─── Icon resolver ─────────────────────────────────────────────────────────────
-
-const ICON_MAP: Record<string, typeof CalendarDays> = {
-  CalendarDays,  Newspaper,  FileText,  BookOpen,
-  Users,  MapPin,  Building2,  Video,  Globe,
-  Award,  Layers,  Sparkles,  GraduationCap,
-  Heart,  Scale,  BarChart3,  Lightbulb,
-  Folder,  Tag,  MessageSquare,
-}
-
-function BucketIcon({ name, size = 16 }: { name: string | null; size?: number }) {
-  const Icon = (name && ICON_MAP[name]) ? ICON_MAP[name] : Layers
-  return <Icon size={size} strokeWidth={2} aria-hidden />
 }
 
 // ─── Header effect system ──────────────────────────────────────────────────────
@@ -98,7 +85,7 @@ function formatDocFileSize(bytes: number): string {
 
 // ─── Cards (styled by topic-hub.css) ──────────────────────────────────────────
 
-function BlogCard({ result }: { result: SearchResult }) {
+function BlogCard({ result, sel }: { result: HubItem; sel: string[] }) {
   return (
     <a href={result.url} data-part="card" data-kind="blog">
       <span data-part="media">
@@ -114,12 +101,13 @@ function BlogCard({ result }: { result: SearchResult }) {
         <span data-part="card-title">{result.title}</span>
         {result.excerpt && <span data-part="excerpt">{result.excerpt}</span>}
         {result.published && <span data-part="meta">{formatShortDate(result.published)}</span>}
+        <CardTags item={result} sel={sel} />
       </span>
     </a>
   )
 }
 
-function EventCard({ result }: { result: SearchResult }) {
+function EventCard({ result, sel }: { result: HubItem; sel: string[] }) {
   const typeLabel    = result.eventType ? eventTypeLabel(result.eventType) : null
   const LocationIcon = result.locationType === 'virtual' ? Video : MapPin
   let month = '', day = ''
@@ -145,25 +133,27 @@ function EventCard({ result }: { result: SearchResult }) {
             {result.locationLabel}
           </span>
         )}
+        <CardTags item={result} sel={sel} />
       </span>
     </a>
   )
 }
 
-function PageCard({ result }: { result: SearchResult }) {
+function PageCard({ result, sel }: { result: HubItem; sel: string[] }) {
   return (
     <a href={result.url} data-part="card" data-kind="page">
       <span data-part="icon-tile" aria-hidden="true"><FileText size={18} strokeWidth={2} /></span>
       <span data-part="card-body">
         <span data-part="card-title">{result.title}</span>
         {result.excerpt && <span data-part="excerpt">{result.excerpt}</span>}
+        <CardTags item={result} sel={sel} />
       </span>
       <span data-part="go" aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span>
     </a>
   )
 }
 
-function PractitionerCard({ result }: { result: SearchResult }) {
+function PractitionerCard({ result, sel }: { result: HubItem; sel: string[] }) {
   const body = (
     <>
       <span data-part="headshot">
@@ -177,6 +167,7 @@ function PractitionerCard({ result }: { result: SearchResult }) {
         {result.practitionerTitle && <span data-part="role">{result.practitionerTitle}</span>}
         {result.credentials && <span data-part="meta">{result.credentials}</span>}
         {result.excerpt && !result.practitionerTitle && <span data-part="excerpt">{result.excerpt}</span>}
+        <CardTags item={result} sel={sel} />
       </span>
       {result.url && <span data-part="go" aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span>}
     </>
@@ -187,7 +178,7 @@ function PractitionerCard({ result }: { result: SearchResult }) {
 }
 
 // Locations are informational (OT_LocationProfile has no page URL), so the card is not a link.
-function LocationCard({ result }: { result: SearchResult }) {
+function LocationCard({ result }: { result: HubItem }) {
   return (
     <div data-part="card" data-kind="location">
       <span data-part="media">
@@ -207,7 +198,8 @@ function LocationCard({ result }: { result: SearchResult }) {
 
 // Document row: the editor's casing is kept, the name wraps to two lines, the type is stated in words,
 // and the download control says it opens a new tab.
-function DocRow({ doc }: { doc: DocResult }) {
+function DocRow({ doc: item }: { doc: HubItem }) {
+  const doc   = { title: item.title, url: item.url, extension: item.doc?.extension ?? null, fileSize: item.doc?.fileSize ?? null }
   const ext   = (doc.extension ?? 'file').toLowerCase()
   const size  = doc.fileSize ? formatDocFileSize(doc.fileSize) : null
   const type  = DOC_TYPE[ext] ?? `${ext.toUpperCase()} file`
@@ -235,67 +227,41 @@ function Skeleton({ kind }: { kind: string }) {
   return <li data-part="sk" data-kind={kind} aria-hidden="true"><span /><span><i /><i /><i /></span></li>
 }
 
-// ─── Bucket result renderer ────────────────────────────────────────────────────
+// ─── Result section (one per content bucket) ───────────────────────────────────
 
-const BUCKET_INITIAL = 6
-const BUCKET_PAGE    = 6
+const SECTION_PAGE = 6
 
-function BucketResults({
-  bucket,
-  results,
-  docs,
-  loading,
-}: {
-  bucket:  TopicHubBucket
-  results: SearchResult[]
-  docs:    DocResult[]
-  loading: boolean
-}) {
-  const ct           = bucket.sectionContentType
-  const prefersRM    = useReducedMotion()
-  const listId       = useId()
-  const [visibleCount, setVisibleCount] = useState(BUCKET_INITIAL)
+type SectionDef = { id: string; label: string; Icon: ReturnType<typeof bucketIcon> }
 
-  // Reset pagination when a new query delivers a fresh result set.
-  useEffect(() => { setVisibleCount(BUCKET_INITIAL) }, [results, docs])
+function Section({ def, items, sel, focus }: { def: SectionDef; items: HubItem[]; sel: string[]; focus: boolean }) {
+  const ct        = def.id
+  const prefersRM = useReducedMotion()
+  const listId    = useId()
+  // how many cards are showing; starts over whenever the result set changes (derived, so no effect is needed)
+  const start = focus ? SECTION_PAGE * 2 : SECTION_PAGE
+  const sig   = `${items.length}:${items[0]?.id ?? ''}:${focus}`
+  const [more, setMore] = useState<{ sig: string; n: number }>({ sig, n: start })
+  const n       = more.sig === sig ? more.n : start
+  const visible = items.slice(0, n)
+  const hasMore = items.length > n
 
-  const skeletonCount = ct === 'blogs' ? 3 : 2
-
-  const allItems  = ct === 'assets' ? docs : results
-  const isEmpty   = allItems.length === 0
-  const visible   = allItems.slice(0, visibleCount)
-  const hasMore   = !loading && allItems.length > visibleCount
-
-  if (!loading && isEmpty) return null
-
-  function renderCard(item: SearchResult | DocResult, index: number) {
-    const isNew    = index >= BUCKET_INITIAL && index < visibleCount
-    const delay    = isNew ? (index - (visibleCount - BUCKET_PAGE)) * 0.04 : 0
-
+  function renderCard(item: HubItem, index: number) {
+    const isNew = index >= n - SECTION_PAGE && index >= start
     const cardVariants = {
       hidden: { opacity: 0, y: prefersRM ? 0 : 10 },
       show:   {
         opacity: 1, y: 0,
-        transition: { duration: prefersRM ? 0 : 0.22, delay, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+        transition: { duration: prefersRM ? 0 : 0.22, delay: isNew ? (index - (n - SECTION_PAGE)) * 0.04 : 0, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
       },
     }
-
-    const inner = ct === 'assets'
-      ? <DocRow  doc={item as DocResult} />
-      : ct === 'blogs'         ? <BlogCard         result={item as SearchResult} />
-      : ct === 'events'        ? <EventCard        result={item as SearchResult} />
-      : ct === 'practitioners' ? <PractitionerCard result={item as SearchResult} />
-      : ct === 'locations'     ? <LocationCard     result={item as SearchResult} />
-      :                          <PageCard         result={item as SearchResult} />
-
+    const inner = ct === 'assets'      ? <DocRow doc={item} />
+      : ct === 'blogs'                 ? <BlogCard result={item} sel={sel} />
+      : ct === 'events'                ? <EventCard result={item} sel={sel} />
+      : ct === 'practitioners' && (item.practitionerTitle || item.credentials || item.imageUrl) ? <PractitionerCard result={item} sel={sel} />
+      : ct === 'locations'             ? <LocationCard result={item} />
+      :                                  <PageCard result={item} sel={sel} />
     return (
-      <motion.li
-        key={(item as SearchResult).id ?? (item as DocResult).id}
-        layout={false}
-        variants={cardVariants}
-        initial="hidden"
-        animate="show"
-      >
+      <motion.li key={item.id} layout={false} variants={cardVariants} initial="hidden" animate="show">
         {inner}
       </motion.li>
     )
@@ -304,32 +270,44 @@ function BucketResults({
   return (
     <section data-part="bucket" data-ct={ct} id={`th-${ct}`} aria-labelledby={`${listId}-h`}>
       <header data-part="bucket-head">
-        <span data-part="bucket-ic" aria-hidden="true"><BucketIcon name={bucket.sectionIcon} size={16} /></span>
-        <h2 id={`${listId}-h`}>{bucket.sectionHeadline || 'Results'}</h2>
-        {!loading && <span data-part="count">{allItems.length}</span>}
+        <span data-part="bucket-ic" aria-hidden="true"><def.Icon size={16} strokeWidth={2} /></span>
+        <h2 id={`${listId}-h`}>{def.label}</h2>
+        <span data-part="count">{items.length}</span>
       </header>
-
-      <ul id={listId} data-part="grid" data-ct={ct}>
-        {loading
-          ? Array.from({ length: skeletonCount }).map((_, i) => <Skeleton key={i} kind={ct} />)
-          : (visible as Array<SearchResult | DocResult>).map((item, i) => renderCard(item, i))
-        }
-      </ul>
-
+      <ul id={listId} data-part="grid" data-ct={ct}>{visible.map(renderCard)}</ul>
       {hasMore && (
-        <button type="button" data-part="more" onClick={() => setVisibleCount(c => c + BUCKET_PAGE)} aria-controls={listId}>
+        <button type="button" data-part="more" onClick={() => setMore({ sig, n: n + SECTION_PAGE })} aria-controls={listId}>
           <ChevronDown size={16} aria-hidden />
-          {`Show ${Math.min(BUCKET_PAGE, allItems.length - visibleCount)} more`}
-          <span data-part="more-n">of {allItems.length - visibleCount} remaining</span>
+          {`Show ${Math.min(SECTION_PAGE, items.length - n)} more`}
+          <span data-part="more-n">of {items.length - n} remaining</span>
         </button>
       )}
     </section>
   )
 }
 
+function SectionSkeleton({ def }: { def: SectionDef }) {
+  return (
+    <section data-part="bucket" data-ct={def.id} aria-hidden="true">
+      <header data-part="bucket-head">
+        <span data-part="bucket-ic"><def.Icon size={16} strokeWidth={2} /></span>
+        <h2>{def.label}</h2>
+      </header>
+      <ul data-part="grid" data-ct={def.id}>
+        {Array.from({ length: def.id === 'blogs' ? 3 : 2 }).map((_, i) => <Skeleton key={i} kind={def.id} />)}
+      </ul>
+    </section>
+  )
+}
+
+const TAXONOMY_KINDS = ['blogs', 'events', 'experiences', 'practitioners'] as const
+const TYPE_PARAM: Record<string, string> = {
+  blogs: 'Blog', events: 'Event', experiences: 'Experience', locations: 'Location', practitioners: 'Practitioner',
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
+export default function TopicHubPage({ config, locale = 'en' }: { config: TopicHubConfig; locale?: string }) {
   const router               = useRouter()
   const searchParams         = useSearchParams()
   const prefersReducedMotion = useReducedMotion()
@@ -337,26 +315,94 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
 
   const initialTopic = searchParams.get('topic') ?? ''
 
+  // Category browsing (CMS taxonomy): ?topics=a,b&match=any|all&from=<page key>, kept in the URL so it is shareable
+  const [topics, setTopics] = useState<string[]>(() => (searchParams.get('topics') ?? '').split(',').map(x => x.trim()).filter(Boolean))
+  const [match, setMatch]   = useState<Match>(searchParams.get('match') === 'all' ? 'all' : 'any')
+  const [fromKey, setFromKey] = useState<string | null>(searchParams.get('from'))
+  const [touched, setTouched] = useState(searchParams.has('match'))  // the reader chose Any/All themselves
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [typeTab, setTypeTab] = useState('all')
+  const { pages: tagged, graphql: taggedGraphql } = useTaggedPages()
+  const topicMode  = topics.length > 0
+  const topicsRef  = useRef({ topics, match, fromKey })
+  useEffect(() => { topicsRef.current = { topics, match, fromKey } }, [topics, match, fromKey])
+
+  // The panel starts open; if the reader folds it, it stays folded for the visit.
+  useEffect(() => {
+    try { if (sessionStorage.getItem('th-panel') === 'closed') startTransition(() => setPanelOpen(false)) } catch { /* private mode */ }
+  }, [])
+  function changePanel(v: boolean) {
+    setPanelOpen(v)
+    try { sessionStorage.setItem('th-panel', v ? 'open' : 'closed') } catch { /* ignore */ }
+  }
+
+  function urlFor(text: string, next?: Partial<{ topics: string[]; match: 'any' | 'all'; fromKey: string | null }>) {
+    const cur = { ...topicsRef.current, ...next }
+    const params = new URLSearchParams()
+    if (text.trim()) params.set('topic', text.trim())
+    if (cur.topics.length) params.set('topics', cur.topics.join(','))
+    if (cur.topics.length > 1 && cur.match === 'all') params.set('match', 'all')
+    if (cur.fromKey && cur.topics.length) params.set('from', cur.fromKey)
+    return `?${params}`
+  }
+  function setSelection(nextTopics: string[], nextMatch: Match = match, nextFrom = fromKey) {
+    setTopics(nextTopics); setMatch(nextMatch); setFromKey(nextTopics.length ? nextFrom : null)
+    router.replace(urlFor(inputValueRef.current, { topics: nextTopics, match: nextMatch, fromKey: nextTopics.length ? nextFrom : null }), { scroll: false })
+  }
+  function toggleTopic(slug: string) {
+    if (topics.includes(slug)) {
+      const next = topics.filter(x => x !== slug)
+      if (!next.length) { setTouched(false); setSelection(next, 'any') } else setSelection(next)
+      return
+    }
+    // tell ODP which topic the reader chose (adding only; removing a topic is not an interest signal)
+    const cat = tagged?.flatMap(p => p.categories).find(c => c.slug === slug)
+    trackTopicSelect({ slug, group: cat?.group }, 'hub')
+    // a manual second pick narrows (All) until the reader chooses; arriving from an article starts on Any
+    const m: Match = !fromKey && !touched && topics.length === 1 ? 'all' : match
+    setSelection([...topics, slug], m)
+  }
+  function chooseMatch(m: Match) { setTouched(true); setSelection(topics, m) }
+  function clearTopics() { setTouched(false); setSelection([], 'any') }
+
   const headerName   = config.headerName   || 'Topic Hub'
   const headerEffect = config.headerEffect || 'outline'
   const effectClass  = EFFECT_CLASS[headerEffect] ?? ''
   const recommendations = config.searchRecommendations.slice(0, 5)
-  const buckets         = config.contentBuckets
+
+  // The editor's content buckets decide the sections (order, headline, icon). Any taggable kind of page the site actually
+  // has tagged but no bucket covers is searched too, after them under a default label, so nothing tagged is hidden.
+  const taggedKinds = useMemo(() => new Set((tagged ?? []).map(p => p.kind)), [tagged])
+  const buckets = useMemo(() => {
+    const have = new Set(config.contentBuckets.map(b => b.sectionContentType as string))
+    const extra = TAXONOMY_KINDS.filter(k => !have.has(k) && taggedKinds.has(k))
+      .map(k => ({ sectionHeadline: '', sectionIcon: null, sectionContentType: k }))
+    return [...config.contentBuckets, ...extra] as TopicHubBucket[]
+  }, [config.contentBuckets, taggedKinds])
+  const bucketSig = buckets.map(b => b.sectionContentType).join(',')
+  const sectionDefs: SectionDef[] = useMemo(() => buckets
+    .filter((b, i, all) => all.findIndex(x => x.sectionContentType === b.sectionContentType) === i)
+    .map(b => ({
+      id:    b.sectionContentType,
+      label: b.sectionHeadline || (b.sectionContentType === 'assets' ? 'Documents' : b.sectionContentType === 'locations' ? 'Locations' : defaultBucketName(b.sectionContentType, locale)),
+      Icon:  bucketIcon(b.sectionIcon, b.sectionContentType),
+    })), [buckets, locale])
 
   const [inputValue,    setInputValue]    = useState(initialTopic)
+  const inputValueRef = useRef(initialTopic)
+  useEffect(() => { inputValueRef.current = inputValue }, [inputValue])
+  const topicState = { sel: topics, match, from: fromKey }
   const [activeQuery,   setActiveQuery]   = useState(initialTopic)
   const [loading,       setLoading]       = useState(false)
   const [showDevPanel,  setShowDevPanel]  = useState(false)
   const [copied,        setCopied]        = useState(false)
 
-  // Per-bucket result state — keyed by sectionContentType
-  const [bucketResults, setBucketResults] = useState<Record<string, SearchResult[]>>({})
-  const [bucketDocs,    setBucketDocs]    = useState<DocResult[]>([])
+  // Keyword hits from every content bucket (documents and locations included); joined to their categories below
+  const [hits, setHits] = useState<HubItem[]>([])
 
   const debounceRef  = useRef<ReturnType<typeof setTimeout>>(undefined)
   const inputRef     = useRef<HTMLInputElement>(null)
   const titleRef     = useRef<HTMLHeadingElement>(null)
-  const lastQueryRef = useRef<string>('')
   const searchId     = useId()
 
   // The Highlight marker draws once when the page loads.
@@ -369,18 +415,16 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
   const runSearch = useCallback(async (q: string) => {
     const trimmed = q.trim()
     if (trimmed.length < 2) {
-      setBucketResults({})
-      setBucketDocs([])
+      setHits([])
       setActiveQuery('')
       setLoading(false)
       return
     }
 
     setLoading(true)
-    lastQueryRef.current = trimmed
     const qs = encodeURIComponent(trimmed)
 
-    const fetchers = buckets.map(async bucket => {
+    const fetchers = buckets.map(async (bucket): Promise<HubItem[]> => {
       const ct = bucket.sectionContentType
       if (ct === 'assets') {
         const folderId = config.damFolderContainerId
@@ -388,54 +432,41 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
           : ''
         const data = await fetch(`/api/search/docs?q=${qs}${folderId}`)
           .then(r => r.json()).catch(() => [])
-        return { ct, results: [], docs: Array.isArray(data) ? data : [] }
+        return (Array.isArray(data) ? data as DocResult[] : []).map(d => ({
+          id: d.id, key: d.id, kind: 'assets', categories: [], title: d.title, url: d.url, type: 'Page' as const,
+          doc: { extension: d.extension, fileSize: d.fileSize },
+        }))
       }
-
-      const typeMap: Record<string, string> = {
-        blogs:         'Blog',
-        events:        'Event',
-        experiences:   'Experience',
-        locations:     'Location',
-        practitioners: 'Practitioner',
-      }
-      const typeParam = typeMap[ct] ?? 'Page'
+      const typeParam = TYPE_PARAM[ct] ?? 'Page'
       const domainSuffix = config.siteDomain ? `&domain=${encodeURIComponent(config.siteDomain)}` : ''
       const data = await fetch(`/api/search?semantic=true&type=${typeParam}&limit=12&q=${qs}${domainSuffix}`)
         .then(r => r.json()).catch(() => [])
-      return { ct, results: Array.isArray(data) ? data : [], docs: [] }
+      return (Array.isArray(data) ? data as SearchResult[] : []).map(r => ({ ...r, key: r.id, kind: ct, categories: [] }))
     })
 
     try {
-      const all = await Promise.all(fetchers)
-      const newResults: Record<string, SearchResult[]> = {}
-      let newDocs: DocResult[] = []
-      for (const { ct, results, docs } of all) {
-        if (ct === 'assets') { newDocs = docs }
-        else newResults[ct] = results
-      }
-      setBucketResults(newResults)
-      setBucketDocs(newDocs)
+      const all = (await Promise.all(fetchers)).flat()
+      const seen = new Set<string>()
+      setHits(all.filter(h => (seen.has(h.id) ? false : (seen.add(h.id), true))))
       setActiveQuery(trimmed)
     } catch {
-      setBucketResults({})
-      setBucketDocs([])
+      setHits([])
     }
     setLoading(false)
-  }, [buckets, config.damFolderContainerId])
+  }, [buckets, config.damFolderContainerId, config.siteDomain])
 
+  // Runs for the keyword in the URL on load, and again if the bucket list grows once the tagged pages arrive
   useEffect(() => {
-    if (initialTopic) startTransition(() => { runSearch(initialTopic) })
+    if (inputValueRef.current.trim().length >= 2) startTransition(() => { runSearch(inputValueRef.current) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [bucketSig])
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value
     setInputValue(value)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      const params = new URLSearchParams()
-      if (value.trim()) params.set('topic', value.trim())
-      router.replace(`?${params}`, { scroll: false })
+      router.replace(urlFor(value), { scroll: false })
       runSearch(value)
     }, 450)
   }
@@ -443,9 +474,7 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
   function handleSuggest(label: string) {
     setInputValue(label)
     clearTimeout(debounceRef.current)
-    const params = new URLSearchParams()
-    params.set('topic', label)
-    router.replace(`?${params}`, { scroll: false })
+    router.replace(urlFor(label), { scroll: false })
     runSearch(label)
     inputRef.current?.focus()
   }
@@ -453,76 +482,115 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     clearTimeout(debounceRef.current)
-    const params = new URLSearchParams()
-    if (inputValue.trim()) params.set('topic', inputValue.trim())
-    router.replace(`?${params}`, { scroll: false })
+    router.replace(urlFor(inputValue), { scroll: false })
     runSearch(inputValue)
   }
 
   function handleClear() {
     setInputValue('')
     clearTimeout(debounceRef.current)
-    router.replace('?', { scroll: false })
+    router.replace(urlFor(''), { scroll: false })
     runSearch('')
     inputRef.current?.focus()
   }
 
-  function handleCopy() {
-    const q = encodeURIComponent(lastQueryRef.current)
-    const lines = [
-      `# Topic Hub — last search: "${lastQueryRef.current}"`,
-      ``,
-      `# API requests (parallel)`,
-      ...buckets.map(b => {
+  // ── One result pipeline ──────────────────────────────────────────────────────
+  // With a keyword, the scope is that keyword's hits (each joined to its categories); otherwise every tagged page.
+  // Topics then refine whichever scope it is, and the Topics panel counts from the same scope.
+  const searched = activeQuery.length >= 2
+  const taggedItems = useMemo(() => (tagged ?? []).map(fromTagged), [tagged])
+  const catsByKey = useMemo(() => new Map((tagged ?? []).map(p => [p.key, p.categories])), [tagged])
+  const hitItems = useMemo(() => hits.map(h => ({ ...h, categories: catsByKey.get(h.id) ?? [] })), [hits, catsByKey])
+  const scope = searched ? hitItems : taggedItems
+  const byCommon = topics.length > 1 && match === 'any'
+  const pool = useMemo(() => {
+    const list = poolFor(scope, topicState)
+    if (searched) return list // Graph's relevance order
+    return list.slice().sort((a, b) => {
+      if (byCommon) { const d = score(b, topics) - score(a, topics); if (d) return d }
+      return (b.published ?? '') > (a.published ?? '') ? 1 : (b.published ?? '') < (a.published ?? '') ? -1 : 0
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope, topics, match, fromKey, searched, byCommon])
+
+  const sections = sectionDefs.map(d => ({ def: d, items: pool.filter(i => i.kind === d.id) }))
+  const present = sections.filter(x => x.items.length)
+  const tab = present.length > 1 && present.some(x => x.def.id === typeTab) ? typeTab : 'all'
+  const browsing = !searched && !topicMode
+  const topicList = useMemo(() => topicsOf(tagged ?? []), [tagged])
+
+  // What was asked of Graph and what the browser does next (for the Query inspector)
+  function inspectorLines(): string[] {
+    const urls = (() => {
+      const q = encodeURIComponent(activeQuery)
+      return buckets.map(b => {
         const ct = b.sectionContentType
-        if (ct === 'assets') {
-          const fid = config.damFolderContainerId ? `&folderId=${config.damFolderContainerId}` : ''
-          return `GET /api/search/docs?q=${q}${fid}`
-        }
-        const typeMap: Record<string, string> = {
-          blogs: 'Blog', events: 'Event', experiences: 'Experience',
-          locations: 'Location', practitioners: 'Practitioner',
-        }
-        const dom = config.siteDomain ? `&domain=${config.siteDomain}` : ''
-        return `GET /api/search?semantic=true&type=${typeMap[ct] ?? 'Page'}&limit=12&q=${q}${dom}`
-      }),
-      ``,
-      `# Content Graph strategy`,
-      `ordering:  _ranking: SEMANTIC  _semanticWeight: 0.8`,
-      `fulltext:  fuzzy: true, synonyms: ONE`,
-      `scoping:   ${config.siteDomain ? `domain=${config.siteDomain}` : 'OT_ThemeManager.frontEndDomain (host fallback)'}`,
+        if (ct === 'assets') return `/api/search/docs?q=${q}${config.damFolderContainerId ? `&folderId=${config.damFolderContainerId}` : ''}`
+        return `/api/search?semantic=true&type=${TYPE_PARAM[ct] ?? 'Page'}&limit=12&q=${q}${config.siteDomain ? `&domain=${config.siteDomain}` : ''}`
+      })
+    })()
+    return [
+      '# Topic Hub: one result list for keywords and categories',
+      '',
+      '# 1. Tagged pages (one request to Optimizely Graph per page load)',
+      'GET /api/topics?view=all',
+      '',
+      taggedGraphql?.query ?? '(loading)',
+      '',
+      JSON.stringify(taggedGraphql?.variables ?? {}, null, 2),
+      '',
+      ...(searched ? [
+        '# 2. Keyword "' + activeQuery + '" (parallel Graph requests, one per content bucket)',
+        ...urls.map(u => 'GET ' + u),
+        '',
+        'ordering:  _ranking: SEMANTIC  _semanticWeight: 0.3 to 0.8',
+        'fulltext:  fuzzy: true, synonyms: ONE',
+        'scoping:   ' + (config.siteDomain ? 'domain=' + config.siteDomain : 'OT_ThemeManager.frontEndDomain (host fallback)'),
+        '',
+      ] : []),
+      '# Then, in the browser (no further requests)',
+      searched ? 'scope:         the keyword hits, each joined to its tagged page by key for its categories' : 'scope:         every tagged page',
+      `scope size:    ${scope.length}`,
+      `topics:        ${topics.length ? topics.join(', ') : '(none)'}`,
+      `match:         ${topics.length > 1 ? match : 'n/a'}`,
+      `from article:  ${fromKey ?? '(none)'}`,
+      `results:       ${pool.length}`,
+      '',
+      '# Topic counts, filtering and ordering are computed from the scope above,',
+      '# so a count on a topic always equals the results you get.',
     ]
-    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(inspectorLines().join('\n')).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
     })
   }
 
-  const countFor = (b: TopicHubBucket) =>
-    b.sectionContentType === 'assets' ? bucketDocs.length : (bucketResults[b.sectionContentType] ?? []).length
-  const present      = buckets.filter(b => countFor(b) > 0)
-  const totalResults = present.reduce((n, b) => n + countFor(b), 0)
-  const hasAnyResults = present.length > 0
-  const searched = activeQuery.length >= 2
-  const noResults = !loading && searched && !hasAnyResults
   const scoped = SCOPED_EFFECTS.has(headerEffect)
+  const strict = topics.length > 1 && match === 'all'
+  const n = pool.length
+  const kw = inputValue.trim()
 
-  const queryUrls = (q: string) => buckets.map(b => {
-    const ct = b.sectionContentType
-    const typeMap: Record<string, string> = {
-      blogs: 'Blog', events: 'Event', experiences: 'Experience',
-      locations: 'Location', practitioners: 'Practitioner',
-    }
-    if (ct === 'assets') {
-      const fid = config.damFolderContainerId ? `&folderId=${config.damFolderContainerId}` : ''
-      return `/api/search/docs?q=${q}${fid}`
-    }
-    const dom = config.siteDomain ? `&domain=${config.siteDomain}` : ''
-    return `/api/search?semantic=true&type=${typeMap[ct] ?? 'Page'}&limit=12&q=${q}${dom}`
-  })
+  let status: React.ReactNode
+  if (loading) status = `Searching for “${kw}”…`
+  else if (browsing) status = <><b>{t(locale, 'hub.latest')}</b>{t(locale, 'hub.latestRest')}</>
+  else {
+    status = (
+      <>
+        <b>{t(locale, n === 1 ? 'hub.resultCount' : 'hub.resultsCount', { count: n })}</b>
+        {searched && <> {t(locale, 'hub.for')} “{activeQuery}”</>}
+        {topicMode && (fromKey && match === 'any' && topics.length > 1
+          ? t(locale, 'hub.sharesTopic')
+          : <>{t(locale, 'hub.tagged')}<Names slugs={topics} all={topicList} joiner={t(locale, match === 'all' ? 'hub.and' : 'hub.or')} /></>)}
+        {n > 0 ? t(locale, searched ? 'hub.byRelevance' : byCommon ? 'hub.byCommon' : 'hub.newest') : '.'}
+      </>
+    )
+  }
 
   return (
-    <div data-block="topic-hub">
+    <div data-block="topic-hub" data-mode={topicMode || inputValue.trim() ? 'results' : 'browse'}>
       {/* ── Query inspector flyout ── */}
       <AnimatePresence>
         {showDevPanel && (
@@ -551,18 +619,7 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
                   <X size={16} aria-hidden />
                 </button>
               </div>
-              <pre data-part="insp-code">
-                <span data-c="comment">{'# API requests (parallel)\n'}</span>
-                {queryUrls(encodeURIComponent(activeQuery)).map((u, i) => (
-                  <span key={i}><span data-c="verb">{'GET '}</span><span data-c="val">{u + '\n'}</span></span>
-                ))}
-                {'\n'}
-                <span data-c="comment">{'# Content Graph strategy\n'}</span>
-                <span data-c="key">{'ordering:  '}</span><span data-c="verb">{'_ranking: SEMANTIC  _semanticWeight: 0.8\n'}</span>
-                <span data-c="key">{'fulltext:  '}</span><span data-c="val">{'fuzzy: true, synonyms: ONE\n'}</span>
-                <span data-c="key">{'scoping:   '}</span>
-                <span data-c="val">{config.siteDomain ? `domain=${config.siteDomain}` : 'OT_ThemeManager.frontEndDomain (host fallback)'}</span>
-              </pre>
+              <CodeView lines={inspectorLines()} label="Query details" />
               <div data-part="insp-foot">
                 <button type="button" data-part="insp-copy" onClick={handleCopy}>{copied ? 'Copied' : 'Copy'}</button>
                 <span role="status" className="sr-only">{copied ? 'Query details copied' : ''}</span>
@@ -575,8 +632,7 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
       {/* ── Hero: stacked, so any header name fits ── */}
       <section data-part="hero">
         <div data-part="hero-in">
-          <p data-part="kicker"><Sparkles size={14} aria-hidden />AI-Powered Discovery</p>
-
+          <div data-part="hero-main">
           {headerEffect === 'depth3d' ? (
             <h1 data-part="title"><PrimaryTextDepth3D text={headerName} /></h1>
           ) : (
@@ -605,7 +661,7 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
                 type="search"
                 value={inputValue}
                 onChange={handleInput}
-                placeholder="Enter a topic, question, or phrase"
+                placeholder={t(locale, topicMode ? 'hub.searchWithin' : 'hub.searchPlaceholder')}
                 autoComplete="off"
               />
               {loading ? (
@@ -635,63 +691,66 @@ export default function TopicHubPage({ config }: { config: TopicHubConfig }) {
               ))}
             </div>
           )}
+          </div>
+
+          <aside data-part="graph-card" aria-label={t(locale, 'hub.aboutThisPage')}>
+            <p data-part="graph-k">{t(locale, 'hub.graphTitle')}</p>
+            <p data-part="graph-d">{t(locale, 'hub.graphBlurb')}</p>
+            <button type="button" data-part="graph-btn" onClick={() => setShowDevPanel(v => !v)} aria-pressed={showDevPanel}>
+              <Code2 size={16} aria-hidden />
+              {t(locale, showDevPanel ? 'hub.graphHide' : 'hub.graphView')}
+            </button>
+          </aside>
         </div>
       </section>
 
-      {/* ── Results ── */}
+      {/* ── Results: topics refine whatever the keyword (or the whole site) returned ── */}
       <div data-part="results">
         <div data-part="results-in">
-          <div data-part="summary">
-            <p data-part="status" role="status">
-              {loading
-                ? `Searching for “${inputValue.trim()}”…`
-                : searched && hasAnyResults
-                  ? <><b>{totalResults} results</b> for “{activeQuery}” across {present.length} {present.length === 1 ? 'section' : 'sections'}</>
-                  : ''}
-            </p>
-            {searched && !loading && hasAnyResults && (
-              <>
-                <nav data-part="jump" aria-label="Jump to a section">
-                  {present.map(b => (
-                    <a key={b.sectionContentType} href={`#th-${b.sectionContentType}`} data-part="jump-link">
-                      {b.sectionHeadline || b.sectionContentType}<span>{countFor(b)}</span>
-                    </a>
-                  ))}
-                </nav>
-                <button type="button" data-part="tool" onClick={() => setShowDevPanel(v => !v)} aria-pressed={showDevPanel}>
-                  <Code2 size={14} aria-hidden />Query
-                </button>
-              </>
+          {tagged && tagged.length > 0 && (
+            <TopicPanel pages={tagged} pool={scope} st={topicState} open={panelOpen} onOpen={changePanel}
+              onToggle={toggleTopic} onMatch={chooseMatch} onClear={clearTopics} locale={locale} />
+          )}
+
+          <section data-part="tp-results" aria-label={t(locale, 'hub.results')}>
+            {fromKey && topicMode && <p data-part="tp-from"><ArrowLeft aria-hidden="true" />{t(locale, 'hub.fromArticle')}</p>}
+            <p data-part="tp-status" role="status">{status}</p>
+
+            {!loading && present.length > 1 && (
+              <div data-part="tp-tabs" role="group" aria-label={t(locale, 'hub.contentType')}>
+                <button type="button" aria-pressed={tab === 'all'} onClick={() => setTypeTab('all')}><LayoutGrid aria-hidden="true" />{t(locale, 'hub.allTypes')} <span>{n}</span></button>
+                {present.map(x => (
+                  <button key={x.def.id} type="button" aria-pressed={tab === x.def.id} onClick={() => setTypeTab(x.def.id)}><x.def.Icon aria-hidden="true" />{x.def.label} <span>{x.items.length}</span></button>
+                ))}
+              </div>
             )}
-          </div>
 
-          {buckets.map(bucket => (
-            <BucketResults
-              key={bucket.sectionContentType}
-              bucket={bucket}
-              results={bucketResults[bucket.sectionContentType] ?? []}
-              docs={bucket.sectionContentType === 'assets' ? bucketDocs : []}
-              loading={loading}
-            />
-          ))}
-
-          {noResults && (
-            <div data-part="empty">
-              <span data-part="empty-ic" aria-hidden="true"><Search size={26} strokeWidth={1.75} /></span>
-              <p data-part="empty-t">No results for “{activeQuery}”</p>
-              <p data-part="empty-d">Try different phrasing, or pick one of the suggested topics above.</p>
-            </div>
-          )}
-
-          {!inputValue && !loading && (
-            <div data-part="empty">
-              <span data-part="empty-ic" aria-hidden="true"><Sparkles size={26} strokeWidth={1.75} /></span>
-              <p data-part="empty-t">Enter a topic to discover related content</p>
-              <p data-part="empty-d">
-                Results come from {buckets.length > 0 ? buckets.map(b => b.sectionHeadline || b.sectionContentType).join(', ') : 'events, research, and documents'}, ranked by semantic AI.
-              </p>
-            </div>
-          )}
+            {loading && !hits.length ? (
+              sectionDefs.map(d => <SectionSkeleton key={d.id} def={d} />)
+            ) : n === 0 ? (
+              searched || topicMode ? (
+                <div data-part="tp-empty">
+                  <p><b>{searched && !topicMode ? `No results for “${activeQuery}”` : t(locale, 'hub.emptyTitle')}</b></p>
+                  <p>{searched && !topicMode ? 'Try different phrasing, or pick one of the suggested topics above.' : t(locale, strict ? 'hub.emptyStrict' : 'hub.emptyTry')}</p>
+                  {topicMode && (strict
+                    ? <button type="button" data-part="tp-link" onClick={() => chooseMatch('any')}>{t(locale, 'hub.matchAnyTopic')}</button>
+                    : <button type="button" data-part="tp-link" onClick={clearTopics}>{t(locale, 'hub.clear')}</button>)}
+                </div>
+              ) : !tagged ? null : (
+                <div data-part="empty">
+                  <span data-part="empty-ic" aria-hidden="true"><Sparkles size={26} strokeWidth={1.75} /></span>
+                  <p data-part="empty-t">Enter a topic to discover related content</p>
+                  <p data-part="empty-d">Results come from {buckets.length > 0 ? buckets.map(b => b.sectionHeadline || b.sectionContentType).join(', ') : 'events, research, and documents'}, ranked by semantic AI.</p>
+                </div>
+              )
+            ) : (
+              <div data-part="sections">
+                {present.filter(x => tab === 'all' || x.def.id === tab).map(x => (
+                  <Section key={x.def.id} def={x.def} items={x.items} sel={topics} focus={tab !== 'all'} />
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>

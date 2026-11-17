@@ -301,6 +301,14 @@ export const OT_ThemeManager = contentType({
       group: 'OT_Integrations',
       sortOrder: 95,
     },
+    topicHubRef: {
+      type: 'contentReference',
+      allowedTypes: ['OT_TopicHubPage'],
+      displayName: 'Topic Hub Page',
+      description: 'The Topic Hub page that category markers and "Keep exploring" link to. Create the Topic Hub page first, then select it here. Leave empty and categories are shown as plain labels with no links.',
+      group: 'OT_Integrations',
+      sortOrder: 110,
+    },
     currencyCode: {
       type: 'string',
       format: 'selectOne',

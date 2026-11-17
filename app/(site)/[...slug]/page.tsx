@@ -101,7 +101,7 @@ function extractAccordionFaqs(
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug }   = await params
   const path       = '/' + slug.join('/')
   const locale     = await getRequestLocale()
@@ -149,11 +149,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Topic Hub page — fetch SEO fields from the targeted query
   if (exp?.__typename === 'OT_TopicHubPage' && exp?._metadata?.key) {
     const hubContent = await getTopicHubPage(exp._metadata.key as string, locale)
-    return buildPageMetadata(
+    const meta = buildPageMetadata(
       (hubContent ?? {}) as PageSeoFields,
       settings ?? {},
       path,
     )
+    // A filtered hub (?topics=, ?topic=, ?match=, ?from=) is a view of the hub, not a page of its own: keep it out of search
+    // results (links still followed) and point its canonical at the plain hub URL, so filter combinations never compete with it.
+    const sp = await searchParams
+    const filtered = ['topics', 'topic', 'match', 'from'].some((k) => sp?.[k] !== undefined && sp[k] !== '')
+    if (filtered) {
+      return {
+        ...meta,
+        robots: { index: false, follow: true },
+        alternates: { ...meta.alternates, canonical: meta.alternates?.canonical ?? path },
+      }
+    }
+    return meta
   }
 
   // Campaign landing page — _experience; fall back to the page name when the
@@ -547,7 +559,7 @@ async function CmsPage({ params, searchParams }: Props) {
             )}
             {dm.isEnabled && <NextPreviewComponent />}
             {renderPreviewChrome(hubContent, { headline: hubContent.headerName ?? hubContent.seoTitle })}
-            <TopicHubPage config={hubContent as any} />
+            <TopicHubPage config={hubContent as any} locale={locale} />
           </>
         )
       }

@@ -115,6 +115,7 @@ const THEME_QUERY = `
         ctaLabel
         ctaUrl { default base }
         footerRef { key }
+        topicHubRef { key }
         copyright
         colorBrand
         colorBrandHover

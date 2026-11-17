@@ -1,0 +1,614 @@
+{
+  "$comment": "DRAFT for approval. Not seeded. Tree of CMS category terms for Site Accelerator. Level 1 = the group a visitor sees in the Topic Hub (Category, Audience, Theme). Level 2 = the vertical (Banking, Insurance, Healthcare, Education, Retail, Technology, Public Sector), so each site can show only its own vertical. Leaves are what content gets tagged with. Names use letters, numbers and spaces only (the CMS key is the name with underscores). The same leaf name may repeat across verticals (Option A): the CMS prefixes the key, and the front end resolves keys through lib/taxonomy.ts, never by hand. Create parents before children, top to bottom. Content format (article, event...) is NOT a category: it comes from the content type.",
+  "version": 1,
+  "roots": [
+    {
+      "name": "Category",
+      "children": [
+        {
+          "name": "Banking",
+          "children": [
+            {
+              "name": "Everyday Banking",
+              "children": [
+                "Checking accounts",
+                "Savings accounts",
+                "Mobile banking"
+              ]
+            },
+            {
+              "name": "Lending",
+              "children": [
+                "Mortgages",
+                "Personal loans",
+                "Auto loans",
+                "Home equity"
+              ]
+            },
+            {
+              "name": "Cards and Payments",
+              "children": [
+                "Credit cards",
+                "Debit cards",
+                "Digital wallets",
+                "Transfers and payments"
+              ]
+            },
+            {
+              "name": "Wealth and Investing",
+              "children": [
+                "Retirement planning",
+                "Investing basics",
+                "Wealth management"
+              ]
+            },
+            {
+              "name": "Security and Fraud",
+              "children": [
+                "Fraud prevention",
+                "Identity protection",
+                "Account safety"
+              ]
+            },
+            {
+              "name": "Small Business Banking",
+              "children": [
+                "Business checking",
+                "Business lending",
+                "Merchant services"
+              ]
+            },
+            {
+              "name": "Financial Wellness",
+              "children": [
+                "Budgeting",
+                "Building credit",
+                "Saving goals",
+                "Managing debt"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Insurance",
+          "children": [
+            {
+              "name": "Auto Insurance",
+              "children": [
+                "Coverage options",
+                "Rates and discounts",
+                "Teen drivers"
+              ]
+            },
+            {
+              "name": "Home Insurance",
+              "children": [
+                "Homeowners coverage",
+                "Renters coverage",
+                "Valuables and add ons"
+              ]
+            },
+            {
+              "name": "Life and Health",
+              "children": [
+                "Life insurance",
+                "Health coverage",
+                "Disability coverage"
+              ]
+            },
+            {
+              "name": "Claims and Service",
+              "children": [
+                "Filing a claim",
+                "Claim status",
+                "Policy changes"
+              ]
+            },
+            {
+              "name": "Business Insurance",
+              "children": [
+                "Small business coverage",
+                "Liability coverage",
+                "Workers compensation"
+              ]
+            },
+            {
+              "name": "Risk and Safety",
+              "children": [
+                "Home safety",
+                "Driving safety",
+                "Disaster preparedness"
+              ]
+            },
+            {
+              "name": "Financial Planning",
+              "children": [
+                "Retirement income",
+                "Annuities",
+                "Estate planning"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Healthcare",
+          "children": [
+            {
+              "name": "Primary Care",
+              "children": [
+                "Preventive care",
+                "Pediatrics",
+                "Women and maternal health"
+              ]
+            },
+            {
+              "name": "Specialty Care",
+              "children": [
+                "Cardiology",
+                "Orthopedics and sports medicine",
+                "Oncology",
+                "Neurology"
+              ]
+            },
+            {
+              "name": "Mental Health",
+              "children": [
+                "Counseling and therapy",
+                "Stress and burnout",
+                "Substance use support"
+              ]
+            },
+            {
+              "name": "Urgent and Emergency Care",
+              "children": [
+                "Urgent care",
+                "Emergency services",
+                "Telehealth visits"
+              ]
+            },
+            {
+              "name": "Wellness and Prevention",
+              "children": [
+                "Nutrition",
+                "Fitness",
+                "Sleep",
+                "Screenings"
+              ]
+            },
+            {
+              "name": "Patient Services",
+              "children": [
+                "Billing and insurance",
+                "Patient portal",
+                "Care coordination"
+              ]
+            },
+            {
+              "name": "Research and Technology",
+              "children": [
+                "Clinical trials",
+                "Digital health",
+                "Patient safety programs"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Education",
+          "children": [
+            {
+              "name": "Admissions",
+              "children": [
+                "Applying",
+                "Financial aid and scholarships",
+                "Campus visits"
+              ]
+            },
+            {
+              "name": "Academics",
+              "children": [
+                "Undergraduate programs",
+                "Graduate programs",
+                "Online learning",
+                "Certificates"
+              ]
+            },
+            {
+              "name": "Student Life",
+              "children": [
+                "Housing",
+                "Clubs and activities",
+                "Wellness and support",
+                "Athletics"
+              ]
+            },
+            {
+              "name": "Careers and Outcomes",
+              "children": [
+                "Internships",
+                "Career services",
+                "Alumni success"
+              ]
+            },
+            {
+              "name": "Research",
+              "children": [
+                "Faculty research",
+                "Labs and centers",
+                "Grants and funding"
+              ]
+            },
+            {
+              "name": "Teaching and Learning",
+              "children": [
+                "Instructional design",
+                "Learning technology",
+                "Student support"
+              ]
+            },
+            {
+              "name": "Community and Giving",
+              "children": [
+                "Giving",
+                "Volunteering",
+                "Community partnerships"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Retail",
+          "children": [
+            {
+              "name": "Product Discovery",
+              "children": [
+                "New arrivals",
+                "Best sellers",
+                "Gift ideas",
+                "Seasonal collections"
+              ]
+            },
+            {
+              "name": "Style and Trends",
+              "children": [
+                "Fashion trends",
+                "Styling tips",
+                "Behind the design"
+              ]
+            },
+            {
+              "name": "Home and Living",
+              "children": [
+                "Home decor",
+                "Outdoor living",
+                "Kitchen and dining"
+              ]
+            },
+            {
+              "name": "Deals and Loyalty",
+              "children": [
+                "Sales and promotions",
+                "Rewards program",
+                "Gift cards"
+              ]
+            },
+            {
+              "name": "Service and Support",
+              "children": [
+                "Shipping and returns",
+                "Order tracking",
+                "Size and fit help"
+              ]
+            },
+            {
+              "name": "Sustainability",
+              "children": [
+                "Responsible materials",
+                "Ethical sourcing",
+                "Recycling and repair"
+              ]
+            },
+            {
+              "name": "Stores and Community",
+              "children": [
+                "Store openings",
+                "Pop up shops",
+                "Local partnerships"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Technology",
+          "children": [
+            {
+              "name": "Platform and Products",
+              "children": [
+                "Cloud platform",
+                "Analytics",
+                "Security",
+                "Integrations"
+              ]
+            },
+            {
+              "name": "AI and Automation",
+              "children": [
+                "Generative AI",
+                "Machine learning",
+                "Workflow automation"
+              ]
+            },
+            {
+              "name": "Developer Tools",
+              "children": [
+                "APIs and SDKs",
+                "Authentication",
+                "Performance tuning",
+                "Testing and debugging"
+              ]
+            },
+            {
+              "name": "Customer Success",
+              "children": [
+                "Onboarding",
+                "Best practices",
+                "Support",
+                "Certification"
+              ]
+            },
+            {
+              "name": "Data and Analytics",
+              "children": [
+                "Data pipelines",
+                "Dashboards and reporting",
+                "Privacy and governance"
+              ]
+            },
+            {
+              "name": "Careers and Community",
+              "children": [
+                "Engineering careers",
+                "Open source",
+                "Diversity and inclusion"
+              ]
+            },
+            {
+              "name": "Research and Trends",
+              "children": [
+                "Industry trends",
+                "Benchmarks",
+                "Product vision"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Public Sector",
+          "children": [
+            {
+              "name": "Services",
+              "children": [
+                "Permits and licenses",
+                "Taxes and payments",
+                "Benefits and assistance",
+                "Records and documents"
+              ]
+            },
+            {
+              "name": "Public Safety",
+              "children": [
+                "Emergency preparedness",
+                "Police and fire",
+                "Road safety"
+              ]
+            },
+            {
+              "name": "Health and Human Services",
+              "children": [
+                "Public health",
+                "Family support",
+                "Senior services"
+              ]
+            },
+            {
+              "name": "Housing and Development",
+              "children": [
+                "Affordable housing",
+                "Zoning and planning",
+                "Neighborhood improvement"
+              ]
+            },
+            {
+              "name": "Transportation and Infrastructure",
+              "children": [
+                "Roads and transit",
+                "Utilities",
+                "Capital projects"
+              ]
+            },
+            {
+              "name": "Parks and Recreation",
+              "children": [
+                "Parks and trails",
+                "Recreation programs",
+                "Facilities and rentals"
+              ]
+            },
+            {
+              "name": "Government and Civic Life",
+              "children": [
+                "Elections and voting",
+                "Public meetings",
+                "Budgets and transparency"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Audience",
+      "children": [
+        {
+          "name": "Banking",
+          "children": [
+            "Consumers",
+            "Young adults",
+            "Homebuyers",
+            "Families",
+            "Small business",
+            "Retirees",
+            "Wealth clients"
+          ]
+        },
+        {
+          "name": "Insurance",
+          "children": [
+            "Drivers",
+            "Homeowners",
+            "Renters",
+            "Families",
+            "Small business",
+            "Retirees",
+            "Agents"
+          ]
+        },
+        {
+          "name": "Healthcare",
+          "children": [
+            "Patients",
+            "Families and caregivers",
+            "Seniors",
+            "Parents",
+            "Athletes",
+            "Physicians",
+            "Employers"
+          ]
+        },
+        {
+          "name": "Education",
+          "children": [
+            "Prospective students",
+            "Current students",
+            "Parents",
+            "Alumni",
+            "Faculty",
+            "Employers",
+            "Donors"
+          ]
+        },
+        {
+          "name": "Retail",
+          "children": [
+            "Shoppers",
+            "Gift givers",
+            "Trend seekers",
+            "Members",
+            "Families",
+            "Students",
+            "Business buyers"
+          ]
+        },
+        {
+          "name": "Technology",
+          "children": [
+            "Developers",
+            "IT leaders",
+            "Executives",
+            "Marketers",
+            "Data teams",
+            "Partners",
+            "Customers"
+          ]
+        },
+        {
+          "name": "Public Sector",
+          "children": [
+            "Residents",
+            "Families",
+            "Seniors",
+            "Small business",
+            "Visitors",
+            "Veterans",
+            "Job seekers"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Theme",
+      "children": [
+        {
+          "name": "Banking",
+          "children": [
+            "Trust and security",
+            "Digital convenience",
+            "Financial confidence",
+            "Community impact",
+            "Transparent rates and fees"
+          ]
+        },
+        {
+          "name": "Insurance",
+          "children": [
+            "Peace of mind",
+            "Fair and fast claims",
+            "Digital service",
+            "Savings and value",
+            "Community resilience"
+          ]
+        },
+        {
+          "name": "Healthcare",
+          "children": [
+            "Patient experience",
+            "Whole person care",
+            "Access and convenience",
+            "Trusted quality",
+            "Community health"
+          ]
+        },
+        {
+          "name": "Education",
+          "children": [
+            "Student success",
+            "Access and affordability",
+            "Academic excellence",
+            "Career readiness",
+            "Belonging"
+          ]
+        },
+        {
+          "name": "Retail",
+          "children": [
+            "Quality and craft",
+            "Self expression",
+            "Everyday value",
+            "Responsible choices",
+            "Easy shopping"
+          ]
+        },
+        {
+          "name": "Technology",
+          "children": [
+            "Future ready",
+            "Security and trust",
+            "Scale and performance",
+            "Developer experience",
+            "Customer outcomes"
+          ]
+        },
+        {
+          "name": "Public Sector",
+          "children": [
+            "Transparency",
+            "Safety and resilience",
+            "Equity and access",
+            "Sustainability",
+            "Community engagement"
+          ]
+        }
+      ]
+    }
+  ]
+}

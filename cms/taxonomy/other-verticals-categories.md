@@ -1,0 +1,275 @@
+# Category outline for the other six verticals (Banking is already entered)
+
+Category, Audience and Theme already exist. Add each vertical as a child of those three roots, parents before children.
+Leave Usage as Public and Selectable on for every term.
+
+- Category
+  - Insurance
+    - Auto Insurance
+      - Coverage options
+      - Rates and discounts
+      - Teen drivers
+    - Home Insurance
+      - Homeowners coverage
+      - Renters coverage
+      - Valuables and add ons
+    - Life and Health
+      - Life insurance
+      - Health coverage
+      - Disability coverage
+    - Claims and Service
+      - Filing a claim
+      - Claim status
+      - Policy changes
+    - Business Insurance
+      - Small business coverage
+      - Liability coverage
+      - Workers compensation
+    - Risk and Safety
+      - Home safety
+      - Driving safety
+      - Disaster preparedness
+    - Financial Planning
+      - Retirement income
+      - Annuities
+      - Estate planning
+  - Healthcare
+    - Primary Care
+      - Preventive care
+      - Pediatrics
+      - Women and maternal health
+    - Specialty Care
+      - Cardiology
+      - Orthopedics and sports medicine
+      - Oncology
+      - Neurology
+    - Mental Health
+      - Counseling and therapy
+      - Stress and burnout
+      - Substance use support
+    - Urgent and Emergency Care
+      - Urgent care
+      - Emergency services
+      - Telehealth visits
+    - Wellness and Prevention
+      - Nutrition
+      - Fitness
+      - Sleep
+      - Screenings
+    - Patient Services
+      - Billing and insurance
+      - Patient portal
+      - Care coordination
+    - Research and Technology
+      - Clinical trials
+      - Digital health
+      - Patient safety programs
+  - Education
+    - Admissions
+      - Applying
+      - Financial aid and scholarships
+      - Campus visits
+    - Academics
+      - Undergraduate programs
+      - Graduate programs
+      - Online learning
+      - Certificates
+    - Student Life
+      - Housing
+      - Clubs and activities
+      - Wellness and support
+      - Athletics
+    - Careers and Outcomes
+      - Internships
+      - Career services
+      - Alumni success
+    - Research
+      - Faculty research
+      - Labs and centers
+      - Grants and funding
+    - Teaching and Learning
+      - Instructional design
+      - Learning technology
+      - Student support
+    - Community and Giving
+      - Giving
+      - Volunteering
+      - Community partnerships
+  - Retail
+    - Product Discovery
+      - New arrivals
+      - Best sellers
+      - Gift ideas
+      - Seasonal collections
+    - Style and Trends
+      - Fashion trends
+      - Styling tips
+      - Behind the design
+    - Home and Living
+      - Home decor
+      - Outdoor living
+      - Kitchen and dining
+    - Deals and Loyalty
+      - Sales and promotions
+      - Rewards program
+      - Gift cards
+    - Service and Support
+      - Shipping and returns
+      - Order tracking
+      - Size and fit help
+    - Sustainability
+      - Responsible materials
+      - Ethical sourcing
+      - Recycling and repair
+    - Stores and Community
+      - Store openings
+      - Pop up shops
+      - Local partnerships
+  - Technology
+    - Platform and Products
+      - Cloud platform
+      - Analytics
+      - Security
+      - Integrations
+    - AI and Automation
+      - Generative AI
+      - Machine learning
+      - Workflow automation
+    - Developer Tools
+      - APIs and SDKs
+      - Authentication
+      - Performance tuning
+      - Testing and debugging
+    - Customer Success
+      - Onboarding
+      - Best practices
+      - Support
+      - Certification
+    - Data and Analytics
+      - Data pipelines
+      - Dashboards and reporting
+      - Privacy and governance
+    - Careers and Community
+      - Engineering careers
+      - Open source
+      - Diversity and inclusion
+    - Research and Trends
+      - Industry trends
+      - Benchmarks
+      - Product vision
+  - Public Sector
+    - Services
+      - Permits and licenses
+      - Taxes and payments
+      - Benefits and assistance
+      - Records and documents
+    - Public Safety
+      - Emergency preparedness
+      - Police and fire
+      - Road safety
+    - Health and Human Services
+      - Public health
+      - Family support
+      - Senior services
+    - Housing and Development
+      - Affordable housing
+      - Zoning and planning
+      - Neighborhood improvement
+    - Transportation and Infrastructure
+      - Roads and transit
+      - Utilities
+      - Capital projects
+    - Parks and Recreation
+      - Parks and trails
+      - Recreation programs
+      - Facilities and rentals
+    - Government and Civic Life
+      - Elections and voting
+      - Public meetings
+      - Budgets and transparency
+- Audience
+  - Insurance
+    - Drivers
+    - Homeowners
+    - Renters
+    - Families
+    - Small business
+    - Retirees
+    - Agents
+  - Healthcare
+    - Patients
+    - Families and caregivers
+    - Seniors
+    - Parents
+    - Athletes
+    - Physicians
+    - Employers
+  - Education
+    - Prospective students
+    - Current students
+    - Parents
+    - Alumni
+    - Faculty
+    - Employers
+    - Donors
+  - Retail
+    - Shoppers
+    - Gift givers
+    - Trend seekers
+    - Members
+    - Families
+    - Students
+    - Business buyers
+  - Technology
+    - Developers
+    - IT leaders
+    - Executives
+    - Marketers
+    - Data teams
+    - Partners
+    - Customers
+  - Public Sector
+    - Residents
+    - Families
+    - Seniors
+    - Small business
+    - Visitors
+    - Veterans
+    - Job seekers
+- Theme
+  - Insurance
+    - Peace of mind
+    - Fair and fast claims
+    - Digital service
+    - Savings and value
+    - Community resilience
+  - Healthcare
+    - Patient experience
+    - Whole person care
+    - Access and convenience
+    - Trusted quality
+    - Community health
+  - Education
+    - Student success
+    - Access and affordability
+    - Academic excellence
+    - Career readiness
+    - Belonging
+  - Retail
+    - Quality and craft
+    - Self expression
+    - Everyday value
+    - Responsible choices
+    - Easy shopping
+  - Technology
+    - Future ready
+    - Security and trust
+    - Scale and performance
+    - Developer experience
+    - Customer outcomes
+  - Public Sector
+    - Transparency
+    - Safety and resilience
+    - Equity and access
+    - Sustainability
+    - Community engagement

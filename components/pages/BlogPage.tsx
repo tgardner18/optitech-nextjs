@@ -1,4 +1,5 @@
 import type { BlogPageContent, BlogPostSummary } from '@/lib/blog'
+import CategoryChips from '@/components/taxonomy/CategoryChips'
 import { sanitizeCmsHtml } from '@/lib/sanitizeHtml'
 import PrimaryTextFx from '@/components/blocks/PrimaryTextFx.client'
 import BlogVideoBackdrop from './BlogVideoBackdrop.client'
@@ -241,6 +242,13 @@ export default function BlogPage({ content, latestPosts, pa, locale = 'en', back
         // CMS-managed rich text — not user input
         dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(body?.html) }}
       />
+
+      {/* ── Categories (CMS taxonomy) ────────────────────────────────────── */}
+      {content.categories && content.categories.length > 0 && (
+        <div data-part="categories">
+          <CategoryChips categories={content.categories} locale={locale} hubUrl={content.topicHubUrl} fromKey={_metadata?.key} />
+        </div>
+      )}
 
       {/* ── Author ───────────────────────────────────────────────────────── */}
       {authorRef?.name && (

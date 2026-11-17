@@ -19,6 +19,8 @@
 @import "../components/blocks/trust-rail.css";
 @import "../components/blocks/chart.css";
 @import "../components/blocks/blog-page.css";
+@import "../components/taxonomy/category-chips.css";
+@import "../components/taxonomy/topic-browser.css";
 @import "../components/blocks/slider.css";
 @import "../components/blocks/location-listing.css";
 @import "../components/blocks/divider.css";

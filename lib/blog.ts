@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { getClient } from '@/lib/optimizely'
+import { resolveCategories, withCounts, getTopicHubUrl, type ResolvedCategory } from '@/lib/taxonomy'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,10 @@ export type BlogPageContent = {
   headline:      string
   subHeadline?:  string
   topic?:        string
+  /** CMS taxonomy categories (public only), resolved to names and root-first paths. */
+  categories?:   ResolvedCategory[]
+  /** Where markers and "Keep exploring" go; null hides the links. */
+  topicHubUrl?:  string | null
   blogStyle?:    string
   featuredImage?: { url: { default: string | null } }
   featuredVideo?: { url: { default: string | null } }
@@ -80,6 +85,15 @@ const BLOG_PAGE_QUERY = `
     }
   }
 `
+
+const BLOG_CATEGORIES_QUERY = `
+  query GetBlogCategories($key: String!) {
+    OT_BlogPage(where: { _metadata: { key: { eq: $key } } }, limit: 1) {
+      items { hideCategories _itemMetadata { categories } }
+    }
+  }
+`
+const BLOG_CATEGORIES_QUERY_LEGACY = BLOG_CATEGORIES_QUERY.replace('hideCategories ', '')
 
 /**
  * OT_Author data is fetched separately because ContentReference.item for
@@ -230,11 +244,43 @@ export async function getBlogPage(key: string, locale = 'en'): Promise<BlogPageC
     // authorRef is a ContentReference — item resolver returns "Data" for
     // _component types. Fetch author separately using the reference key.
     const authorKey = item.authorRef?.key as string | undefined
-    const authorRef = authorKey ? await fetchAuthorByKey(authorKey) : null
+    const [authorRef, categories] = await Promise.all([
+      authorKey ? fetchAuthorByKey(authorKey) : null,
+      getBlogCategories(key, locale),
+    ])
 
-    return { ...item, authorRef }
+    return { ...item, authorRef, ...categories }
   } catch {
     return null
+  }
+}
+
+/**
+ * Category tags for a blog page, resolved to display names and paths.
+ * Kept as its own query (not part of BLOG_PAGE_QUERY) so an instance without taxonomy
+ * can never 400 the page query. Any failure simply means no chips.
+ */
+async function getBlogCategories(key: string, locale: string): Promise<{ categories: ResolvedCategory[]; topicHubUrl: string | null }> {
+  const none = { categories: [], topicHubUrl: null }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let item: any
+    let legacy = false
+    try {
+      item = ((await getClient().request(BLOG_CATEGORIES_QUERY, { key })) as any)?.OT_BlogPage?.items?.[0]
+    } catch {
+      // hideCategories is not in this instance's schema yet (content type not pushed): categories stay shown
+      legacy = true
+      item = ((await getClient().request(BLOG_CATEGORIES_QUERY_LEGACY, { key })) as any)?.OT_BlogPage?.items?.[0]
+    }
+    // shown by default; an editor can switch them off per page with Hide Categories
+    if (!legacy && item?.hideCategories === true) return none
+    const resolved = await resolveCategories(item?._itemMetadata?.categories ?? [], locale)
+    if (!resolved.length) return none
+    const [categories, topicHubUrl] = await Promise.all([withCounts(resolved, locale), getTopicHubUrl()])
+    return { categories, topicHubUrl }
+  } catch {
+    return none
   }
 }
 

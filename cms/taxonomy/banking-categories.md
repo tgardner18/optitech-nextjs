@@ -1,0 +1,53 @@
+# Banking categories (outline for entering in Settings > Categories)
+
+Create each parent before its children. Leave Usage as Public and Selectable on for every term.
+
+- Category
+  - Banking
+    - Everyday Banking
+      - Checking accounts
+      - Savings accounts
+      - Mobile banking
+    - Lending
+      - Mortgages
+      - Personal loans
+      - Auto loans
+      - Home equity
+    - Cards and Payments
+      - Credit cards
+      - Debit cards
+      - Digital wallets
+      - Transfers and payments
+    - Wealth and Investing
+      - Retirement planning
+      - Investing basics
+      - Wealth management
+    - Security and Fraud
+      - Fraud prevention
+      - Identity protection
+      - Account safety
+    - Small Business Banking
+      - Business checking
+      - Business lending
+      - Merchant services
+    - Financial Wellness
+      - Budgeting
+      - Building credit
+      - Saving goals
+      - Managing debt
+- Audience
+  - Banking
+    - Consumers
+    - Young adults
+    - Homebuyers
+    - Families
+    - Small business
+    - Retirees
+    - Wealth clients
+- Theme
+  - Banking
+    - Trust and security
+    - Digital convenience
+    - Financial confidence
+    - Community impact
+    - Transparent rates and fees

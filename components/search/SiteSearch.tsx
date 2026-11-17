@@ -104,6 +104,9 @@ export default function SiteSearch() {
   const [hasSearched, setHasSearched] = useState(false)
   const [typeFilter,  setTypeFilter]  = useState<TypeFilter>('all')
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
+  // CMS categories: slugs the reader picked, and every tagged page's categories by page key (loaded once a search runs)
+  const [catFilter, setCatFilter] = useState<string[]>([])
+  const [catMap, setCatMap] = useState<Record<string, { slug: string; name: string; group: string }[]> | null>(null)
   const [mounted,     setMounted]     = useState(false)
   const [semantic,        setSemantic]        = useState(false)
   const [viewMode,        setViewMode]        = useState<ViewMode>('list')
@@ -148,6 +151,7 @@ export default function SiteSearch() {
       setHasSearched(false)
       setTypeFilter('all')
       setTopicFilter(null)
+      setCatFilter([])
       setSuggestions([])
       setShowSuggestions(false)
       setFocusedSugIdx(-1)
@@ -263,6 +267,7 @@ export default function SiteSearch() {
   const handleQueryChange = (value: string) => {
     setQuery(value)
     setTopicFilter(null)
+      setCatFilter([])
     setFocusedSugIdx(-1)
 
     clearTimeout(suggestDebounceRef.current)
@@ -316,6 +321,7 @@ export default function SiteSearch() {
     if (f === typeFilter) return
     setTypeFilter(f)
     setTopicFilter(null)
+      setCatFilter([])
     if (query.trim().length >= 2) runSearch(query, f, semantic)
   }
 
@@ -345,14 +351,47 @@ export default function SiteSearch() {
   }, [closeSearch])
 
 
+  useEffect(() => {
+    if (!hasSearched || catMap) return
+    let live = true
+    fetch('/api/topics?view=all').then(r => r.json()).then(d => {
+      if (!live) return
+      const m: Record<string, { slug: string; name: string; group: string }[]> = {}
+      for (const p of d.pages ?? []) m[p.key] = p.categories
+      setCatMap(m)
+    }).catch(() => {})
+    return () => { live = false }
+  }, [hasSearched, catMap])
+
+  // Category refiners: the categories carried by the current results, by group, with how many results each would keep
+  const catGroups = (() => {
+    const by = new Map<string, Map<string, { slug: string; name: string; n: number }>>()
+    for (const r of results) for (const c of catMap?.[r.id] ?? []) {
+      const g = by.get(c.group) ?? new Map(); by.set(c.group, g)
+      const cur = g.get(c.slug); if (cur) cur.n++; else g.set(c.slug, { slug: c.slug, name: c.name, n: 1 })
+    }
+    return [...by.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([name, m]) => ({ name, topics: [...m.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name)) }))
+  })()
+  const toggleCat = (slug: string) => setCatFilter(cur => cur.includes(slug) ? cur.filter(x => x !== slug) : [...cur, slug])
+
   const availableTopics = Array.from(new Set(
     results.filter(r => r.type === 'Blog' && r.topic).map(r => r.topic!)
   ))
   const showTopics = (typeFilter === 'all' || typeFilter === 'Blog') && availableTopics.length > 0
 
-  const filteredResults = topicFilter
+  const byTopic = topicFilter
     ? results.filter(r => r.type !== 'Blog' || r.topic === topicFilter)
     : results
+  // within a category group any picked topic matches; across groups every group with a pick must match
+  const filteredResults = catFilter.length
+    ? byTopic.filter(r => {
+        const cats = catMap?.[r.id] ?? []
+        return catGroups.every(g => {
+          const picked = g.topics.filter(x => catFilter.includes(x.slug))
+          return !picked.length || cats.some(c => c.group === g.name && picked.some(x => x.slug === c.slug))
+        })
+      })
+    : byTopic
 
   const dur = (ms: number) => prefersReducedMotion ? 0 : ms / 1000
 
@@ -369,12 +408,13 @@ export default function SiteSearch() {
   }
 
   // Refine badge: topic and AI mode (type lives in the one-tap chips).
-  const refineCount = (topicFilter ? 1 : 0) + (semantic ? 1 : 0)
+  const refineCount = (topicFilter ? 1 : 0) + catFilter.length + (semantic ? 1 : 0)
   const anyFilter   = refineCount + (typeFilter !== 'all' ? 1 : 0) > 0
 
   function clearAllFilters() {
     if (typeFilter !== 'all') handleTypeFilter('all')
     setTopicFilter(null)
+      setCatFilter([])
     if (semantic) handleSemanticToggle()
   }
 
@@ -751,6 +791,16 @@ export default function SiteSearch() {
                 </button>
               </div>
             </fieldset>
+            {catGroups.map(g => (
+              <fieldset key={g.name} data-part="fs">
+                <legend><Tag size={16} strokeWidth={2} aria-hidden />{g.name}</legend>
+                <div data-part="pills">
+                  {g.topics.map(tp => (
+                    <button key={tp.slug} type="button" data-part="chip" aria-pressed={catFilter.includes(tp.slug)} onClick={() => toggleCat(tp.slug)}>{tp.name} <span data-part="chip-n">{tp.n}</span></button>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
             {showTopics && (
               <fieldset data-part="fs">
                 <legend><Tag size={16} strokeWidth={2} aria-hidden />Blog topic</legend>

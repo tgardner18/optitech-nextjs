@@ -51,6 +51,13 @@ export const OT_BlogPage = contentType({
       sortOrder: 70,
     },
     readTime: { type: 'string', isLocalized: true, maxLength: 20, displayName: 'Read Time (e.g. "8 min read")', group: 'OT_Content', sortOrder: 80 },
+    hideCategories: {
+      type: 'boolean',
+      displayName: 'Hide Categories',
+      description: "Categories are shown after the article by default, linked to the Topic Hub. Turn this on to hide them on this page. Pick the categories in the page's settings.",
+      group: 'OT_Content',
+      sortOrder: 90,
+    },
 
     // ── SEO / Search & Discovery ──────────────────────────────────────────────
     // Identical field keys to BlankExperience so lib/metadata.ts has one code path.
