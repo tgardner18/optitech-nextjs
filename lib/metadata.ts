@@ -99,8 +99,14 @@ export function buildPageMetadata(
 
   // OG / Twitter need the fully-formatted "Page Title | Site Name" string
   // because social platforms don't apply any template logic.
+  // Editors often type the brand into the SEO title ("Services | Opti Medical"), and the layout
+  // template would then append it again ("Services | Opti Medical | Opti Medical"). When the title
+  // already names the site (ignoring case, spaces and punctuation, so "OptiMedical" counts), use it as is.
+  const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const namesSite = !!(pageTitle && site.siteName && squash(pageTitle).includes(squash(site.siteName)))
+
   const richTitle =
-    pageTitle && site.siteName
+    pageTitle && site.siteName && !namesSite
       ? `${pageTitle} | ${site.siteName}`
       : pageTitle ?? site.siteName ?? 'Site Accelerator'
 
@@ -116,7 +122,7 @@ export function buildPageMetadata(
 
   return {
     // Plain string — the root layout's template appends "| SiteName" automatically.
-    title: pageTitle,
+    title: namesSite && pageTitle ? { absolute: pageTitle } : pageTitle,
 
     description,
 
