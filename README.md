@@ -55,6 +55,7 @@ The App Router lives under `app/`, with the public marketing site grouped in `ap
 |---|---|
 | [`PRODUCT.md`](PRODUCT.md) | Product purpose, users, brand voice, strategic principles |
 | [`DESIGN.md`](DESIGN.md) | Color strategy, typography, elevation, motion, component specs |
+| [`docs/categories-and-topics-guide.md`](docs/categories-and-topics-guide.md) | Categories and Topic Hub setup, end to end (also the Mark AI video brief) |
 | [`Optimizely.md`](Optimizely.md) | CMS integration patterns, page / experience types, Graph queries |
 | [`CLAUDE.md`](CLAUDE.md) | Repo conventions and the CMS block-authoring workflow |
 
@@ -305,6 +306,18 @@ The **Analytics** and **Settings** sections in the sidebar are placeholders and 
 | Data / auth API routes | [`app/api/opti-admin/`](app/api/opti-admin/) |
 | UI components (shell, nav, clients) | [`components/admin/`](components/admin/) |
 | Auth helpers, Graph queries, content-type list | [`lib/admin/`](lib/admin/) |
+
+## Categories and Topics
+
+Categories (the CMS taxonomy) let every article point visitors at related content. The setup is five steps, none needing code:
+
+1. **Populate the categories.** Import [`docs/Taxonomy.episerverdata`](docs/Taxonomy.episerverdata) through the CMS settings' standard content import. It contains the full taxonomy for all seven verticals. The tree then appears under **Settings > Categories**. (To build or customize it by hand instead, the outlines in [`cms/taxonomy/`](cms/taxonomy/) can be given to Mark AI.)
+2. **Tag your content.** Assign categories to content items (blog posts today) in each page's settings, either by hand or by asking Mark AI to tag them.
+3. **Create a Topic Hub Page.** Add a page of type **Topic Hub Page** and publish it. It gives visitors a search and filter experience driven by topics: a topic browser, Any / All matching, ranked results and search within the selected topics.
+4. **Link it in Theme Manager.** Set the **Topic Hub Page** field on your site's Theme Manager item and publish.
+5. **Check a blog post.** Categorized posts now end with a **More on these topics** panel. Selecting a topic or "View related content" opens the hub with those topics preselected. Without a linked hub, categories show as a plain "Filed under" row. Turn on **Hide Categories** on a post to suppress the panel.
+
+For the full walkthrough, troubleshooting and a video outline, see [`docs/categories-and-topics-guide.md`](docs/categories-and-topics-guide.md).
 
 ## Topic Hub
 
