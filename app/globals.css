@@ -3566,6 +3566,7 @@ body {
 }
 
 /* ── Individual characters: hidden until active ── */
+.ls-char::before { content: attr(data-c); }
 .ls-char {
   display: inline-block;
   opacity: 0;

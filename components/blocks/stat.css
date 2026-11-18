@@ -90,6 +90,7 @@
   [data-block="stat"][data-cols="3"] [data-part="num"] { --s-size: clamp(3rem, 7.2cqi, 6rem); }
   [data-block="stat"][data-cols="4"] [data-part="num"] { --s-size: clamp(2.5rem, 5.2cqi, 4.75rem); }
 }
+[data-block="stat"] :is([data-part="affix"], [data-part="digits"])::before { content: attr(data-text); }
 [data-block="stat"] [data-part="affix"] { font-size: .5em; font-weight: 400; letter-spacing: -.01em; margin-inline: .06em; }
 
 /* Accent rule: visible, and the same in every scheme */

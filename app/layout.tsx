@@ -7,7 +7,7 @@ import { cookies, draftMode } from "next/headers";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { MotionObserver } from "@/components/providers/MotionObserver";
 import { OptimizelyTracking } from "@/components/tracking/OptimizelyTracking";
-import { getSiteSettings, getRequestDomain, buildThemeCSS, getRequestLocale } from '@/lib/optimizely'
+import { getSiteSettings, getRequestDomain, getRequestBaseUrl, buildThemeCSS, getRequestLocale } from '@/lib/optimizely'
 import Script from 'next/script'
 
 // ── Fonts are SELF-HOSTED (next/font/local from @fontsource packages) ─────────
@@ -131,7 +131,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale   = await getRequestLocale()
   const settings = await getSiteSettings(domain, locale)
   const siteName = (settings?.siteName as string | null | undefined) ?? 'Site Accelerator'
+  // Resolves relative canonical / og:url / og:image against THIS request's origin, so they
+  // come out absolute on every demo domain without NEXT_PUBLIC_SITE_URL being set per deployment.
+  const baseUrl = await getRequestBaseUrl()
+  let metadataBase: URL | undefined
+  try { metadataBase = baseUrl ? new URL(baseUrl) : undefined } catch { /* leave unset */ }
   return {
+    metadataBase,
     title: {
       default:  siteName,
       // Applied automatically to every CMS page's string title:

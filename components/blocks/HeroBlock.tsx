@@ -219,11 +219,12 @@ export default function HeroBlock({
  * Campaign-look marquee tape: the eyebrow repeated in a slow loop. Hidden everywhere
  * (display:none); only the Poster and Stage looks of OT_CampaignLandingPage switch it on
  * (components/campaign/campaign-looks.css). Decorative duplicate of the eyebrow, so it
- * is aria-hidden. Two identical halves let the track loop seamlessly at -50%.
+ * is aria-hidden. The words live in data-text and are painted by CSS (::before), so text
+ * extractors and AI crawlers do not read the same phrase ten times. Two identical halves let the track loop seamlessly at -50%.
  */
 function HeroMarquee({ text }: { text: string }) {
   const half = Array.from({ length: 5 }, (_, i) => (
-    <span key={i} className="hero-marquee__item">{text}</span>
+    <span key={i} className="hero-marquee__item" data-text={text} />
   ));
   return (
     <div className="hero-marquee hidden" aria-hidden="true">

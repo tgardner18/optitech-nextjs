@@ -7,11 +7,16 @@ import { getAllHandles } from '@/lib/catalog'
 // Graph channel base URL, so each domain on the shared CMS instance gets a
 // sitemap of its own pages only (not every site's). `url.default` is the
 // canonical relative URL stored by Content Graph.
+// Content Graph rejects limit > 100 (the whole query fails), so pages are fetched
+// in chunks of 100 with skip.
+const PAGE_SIZE = 100
+const MAX_PAGES = 5
 const SITEMAP_QUERY = `
-  query GetPublishedPages($base: String) {
+  query GetPublishedPages($base: String, $skip: Int) {
     BlankExperience(
       where: { _metadata: { status: { eq: "Published" }, url: { base: { eq: $base } } } }
-      limit: 200
+      limit: ${PAGE_SIZE}
+      skip: $skip
     ) {
       items {
         _metadata { url { default } lastModified published }
@@ -20,7 +25,8 @@ const SITEMAP_QUERY = `
     }
     OT_BlogPage(
       where: { _metadata: { status: { eq: "Published" }, url: { base: { eq: $base } } } }
-      limit: 200
+      limit: ${PAGE_SIZE}
+      skip: $skip
     ) {
       items {
         _metadata { url { default } lastModified published }
@@ -47,11 +53,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const data = await getClient().request(SITEMAP_QUERY, { base: baseUrl })
-    const items = [
-      ...((data?.BlankExperience?.items ?? []) as any[]),
-      ...((data?.OT_BlogPage?.items ?? []) as any[]),
-    ]
+    const items: any[] = []
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const data = await getClient().request(SITEMAP_QUERY, { base: baseUrl, skip: page * PAGE_SIZE })
+      const exp = (data?.BlankExperience?.items ?? []) as any[]
+      const blogs = (data?.OT_BlogPage?.items ?? []) as any[]
+      items.push(...exp, ...blogs)
+      if (exp.length < PAGE_SIZE && blogs.length < PAGE_SIZE) break
+    }
     for (const item of items) {
       if (item.noIndex) continue
       const raw = item._metadata?.url?.default as string | null | undefined

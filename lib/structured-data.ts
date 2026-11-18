@@ -59,6 +59,24 @@ export function buildJsonLd(
   // ── Base graph (always emitted) ────────────────────────────────────────────
   const graph: unknown[] = [organizationNode, webSiteNode]
 
+  // ── BreadcrumbList (inner pages) ───────────────────────────────────────────
+  // Home > this page. Intermediate path segments are left out on purpose: folders such as
+  // /insights/2026 are not always real pages, and a breadcrumb that points at a 404 is worse than none.
+  try {
+    const u = new URL(pageUrl)
+    const segs = u.pathname.split('/').filter(Boolean)
+    if (segs.length > 0) {
+      const slugName = decodeURIComponent(segs[segs.length - 1]).replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+      graph.push({
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${u.origin}/` },
+          { '@type': 'ListItem', position: 2, name: page.seoTitle ?? slugName, item: `${u.origin}${u.pathname}` },
+        ],
+      })
+    }
+  } catch { /* relative or empty pageUrl: no breadcrumb */ }
+
   // ── Page-specific schema node ──────────────────────────────────────────────
   // schemaType selects the semantic type of the page itself (WebPage, Article,
   // Product, etc.). 'FAQPage' here means the *entire* page is a FAQ page — a

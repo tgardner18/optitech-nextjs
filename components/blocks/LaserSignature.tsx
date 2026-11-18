@@ -90,9 +90,10 @@ export default function LaserSignature({ name, color, epiProps }: Props) {
           <span
             key={i}
             className="ls-char"
+            data-c={char === ' ' ? '\u00a0' : char}
             style={{ '--ls-char-delay': `${200 + i * 110}ms` } as React.CSSProperties}
           >
-            {char === ' ' ? ' ' : char}
+            {/* painted from data-c (globals.css), so the name is not read out letter by letter */}
           </span>
         ))}
       </span>

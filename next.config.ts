@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
             headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" }],
           }]),
       {
+        // Machine-readable AI usage preference (contentsignals.org): reading and answering from the
+        // site is fine, search indexing and model training are not. Matches the demo-site intent above.
+        source: "/(.*)",
+        headers: [{ key: "Content-Signal", value: INDEXING_ALLOWED ? "search=yes, ai-input=yes, ai-train=no" : "search=no, ai-input=yes, ai-train=no" }],
+      },
+      {
         // Allow all Optimizely SaaS CMS instances to embed this app in the Visual Builder iframe.
         source: "/(.*)",
         headers: [

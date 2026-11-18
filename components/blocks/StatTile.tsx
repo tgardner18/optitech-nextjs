@@ -269,9 +269,10 @@ export default function StatTile({
       )}
 
       <p data-part="num" data-pulse={pulse && shouldAnim ? '' : undefined} aria-hidden="true">
-        {p.prefix && <span data-part="affix">{p.prefix}</span>}
-        {fmtNumber(disp, p.decimals)}
-        {p.suffix && <span data-part="affix">{p.suffix}</span>}
+        {/* Painted from data-text (stat.css), so the animated digits never sit in the page text next to the real value in .sr-only. */}
+        {p.prefix && <span data-part="affix" data-text={p.prefix} />}
+        <span data-part="digits" data-text={fmtNumber(disp, p.decimals)} />
+        {p.suffix && <span data-part="affix" data-text={p.suffix} />}
       </p>
       <span className="sr-only">{stat.value}</span>
 

@@ -117,6 +117,7 @@
   flex: none; padding-block: 0.7rem; padding-inline: 1.4rem;
   font-size: var(--ot-text-label); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
 }
+.hero-marquee__item::before { content: attr(data-text); }
 .hero-marquee__item::after { content: "\2726"; margin-inline-start: 2.8rem; opacity: 0.9; }
 @keyframes cl-marquee { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 .ot-campaign[data-look="stage"]  .hero-marquee { background: var(--ot-accent); color: var(--ot-fg-on-accent); bottom: 0; left: 0; right: 0; }
